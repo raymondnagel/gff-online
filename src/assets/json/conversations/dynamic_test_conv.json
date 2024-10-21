@@ -1,0 +1,43 @@
+[
+    {
+      "id": "1",
+      "speaker": "player",
+      "hearer": "other",
+      "dynamic": "player_initial_greeting",
+      "next": "2"
+    },
+    {
+      "id": "2",
+      "speaker": "other",
+      "hearer": "player",
+      "dynamic": "sinner_initial_greeting",
+      "next": "3"
+    },
+    {
+      "id": "3",
+      "speaker": "player",
+      "hearer": "other",
+      "dynamic": "player_introduction",
+      "next": "4"
+    },
+    {
+      "id": "4",
+      "speaker": "other",
+      "hearer": "player",
+      "dynamic": "sinner_introduction",
+      "next": "5"
+    },
+    {
+      "id": "5",
+      "speaker": "player",
+      "hearer": "other",
+      "dynamic": "player_initial_bye",
+      "next": "6"
+    },
+    {
+      "id": "6",
+      "speaker": "other",
+      "hearer": "player",
+      "dynamic": "sinner_initial_bye"
+    }
+]

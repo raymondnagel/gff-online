@@ -1,0 +1,46 @@
+[
+    {
+      "id": "1",
+      "speaker": "player",
+      "text": "Hello. What is my favorite food?",
+      "next": "2"
+    },
+    {
+      "id": "2",
+      "speaker": "player",
+      "text": "(T)Hmmm... I'll have to think about this one. There are so many foods I like!",
+      "next": "3"
+    },
+    {
+      "id": "3",
+      "speaker": "player",
+      "choice": [
+        { "choiceText": "Chicken", "resultId": "4"},
+        { "choiceText": "Pizza", "resultId": "5"},
+        { "choiceText": "Vegetables", "resultId": "6"}
+      ]
+    },
+    {
+      "id": "4",
+      "speaker": "player",
+      "text": "I chose Chicken! But it doesn't matter because this is only a test conversation.",
+      "next": "7"
+    },
+    {
+      "id": "5",
+      "speaker": "player",
+      "text": "I chose Pizza! But it doesn't matter because this is only a test conversation.",
+      "next": "7"
+    },
+    {
+      "id": "6",
+      "speaker": "player",
+      "text": "I chose Vegetables! But it doesn't matter because this is only a test conversation.",
+      "next": "7"
+    },
+    {
+      "id": "7",
+      "speaker": "player",
+      "text": "This concludes our test. Have a great day!"
+    }
+]

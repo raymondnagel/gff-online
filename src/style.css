@@ -1,0 +1,107 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+@font-face {
+    font-family: 'alpine';
+    src: url('assets/fonts/alpine.ttf') format('truetype');
+}
+@font-face {
+    font-family: 'dyonisius';
+    src: url('assets/fonts/dyonisius.ttf') format('truetype');
+}
+@font-face {
+    font-family: 'edmund';
+    src: url('assets/fonts/edmund.ttf') format('truetype');
+}
+@font-face {
+    font-family: 'epic';
+    src: url('assets/fonts/epic.ttf') format('truetype');
+}
+@font-face {
+    font-family: 'fish';
+    src: url('assets/fonts/fish.ttf') format('truetype');
+}
+@font-face {
+    font-family: 'goudament';
+    src: url('assets/fonts/goudament.ttf') format('truetype');
+}
+@font-face {
+    font-family: 'griffo';
+    src: url('assets/fonts/griffo.ttf') format('truetype');
+}
+@font-face {
+    font-family: 'imperator';
+    src: url('assets/fonts/imperator.ttf') format('truetype');
+}
+@font-face {
+    font-family: 'imposs';
+    src: url('assets/fonts/imposs.ttf') format('truetype');
+}
+@font-face {
+    font-family: 'ingleby';
+    src: url('assets/fonts/ingleby.ttf') format('truetype');
+}
+@font-face {
+    font-family: 'kanisah';
+    src: url('assets/fonts/kanisah.ttf') format('truetype');
+}
+@font-face {
+    font-family: 'kingthings';
+    src: url('assets/fonts/kingthings.ttf') format('truetype');
+}
+@font-face {
+    font-family: 'mjantique';
+    src: url('assets/fonts/mj_antique.ttf') format('truetype');
+}
+@font-face {
+    font-family: 'mjlarabie';
+    src: url('assets/fonts/mj_larabie.ttf') format('truetype');
+}
+@font-face {
+    font-family: 'morris';
+    src: url('assets/fonts/morris.ttf') format('truetype');
+}
+@font-face {
+    font-family: 'olde';
+    src: url('assets/fonts/olde.ttf') format('truetype');
+}
+@font-face {
+    font-family: 'plakat';
+    src: url('assets/fonts/plakat.ttf') format('truetype');
+}
+@font-face {
+    font-family: 'pragrom';
+    src: url('assets/fonts/pragrom.ttf') format('truetype');
+}
+@font-face {
+    font-family: 'time';
+    src: url('assets/fonts/time.ttf') format('truetype');
+}
+@font-face {
+    font-family: 'vanilla';
+    src: url('assets/fonts/vanilla_extract.ttf') format('truetype');
+}
+@font-face {
+    font-family: 'washington';
+    src: url('assets/fonts/washington.ttf') format('truetype');
+}
+
+html {
+    background-color: black;
+}
+
+body {
+    color: gold;
+}
+
+#fonttest h1 {
+    /* Comment next line to test fonts */
+    display: none;
+}
+
+#thegame {
+    cursor: url('./assets/images/cursor.png'), auto;
+}

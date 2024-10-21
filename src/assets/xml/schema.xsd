@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified">
+    <xsd:complexType name="HEADERtype">
+        <xsd:sequence>
+            <xsd:element name="title" type="xsd:string" minOccurs="1" maxOccurs="1"></xsd:element>
+            <xsd:element name="introduction" type="xsd:string" minOccurs="0" maxOccurs="1"></xsd:element>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="VERSEtype">
+        <xsd:simpleContent>
+            <xsd:extension base="xsd:string">
+                <xsd:attribute name="no" type="xsd:int"/>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+    <xsd:complexType name="CHAPTERtype">
+        <xsd:sequence>
+            <xsd:element name="verse" type="VERSEtype" minOccurs="1" maxOccurs="unbounded"></xsd:element>
+        </xsd:sequence>
+        <xsd:attribute name="no" type="xsd:int"/>
+		<xsd:attribute name="intro" type="xsd:string"/>
+    </xsd:complexType>
+    <xsd:complexType name="BOOKtype">
+        <xsd:sequence>
+            <xsd:element name="chapter" type="CHAPTERtype" minOccurs="1" maxOccurs="unbounded"></xsd:element>
+        </xsd:sequence>
+        <xsd:attribute name="name" type="xsd:string"/>
+	<xsd:attribute name="title" type="xsd:string"/>
+    </xsd:complexType>
+    <xsd:complexType name="TESTAMENTtype">
+        <xsd:sequence>
+            <xsd:element name="book" type="BOOKtype" minOccurs="1" maxOccurs="unbounded"></xsd:element>
+        </xsd:sequence>
+        <xsd:attribute name="name" type="xsd:string"/>
+    </xsd:complexType>
+    <xsd:complexType name="SCRIPTUREtype">
+        <xsd:sequence>
+            <xsd:element name="testament" type="TESTAMENTtype" minOccurs="1" maxOccurs="2"></xsd:element>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="BIBLEtype">
+        <xsd:sequence>
+            <xsd:element name="header" type="HEADERtype" minOccurs="1" maxOccurs="1"></xsd:element>
+            <xsd:element name="scripture" type="SCRIPTUREtype" minOccurs="1" maxOccurs="1"></xsd:element>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:element name="KJV" type="BIBLEtype"></xsd:element>	
+</xsd:schema>

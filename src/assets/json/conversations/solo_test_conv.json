@@ -1,0 +1,65 @@
+[
+    {
+      "id": "1",
+      "speaker": "player",
+      "text": "Hello!",
+      "next": "2"
+    },
+    {
+      "id": "2",
+      "speaker": "player",
+      "text": "It's me, SPEAKER_FIRST! I'm the star of this game!",
+      "next": "3"
+    },
+    {
+      "id": "3",
+      "speaker": "player",
+      "text": "This is just a test solo conversation. That means I'm just talking to myself. Or to you, I guess.",
+      "next": "4"
+    },
+    {
+      "id": "4",
+      "speaker": "player",
+      "text": "(T)Hmmm... I wonder what I should say next. Come on, Adam! Think, think, think! Uhhh... think of something useful to say!",
+      "next": "choice"
+    },
+    {
+      "id": "choice",
+      "speaker": "player",
+      "choice": [
+        { "choiceText": "Keep thinking about what to say", "resultId": "4"},
+        { "choiceText": "Share a scripture verse", "resultId": "verse"},
+        { "choiceText": "Tell them about the website", "resultId": "website"},
+        { "choiceText": "Thank them for trying out the demo", "resultId": "thanks"}
+      ]
+    },
+    {
+      "id": "verse",
+      "speaker": "player",
+      "text": "Oh! Here's a cool verse that was the inspiration for the game's title: \"Fight the good fight of faith, lay hold on eternal life, whereunto thou art also called, and hast professed a good profession before many witnesses.\" (1 Tim. 6:12)",
+      "next": "6"
+    },
+    {
+      "id": "website",
+      "speaker": "player",
+      "text": "By the way, if you haven't already, feel free to check out our website at www.callingofgod.org! Brother Ray and I work on the site together to share good Bible teaching and other spiritual resources.",
+      "next": "6"
+    },
+    {
+      "id": "thanks",
+      "speaker": "player",
+      "text": "Hey, thanks for playing this early demo version! I hope you enjoy seeing how our progress is going! Don't forget to read the start page for information about the controls and all the things you can do!",
+      "next": "6"
+    },
+    {
+      "id": "6",
+      "speaker": "player",
+      "text": "The grace of our Lord Jesus Christ be with you. Amen!",
+      "next": "7"
+    },
+    {
+      "id": "7",
+      "speaker": "player",
+      "text": "Bye bye!"
+    }
+]

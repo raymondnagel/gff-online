@@ -1,0 +1,43 @@
+[
+    {
+      "id": "1",
+      "speaker": "player",
+      "hearer": "other",
+      "text": "Hello!",
+      "next": "2"
+    },
+    {
+      "id": "2",
+      "speaker": "other",
+      "hearer": "player",
+      "text": "Hey! What's up?",
+      "next": "3"
+    },
+    {
+      "id": "3",
+      "speaker": "player",
+      "hearer": "other",
+      "text": "I'm just going around, preaching the gospel. How about you?",
+      "next": "4"
+    },
+    {
+      "id": "4",
+      "speaker": "other",
+      "hearer": "player",
+      "text": "Oh, cool! Well, I'm just waiting around to be preached to!",
+      "next": "5"
+    },
+    {
+      "id": "5",
+      "speaker": "player",
+      "hearer": "other",
+      "text": "Sweet! Okay, here goes: Believe on the Lord Jesus Christ, and thou shalt be saved!",
+      "next": "6"
+    },
+    {
+      "id": "6",
+      "speaker": "other",
+      "hearer": "player",
+      "text": "Amen!"
+    }
+]
