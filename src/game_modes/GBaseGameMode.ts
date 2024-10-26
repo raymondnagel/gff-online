@@ -30,9 +30,17 @@ export abstract class GBaseGameMode {
         return this.modeName;
     }
 
-    public setInputMode(inputmode: GInputMode|null) {
+    public setInputMode(inputMode: GInputMode|null) {
+        // Reset any keypress states for the modes involved:
+        this.previousInputMode?.clearKeypressStates();
+        this.inputMode?.clearKeypressStates();
+        inputMode?.clearKeypressStates();
+
+        // Make the current mode the previous one:
         this.previousInputMode = this.inputMode;
-        this.inputMode = inputmode;
+
+        // Make the new mode the current one:
+        this.inputMode = inputMode;
         GFF.log(`Set to input mode: ${this.inputMode?.getName()}`);
     }
 
@@ -93,6 +101,7 @@ export abstract class GBaseGameMode {
     }
 
     protected switchFrom(): void {
+        this.inputMode?.clearKeypressStates();
         this.deactivateScene(this.contentSceneKey);
         this.deactivateScene(this.uiSceneKey);
     }

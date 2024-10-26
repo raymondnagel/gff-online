@@ -9,8 +9,9 @@
  * directions, consider using dir8 functions.
  */
 
+import { GRandom } from "./GRandom";
 import { GFF } from "./main";
-import { GKeyList, GPoint } from "./types";
+import { CardDir, GKeyList, GPoint } from "./types";
 
 export namespace GDirection {
 
@@ -100,6 +101,28 @@ export namespace GDirection {
 
     export function dir9Texts() {
         return DIR9_TEXTS;
+    }
+
+    export function randomCardDir(): CardDir {
+        return GRandom.randElement([
+            Dir9.N,
+            Dir9.E,
+            Dir9.S,
+            Dir9.W
+        ]);
+    }
+
+    export function cardDirFrom4(n: 0|1|2|3): CardDir {
+        switch (n) {
+            case 0:
+                return Dir9.N;
+            case 1:
+                return Dir9.E;
+            case 2:
+                return Dir9.S;
+            case 3:
+                return Dir9.W;
+        }
     }
 
     export function getDirectionForIncs(xInc: number, yInc: number) {

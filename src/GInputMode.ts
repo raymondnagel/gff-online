@@ -6,6 +6,8 @@ export class GInputMode {
     private scene: Phaser.Scene;
     private allowedEvents: string[] = [];
     private pollKeys: GKeyList = {};
+    private heldKeys: Set<string> = new Set();
+    private repeatPressKeys: string[] = [];
     private onProcessKeyDown: ((keyEvent: KeyboardEvent) => void)|undefined = undefined;
     private onProcessKeyUp: ((keyEvent: KeyboardEvent) => void)|undefined = undefined;
 
@@ -19,6 +21,14 @@ export class GInputMode {
 
     public getName(): string {
         return this.name;
+    }
+
+    public allowRepeats(keys: string|string[]) {
+        if (Array.isArray(keys)) {
+            this.repeatPressKeys.push(...keys);
+        } else {
+            this.repeatPressKeys.push(keys);
+        }
     }
 
     public addAllowedEvent(eventType: string) {
@@ -44,14 +54,34 @@ export class GInputMode {
         return this.pollKeys[key] && (this.scene.input.keyboard as Phaser.Input.Keyboard.KeyboardPlugin).checkDown(this.pollKeys[key]);
     }
 
+    public clearKeypressStates() {
+        // console.log(`${this.name}: cleared key states!`);
+        this.heldKeys.clear();
+    }
+
     public processKeyDown(keyEvent: KeyboardEvent) {
+        if (!this.heldKeys.has(keyEvent.key)) {
+            // Key wasn't already held; hold down and continue:
+            this.heldKeys.add(keyEvent.key);
+        } else {
+            // console.log(`Key already held! ${keyEvent.key}`);
+            // Key was already held...
+            if (!this.repeatPressKeys.includes(keyEvent.key)) {
+                // Repeat not allowed for this key; return:
+                return;
+            }
+            // Repeat is allowed for this key; continue
+        }
         if (this.onProcessKeyDown !== undefined) {
+            // console.log(`${this.name}: keyDown(${keyEvent.key})`);
             this.onProcessKeyDown.call(this.scene, keyEvent);
         }
     }
 
     public processKeyUp(keyEvent: KeyboardEvent) {
+        this.heldKeys.delete(keyEvent.key);
         if (this.onProcessKeyUp !== undefined) {
+            // console.log(`${this.name}: keyUp(${keyEvent.key})`);
             this.onProcessKeyUp.call(this.scene, keyEvent);
         }
     }

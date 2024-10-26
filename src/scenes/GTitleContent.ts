@@ -19,7 +19,7 @@ export class GTitleContent extends GContentScene {
 
         // Hide the mouse cursor, as it can't be used yet anyway;
         // It will be picked up again by the Adventure UI when moved.
-        this.scale.parent.style.cursor = 'none';
+        GFF.setMouseVisible(false);
 
         // Create the background image, set it invisible initially
         const background = this.add.image(0, 0, 'title_bg');

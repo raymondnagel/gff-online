@@ -7,6 +7,7 @@ import { GGoal } from '../../GGoal';
 import { GWalkToPointGoal } from '../../goals/GWalkToPointGoal';
 import { GRestGoal } from '../../goals/GRestGoal';
 import { GAdventureContent } from '../../scenes/GAdventureContent';
+import { PEOPLE } from '../../people';
 
 const GENDER     = ['m', 'f'] as const;
 const SKIN_COLOR = ['w', 'y', 't', 'b'] as const;
@@ -133,7 +134,7 @@ export class GPersonSprite extends GCharSprite {
         let startingFaith = GRandom.flipCoin() ? -1 : GRandom.randInt(0, 99);
 
         // Add new person to the people registry:
-        (GFF.GAME.registry.get('people') as GPerson[]).push({
+        PEOPLE.addPerson({
             firstName: firstName,
             lastName: lastName,
             spriteKeyPrefix: spriteKeyPrefix,

@@ -7,6 +7,7 @@ import { GSpirit } from "./types";
 const REL_XP_DEC_PER_LEVEL: number = .3;
 
 export namespace ENEMY {
+    let imps: GSpirit[] = [];
     let maxResistance: number = 50;
     let resistance: number = 50;
     let portrait: string;
@@ -80,5 +81,13 @@ export namespace ENEMY {
         avatar = enemyAvatar;
         setMaxResistance(GFF.Difficulty.enemyBaseResist + (GFF.Difficulty.enemyResistPerLevel * enemySpirit.level));
         setResistance(getMaxResistance());
+    }
+
+    export function addImp(impSpirit: GSpirit) {
+        imps.push(impSpirit);
+    }
+
+    export function getImps(): GSpirit[] {
+        return imps;
     }
 }

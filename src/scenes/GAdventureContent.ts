@@ -1,5 +1,5 @@
 import 'phaser';
-import { GArea } from '../GArea';
+import { GArea } from '../areas/GArea';
 import { GWorldArea } from '../areas/GWorldArea';
 import { GDirection } from '../GDirection';
 import { GRect, GPerson, GSpirit, GKeyList } from '../types';
@@ -20,6 +20,9 @@ import { PLAYER } from '../player';
 import { ENEMY } from '../enemy';
 import { GrayscalePostFxPipeline } from '../shaders/GrayscalePostFxPipeline';
 import { GInputMode } from '../GInputMode';
+import { PEOPLE } from '../people';
+import { AREA } from '../area';
+import { GTown } from '../GTown';
 
 const MOUSE_UI_BUTTON: string = 'MOUSE_UI_BUTTON';
 
@@ -33,6 +36,7 @@ export class GAdventureContent extends GContentScene {
 
     private currentArea: GArea;
     private bottomBound: Phaser.GameObjects.Rectangle;
+    private playerFloor: number = 0;
     private playerRoomX: number = 0;
     private playerRoomY: number = 0;
 
@@ -62,7 +66,10 @@ export class GAdventureContent extends GContentScene {
 
     public create(): void {
         // Set initial area and room:
-        this.setCurrentRoom(this.playerRoomX, this.playerRoomY, new GWorldArea())
+        AREA.WORLD_AREA = new GWorldArea();
+        const startRoom = AREA.WORLD_AREA.getRandomRoom();
+        startRoom.setStart();
+        this.setCurrentRoom(startRoom.getX(), startRoom.getY(), AREA.WORLD_AREA);
 
         // Create the player:
         this.player = new GPlayerSprite(this, 500, 500);
@@ -128,7 +135,7 @@ export class GAdventureContent extends GContentScene {
                 case 'Enter':
                 case 'ArrowUp':
                 case 'ArrowDown':
-                    this.conversation?.sendKey('Enter');
+                    this.conversation?.sendKey(keyEvent.key);
                     break;
                 case 'n':
                     GFF.showNametags = true;
@@ -299,7 +306,7 @@ export class GAdventureContent extends GContentScene {
         let newRoomX = this.playerRoomX + GDirection.getHorzInc(dir);
         let newRoomY = this.playerRoomY + GDirection.getVertInc(dir);
 
-        if (this.currentArea.containsRoom(newRoomX, newRoomY)) {
+        if (this.currentArea.containsRoom(this.playerFloor, newRoomX, newRoomY)) {
             // Before transitioning, walk NONE to stop moving and remove diagonals:
             this.player.walkDirection(GDirection.Dir9.NONE);
             this.player.stop();
@@ -335,6 +342,10 @@ export class GAdventureContent extends GContentScene {
         return this.currentArea;
     }
 
+    public getCurrentFloor(): number {
+        return this.playerFloor;
+    }
+
     public startAreaBgMusic() {
         this.getSound().fadeInMusic(this.currentArea.getBgMusic(), 500);
     }
@@ -355,13 +366,14 @@ export class GAdventureContent extends GContentScene {
 
         // Load the new room:
         currentRoom = this.getCurrentRoom();
+        currentRoom?.discover();
         currentRoom?.load(this);
     }
 
     public getCurrentRoom(): GRoom|null {
         return this.currentArea === undefined
             ? null
-            : this.currentArea.getRoomAt(this.playerRoomX, this.playerRoomY);
+            : this.currentArea.getRoomAt(this.playerFloor, this.playerRoomX, this.playerRoomY);
     }
 
     public transitionToRoom(roomX: number, roomY: number, area: GArea, meanwhile: Function) {
@@ -372,7 +384,7 @@ export class GAdventureContent extends GContentScene {
         this.impSpawnTimeEvent?.remove();
         this.fadeOut(500, undefined, () => {
             this.setCurrentRoom(roomX, roomY, area);
-            this.addRandomPeople(5);
+            this.addRandomPeople();
             if (!this.getCurrentRoom()?.isSafe()) {
                 this.impSpawnTimeEvent = this.time.delayedCall(GRandom.randInt(1000, 5000), () => {
                     this.addRandomImps(1);
@@ -394,18 +406,49 @@ export class GAdventureContent extends GContentScene {
         });
     }
 
-    public addRandomPeople(peopleToAdd: number) {
-        let addedPersons: string[] = [];
-        let neighbor: GPerson;
-        for (let p = 0; p < peopleToAdd; p++) {
-            let nX = GRandom.randInt(GFF.LEFT_BOUND + GFF.TILE_W - GFF.CHAR_BODY_X_OFF, GFF.RIGHT_BOUND - GFF.CHAR_W);
-            let nY = GRandom.randInt(GFF.TOP_BOUND + GFF.TILE_H - GFF.CHAR_BODY_Y_OFF, GFF.BOTTOM_BOUND - GFF.CHAR_H);
-            do {
-                neighbor = GRandom.randElement(this.registry.get('people'));
-            } while (addedPersons.includes(neighbor.spriteKeyPrefix));
-            // spriteKeyPrefix is unique for people:
-            addedPersons.push(neighbor.spriteKeyPrefix);
-            this.addPerson(new GPersonSprite(this, neighbor, nX, nY));
+    public addRandomPeople() {
+        const room: GRoom = this.getCurrentRoom() as GRoom;
+        // Don't add random people if this isn't the World area, or if there is a church here:
+        if (this.getCurrentArea() !== AREA.WORLD_AREA || room.getChurch()) {
+            return;
+        }
+
+        // 30% chance to add each citizen if we are in a town:
+        const town: GTown|null = room.getTown();
+        if (town) {
+            const citizens: GPerson[] = town.getPeople();
+            for (let p of citizens) {
+                if (GRandom.randPct() <= .3) {
+                    const nX = GRandom.randInt(GFF.LEFT_BOUND + GFF.TILE_W - GFF.CHAR_BODY_X_OFF, GFF.RIGHT_BOUND - GFF.CHAR_W);
+                    const nY = GRandom.randInt(GFF.TOP_BOUND + GFF.TILE_H - GFF.CHAR_BODY_Y_OFF, GFF.BOTTOM_BOUND - GFF.CHAR_H);
+                    this.addPerson(new GPersonSprite(this, p, nX, nY));
+                }
+            }
+            return;
+        }
+
+        // Get a list of all nearby towns:
+        const neighboringTowns: GTown[] = [];
+        const neighborsWithTowns = room.getNeighbors((n: GRoom) => {
+            return n.getTown() !== null;
+        });
+        for (let n of neighborsWithTowns) {
+            const town: GTown = n.getTown() as GTown;
+            if (!neighboringTowns.includes(town)) {
+                neighboringTowns.push(town);
+            }
+        }
+
+        // 10% chance to add each citizen of each nearby town:
+        for (let t of neighboringTowns) {
+            const citizens: GPerson[] = t.getPeople();
+            for (let p of citizens) {
+                if (GRandom.randPct() <= .1) {
+                    const nX = GRandom.randInt(GFF.LEFT_BOUND + GFF.TILE_W - GFF.CHAR_BODY_X_OFF, GFF.RIGHT_BOUND - GFF.CHAR_W);
+                    const nY = GRandom.randInt(GFF.TOP_BOUND + GFF.TILE_H - GFF.CHAR_BODY_Y_OFF, GFF.BOTTOM_BOUND - GFF.CHAR_H);
+                    this.addPerson(new GPersonSprite(this, p, nX, nY));
+                }
+            }
         }
     }
 
@@ -416,7 +459,7 @@ export class GAdventureContent extends GContentScene {
             let nX = GRandom.randInt(GFF.LEFT_BOUND + GFF.TILE_W - GFF.CHAR_BODY_X_OFF, GFF.RIGHT_BOUND - GFF.CHAR_W);
             let nY = GRandom.randInt(GFF.TOP_BOUND + GFF.TILE_H - GFF.CHAR_BODY_Y_OFF, GFF.BOTTOM_BOUND - GFF.CHAR_H);
             do {
-                imp = GRandom.randElement(this.registry.get('imps'));
+                imp = GRandom.randElement(ENEMY.getImps());
             } while (addedImps.includes(imp.name));
             // name is unique for imps:
             addedImps.push(imp.name);
@@ -448,7 +491,7 @@ export class GAdventureContent extends GContentScene {
             this.player.walkDirection(GDirection.Dir9.NONE);
             this.getSound().stopMusic();
             ENEMY.init(enemy, enemy.getSpirit(), 'devil_circle', 'battle_devil');
-            GFF.AdventureUI.transitionToBattle(this.player.getCenter(), 'grass_enc_bg');
+            GFF.AdventureUI.transitionToBattle(this.player.getCenter(), (this.getCurrentRoom() as GRoom).getEncounterBg());
         }
     }
 

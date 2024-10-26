@@ -69,6 +69,10 @@
     src: url('assets/fonts/olde.ttf') format('truetype');
 }
 @font-face {
+    font-family: 'oxygen';
+    src: url('assets/fonts/oxygen.ttf') format('truetype');
+}
+@font-face {
     font-family: 'plakat';
     src: url('assets/fonts/plakat.ttf') format('truetype');
 }

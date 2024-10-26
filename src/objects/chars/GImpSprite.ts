@@ -7,6 +7,7 @@ import { GGoal } from '../../GGoal';
 import { GAdventureContent } from '../../scenes/GAdventureContent';
 import { GSearchForPlayerGoal } from '../../goals/GSearchForPlayerGoal';
 import { GSpawnImpGoal } from '../../goals/GSpawnImpGoal';
+import { ENEMY } from '../../enemy';
 
 export class GImpSprite extends GCharSprite {
 
@@ -76,7 +77,7 @@ export class GImpSprite extends GCharSprite {
             let impName: string = impNames.pop() as string;
 
             // Add new spirit to the imps registry:
-            (GFF.GAME.registry.get('imps') as GSpirit[]).push({
+            ENEMY.addImp({
                 type: 'imp',
                 name: impName,
                 level: 0,

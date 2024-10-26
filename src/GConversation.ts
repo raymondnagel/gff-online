@@ -294,17 +294,17 @@ export class GConversation {
         });
     }
 
-    public sendKey(key: 'Enter'|'Up'|'Down') {
+    public sendKey(key: 'Enter'|'ArrowUp'|'ArrowDown') {
         switch(key) {
             case 'Enter':
                 if (this.currentBubble.isComplete()) {
                     this.advance = true;
                 }
                 break;
-            case 'Up':
-            case 'Down':
+            case 'ArrowUp':
+            case 'ArrowDown':
                 if (this.currentBubble instanceof GChoiceBubble) {
-                    this.currentBubble.changeSelection(key);
+                    this.currentBubble.changeSelection(key.replace('Arrow', '') as 'Up'|'Down');
                 }
                 break;
         }

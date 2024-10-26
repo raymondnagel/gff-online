@@ -59,7 +59,7 @@ export class GAdventureUI extends GUIScene {
         this.lastActivityTime = this.time.now;
 
         // Make the cursor visible when activity is detected
-        this.scale.parent.style.cursor = "url('./assets/images/cursor.png'), auto";
+        GFF.setMouseVisible(true);
     }
 
     private checkForInactivity(): void {
@@ -67,7 +67,7 @@ export class GAdventureUI extends GUIScene {
 
         if (currentTime - this.lastActivityTime > MOUSE_INACTIVE_INTERVAL) {
             // Mouse hasn't moved for awhile:
-            this.scale.parent.style.cursor = 'none';
+            GFF.setMouseVisible(false);
             this.uiButtons.forEach(b => {
                 b.onOut();
             });

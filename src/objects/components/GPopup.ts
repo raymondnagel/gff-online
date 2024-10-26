@@ -35,7 +35,9 @@ export class GPopup extends Phaser.GameObjects.Image {
     private constructor() {
         super(GFF.AdventureUI, 0, 0, 'greystone_bg');
         GFF.AdventureContent.setPopup(this);
-        GFF.AdventureContent.scene.pause();
+        if (!GFF.AdventureContent.scene.isPaused()) {
+            GFF.AdventureContent.scene.pause();
+        }
 
         this.positioner = new GDynamicPositioner();
     }

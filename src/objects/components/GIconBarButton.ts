@@ -3,9 +3,12 @@ import { GBaseScene } from "../../scenes/GBaseScene";
 
 export class GIconBarButton extends Phaser.GameObjects.Image {
     private text: Phaser.GameObjects.Text;
+    private hotkeyBg: Phaser.GameObjects.Image;
+    private hotkeyText: Phaser.GameObjects.Text;
     private clickFunction: Function;
     private onTexture: string;
     private offTexture: string;
+    private hotkey: string|undefined;
     private enabled: boolean = true;
 
     constructor(
@@ -15,12 +18,14 @@ export class GIconBarButton extends Phaser.GameObjects.Image {
         offTexture: string,
         onTexture: string,
         buttonText: string,
+        hotkey: string|undefined,
         clickFunction: Function
     ) {
         super(scene, x, y, offTexture);
         this.setOrigin(0, 0);
         this.offTexture = offTexture;
         this.onTexture = onTexture;
+        this.hotkey = hotkey;
         this.clickFunction = clickFunction;
 
         // Add button to the scene
@@ -33,6 +38,17 @@ export class GIconBarButton extends Phaser.GameObjects.Image {
             fontFamily: 'dyonisius'
         });
         this.text.setOrigin(.5, 0); // Center the text
+
+        // Add hotkey indicator
+        if (this.hotkey) {
+            this.hotkeyBg = scene.add.image(x, y + 2, 'blank_key').setOrigin(0, 0);
+            this.hotkeyText = scene.add.text(this.hotkeyBg.x + this.hotkeyBg.width / 2, this.hotkeyBg.y + this.hotkeyBg.height / 2, this.hotkey.toUpperCase(), {
+                fontSize: '14px',
+                color: '#222222',
+                fontFamily: 'oxygen'
+            });
+            this.hotkeyText.setOrigin(.5, .5); // Center the text
+        }
 
         // Enable input for this button
         this.setInteractive();
@@ -48,12 +64,39 @@ export class GIconBarButton extends Phaser.GameObjects.Image {
 
     public setEnabled(enabled: boolean) {
         this.enabled = enabled;
-        this.disableInteractive();
+        if (this.enabled) {
+            this.setInteractive();
+        } else {
+            this.disableInteractive();
+        }
+        this.showHotkey(enabled);
     }
 
     public isEnabled(): boolean {
-        this.setInteractive();
         return this.enabled;
+    }
+
+    public getHotkey(): string|undefined {
+        return this.hotkey;
+    }
+
+    // public pressHotkey() {
+    //     if (this.enabled && this.isMouseAllowed()) {
+    //         this.onHover();
+    //         (this.scene as GBaseScene).getSound().playSound('icon_click');
+    //         this.clickFunction();
+    //         this.scene.time.delayedCall(100, () => {
+    //             this.onOut();
+    //             this.clickFunction();
+    //         });
+    //     }
+    // }
+
+    public showHotkey(show: boolean) {
+        if (this.hotkeyBg && this.hotkeyText) {
+            this.hotkeyBg.setVisible(show);
+            this.hotkeyText.setVisible(show);
+        }
     }
 
     private isMouseAllowed(): boolean {
@@ -66,6 +109,7 @@ export class GIconBarButton extends Phaser.GameObjects.Image {
             this.setTexture(this.onTexture);
             this.text.setStyle({ color: '#ffffff' });
             this.alpha = 1;
+            this.showHotkey(false);
         }
     }
 
@@ -75,13 +119,13 @@ export class GIconBarButton extends Phaser.GameObjects.Image {
             this.setTexture(this.offTexture);
             this.text.setStyle({ color: '#545454' });
             this.alpha = .5;
+            this.showHotkey(true);
         }
     }
 
     // Called when the button is clicked
     public onClick() {
         if (this.enabled && this.isMouseAllowed()) {
-            (this.scene as GBaseScene).getSound().playSound('icon_click');
             this.clickFunction();
         }
     }

@@ -21,6 +21,7 @@ export abstract class GUIScene extends GBaseScene {
     protected faithText: Phaser.GameObjects.Text;
     protected expMeter: Phaser.GameObjects.Rectangle;
     protected uiButtons: GIconBarButton[] = [];
+    protected buttonDefinitions: GActionableOption[];
 
     private updateUIBarInfo() {
         // Level indicator:
@@ -57,6 +58,7 @@ export abstract class GUIScene extends GBaseScene {
 
     protected setSubscreen() {
         this.createUIBar(true);
+        GFF.setMouseVisible(true);
     }
 
     protected createUIBar(excludeSaveAndExit: boolean = false) {
@@ -68,25 +70,32 @@ export abstract class GUIScene extends GBaseScene {
         const BLOCK: number = 64;
         const PADDING: number = 8;
         const SPACING: number = 8;
-        const buttonDefinitions: GActionableOption[] = [{
+        this.buttonDefinitions = [{
                 option: 'Exit',
-                hotkey: 'q',
-                action: () => { GPopup.createChoicePopup('Are you sure you wish to leave the game?', 'Exit Game', [
-                    {option: 'Yes', hotkey: 'y', action: () => {GFF.AdventureContent.endGame()}},
-                    {option: 'No', hotkey: 'n', action: () => {}}
-                ])}
+                hotkey: excludeSaveAndExit ? undefined : 'q',
+                action: () => {
+                    this.getSound().playSound('icon_click');
+                    GPopup.createChoicePopup('Are you sure you wish to leave the game?', 'Exit Game', [
+                        {option: 'Yes', hotkey: 'y', action: () => {GFF.AdventureContent.endGame()}},
+                        {option: 'No', hotkey: 'n', action: () => {}}
+                    ]);
+                }
             }, {
                 option: 'Save',
-                hotkey: 's',
-                action: () => { GPopup.createChoicePopup('Do you want to save the game?', 'Save Game', [
-                    {option: 'Yes', hotkey: 'y', action: () => {GFF.log('Yes, I want to save the game!')}},
-                    {option: 'No', hotkey: 'n', action: () => {GFF.log("No, I don't want to save the game!")}}
-                ])}
+                hotkey: excludeSaveAndExit ? undefined : 's',
+                action: () => {
+                    this.getSound().playSound('icon_click');
+                    GPopup.createChoicePopup('Do you want to save the game?', 'Save Game', [
+                        {option: 'Yes', hotkey: 'y', action: () => {GFF.log('Yes, I want to save the game!')}},
+                        {option: 'No', hotkey: 'n', action: () => {GFF.log("No, I don't want to save the game!")}}
+                    ]);
+                }
             }, {
                 option: 'Options',
                 hotkey: 'o',
                 action: () => {
                     if (this.getContainingMode() !== GFF.OPTIONS_MODE) {
+                        this.getSound().playSound('icon_click');
                         GFF.OPTIONS_MODE.switchTo(this.getContainingMode());
                     }
                 }
@@ -95,6 +104,7 @@ export abstract class GUIScene extends GBaseScene {
                 hotkey: 'g',
                 action: () => {
                     if (this.getContainingMode() !== GFF.GLOSSARY_MODE) {
+                        this.getSound().playSound('icon_click');
                         GFF.GLOSSARY_MODE.switchTo(this.getContainingMode());
                     }
                 }
@@ -103,6 +113,7 @@ export abstract class GUIScene extends GBaseScene {
                 hotkey: 't',
                 action: () => {
                     if (this.getContainingMode() !== GFF.STATS_MODE) {
+                        this.getSound().playSound('icon_click');
                         GFF.STATS_MODE.switchTo(this.getContainingMode());
                     }
                 }
@@ -111,6 +122,7 @@ export abstract class GUIScene extends GBaseScene {
                 hotkey: 'm',
                 action: () => {
                     if (this.getContainingMode() !== GFF.MAP_MODE) {
+                        this.getSound().playSound('icon_click');
                         GFF.MAP_MODE.switchTo(this.getContainingMode());
                     }
                 }
@@ -119,6 +131,7 @@ export abstract class GUIScene extends GBaseScene {
                 hotkey: 'r',
                 action: () => {
                     if (this.getContainingMode() !== GFF.PEOPLE_MODE) {
+                        this.getSound().playSound('icon_click');
                         GFF.PEOPLE_MODE.switchTo(this.getContainingMode());
                     }
                 }
@@ -127,6 +140,7 @@ export abstract class GUIScene extends GBaseScene {
                 hotkey: 'b',
                 action: () => {
                     if (this.getContainingMode() !== GFF.BIBLE_MODE) {
+                        this.getSound().playSound('icon_click');
                         GFF.BIBLE_MODE.switchTo(this.getContainingMode());
                     }
                 }
@@ -135,6 +149,7 @@ export abstract class GUIScene extends GBaseScene {
                 hotkey: 'i',
                 action: () => {
                     if (this.getContainingMode() !== GFF.BOOKS_MODE) {
+                        this.getSound().playSound('icon_click');
                         GFF.BOOKS_MODE.switchTo(this.getContainingMode());
                     }
                 }
@@ -143,15 +158,16 @@ export abstract class GUIScene extends GBaseScene {
                 hotkey: 'c',
                 action: () => {
                     if (this.getContainingMode() !== GFF.STATUS_MODE) {
+                        this.getSound().playSound('icon_click');
                         GFF.STATUS_MODE.switchTo(this.getContainingMode());
                     }
                 }
             }
         ];
-        buttonDefinitions.forEach((b, i) => {
+        this.buttonDefinitions.forEach((b, i) => {
             const imageName: string = b.option.toLowerCase();
             const x: number = GFF.RIGHT_BOUND - ((BLOCK + SPACING) * (i + 1)) + PADDING;
-            const button: GIconBarButton = new GIconBarButton(this, x, GFF.BOTTOM_BOUND + 3, `${imageName}_off`, `${imageName}_on`, b.option, b.action);
+            const button: GIconBarButton = new GIconBarButton(this, x, GFF.BOTTOM_BOUND + 3, `${imageName}_off`, `${imageName}_on`, b.option, b.hotkey, b.action);
             if (excludeSaveAndExit && (b.option === 'Save' || b.option === 'Exit')) {
                 button.setEnabled(false);
             }
@@ -206,6 +222,7 @@ export abstract class GUIScene extends GBaseScene {
     }
 
     public sendPotentialHotkey(keyEvent: KeyboardEvent) {
+        // console.log(`Send hotkey: ${keyEvent.key} (from ${this.getContainingMode().getName()})`);
         switch(keyEvent.key) {
             case 'Escape':
                 // If Esc is pressed on any UI that isn't part of AdventureMode,
@@ -213,7 +230,15 @@ export abstract class GUIScene extends GBaseScene {
                 if (this.getContainingMode() !== GFF.ADVENTURE_MODE) {
                     GFF.ADVENTURE_MODE.switchTo(this.getContainingMode());
                 }
-                break;
+                return;
+            default:
+                for (let b of this.buttonDefinitions) {
+                    if (keyEvent.key === b.hotkey) {
+                        this.exitAllButtons();
+                        b.action();
+                        return;
+                    }
+                }
         }
     }
 

@@ -1,4 +1,5 @@
 import { GDirection } from "./GDirection";
+import { GRoom } from "./GRoom";
 import { GCharSprite } from "./objects/chars/GCharSprite";
 
 // Represents an array of key objects indexed by their names:
@@ -101,10 +102,16 @@ export interface GSceneryPlan extends GPoint {
     key: string;
 }
 
+export type GFloor = GRoom[][];
+
+export type GRoomWalls = {
+    [key in CardDir]: boolean[];
+};
+
 // Structure for associating a text option with an action
 export interface GActionableOption {
     option: string;
-    hotkey: string;
+    hotkey: string|undefined;
     action: Function;
 }
 

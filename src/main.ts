@@ -33,7 +33,7 @@ const gameHeight: number = 768;
 
 let configObject: Phaser.Types.Core.GameConfig = {
     type: Phaser.WEBGL,
-    antialiasGL: false,
+    antialiasGL: true,
     scale: {
         mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH,
@@ -147,11 +147,18 @@ export namespace GFF {
     export let AdventureUI: GAdventureUI;
     export let BattleContent: GBattleContent;
 
+    export let genLogging: boolean = false;
     export let gameLogging: boolean = false;
     export let showNametags: boolean = false;
 
     export function log(something: any) {
         if (gameLogging) {
+            console.log(something);
+        }
+    }
+
+    export function genLog(something: any) {
+        if (genLogging) {
             console.log(something);
         }
     }
@@ -162,6 +169,14 @@ export namespace GFF {
             let body = n.body ?? '';
             console.log(`${n.type} = "${n.name}"; body: ${body}; active: ${n.active}`);
         });
+    }
+
+    export function setMouseVisible(show: boolean) {
+        if (show) {
+            GFF.GAME.scale.parent.style.cursor = "url('./assets/images/cursor.png'), auto";
+        } else {
+            GFF.GAME.scale.parent.style.cursor = 'none';
+        }
     }
 
     export const TEST_INFO =

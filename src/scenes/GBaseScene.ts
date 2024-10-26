@@ -4,6 +4,7 @@ import { GBaseGameMode } from '../game_modes/GBaseGameMode';
 
 export abstract class GBaseScene extends Phaser.Scene {
 
+    private name: string;
     private containingMode: GBaseGameMode;
     private soundManager: GSoundManager;
     private fadeOverlay: Phaser.GameObjects.Rectangle;
@@ -13,9 +14,14 @@ export abstract class GBaseScene extends Phaser.Scene {
             key: key,
             active: false
         });
+        this.name = key;
 
         // Create a sound manager for this Scene:
         this.soundManager = new GSoundManager(this);
+    }
+
+    public getName(): string {
+        return this.name;
     }
 
     public setContainingMode(mode: GBaseGameMode) {

@@ -177,8 +177,6 @@ export class GLoadingScene extends GBaseScene {
     private setRegistry() {
         this.registry.set('gameName', 'The Good Fight of Faith');
         this.registry.set('walkSpeed', 150); // Doubled for running
-        this.registry.set('people', []);
-        this.registry.set('imps', []);
     }
 
     public create(): void {

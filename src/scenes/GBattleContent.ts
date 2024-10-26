@@ -162,6 +162,7 @@ export class GBattleContent extends GContentScene {
     }
 
     public create(): void {
+        GFF.setMouseVisible(false);
         this.initInputModes();
         this.setInputMode(INPUT_DISABLED);
 
@@ -358,6 +359,7 @@ export class GBattleContent extends GContentScene {
 
         // INPUT_REFBOOK is active when the user should guess the book:
         INPUT_REFBOOK.setScene(this);
+        INPUT_REFBOOK.allowRepeats(['ArrowUp', 'ArrowDown']);
         INPUT_REFBOOK.onKeyDown((keyEvent: KeyboardEvent) => {
             switch(keyEvent.key) {
                 case 'ArrowUp':
@@ -413,6 +415,9 @@ export class GBattleContent extends GContentScene {
         // Send keyboard input to the current InputMode:
         this.input.keyboard?.on('keydown', (event: KeyboardEvent) => {
             this.getInputMode()?.processKeyDown(event);
+        });
+        this.input.keyboard?.on('keyup', (event: KeyboardEvent) => {
+            this.getInputMode()?.processKeyUp(event);
         });
     }
 

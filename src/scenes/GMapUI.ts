@@ -1,4 +1,4 @@
-import { GArea } from "../GArea";
+import { GArea } from "../areas/GArea";
 import { GDirection } from "../GDirection";
 import { GInputMode } from "../GInputMode";
 import { GRandom } from "../GRandom";
@@ -12,12 +12,18 @@ const CELL_Y_OFFSET: number = -4; // Account for iso-like overlap
 const CELL_WIDTH: number = 32; // 16 wall sections, doubled
 const CELL_HEIGHT: number = 22; // 11 wall sections, doubled
 const WALL_SECTION_LENGTH: number = 2;
+const BORDER_COVER_COLOR: number = 0xd4bd97;
 
 export class GMapUI extends GUIScene {
 
     private mapScrollImage: Phaser.GameObjects.Image;
     private mapTitleText: Phaser.GameObjects.Text;
+    private lowerTexture: Phaser.GameObjects.RenderTexture;
+    private upperTexture: Phaser.GameObjects.RenderTexture;
+    private wallGraphics: Phaser.GameObjects.Graphics;
+    private currentLocIndicator: Phaser.GameObjects.Image;
     private area: GArea;
+    private floor: number;
 
     constructor() {
         super("MapUI");
@@ -27,6 +33,7 @@ export class GMapUI extends GUIScene {
 
     public preload(): void {
         this.area = GFF.AdventureContent.getCurrentArea();
+        this.floor = GFF.AdventureContent.getCurrentFloor();
     }
 
     public create(): void {
@@ -40,105 +47,121 @@ export class GMapUI extends GUIScene {
 
         this.mapScrollImage = this.add.image(GFF.GAME_W / 2, 80, 'map_scroll').setOrigin(.5, 0);
         this.mapTitleText = this.add.text(512, 172, this.area.getName(), {
-            color: '#8e7143',
+            color: '#735e48',
             fontFamily: 'olde',
             fontSize: '42px'
         }).setOrigin(.5, 0);
+
+        // Discover all rooms (remove once you are confident in the map generation):
+        this.area.getRoomsByFloor(0).forEach(r => {
+            r.discover();
+        });
 
         this.renderMap();
 
         this.setSubscreen();
         this.initInputMode();
 
-        this.initDesignMode();
-        //this.createTileGuidelines();
-
+        // this.initDesignMode();
+        // this.createTileGuidelines();
     }
 
     /**
      * Map elements should be rendered in this order:
      * 1. terrain base    (lowerTexture)
      * 2. feature         (lowerTexture)
-     * 3. walls           (wallGraphics)
-     * 4. terrain overlap (upperTexture)
+     * 3. terrain overlap (lowerTexture)
+     * 4. walls           (wallGraphics)
      * 5. map edges       (upperTexture)
      * 6. overlays        (independent objects, possibly animated)
      */
     private renderMap() {
         const drawingDim: GPoint = this.getDrawingDimension();
-        const ctrX: number = GFF.GAME_W / 2;
+        const ctrX: number = Math.floor(GFF.GAME_W / 2);
         const ctrY: number = 408;
 
         const horzRooms: number = this.area.getWidth();
         const vertRooms: number = this.area.getHeight();
 
-        const lowerTexture: Phaser.GameObjects.RenderTexture = this.add.renderTexture(ctrX, ctrY, drawingDim.x, drawingDim.y).setOrigin(.5, .5);
-        const textureTL: GPoint = lowerTexture.getTopLeft();
-        // If using global antialiasing, add .5 to each coordinate and decrease length of wall section lines by 1:
-        const wallGraphics: Phaser.GameObjects.Graphics = this.add.graphics().setPosition(textureTL.x, textureTL.y);
-        const upperTexture: Phaser.GameObjects.RenderTexture = this.add.renderTexture(ctrX, ctrY, drawingDim.x, drawingDim.y).setOrigin(.5, .5);
-
+        this.lowerTexture = this.add.renderTexture(Math.floor(ctrX - (drawingDim.x / 2)), Math.floor(ctrY - (drawingDim.y / 2)), drawingDim.x, drawingDim.y).setOrigin(0, 0);
+        const mapTL: GPoint = this.lowerTexture.getTopLeft();
+        this.wallGraphics = this.add.graphics().setPosition(mapTL.x - .5, mapTL.y + .5);
+        this.upperTexture = this.add.renderTexture(mapTL.x, mapTL.y, drawingDim.x, drawingDim.y).setOrigin(0, 0);
 
         for (let y: number = 0; y < vertRooms; y++) {
             for (let x: number = 0; x < horzRooms; x++) {
-                if (this.area.containsRoom(x, y)) {
-                    const room: GRoom = this.area.getRoomAt(x, y) as GRoom;
-                    const cellX: number = x * CELL_WIDTH;
-                    const cellY: number = y * CELL_HEIGHT;
+                if (this.area.containsRoom(this.floor, x, y)) {
+                    const room: GRoom = this.area.getRoomAt(this.floor, x, y) as GRoom;
+                    if (room.isDiscovered()) {
+                        const cellX: number = x * CELL_WIDTH;
+                        const cellY: number = y * CELL_HEIGHT;
 
-                    const terrain = GRandom.randElement(['map_plain', 'map_forest', 'map_desert', 'map_swamp', 'map_tundra', 'map_mountain']) as string;
-                    const feature = GRandom.randElement(['map_church', 'map_town', 'map_hold']) as string;
-                    const wallDir = GRandom.randElement([GDirection.Dir9.N, GDirection.Dir9.E, GDirection.Dir9.W, GDirection.Dir9.S]) as CardDir;
-                    room.setFullWall(wallDir);
+                        const terrain = room.getMapTerrain();
+                        const feature = room.getMapFeature();
 
-                    // Draw terrain base:
-                    lowerTexture.draw(terrain, cellX, cellY);
+                        // Draw terrain base:
+                        this.lowerTexture.draw(terrain, cellX, cellY);
 
-                    // Draw feature, if applicable:
-                    if (GRandom.randPct() > .9) {
-                        lowerTexture.draw(feature, cellX, cellY);
+                        // Draw feature, if applicable:
+                        if (feature) {
+                            this.lowerTexture.draw(feature, cellX, cellY);
+                        }
+
+                        // Draw terrain overlap:
+                        this.lowerTexture.draw(terrain + '_overlap', cellX, cellY + CELL_Y_OFFSET);
+
+                        // Draw walls, if applicable:
+                        // (these need to be drawn over the overlaps, or wall sections may appear as holes when covered by overlaps)
+                        this.drawWalls(room, cellX, cellY, this.wallGraphics);
+
+                        // Draw map edges to make it not look so perfect:
+                        this.drawMapEdgesForRoom(room, cellX, cellY, this.upperTexture);
                     }
-
-                    // Draw walls, if applicable:
-                    // (Since terrain now overlaps to the north, walls will be placed over the overlap,
-                    // which will look weird. If walls are drawn, the overlaps will need to be separate
-                    // from the main terrain images, so they can be drawn on top of the walls. Features
-                    // should then fit within the cell size, or we'll need to do the same thing with them.)
-                    this.drawWalls(room, cellX, cellY, wallGraphics);
-
-                    // Draw terrain overlap:
-                    upperTexture.draw(terrain + '_overlap', cellX, cellY + CELL_Y_OFFSET);
-
-                    // Draw map edges to make it not look so perfect:
-                    // (Since edges are drawn to mapTexture, they will appear under the walls; i.e. walls will always appear fully opaque).
-                    // To make walls subject to fading, you would have to make another renderTexture on top of the graphics, just for fades.
-                    this.drawMapEdgesForRoom(room, cellX, cellY, upperTexture);
                 }
             }
         }
+
+        // Add a border cover to cover up edge-wall artifacts caused by antialiasing:
+        this.wallGraphics.lineStyle(1, BORDER_COVER_COLOR, 1);
+        this.wallGraphics.strokeRect(0, -1, this.lowerTexture.width + 1, this.lowerTexture.height + 1);
+
+        const room: GRoom|null = GFF.AdventureContent.getCurrentRoom();
+        if (room) {
+            const currentX: number = mapTL.x + (room.getX() * CELL_WIDTH) + (CELL_WIDTH / 2);
+            const currentY: number = mapTL.y + 4 + (room.getY() * CELL_HEIGHT) + (CELL_HEIGHT / 2);
+            this.currentLocIndicator = this.add.image(currentX, currentY, 'map_current').setOrigin(.5, 1);
+            this.tweens.add({
+                targets: this.currentLocIndicator,
+                y: { from: currentY, to: currentY - 10 },
+                duration: 350,
+                yoyo: true,
+                repeat: -1
+            });
+        }
     }
 
-    private drawWalls(room: GRoom, cellX: number, cellY: number, mapGraphics: Phaser.GameObjects.Graphics) {
+    private drawWalls(room: GRoom, cellX: number, cellY: number, wallGraphics: Phaser.GameObjects.Graphics) {
         let sections: boolean[];
         let wX: number = cellX;
         let wY: number = cellY;
-        mapGraphics.lineStyle(1, 0x433223, 1);
+        wallGraphics.lineStyle(1, 0x493726, .7);
 
         // Draw north wall:
         if (room.hasAnyWall(GDirection.Dir9.N)) {
             sections = room.getWallSections(GDirection.Dir9.N);
             for (let s: number = 0; s < sections.length; s++) {
                 if (sections[s]) {
-                    mapGraphics.lineBetween(wX + (s * WALL_SECTION_LENGTH), wY, wX + WALL_SECTION_LENGTH + (s * WALL_SECTION_LENGTH), wY);
+                    wallGraphics.lineBetween(wX + (s * WALL_SECTION_LENGTH), wY, wX + WALL_SECTION_LENGTH + (s * WALL_SECTION_LENGTH), wY);
                 }
             }
         }
         // Draw west wall:
         if (room.hasAnyWall(GDirection.Dir9.W)) {
+            wX = cellX + 1;
             sections = room.getWallSections(GDirection.Dir9.W);
             for (let s: number = 0; s < sections.length; s++) {
                 if (sections[s]) {
-                    mapGraphics.lineBetween(wX, wY + (s * WALL_SECTION_LENGTH), wX, wY + WALL_SECTION_LENGTH + (s * WALL_SECTION_LENGTH));
+                    wallGraphics.lineBetween(wX, wY + (s * WALL_SECTION_LENGTH), wX, wY + WALL_SECTION_LENGTH + (s * WALL_SECTION_LENGTH));
                 }
             }
         }
@@ -148,34 +171,34 @@ export class GMapUI extends GUIScene {
             sections = room.getWallSections(GDirection.Dir9.E);
             for (let s: number = 0; s < sections.length; s++) {
                 if (sections[s]) {
-                    mapGraphics.lineBetween(wX, wY + (s * WALL_SECTION_LENGTH), wX, wY + WALL_SECTION_LENGTH + (s * WALL_SECTION_LENGTH));
+                    wallGraphics.lineBetween(wX, wY + (s * WALL_SECTION_LENGTH), wX, wY + WALL_SECTION_LENGTH + (s * WALL_SECTION_LENGTH));
                 }
             }
         }
         // Draw south wall:
         if (room.hasAnyWall(GDirection.Dir9.S)) {
             wX = cellX;
-            wY = cellY + CELL_HEIGHT;
+            wY = cellY + CELL_HEIGHT - 1;
             sections = room.getWallSections(GDirection.Dir9.S);
             for (let s: number = 0; s < sections.length; s++) {
                 if (sections[s]) {
-                    mapGraphics.lineBetween(wX + (s * WALL_SECTION_LENGTH), wY, wX + WALL_SECTION_LENGTH + (s * WALL_SECTION_LENGTH), wY);
+                    wallGraphics.lineBetween(wX + (s * WALL_SECTION_LENGTH), wY, wX + WALL_SECTION_LENGTH + (s * WALL_SECTION_LENGTH), wY);
                 }
             }
         }
     }
 
     private drawMapEdgesForRoom(room: GRoom, cellX: number, cellY: number, mapTexture: Phaser.GameObjects.RenderTexture) {
-        if (!room.hasNeighbor(GDirection.Dir9.N)) {
+        if (!room.hasNeighbor(GDirection.Dir9.N) || !(room.getNeighbor(GDirection.Dir9.N) as GRoom).isDiscovered()) {
             mapTexture.draw('map_edge_n', cellX, cellY);
         }
-        if (!room.hasNeighbor(GDirection.Dir9.W)) {
+        if (!room.hasNeighbor(GDirection.Dir9.W) || !(room.getNeighbor(GDirection.Dir9.W) as GRoom).isDiscovered()) {
             mapTexture.draw('map_edge_w', cellX, cellY);
         }
-        if (!room.hasNeighbor(GDirection.Dir9.E)) {
+        if (!room.hasNeighbor(GDirection.Dir9.E) || !(room.getNeighbor(GDirection.Dir9.E) as GRoom).isDiscovered()) {
             mapTexture.draw('map_edge_e', cellX, cellY);
         }
-        if (!room.hasNeighbor(GDirection.Dir9.S)) {
+        if (!room.hasNeighbor(GDirection.Dir9.S) || !(room.getNeighbor(GDirection.Dir9.S) as GRoom).isDiscovered()) {
             mapTexture.draw('map_edge_s', cellX, cellY);
         }
     }
@@ -190,7 +213,7 @@ export class GMapUI extends GUIScene {
 
         for (let y: number = 0; y < vertRooms; y++) {
             for (let x: number = 0; x < horzRooms; x++) {
-                if (this.area.containsRoom(x, y)) {
+                if (this.area.containsRoom(this.floor, x, y)) {
                     topMost = Math.min(topMost, y);
                     leftMost = Math.min(leftMost, x);
                     rightMost = Math.max(rightMost, x);
@@ -200,13 +223,35 @@ export class GMapUI extends GUIScene {
         }
 
         return {
-            x: (rightMost + 1 - leftMost) * CELL_WIDTH,
-            y: (bottomMost + 1 - topMost) * CELL_HEIGHT
+            x: Math.floor((rightMost + 1 - leftMost) * CELL_WIDTH),
+            y: Math.floor((bottomMost + 1 - topMost) * CELL_HEIGHT)
         };
+    }
+
+    private saveMap() {
+        this.sys.game.renderer.snapshotArea(
+            this.lowerTexture.x, this.lowerTexture.y,
+            this.lowerTexture.width, this.lowerTexture.height,
+            (image: HTMLImageElement|Phaser.Display.Color) => {
+                // Save the image as a base64 data URL
+                let dataUrl = (image as HTMLImageElement).src;
+
+                // Trigger a download
+                let a = document.createElement('a');
+                a.href = dataUrl;
+                a.download = 'map.png';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            }
+        );
     }
 
     private initInputMode() {
         INPUT_DEFAULT.onKeyDown((keyEvent) => {
+            if (keyEvent.key === 's') {
+                this.saveMap();
+            }
             this.sendPotentialHotkey(keyEvent);
         });
         INPUT_DEFAULT.addAllowedEvent('MOUSE_UI_BUTTON');
