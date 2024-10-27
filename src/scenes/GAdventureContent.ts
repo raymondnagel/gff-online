@@ -65,10 +65,7 @@ export class GAdventureContent extends GContentScene {
     }
 
     public create(): void {
-        // Set initial area and room:
-        AREA.WORLD_AREA = new GWorldArea();
-        const startRoom = AREA.WORLD_AREA.getRandomRoom();
-        startRoom.setStart();
+        const startRoom = AREA.WORLD_AREA.getStartRoom();
         this.setCurrentRoom(startRoom.getX(), startRoom.getY(), AREA.WORLD_AREA);
 
         // Create the player:

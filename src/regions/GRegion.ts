@@ -75,7 +75,7 @@ export abstract class GRegion {
     public furnishRoom(room: GRoom) {
         console.log(`Furnishing Room #${++GRegion.roomCount}`);
 
-        // Don't furnish at start room - we want it empty because we're displaying help info there
+        // Don't furnish start room - we want it empty because we're displaying help info there
         if (room.isStart()) {
             return;
         }

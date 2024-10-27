@@ -45,6 +45,7 @@ export class GWorldArea extends GArea {
 
     private regionCenters: GRoom[] = [];
     private townCenters: GRoom[];
+    private startRoom: GRoom;
 
     constructor() {
         super(
@@ -63,6 +64,10 @@ export class GWorldArea extends GArea {
         this.createStrongholds();
         this.concealAllRooms(0);
         this.furnishRooms();
+    }
+
+    public getStartRoom(): GRoom {
+        return this.startRoom;
     }
 
     protected initRoom(room: GRoom): void {
@@ -254,14 +259,18 @@ export class GWorldArea extends GArea {
 
         this.addPopulation();
 
+        // Create start location:
+        this.startRoom = (GRandom.randElement(CHURCH.getChurches()) as GChurch).getWorldRoom();
+        this.startRoom.setStart();
+
         // Test population by town:
-        const towns: GTown[] = TOWN.getTowns();
-        for (let t: number = 0; t < NUM_TOWNS; t++) {
-            GFF.genLog(`${towns[t].getName()}, citizens: ${towns[t].getPeople().length}`);
-            // console.dir(towns[t].getPeople());
-            GFF.genLog(`${towns[t].getChurch().getName()}, saints: ${towns[t].getChurch().getPeople().length}`);
-            // console.dir(towns[t].getChurch().getPeople());
-        }
+        // const towns: GTown[] = TOWN.getTowns();
+        // for (let t: number = 0; t < NUM_TOWNS; t++) {
+        //     GFF.genLog(`${towns[t].getName()}, citizens: ${towns[t].getPeople().length}`);
+        //     // console.dir(towns[t].getPeople());
+        //     GFF.genLog(`${towns[t].getChurch().getName()}, saints: ${towns[t].getChurch().getPeople().length}`);
+        //     // console.dir(towns[t].getChurch().getPeople());
+        // }
     }
 
     private addPopulation() {

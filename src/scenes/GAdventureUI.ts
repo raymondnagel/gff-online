@@ -27,7 +27,7 @@ export class GAdventureUI extends GUIScene {
         this.setMouseInactiveTimer();
 
         // this.createTileGuidelines();
-        this.initDesignMode();
+        // this.initDesignMode();
     }
 
     public sendPotentialHotkey(keyEvent: KeyboardEvent) {

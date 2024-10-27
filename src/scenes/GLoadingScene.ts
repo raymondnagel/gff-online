@@ -3,6 +3,8 @@ import { GPersonSprite } from '../objects/chars/GPersonSprite';
 import { GFF } from '../main';
 import { GBaseScene } from './GBaseScene';
 import { GImpSprite } from '../objects/chars/GImpSprite';
+import { AREA } from '../area';
+import { GWorldArea } from '../areas/GWorldArea';
 
 const LOAD_COLOR: number     = 0xffffff;
 const PROGRESS_COLOR: number = 0x00c220;
@@ -98,6 +100,9 @@ export class GLoadingScene extends GBaseScene {
                 // Create the imps:
                 GImpSprite.createAllImps();
 
+                // Set initial area and room (do this in WorldBuilding Mode instead):
+                AREA.WORLD_AREA = new GWorldArea();
+
                 // Add a listener for the mouse leaving the game canvas:
                 GFF.GAME.canvas.addEventListener('mouseleave', () => {
                     GFF.GAME.scene.getScenes().forEach(s => {
@@ -117,9 +122,6 @@ export class GLoadingScene extends GBaseScene {
             },
             this
         );
-    }
-
-    private loadFonts() {
     }
 
     private loadJsons() {
@@ -181,7 +183,6 @@ export class GLoadingScene extends GBaseScene {
 
     public create(): void {
         this.loadJsons();
-        this.loadFonts();
         this.loadImages();
         this.loadSpritesheets();
         this.loadAudios();
