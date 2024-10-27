@@ -1,18 +1,13 @@
-import { GAdventureContent } from "../../scenes/GAdventureContent";
+import { SCENERY } from "../../scenery";
 import { GObstacleStatic } from "./GObstacleStatic";
 
 export class GOakTree extends GObstacleStatic{
 
-    constructor(scene: GAdventureContent, x: number, y: number) {
+    constructor(x: number, y: number) {
         super(
-            scene,
-            'oak_tree',
+            SCENERY.OAK_TREE_DEF,
             x,
-            y,
-            76,
-            200,
-            116,
-            36
+            y
         );
     }
 }

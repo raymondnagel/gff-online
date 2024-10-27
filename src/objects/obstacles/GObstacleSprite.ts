@@ -1,34 +1,31 @@
 import 'phaser';
 import { GAdventureContent } from '../../scenes/GAdventureContent';
+import { GSceneryDef } from '../../types';
+import { GFF } from '../../main';
 
 export abstract class GObstacleSprite extends Phaser.Physics.Arcade.Sprite {
 
-    private spriteKey: string;
+    private sceneryDef: GSceneryDef;
 
     constructor(
-        scene: GAdventureContent,
-        spriteKey: string,
-        frames: number,
-        frameRate: number,
+        sceneryDef: GSceneryDef,
         x: number,
         y: number,
-        bodyOffsetX: number,
-        bodyOffsetY: number,
-        bodyWidth: number,
-        bodyHeight: number
+        frames: number,
+        frameRate: number
     ) {
-        super(scene, x, y, spriteKey);
-        this.spriteKey = spriteKey;
+        super(GFF.AdventureContent, x, y, sceneryDef.key);
+        this.sceneryDef = sceneryDef;
         this.setOrigin(0, 0);
 
         // Add to scene:
-        scene.add.existing(this);
+        GFF.AdventureContent.add.existing(this);
 
         // Configure physical properites:
-        scene.physics.add.existing(this);
+        GFF.AdventureContent.physics.add.existing(this);
         if (this.body !== null) {
-            this.body.setSize(bodyWidth, bodyHeight);
-            this.body.setOffset(bodyOffsetX, bodyOffsetY);
+            this.body.setSize(sceneryDef.body.width, sceneryDef.body.height);
+            this.body.setOffset(sceneryDef.body.x, sceneryDef.body.y);
             this.body.immovable = true;
             this.body.updateFromGameObject();
             this.setDepth(this.body.y + this.body.height);
@@ -36,11 +33,11 @@ export abstract class GObstacleSprite extends Phaser.Physics.Arcade.Sprite {
         this.setCollideWorldBounds(true);
 
         // Add to the scene as an obstacle:
-        scene.addObstacle(this);
+        GFF.AdventureContent.addObstacle(this);
 
         // Create animation:
-        this.createSingleAnimation(spriteKey, frames, frameRate);
-        this.play(spriteKey);
+        this.createSingleAnimation(this.sceneryDef.key, frames, frameRate);
+        this.play(this.sceneryDef.key);
     }
 
     protected createSingleAnimation(spriteKey: string, frames: number, frameRate: number) {
@@ -56,6 +53,6 @@ export abstract class GObstacleSprite extends Phaser.Physics.Arcade.Sprite {
     }
 
     public toString() {
-        return this.spriteKey;
+        return this.sceneryDef.key;
     }
 }

@@ -1,11 +1,12 @@
 import { SCENERY } from "../../scenery";
+import { GAdventureContent } from "../../scenes/GAdventureContent";
 import { GObstacleStatic } from "./GObstacleStatic";
 
-export class GPineTree extends GObstacleStatic{
+export class GBoulder extends GObstacleStatic{
 
     constructor(x: number, y: number) {
         super(
-            SCENERY.PINE_TREE_DEF,
+            SCENERY.BOULDER_DEF,
             x,
             y
         );

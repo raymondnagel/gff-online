@@ -1,6 +1,8 @@
 import { GRoom } from "../GRoom";
 import { GRandom } from "../GRandom";
 import { GFF } from "../main";
+import { GRect, GSceneryDef } from "../types";
+import { SCENERY } from "../scenery";
 
 /**
  * GRegion represents part of a GArea that should
@@ -10,7 +12,7 @@ import { GFF } from "../main";
  * areas, such as the inside of buildings, contain
  * only one region.
  *
- * For example, a region might be 'Town of Gratium', which may have
+ * For example, a region might be 'Town of Ephesus', which may have
  * custom generation algorithms for scenery, as well as trigger
  * things when the region is first entered:
  * - set background image based on region
@@ -69,8 +71,9 @@ export abstract class GRegion {
         return this.rooms;
     }
 
+    private static roomCount: number = 0;
     public furnishRoom(room: GRoom) {
-        // Note: Entire current contents of this method is temporary
+        console.log(`Furnishing Room #${++GRegion.roomCount}`);
 
         // Don't furnish at start room - we want it empty because we're displaying help info there
         if (room.isStart()) {
@@ -78,16 +81,6 @@ export abstract class GRegion {
         }
 
         this._furnishRoom(room);
-
-        // Add random amounts of each item from the scenery list
-        // this.sceneryList.forEach(scenery => {
-        //     let sceneryCount = GRandom.randInt(0, 3);
-        //     for (let n: number = 0; n < sceneryCount; n++) {
-        //         let sX = GRandom.randInt(GFF.LEFT_BOUND + GFF.TILE_W, GFF.RIGHT_BOUND - GFF.TILE_W);
-        //         let sY = GRandom.randInt(GFF.TOP_BOUND + GFF.TILE_H, GFF.BOTTOM_BOUND - GFF.TILE_H);
-        //         room.addScenery(scenery, sX, sY);
-        //     }
-        // });
     }
 
     protected abstract _furnishRoom(room: GRoom): void;

@@ -98,8 +98,18 @@ export interface GRect extends GPoint {
 }
 
 // Structure for planning placement of a scenery object
+// Since it was already placed, we only care about the key
+// and location now.
 export interface GSceneryPlan extends GPoint {
     key: string;
+}
+
+// Structure for pre-defining a scenery object
+// We need to know its physical shape to plan its placement,
+// turning it into a plan; but it doesn't have a location.
+export interface GSceneryDef {
+    key: string;
+    body: GRect;
 }
 
 export type GFloor = GRoom[][];

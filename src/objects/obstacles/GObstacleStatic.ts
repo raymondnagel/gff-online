@@ -1,32 +1,28 @@
 import 'phaser';
-import { GAdventureContent } from '../../scenes/GAdventureContent';
+import { GFF } from '../../main';
+import { GSceneryDef } from '../../types';
 
 export abstract class GObstacleStatic extends Phaser.Physics.Arcade.Image {
 
-    private imageKey: string;
+    private sceneryDef: GSceneryDef;
 
     constructor(
-        scene: GAdventureContent,
-        imageKey: string,
+        sceneryDef: GSceneryDef,
         x: number,
-        y: number,
-        bodyOffsetX: number,
-        bodyOffsetY: number,
-        bodyWidth: number,
-        bodyHeight: number
+        y: number
     ) {
-        super(scene, x, y, imageKey);
-        this.imageKey = imageKey;
+        super(GFF.AdventureContent, x, y, sceneryDef.key);
+        this.sceneryDef = sceneryDef;
         this.setOrigin(0, 0);
 
         // Add to scene:
-        scene.add.existing(this);
+        GFF.AdventureContent.add.existing(this);
 
         // Configure physical properites:
-        scene.physics.add.existing(this);
+        GFF.AdventureContent.physics.add.existing(this);
         if (this.body !== null) {
-            this.body.setSize(bodyWidth, bodyHeight);
-            this.body.setOffset(bodyOffsetX, bodyOffsetY);
+            this.body.setSize(sceneryDef.body.width, sceneryDef.body.height);
+            this.body.setOffset(sceneryDef.body.x, sceneryDef.body.y);
             this.body.immovable = true;
             this.body.updateFromGameObject();
             this.setDepth(this.body.bottom);
@@ -34,10 +30,10 @@ export abstract class GObstacleStatic extends Phaser.Physics.Arcade.Image {
         this.setCollideWorldBounds(true);
 
         // Add to the scene as an obstacle:
-        scene.addObstacle(this);
+        GFF.AdventureContent.addObstacle(this);
     }
 
     public toString() {
-        return this.imageKey;
+        return this.sceneryDef.key;
     }
 }

@@ -282,6 +282,8 @@ export abstract class GUIScene extends GBaseScene {
     private mouseMode: 'none'|'create'|'display' = 'none';
     private mouseRect: Phaser.GameObjects.Rectangle|null = null;
     private mouseText: Phaser.GameObjects.Text;
+    private blockText: Phaser.GameObjects.Text;
+    private zones: Phaser.GameObjects.Rectangle[] = [];
     /**
      * Call this in create() of any UI scene to assist with planning object locations
      */
@@ -289,7 +291,12 @@ export abstract class GUIScene extends GBaseScene {
         this.mouseText = this.add.text(0, 0, '', {
             color: '#ffffff',
             fontFamily: 'pragrom',
-            fontSize: '20px'
+            fontSize: '12px'
+        }).setOrigin(0, 0);
+        this.blockText = this.add.text(0, 16, '', {
+            color: '#ffffff',
+            fontFamily: 'pragrom',
+            fontSize: '12px'
         }).setOrigin(0, 0);
 
         this.input.on('pointermove', (pointer: Phaser.Input.Pointer) => {
@@ -299,6 +306,12 @@ export abstract class GUIScene extends GBaseScene {
             switch(this.mouseMode) {
                 case 'none':
                     this.mouseText.text =`[${iX}, ${iY}]`;
+                    this.blockText.text = `[${iX / 64}, ${iY / 64}]`;
+                    this.blockText.setColor(
+                        (iX / 64 === Math.floor(iX / 64))
+                        && (iY / 64 === Math.floor(iY / 64))
+                        ? '#00ff00' : '#ff0000'
+                    );
                     break;
                 case 'create':
                     if (this.mouseRect) {
@@ -306,7 +319,15 @@ export abstract class GUIScene extends GBaseScene {
                         this.endPt.y = iY;
                         this.mouseRect.width = this.endPt.x - this.startPt.x;
                         this.mouseRect.height = this.endPt.y - this.startPt.y;
-                        this.mouseText.text = this.mouseText.text = `[${this.startPt.x}, ${this.startPt.y}] - [${this.endPt.x}, ${this.endPt.y}]  (${this.mouseRect.width} x ${this.mouseRect.height})`;
+                        this.mouseText.text = `[${this.startPt.x}, ${this.startPt.y}] - [${this.endPt.x}, ${this.endPt.y}]  (${this.mouseRect.width} x ${this.mouseRect.height})`;
+                        this.blockText.text = `[${this.startPt.x / 64}, ${this.startPt.y / 64}] - [${this.endPt.x}, ${this.endPt.y}]  (${this.mouseRect.width / 64} x ${this.mouseRect.height / 64}`;
+                        this.blockText.setColor(
+                            (this.startPt.x / 64 === Math.floor(this.startPt.x / 64))
+                            && (this.endPt.x / 64 === Math.floor(this.endPt.x / 64))
+                            && (this.mouseRect.width / 64 === Math.floor(this.mouseRect.width / 64))
+                            && (this.mouseRect.height / 64 === Math.floor(this.mouseRect.height / 64))
+                            ? '#00ff00' : '#ff0000'
+                        );
                     }
                     break;
                 case 'display':
@@ -317,7 +338,15 @@ export abstract class GUIScene extends GBaseScene {
                         this.mouseRect.y = iY;
                         this.endPt.x = iX + this.mouseRect.width;
                         this.endPt.y = iY + this.mouseRect.height;
-                        this.mouseText.text = this.mouseText.text = `[${this.startPt.x}, ${this.startPt.y}] - [${this.endPt.x}, ${this.endPt.y}]  (${this.mouseRect.width} x ${this.mouseRect.height})`;
+                        this.mouseText.text = `[${this.startPt.x}, ${this.startPt.y}] - [${this.endPt.x}, ${this.endPt.y}]  (${this.mouseRect.width} x ${this.mouseRect.height})`;
+                        this.blockText.text = `[${this.startPt.x / 64}, ${this.startPt.y / 64}] - [${this.endPt.x}, ${this.endPt.y}]  (${this.mouseRect.width / 64} x ${this.mouseRect.height / 64}`;
+                        this.blockText.setColor(
+                            (this.startPt.x / 64 === Math.floor(this.startPt.x / 64))
+                            && (this.endPt.x / 64 === Math.floor(this.endPt.x / 64))
+                            && (this.mouseRect.width / 64 === Math.floor(this.mouseRect.width / 64))
+                            && (this.mouseRect.height / 64 === Math.floor(this.mouseRect.height / 64))
+                            ? '#00ff00' : '#ff0000'
+                        );
                     }
                     break;
             }
@@ -342,8 +371,8 @@ export abstract class GUIScene extends GBaseScene {
             } else {
                 this.mouseMode = 'none';
                 if (this.mouseRect !== null) {
-                    console.log(`[${this.startPt.x}, ${this.startPt.y}] - [${this.endPt.x}, ${this.endPt.y}]  (${this.mouseRect.width} x ${this.mouseRect.height})`);
-                    this.mouseRect.setVisible(false);
+                    this.zones.push(this.mouseRect);
+                    this.mouseRect = null;
                 }
             }
 
@@ -357,6 +386,27 @@ export abstract class GUIScene extends GBaseScene {
                 this.endPt.y = iY;
                 this.mouseMode = 'display';
             }
+        });
+        this.input.keyboard?.on('keydown-A', (event: KeyboardEvent) => {
+            // Assuming `rectangles` is your array of Phaser.GameObjects.Rectangle
+            const rectanglesData = this.zones.map(rect => ({
+                x: rect.x,
+                y: rect.y,
+                width: rect.width,
+                height: rect.height
+            }));
+
+            // Convert the array to a JSON string
+            const jsonData = JSON.stringify(rectanglesData, null, 2); // `null, 2` for pretty-printing
+
+            // If you need to save it as a file in a browser environment, you can use this:
+            const blob = new Blob([jsonData], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = "zone_template_.json";
+            link.click();
+            URL.revokeObjectURL(url); // Clean up the URL after download
         });
     }
 }

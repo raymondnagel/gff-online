@@ -1,6 +1,6 @@
 import { GRegion } from "./regions/GRegion";
-import { CardDir, GPoint, GRoomWalls, GSceneryPlan } from "./types";
-import { GScenery } from "./objects/GScenery";
+import { CardDir, GPoint, GRect, GRoomWalls, GSceneryDef, GSceneryPlan } from "./types";
+import { SCENERY } from "./scenery";
 import { GAdventureContent } from "./scenes/GAdventureContent";
 import { GFF } from "./main";
 import { GTreasureChest } from "./objects/GTreasureChest";
@@ -223,10 +223,6 @@ export class GRoom {
         return null;
     }
 
-    public addScenery(key: string, x: number, y: number) {
-        this.plans.push({key, x, y});
-    }
-
     public isSafe(): boolean {
         if (this.x === 0 && this.y === 0) {
             return true;
@@ -249,7 +245,7 @@ export class GRoom {
 
         // Create scenery objects from plan:
         this.plans.forEach((plan) => {
-            GScenery.create(scene, plan.key, plan.x, plan.y);
+            SCENERY.create(scene, plan.key, plan.x, plan.y);
         });
 
         // Treasure chest test:
@@ -297,5 +293,76 @@ export class GRoom {
                     break;
             }
         }
+    }
+
+    public addScenery(key: string, x: number, y: number) {
+        this.plans.push({key, x, y});
+    }
+
+    // If chance is met, add min-max of scenery type
+    // (adds a flexible group based on 1 chance)
+    public planSceneryChanceForBatch(sceneryDef: GSceneryDef, pctChance: number, min: number, max: number, zones: GRect[], objectBounds: GRect[]) {
+        if (GRandom.randPct() < pctChance) {
+            this.planZonedScenery(sceneryDef, GRandom.randInt(min, max), zones, objectBounds);
+        }
+    }
+
+    // Add instance of scenery type, up to max, only if chance is met in succession times
+    // (assumes the same rarity for each instance)
+    public planSceneryChanceForEach(sceneryDef: GSceneryDef, pctChance: number, max: number, zones: GRect[], objectBounds: GRect[]) {
+        for (let n: number = 0; n < max; n++) {
+            if (GRandom.randPct() < pctChance) {
+                this.planZonedScenery(sceneryDef, 1, zones, objectBounds);
+            }
+        }
+    }
+
+    public planZonedScenery(sceneryDef: GSceneryDef, targetInstances: number, zones: GRect[], objectBounds: GRect[]) {
+        for (let i: number = 0; i < targetInstances; i++) {
+            const placement: GRect|null = this.fitScenery(zones, objectBounds, sceneryDef.body.width, sceneryDef.body.height);
+            if (!placement) {
+                return;
+            }
+            this.addScenery(sceneryDef.key, placement.x - sceneryDef.body.x, placement.y - sceneryDef.body.y);
+        }
+    }
+
+    public fitScenery(zones: GRect[], objects: GRect[], objectWidth: number, objectHeight: number): GRect|null {
+        // Helper to check if a rectangle overlaps with any existing objects
+        const isOverlapping = (rect: GRect): boolean => {
+            return objects.some(obj =>
+                rect.x < obj.x + obj.width &&
+                rect.x + rect.width > obj.x &&
+                rect.y < obj.y + obj.height &&
+                rect.y + rect.height > obj.y
+            );
+        };
+
+        // List to hold all potential placement areas
+        const potentialPlacements: GRect[] = [];
+
+        // Step 1: Generate potential placements within each zone
+        zones.forEach(zone => {
+            for (let x = zone.x; x <= zone.x + zone.width - objectWidth; x++) {
+                for (let y = zone.y; y <= zone.y + zone.height - objectHeight; y++) {
+                    const candidate: GRect = { x, y, width: objectWidth, height: objectHeight };
+
+                    // Step 2: Check if candidate overlaps with any placed objects
+                    if (!isOverlapping(candidate)) {
+                        potentialPlacements.push(candidate);
+                    }
+                }
+            }
+        });
+
+        // Step 3: If there are any potential placements, randomly select one
+        if (potentialPlacements.length > 0) {
+            const selectedPlacement: GRect = GRandom.randElement(potentialPlacements);
+            objects.push(selectedPlacement);
+            return selectedPlacement;
+        }
+
+        // No available placements were found
+        return null;
     }
 }

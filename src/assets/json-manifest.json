@@ -33,5 +33,8 @@
   "json/names/s_common_names.json",
   "json/names/s_european_names.json",
   "json/names/s_indian_names.json",
-  "json/names/s_latino_names.json"
+  "json/names/s_latino_names.json",
+  "json/scenery_zone_templates/zone_template_1.json",
+  "json/scenery_zone_templates/zone_template_2.json",
+  "json/scenery_zone_templates/zone_template_3.json"
 ]
