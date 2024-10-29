@@ -231,29 +231,33 @@ export class GRoom {
         }
     }
 
-    public load(scene: GAdventureContent) {
+    public load() {
         // Set background image from region:
         if (this.region !== undefined) {
-            scene.add.image(0, 0, this.region.getBgImageName()).setOrigin(0, 0);
+            GFF.AdventureContent.add.image(0, 0, this.region.getBgImageName()).setOrigin(0, 0);
         }
 
         // Create terrain fade images, if applicable, based on neighbors:
-        this.addFadeImageForNeighbor(scene, GDirection.Dir9.N, 'n');
-        this.addFadeImageForNeighbor(scene, GDirection.Dir9.E, 'e');
-        this.addFadeImageForNeighbor(scene, GDirection.Dir9.W, 'w');
-        this.addFadeImageForNeighbor(scene, GDirection.Dir9.S, 's');
+        this.addFadeImageForNeighbor(GDirection.Dir9.N, 'n');
+        this.addFadeImageForNeighbor(GDirection.Dir9.E, 'e');
+        this.addFadeImageForNeighbor(GDirection.Dir9.W, 'w');
+        this.addFadeImageForNeighbor(GDirection.Dir9.S, 's');
+
+        // Create a render-texture for any decorations:
+        const decorRenderer: Phaser.GameObjects.RenderTexture = GFF.AdventureContent.add.renderTexture(GFF.ROOM_X, GFF.ROOM_Y, GFF.ROOM_W, GFF.ROOM_H);
+        decorRenderer.setOrigin(0, 0);
 
         // Create scenery objects from plan:
         this.plans.forEach((plan) => {
-            SCENERY.create(scene, plan.key, plan.x, plan.y);
+            SCENERY.create(plan.key, plan.x, plan.y, decorRenderer);
         });
 
         // Treasure chest test:
-        new GTreasureChest(scene, 512, 384, GRandom.flipCoin());
+        new GTreasureChest(GFF.AdventureContent, 512, 384, GRandom.flipCoin());
 
         // Help text on first room:
         if (this.isStart()) {
-            scene.add.text(30, 30, GFF.TEST_INFO, {
+            GFF.AdventureContent.add.text(30, 30, GFF.TEST_INFO, {
                 color: '#000000',
                 fontSize: '16px',
                 fontFamily: 'time',
@@ -263,8 +267,8 @@ export class GRoom {
         }
     }
 
-    public unload(scene: GAdventureContent) {
-        let objs: Phaser.GameObjects.GameObject[] = scene.children.getChildren();
+    public unload() {
+        let objs: Phaser.GameObjects.GameObject[] = GFF.AdventureContent.children.getChildren();
 
         // Destroy everything in the scene not marked as 'permanent':
         for (let n = objs.length - 1; n >= 0; n--) {
@@ -276,20 +280,20 @@ export class GRoom {
         }
     }
 
-    private addFadeImageForNeighbor(scene: GAdventureContent, dir: CardDir, dirStr: string) {
+    private addFadeImageForNeighbor(dir: CardDir, dirStr: string) {
         const neighbor: GRoom|null = this.getNeighbor(dir);
         if (neighbor && neighbor.getRegion() !== this.getRegion()) {
             const fadeImageName: string = neighbor.getRegion().getBgImageName() + `_fade_` + dirStr;
             switch (dir) {
                 case GDirection.Dir9.N:
                 case GDirection.Dir9.W:
-                    scene.add.image(0, 0, fadeImageName).setOrigin(0, 0).setAlpha(TERRAIN_FADE_ALPHA);
+                    GFF.AdventureContent.add.image(0, 0, fadeImageName).setOrigin(0, 0).setAlpha(TERRAIN_FADE_ALPHA);
                     break;
                 case GDirection.Dir9.E:
-                    scene.add.image(GFF.ROOM_W, 0, fadeImageName).setOrigin(1, 0).setAlpha(TERRAIN_FADE_ALPHA);
+                    GFF.AdventureContent.add.image(GFF.ROOM_W, 0, fadeImageName).setOrigin(1, 0).setAlpha(TERRAIN_FADE_ALPHA);
                     break;
                 case GDirection.Dir9.S:
-                    scene.add.image(0, GFF.ROOM_H, fadeImageName).setOrigin(0, 1).setAlpha(TERRAIN_FADE_ALPHA);
+                    GFF.AdventureContent.add.image(0, GFF.ROOM_H, fadeImageName).setOrigin(0, 1).setAlpha(TERRAIN_FADE_ALPHA);
                     break;
             }
         }
@@ -301,25 +305,25 @@ export class GRoom {
 
     // If chance is met, add min-max of scenery type
     // (adds a flexible group based on 1 chance)
-    public planSceneryChanceForBatch(sceneryDef: GSceneryDef, pctChance: number, min: number, max: number, zones: GRect[], objectBounds: GRect[]) {
+    public planSceneryChanceForBatch(sceneryDef: GSceneryDef, pctChance: number, min: number, max: number, objectBounds: GRect[], zones?: GRect[]) {
         if (GRandom.randPct() < pctChance) {
-            this.planZonedScenery(sceneryDef, GRandom.randInt(min, max), zones, objectBounds);
+            this.planZonedScenery(sceneryDef, GRandom.randInt(min, max), objectBounds, zones);
         }
     }
 
     // Add instance of scenery type, up to max, only if chance is met in succession times
     // (assumes the same rarity for each instance)
-    public planSceneryChanceForEach(sceneryDef: GSceneryDef, pctChance: number, max: number, zones: GRect[], objectBounds: GRect[]) {
+    public planSceneryChanceForEach(sceneryDef: GSceneryDef, pctChance: number, max: number, objectBounds: GRect[], zones?: GRect[]) {
         for (let n: number = 0; n < max; n++) {
             if (GRandom.randPct() < pctChance) {
-                this.planZonedScenery(sceneryDef, 1, zones, objectBounds);
+                this.planZonedScenery(sceneryDef, 1, objectBounds, zones);
             }
         }
     }
 
-    public planZonedScenery(sceneryDef: GSceneryDef, targetInstances: number, zones: GRect[], objectBounds: GRect[]) {
+    public planZonedScenery(sceneryDef: GSceneryDef, targetInstances: number, objectBounds: GRect[], zones?: GRect[]) {
         for (let i: number = 0; i < targetInstances; i++) {
-            const placement: GRect|null = this.fitScenery(zones, objectBounds, sceneryDef.body.width, sceneryDef.body.height);
+            const placement: GRect|null = this.fitScenery(sceneryDef.body.width, sceneryDef.body.height, objectBounds, zones);
             if (!placement) {
                 return;
             }
@@ -327,7 +331,7 @@ export class GRoom {
         }
     }
 
-    public fitScenery(zones: GRect[], objects: GRect[], objectWidth: number, objectHeight: number): GRect|null {
+    public fitScenery(objectWidth: number, objectHeight: number, objects: GRect[], zones?: GRect[]): GRect|null {
         // Helper to check if a rectangle overlaps with any existing objects
         const isOverlapping = (rect: GRect): boolean => {
             return objects.some(obj =>
@@ -342,6 +346,15 @@ export class GRoom {
         const potentialPlacements: GRect[] = [];
 
         // Step 1: Generate potential placements within each zone
+        if (zones === undefined) {
+            zones = [ {x: GFF.ROOM_X, y: GFF.ROOM_Y, width: GFF.ROOM_W, height: GFF.ROOM_H} ];
+        }
+        // THIS CODE IS WHAT MAKES WORLD GENERATION REALLY SLOW, BECAUSE IT IS
+        // CALCULATING EVERY POTENTIAL PLACEMENT, PIXEL-BY-PIXEL, FOR EVERY SINGLE SCENERY
+        // OBJECT PLACED.
+        // TRY TO INSTEAD CALCULATE WHOLE AREAS IN WHICH THE OBJECT COULD POSSIBLY BE PLACED.
+        // THEN SELECT A RANDOM AREA, AND GET A RANDOM PLACEMENT WITHIN THAT AREA. THIS MAY
+        // SPEED THINGS UP DRAMATICALLY WITHOUT ANY FUNCTIONAL LOSS.
         zones.forEach(zone => {
             for (let x = zone.x; x <= zone.x + zone.width - objectWidth; x++) {
                 for (let y = zone.y; y <= zone.y + zone.height - objectHeight; y++) {

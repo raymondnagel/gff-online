@@ -25,6 +25,6 @@ export class GDesertRegion extends GRegion{
         const objectBounds: GRect[] = [];
 
         // Call methods to add any quantity of any desired scenery:
-        room.planZonedScenery(SCENERY.BOULDER_DEF, 5, zoneRects, objectBounds);
+        room.planZonedScenery(SCENERY.BOULDER_DEF, 5, objectBounds, zoneRects);
     }
 }

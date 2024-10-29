@@ -1,6 +1,5 @@
 import 'phaser';
 import { GArea } from '../areas/GArea';
-import { GWorldArea } from '../areas/GWorldArea';
 import { GDirection } from '../GDirection';
 import { GRect, GPerson, GSpirit, GKeyList } from '../types';
 import { GRandom } from '../GRandom';
@@ -20,7 +19,6 @@ import { PLAYER } from '../player';
 import { ENEMY } from '../enemy';
 import { GrayscalePostFxPipeline } from '../shaders/GrayscalePostFxPipeline';
 import { GInputMode } from '../GInputMode';
-import { PEOPLE } from '../people';
 import { AREA } from '../area';
 import { GTown } from '../GTown';
 
@@ -350,7 +348,7 @@ export class GAdventureContent extends GContentScene {
     public setCurrentRoom(roomX: number, roomY: number, area?: GArea) {
         // Unload the current room if there is one:
         let currentRoom: GRoom|null = this.getCurrentRoom();
-        currentRoom?.unload(this);
+        currentRoom?.unload();
 
         // If an area was specified, set it:
         if (area !== undefined && area !== this.currentArea) {
@@ -364,7 +362,7 @@ export class GAdventureContent extends GContentScene {
         // Load the new room:
         currentRoom = this.getCurrentRoom();
         currentRoom?.discover();
-        currentRoom?.load(this);
+        currentRoom?.load();
     }
 
     public getCurrentRoom(): GRoom|null {
