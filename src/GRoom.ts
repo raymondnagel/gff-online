@@ -10,6 +10,14 @@ import { GDirection } from "./GDirection";
 import { GTown } from "./GTown";
 import { GChurch } from "./GChurch";
 import { GStronghold } from "./GStronghold";
+import { GWallEast } from "./objects/obstacles/walls/GWallEast";
+import { GWallNorth } from "./objects/obstacles/walls/GWallNorth";
+import { GWallSouth } from "./objects/obstacles/walls/GWallSouth";
+import { GWallWest } from "./objects/obstacles/walls/GWallWest";
+import { GWallNE } from "./objects/obstacles/walls/GWallNE";
+import { GWallNW } from "./objects/obstacles/walls/GWallNW";
+import { GWallSE } from "./objects/obstacles/walls/GWallSE";
+import { GWallSW } from "./objects/obstacles/walls/GWallSW";
 
 const HORZ_WALL_SECTIONS: number = 16;
 const VERT_WALL_SECTIONS: number = 11;
@@ -247,6 +255,9 @@ export class GRoom {
         const decorRenderer: Phaser.GameObjects.RenderTexture = GFF.AdventureContent.add.renderTexture(GFF.ROOM_X, GFF.ROOM_Y, GFF.ROOM_W, GFF.ROOM_H);
         decorRenderer.setOrigin(0, 0);
 
+        // Create full wall objects:
+        this.addFullWallObjects();
+
         // Create scenery objects from plan:
         this.plans.forEach((plan) => {
             SCENERY.create(plan.key, plan.x, plan.y, decorRenderer);
@@ -299,83 +310,147 @@ export class GRoom {
         }
     }
 
+    private addFullWallObjects() {
+        const northWall: boolean = this.hasFullWall(GDirection.Dir9.N);
+        const westWall: boolean = this.hasFullWall(GDirection.Dir9.W);
+        const eastWall: boolean = this.hasFullWall(GDirection.Dir9.E);
+        const southWall: boolean = this.hasFullWall(GDirection.Dir9.S);
+        const wallSet: Record<GDirection.Dir9, GSceneryDef|null> = this.region.getWalls();
+
+        // Add cardinal walls:
+        if (northWall) {
+            new GWallNorth(wallSet[GDirection.Dir9.N] as GSceneryDef);
+        }
+        if (westWall) {
+            new GWallWest(wallSet[GDirection.Dir9.W] as GSceneryDef);
+        }
+        if (eastWall) {
+            new GWallEast(wallSet[GDirection.Dir9.E] as GSceneryDef);
+        }
+        if (southWall) {
+            new GWallSouth(wallSet[GDirection.Dir9.S] as GSceneryDef);
+        }
+
+        // Add any required corner pieces (for aesthetics):
+        if (northWall && westWall) {
+            new GWallNW(wallSet[GDirection.Dir9.NW] as GSceneryDef);
+        }
+        if (northWall && eastWall) {
+            new GWallNE(wallSet[GDirection.Dir9.NE] as GSceneryDef);
+        }
+        if (southWall && westWall) {
+            new GWallSW(wallSet[GDirection.Dir9.SW] as GSceneryDef);
+        }
+        if (southWall && eastWall) {
+            new GWallSE(wallSet[GDirection.Dir9.SE] as GSceneryDef);
+        }
+    }
+
     public addScenery(key: string, x: number, y: number) {
         this.plans.push({key, x, y});
     }
 
     // If chance is met, add min-max of scenery type
     // (adds a flexible group based on 1 chance)
-    public planSceneryChanceForBatch(sceneryDef: GSceneryDef, pctChance: number, min: number, max: number, objectBounds: GRect[], zones?: GRect[]) {
+    public planSceneryChanceForBatch(sceneryDef: GSceneryDef, pctChance: number, min: number, max: number, objects: GRect[], zones?: GRect[]) {
         if (GRandom.randPct() < pctChance) {
-            this.planZonedScenery(sceneryDef, GRandom.randInt(min, max), objectBounds, zones);
+            this.planZonedScenery(sceneryDef, GRandom.randInt(min, max), objects, zones);
         }
     }
 
     // Add instance of scenery type, up to max, only if chance is met in succession times
     // (assumes the same rarity for each instance)
-    public planSceneryChanceForEach(sceneryDef: GSceneryDef, pctChance: number, max: number, objectBounds: GRect[], zones?: GRect[]) {
+    public planSceneryChanceForEach(sceneryDef: GSceneryDef, pctChance: number, max: number, objects: GRect[], zones?: GRect[]) {
         for (let n: number = 0; n < max; n++) {
             if (GRandom.randPct() < pctChance) {
-                this.planZonedScenery(sceneryDef, 1, objectBounds, zones);
+                this.planZonedScenery(sceneryDef, 1, objects, zones);
             }
         }
     }
 
-    public planZonedScenery(sceneryDef: GSceneryDef, targetInstances: number, objectBounds: GRect[], zones?: GRect[]) {
+    public planZonedScenery(sceneryDef: GSceneryDef, targetInstances: number, objects: GRect[], zones?: GRect[]) {
         for (let i: number = 0; i < targetInstances; i++) {
-            const placement: GRect|null = this.fitScenery(sceneryDef.body.width, sceneryDef.body.height, objectBounds, zones);
+            const placement: GRect|null = this.fitScenery(sceneryDef.body.width, sceneryDef.body.height, objects, zones);
             if (!placement) {
                 return;
             }
+            objects.push(placement);
             this.addScenery(sceneryDef.key, placement.x - sceneryDef.body.x, placement.y - sceneryDef.body.y);
         }
     }
 
     public fitScenery(objectWidth: number, objectHeight: number, objects: GRect[], zones?: GRect[]): GRect|null {
-        // Helper to check if a rectangle overlaps with any existing objects
-        const isOverlapping = (rect: GRect): boolean => {
-            return objects.some(obj =>
-                rect.x < obj.x + obj.width &&
-                rect.x + rect.width > obj.x &&
-                rect.y < obj.y + obj.height &&
-                rect.y + rect.height > obj.y
-            );
-        };
-
-        // List to hold all potential placement areas
-        const potentialPlacements: GRect[] = [];
-
-        // Step 1: Generate potential placements within each zone
+        // Create a default zone if zones is undefined;
+        // The default zone allows space for walls around the perimeter.
         if (zones === undefined) {
-            zones = [ {x: GFF.ROOM_X, y: GFF.ROOM_Y, width: GFF.ROOM_W, height: GFF.ROOM_H} ];
+            zones = [ {x: GFF.ROOM_AREA_LEFT, y: GFF.ROOM_AREA_TOP, width: GFF.ROOM_AREA_WIDTH, height: GFF.ROOM_AREA_HEIGHT} ];
         }
-        // THIS CODE IS WHAT MAKES WORLD GENERATION REALLY SLOW, BECAUSE IT IS
-        // CALCULATING EVERY POTENTIAL PLACEMENT, PIXEL-BY-PIXEL, FOR EVERY SINGLE SCENERY
-        // OBJECT PLACED.
-        // TRY TO INSTEAD CALCULATE WHOLE AREAS IN WHICH THE OBJECT COULD POSSIBLY BE PLACED.
-        // THEN SELECT A RANDOM AREA, AND GET A RANDOM PLACEMENT WITHIN THAT AREA. THIS MAY
-        // SPEED THINGS UP DRAMATICALLY WITHOUT ANY FUNCTIONAL LOSS.
-        zones.forEach(zone => {
-            for (let x = zone.x; x <= zone.x + zone.width - objectWidth; x++) {
-                for (let y = zone.y; y <= zone.y + zone.height - objectHeight; y++) {
-                    const candidate: GRect = { x, y, width: objectWidth, height: objectHeight };
 
-                    // Step 2: Check if candidate overlaps with any placed objects
-                    if (!isOverlapping(candidate)) {
-                        potentialPlacements.push(candidate);
+        // Simple placement: try random X,Y:
+        let placement: GRect|null = this.simpleFit(objectWidth, objectHeight, 10, objects, zones);
+
+        // Sample placement: sample all areas and choose a random acceptable one:
+        // if (!placement) {
+        //     placement = this.sampleFit(objectWidth, objectHeight, 5, objects, zones);
+        // }
+
+        // Will return null if no placement was available
+        return placement;
+    }
+
+    private sampleFit(objectWidth: number, objectHeight: number, inc: number, objects: GRect[], zones: GRect[]): GRect|null {
+        let x: number;
+        let y: number;
+        let placement: GRect;
+
+        let z: number = GRandom.randInt(0, zones.length - 1);
+        const start: number = z;
+        do {
+            for (y = 0; y < zones[z].height - objectHeight; y += inc) {
+                for (x = 0; x < zones[z].width - objectWidth; x += inc) {
+                    placement = {x, y, width: objectWidth, height: objectHeight};
+                    if (!this.intersectsAny(placement, objects)) {
+                        return placement;
                     }
                 }
             }
-        });
+            z++;
+            if (z >= zones.length) {
+                z = 0;
+            }
+        } while (z !== start)
 
-        // Step 3: If there are any potential placements, randomly select one
-        if (potentialPlacements.length > 0) {
-            const selectedPlacement: GRect = GRandom.randElement(potentialPlacements);
-            objects.push(selectedPlacement);
-            return selectedPlacement;
-        }
-
-        // No available placements were found
         return null;
+    }
+
+    private simpleFit(objectWidth: number, objectHeight: number, maxTries: number, objects: GRect[], zones: GRect[]): GRect|null {
+        let zone: GRect;
+        let x: number;
+        let y: number;
+        let placement: GRect;
+        for (let t: number = 0; t < maxTries; t++) {
+            zone = GRandom.randElement(zones) as GRect;
+            x = GRandom.randInt(zone.x, zone.x + zone.width - objectWidth);
+            y = GRandom.randInt(zone.y, zone.y + zone.height - objectHeight);
+            placement = {x, y, width: objectWidth, height: objectHeight};
+            if (!this.intersectsAny(placement, objects)) {
+                return placement;
+            }
+        }
+        return null;
+    }
+
+    private intersectsAny(object: GRect, existingObjects: GRect[]): boolean {
+        for (let otherObject of existingObjects) {
+            if (!(
+                    object.x + object.width <= otherObject.x ||
+                    object.x >= otherObject.x + otherObject.width ||
+                    object.y + object.height <= otherObject.y ||
+                    object.y >= otherObject.y + otherObject.height
+            )) {
+                return true;
+            }
+        }
+        return false;
     }
 }

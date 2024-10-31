@@ -3,6 +3,7 @@ import { GRandom } from "../GRandom";
 import { GFF } from "../main";
 import { GRect, GSceneryDef } from "../types";
 import { SCENERY } from "../scenery";
+import { GDirection } from "../GDirection";
 
 /**
  * GRegion represents part of a GArea that should
@@ -73,7 +74,7 @@ export abstract class GRegion {
 
     private static roomCount: number = 0;
     public furnishRoom(room: GRoom) {
-        console.log(`Furnishing Room #${++GRegion.roomCount}`);
+        // console.log(`Furnishing Room #${++GRegion.roomCount}`);
 
         // Don't furnish start room - we want it empty because we're displaying help info there
         if (room.isStart()) {
@@ -84,4 +85,6 @@ export abstract class GRegion {
     }
 
     protected abstract _furnishRoom(room: GRoom): void;
+
+    public abstract getWalls(): Record<GDirection.Dir9, GSceneryDef|null>;
 }

@@ -1,11 +1,11 @@
 import { SCENERY } from "../../scenery";
 import { GObstacleStatic } from "./GObstacleStatic";
 
-export class GBoulder extends GObstacleStatic{
+export class GDesertBoulder extends GObstacleStatic{
 
     constructor(x: number, y: number) {
         super(
-            SCENERY.BOULDER_DEF,
+            SCENERY.DESERT_BOULDER_DEF,
             x,
             y
         );

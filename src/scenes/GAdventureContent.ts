@@ -1,7 +1,7 @@
 import 'phaser';
 import { GArea } from '../areas/GArea';
 import { GDirection } from '../GDirection';
-import { GRect, GPerson, GSpirit, GKeyList } from '../types';
+import { GRect, GPerson, GSpirit, GKeyList, BoundedGameObject, GPoint } from '../types';
 import { GRandom } from '../GRandom';
 import { GPlayerSprite } from '../objects/chars/GPlayerSprite';
 import { GPersonSprite } from '../objects/chars/GPersonSprite';
@@ -21,6 +21,9 @@ import { GrayscalePostFxPipeline } from '../shaders/GrayscalePostFxPipeline';
 import { GInputMode } from '../GInputMode';
 import { AREA } from '../area';
 import { GTown } from '../GTown';
+import { PEOPLE } from '../people';
+import { GChurch } from '../GChurch';
+import { GSpinesRocks } from '../objects/obstacles/GSpinesRocks';
 
 const MOUSE_UI_BUTTON: string = 'MOUSE_UI_BUTTON';
 
@@ -29,6 +32,8 @@ const INPUT_CONVERSATION: GInputMode = new GInputMode('adv.conversation');
 const INPUT_POPUP: GInputMode = new GInputMode('adv.popup');
 const INPUT_PAUSE: GInputMode = new GInputMode('adv.paused');
 const INPUT_DISABLED: GInputMode = new GInputMode('adv.disabled');
+
+const NON_ESS_TRANS_SPAWN_TRIES: number = 20;
 
 export class GAdventureContent extends GContentScene {
 
@@ -379,16 +384,16 @@ export class GAdventureContent extends GContentScene {
         this.impSpawnTimeEvent?.remove();
         this.fadeOut(500, undefined, () => {
             this.setCurrentRoom(roomX, roomY, area);
-            this.addRandomPeople();
+            this.spawnPeopleForRoom();
             if (!this.getCurrentRoom()?.isSafe()) {
                 this.impSpawnTimeEvent = this.time.delayedCall(GRandom.randInt(1000, 5000), () => {
-                    this.addRandomImps(1);
+                    this.addRandomImp();
                     if (GRandom.flipCoin()) {
                         this.impSpawnTimeEvent = this.time.delayedCall(GRandom.randInt(1000, 5000), () => {
-                            this.addRandomImps(1);
+                            this.addRandomImp();
                             if (GRandom.flipCoin()) {
                                 this.impSpawnTimeEvent = this.time.delayedCall(GRandom.randInt(1000, 5000), () => {
-                                    this.addRandomImps(1);
+                                    this.addRandomImp();
                                 });
                             }
                         });
@@ -401,22 +406,107 @@ export class GAdventureContent extends GContentScene {
         });
     }
 
-    public addRandomPeople() {
-        const room: GRoom = this.getCurrentRoom() as GRoom;
-        // Don't add random people if this isn't the World area, or if there is a church here:
-        if (this.getCurrentArea() !== AREA.WORLD_AREA || room.getChurch()) {
-            return;
+    public getSpawnPointForTransient(transient: BoundedGameObject, body: GRect, essential: boolean): GPoint|null {
+        let t: number = 0;
+        // If it is essential to spawn the transient, keep trying forever; we MUST do it!
+        while(essential || t < NON_ESS_TRANS_SPAWN_TRIES) {
+            const top: number = GFF.ROOM_AREA_TOP - body.y;
+            const left: number = GFF.ROOM_AREA_LEFT - body.x;
+            const right: number = GFF.ROOM_AREA_RIGHT - (transient.width - (body.x + body.width));
+            const bottom: number = GFF.ROOM_AREA_BOTTOM - (transient.height - (body.y + body.height));
+            const tX = GRandom.randInt(left, right);
+            const tY = GRandom.randInt(top, bottom);
+            if (this.spaceClearForTransient(body, tX, tY)) {
+                return {x: tX - body.x, y: tY - body.y};
+            }
+            t++;
         }
+        return null;
+    }
 
+    public spaceClearForTransient(transBody: GRect, x: number, y: number): boolean {
+        return (
+            !this.intersectsWithGroup(transBody, x, y, this.obstaclesGroup)
+            && !this.intersectsWithGroup(transBody, x, y, this.personsGroup)
+            && !this.intersectsWithGroup(transBody, x, y, this.specialGroup)
+        );
+    }
+
+    public intersectsWithGroup(body: GRect, x: number, y: number, group: Phaser.GameObjects.Group) {
+        for (let otherObject of group.getChildren()) {
+            if (otherObject.body) {
+                const otherBody: GRect = otherObject.body as Phaser.Physics.Arcade.Body;
+                if (!(
+                    x + body.width <= otherBody.x ||
+                    x >= otherBody.x + otherBody.width ||
+                    y + body.height <= otherBody.y ||
+                    y >= otherBody.y + otherBody.height
+                )) {
+                    return true;
+                }
+            }
+        }
+    }
+
+    public spawnPerson(person: GPerson): boolean {
+        const sprite: GPersonSprite = new GPersonSprite(this, person, 0, 0);
+        sprite.setVisible(false);
+        const body: GRect = {x: GFF.CHAR_BODY_X_OFF, y: GFF.CHAR_BODY_Y_OFF, width: GFF.CHAR_BODY_W, height: GFF.CHAR_BODY_H};
+        const spawnPoint: GPoint|null = this.getSpawnPointForTransient(sprite, body, false);
+        if (!spawnPoint) {
+            sprite.destroy();
+            return false;
+        } else {
+            sprite.setVisible(true);
+            sprite.setPosition(spawnPoint.x, spawnPoint.y);
+            this.addPerson(sprite);
+            return true;
+        }
+    }
+
+    public spawnImp(imp: GSpirit): boolean {
+        const sprite: GImpSprite = new GImpSprite(this, imp, 0, 0);
+        sprite.setVisible(false);
+        const body: GRect = {x: GFF.CHAR_BODY_X_OFF, y: GFF.CHAR_BODY_Y_OFF, width: GFF.CHAR_BODY_W, height: GFF.CHAR_BODY_H};
+        const spawnPoint: GPoint|null = this.getSpawnPointForTransient(sprite, body, false);
+        if (!spawnPoint) {
+            sprite.destroy();
+            return false;
+        } else {
+            sprite.setVisible(true);
+            sprite.setPosition(spawnPoint.x, spawnPoint.y);
+            this.addImp(sprite);
+            return true;
+        }
+    }
+
+    public spawnPeopleForRoom() {
+        const room: GRoom = this.getCurrentRoom() as GRoom;
+        if (room.getChurch()) {
+            // Spawn all people of the church
+            this.spawnChurchPeople(room);
+        } else if (room.getArea() === AREA.WORLD_AREA) {
+            // Add random people from nearby towns
+            this.spawnNeighbors(room);
+        }
+    }
+
+    public spawnChurchPeople(room: GRoom) {
+        const church: GChurch = room.getChurch() as GChurch;
+        const people: GPerson[] = church.getPeople();
+        for (let member of people) {
+            this.spawnPerson(member);
+        }
+    }
+
+    public spawnNeighbors(room: GRoom) {
         // 30% chance to add each citizen if we are in a town:
         const town: GTown|null = room.getTown();
         if (town) {
             const citizens: GPerson[] = town.getPeople();
             for (let p of citizens) {
                 if (GRandom.randPct() <= .3) {
-                    const nX = GRandom.randInt(GFF.LEFT_BOUND + GFF.TILE_W - GFF.CHAR_BODY_X_OFF, GFF.RIGHT_BOUND - GFF.CHAR_W);
-                    const nY = GRandom.randInt(GFF.TOP_BOUND + GFF.TILE_H - GFF.CHAR_BODY_Y_OFF, GFF.BOTTOM_BOUND - GFF.CHAR_H);
-                    this.addPerson(new GPersonSprite(this, p, nX, nY));
+                    this.spawnPerson(p);
                 }
             }
             return;
@@ -439,27 +529,25 @@ export class GAdventureContent extends GContentScene {
             const citizens: GPerson[] = t.getPeople();
             for (let p of citizens) {
                 if (GRandom.randPct() <= .1) {
-                    const nX = GRandom.randInt(GFF.LEFT_BOUND + GFF.TILE_W - GFF.CHAR_BODY_X_OFF, GFF.RIGHT_BOUND - GFF.CHAR_W);
-                    const nY = GRandom.randInt(GFF.TOP_BOUND + GFF.TILE_H - GFF.CHAR_BODY_Y_OFF, GFF.BOTTOM_BOUND - GFF.CHAR_H);
-                    this.addPerson(new GPersonSprite(this, p, nX, nY));
+                    this.spawnPerson(p);
                 }
             }
         }
     }
 
-    public addRandomImps(impsToAdd: number) {
-        let addedImps: string[] = [];
+    public addRandomImp() {
         let imp: GSpirit;
-        for (let i = 0; i < impsToAdd; i++) {
-            let nX = GRandom.randInt(GFF.LEFT_BOUND + GFF.TILE_W - GFF.CHAR_BODY_X_OFF, GFF.RIGHT_BOUND - GFF.CHAR_W);
-            let nY = GRandom.randInt(GFF.TOP_BOUND + GFF.TILE_H - GFF.CHAR_BODY_Y_OFF, GFF.BOTTOM_BOUND - GFF.CHAR_H);
-            do {
-                imp = GRandom.randElement(ENEMY.getImps());
-            } while (addedImps.includes(imp.name));
-            // name is unique for imps:
-            addedImps.push(imp.name);
-            this.addImp(new GImpSprite(this, imp, nX, nY));
-        }
+        let exists: boolean;
+        do {
+            exists = false;
+            imp = GRandom.randElement(ENEMY.getImps());
+            for (let i of this.impsGroup.getChildren() as GImpSprite[]) {
+                if (i.getSpirit() === imp) {
+                    exists = true;
+                }
+            }
+        } while (exists);
+        this.spawnImp(imp);
     }
 
     public addObstacle(obstacleObject: GObstacleStatic|GObstacleSprite) {

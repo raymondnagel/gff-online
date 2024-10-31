@@ -1,9 +1,9 @@
 import { GRoom } from "../GRoom";
 import { SCENERY } from "../scenery";
 import { GRect } from "../types";
-import { GRegion } from "./GRegion";
+import { GOutsideRegion } from "./GOutsideRegion";
 
-export class GMountRegion extends GRegion{
+export class GMountRegion extends GOutsideRegion{
 
     constructor(){
         super(

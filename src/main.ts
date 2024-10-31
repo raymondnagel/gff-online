@@ -84,6 +84,13 @@ export namespace GFF {
     export const TOP_BOUND: number  = ROOM_Y + ROOM_BORDER;
     export const BOTTOM_BOUND: number  = (ROOM_Y + ROOM_H) - (ROOM_BORDER);
 
+    export const ROOM_AREA_TOP: number = TOP_BOUND + TILE_H;
+    export const ROOM_AREA_LEFT: number = LEFT_BOUND + TILE_W;
+    export const ROOM_AREA_RIGHT: number = RIGHT_BOUND - TILE_W;
+    export const ROOM_AREA_BOTTOM: number = BOTTOM_BOUND - TILE_H;
+    export const ROOM_AREA_WIDTH: number = ROOM_AREA_RIGHT - ROOM_AREA_LEFT;
+    export const ROOM_AREA_HEIGHT: number = ROOM_AREA_BOTTOM - ROOM_AREA_TOP;
+
     export const CHAR_W: number = 100;
     export const CHAR_H: number = 100;
 

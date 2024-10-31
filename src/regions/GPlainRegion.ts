@@ -2,9 +2,9 @@ import { GRandom } from "../GRandom";
 import { GRoom } from "../GRoom";
 import { SCENERY } from "../scenery";
 import { GRect } from "../types";
-import { GRegion } from "./GRegion";
+import { GOutsideRegion } from "./GOutsideRegion";
 
-export class GPlainRegion extends GRegion{
+export class GPlainRegion extends GOutsideRegion{
 
     constructor(){
         super(
@@ -27,13 +27,37 @@ export class GPlainRegion extends GRegion{
 
         // Call methods to add any quantity of any desired scenery:
 
-        // Pedestal: 50% chance to add 10-20;
-        room.planSceneryChanceForBatch(SCENERY.SHRINE_PEDESTAL_DEF, .5, 10, 20, objectBounds);
+        // Grass Tuft: 100% chance to add 5-10;
+        room.planSceneryChanceForBatch(SCENERY.GRASS_TUFT_DEF, 1, 5, 10, objectBounds);
+        // Field Grass: 100% chance to add 5-10;
+        room.planSceneryChanceForBatch(SCENERY.FIELD_GRASS_DEF, 1, 5, 10, objectBounds);
+
+        // Flower Patch 1: 30% chance to add 1-5;
+        room.planSceneryChanceForBatch(SCENERY.FLOWER_PATCH_1_DEF, .3, 1, 5, objectBounds);
+        // Flower Patch 2: 30% chance to add 1-5;
+        room.planSceneryChanceForBatch(SCENERY.FLOWER_PATCH_2_DEF, .3, 1, 5, objectBounds);
+        // Big Flower: 30% chance to add 1-3;
+        room.planSceneryChanceForBatch(SCENERY.BIG_FLOWER_DEF, .3, 1, 5, objectBounds);
+
         // Boulders: 20% chance to add 1-4
         room.planSceneryChanceForBatch(SCENERY.BOULDER_DEF, .2, 1, 4, objectBounds, zoneRects);
-        // Oak Trees: 20% chance to add 1-2
-        room.planSceneryChanceForBatch(SCENERY.OAK_TREE_DEF, .2, 1, 2, objectBounds, zoneRects);
-        // Pine Trees: 20% chance to add 1-2
-        room.planSceneryChanceForBatch(SCENERY.PINE_TREE_DEF, .2, 1, 2, objectBounds, zoneRects);
+        // Tree Stumps: 20% chance to add 1-4
+        room.planSceneryChanceForBatch(SCENERY.TREE_STUMP_DEF, .2, 1, 4, objectBounds, zoneRects);
+
+        // Occasionally add a tree or two:
+        switch (GRandom.randInt(1, 3)) {
+            case 1:
+                // Oak Trees: 20% chance to add 1-2
+                room.planSceneryChanceForBatch(SCENERY.OAK_TREE_DEF, .2, 1, 2, objectBounds, zoneRects);
+                break;
+            case 2:
+                // Pine Trees: 20% chance to add 1-2
+                room.planSceneryChanceForBatch(SCENERY.PINE_TREE_DEF, .2, 1, 2, objectBounds, zoneRects);
+                break;
+            case 3:
+                // Wonky Trees: 20% chance to add 1-2
+                room.planSceneryChanceForBatch(SCENERY.WONKY_TREE_DEF, .2, 1, 2, objectBounds, zoneRects);
+                break;
+        }
     }
 }
