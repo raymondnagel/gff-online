@@ -1,5 +1,4 @@
-import { GDirection } from "../GDirection";
-import { GGoal } from "../GGoal";
+import { GGoal } from "./GGoal";
 import { GFF } from "../main";
 import { GCharSprite } from "../objects/chars/GCharSprite";
 import { GImpSprite } from "../objects/chars/GImpSprite";

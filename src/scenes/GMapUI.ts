@@ -1,10 +1,8 @@
 import { GArea } from "../areas/GArea";
-import { GDirection } from "../GDirection";
 import { GInputMode } from "../GInputMode";
-import { GRandom } from "../GRandom";
 import { GRoom } from "../GRoom";
 import { GFF } from "../main";
-import { CardDir, GPoint } from "../types";
+import { Dir9, GPoint } from "../types";
 import { GUIScene } from "./GUIScene";
 
 const INPUT_DEFAULT: GInputMode = new GInputMode('map.default');
@@ -52,7 +50,7 @@ export class GMapUI extends GUIScene {
             fontSize: '42px'
         }).setOrigin(.5, 0);
 
-        // Discover all rooms (remove once you are confident in the map generation):
+        // Discover all rooms (enable to reveal entire map):
         this.area.getRoomsByFloor(0).forEach(r => {
             r.discover();
         });
@@ -147,8 +145,8 @@ export class GMapUI extends GUIScene {
         wallGraphics.lineStyle(1, 0x493726, .7);
 
         // Draw north wall:
-        if (room.hasAnyWall(GDirection.Dir9.N)) {
-            sections = room.getWallSections(GDirection.Dir9.N);
+        if (room.hasAnyWall(Dir9.N)) {
+            sections = room.getWallSections(Dir9.N);
             for (let s: number = 0; s < sections.length; s++) {
                 if (sections[s]) {
                     wallGraphics.lineBetween(wX + (s * WALL_SECTION_LENGTH), wY, wX + WALL_SECTION_LENGTH + (s * WALL_SECTION_LENGTH), wY);
@@ -156,9 +154,9 @@ export class GMapUI extends GUIScene {
             }
         }
         // Draw west wall:
-        if (room.hasAnyWall(GDirection.Dir9.W)) {
+        if (room.hasAnyWall(Dir9.W)) {
             wX = cellX + 1;
-            sections = room.getWallSections(GDirection.Dir9.W);
+            sections = room.getWallSections(Dir9.W);
             for (let s: number = 0; s < sections.length; s++) {
                 if (sections[s]) {
                     wallGraphics.lineBetween(wX, wY + (s * WALL_SECTION_LENGTH), wX, wY + WALL_SECTION_LENGTH + (s * WALL_SECTION_LENGTH));
@@ -166,9 +164,9 @@ export class GMapUI extends GUIScene {
             }
         }
         // Draw east wall:
-        if (room.hasAnyWall(GDirection.Dir9.E)) {
+        if (room.hasAnyWall(Dir9.E)) {
             wX = cellX + CELL_WIDTH;
-            sections = room.getWallSections(GDirection.Dir9.E);
+            sections = room.getWallSections(Dir9.E);
             for (let s: number = 0; s < sections.length; s++) {
                 if (sections[s]) {
                     wallGraphics.lineBetween(wX, wY + (s * WALL_SECTION_LENGTH), wX, wY + WALL_SECTION_LENGTH + (s * WALL_SECTION_LENGTH));
@@ -176,10 +174,10 @@ export class GMapUI extends GUIScene {
             }
         }
         // Draw south wall:
-        if (room.hasAnyWall(GDirection.Dir9.S)) {
+        if (room.hasAnyWall(Dir9.S)) {
             wX = cellX;
             wY = cellY + CELL_HEIGHT - 1;
-            sections = room.getWallSections(GDirection.Dir9.S);
+            sections = room.getWallSections(Dir9.S);
             for (let s: number = 0; s < sections.length; s++) {
                 if (sections[s]) {
                     wallGraphics.lineBetween(wX + (s * WALL_SECTION_LENGTH), wY, wX + WALL_SECTION_LENGTH + (s * WALL_SECTION_LENGTH), wY);
@@ -189,16 +187,16 @@ export class GMapUI extends GUIScene {
     }
 
     private drawMapEdgesForRoom(room: GRoom, cellX: number, cellY: number, mapTexture: Phaser.GameObjects.RenderTexture) {
-        if (!room.hasNeighbor(GDirection.Dir9.N) || !(room.getNeighbor(GDirection.Dir9.N) as GRoom).isDiscovered()) {
+        if (!room.hasNeighbor(Dir9.N) || !(room.getNeighbor(Dir9.N) as GRoom).isDiscovered()) {
             mapTexture.draw('map_edge_n', cellX, cellY);
         }
-        if (!room.hasNeighbor(GDirection.Dir9.W) || !(room.getNeighbor(GDirection.Dir9.W) as GRoom).isDiscovered()) {
+        if (!room.hasNeighbor(Dir9.W) || !(room.getNeighbor(Dir9.W) as GRoom).isDiscovered()) {
             mapTexture.draw('map_edge_w', cellX, cellY);
         }
-        if (!room.hasNeighbor(GDirection.Dir9.E) || !(room.getNeighbor(GDirection.Dir9.E) as GRoom).isDiscovered()) {
+        if (!room.hasNeighbor(Dir9.E) || !(room.getNeighbor(Dir9.E) as GRoom).isDiscovered()) {
             mapTexture.draw('map_edge_e', cellX, cellY);
         }
-        if (!room.hasNeighbor(GDirection.Dir9.S) || !(room.getNeighbor(GDirection.Dir9.S) as GRoom).isDiscovered()) {
+        if (!room.hasNeighbor(Dir9.S) || !(room.getNeighbor(Dir9.S) as GRoom).isDiscovered()) {
             mapTexture.draw('map_edge_s', cellX, cellY);
         }
     }

@@ -3,11 +3,11 @@ import { GCharSprite } from './GCharSprite';
 import { GRandom } from '../../GRandom';
 import { GFF } from '../../main';
 import { GGender, GPerson } from '../../types';
-import { GGoal } from '../../GGoal';
 import { GWalkToPointGoal } from '../../goals/GWalkToPointGoal';
 import { GRestGoal } from '../../goals/GRestGoal';
 import { GAdventureContent } from '../../scenes/GAdventureContent';
 import { PEOPLE } from '../../people';
+import { GGoal } from '../../goals/GGoal';
 
 const GENDER     = ['m', 'f'] as const;
 const SKIN_COLOR = ['w', 'y', 't', 'b'] as const;

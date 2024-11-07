@@ -19,10 +19,6 @@ import { GBarrelCactus } from './objects/obstacles/GBarrelCactus';
 import { GRockColumn } from './objects/obstacles/GRockColumn';
 import { GDesertBoulder } from './objects/obstacles/GDesertBoulder';
 import { GWonkyTree } from './objects/obstacles/GWonkyTree';
-import { GWallNorth } from './objects/obstacles/walls/GWallNorth';
-import { GWallSouth } from './objects/obstacles/walls/GWallSouth';
-import { GWallEast } from './objects/obstacles/walls/GWallEast';
-import { GWallWest } from './objects/obstacles/walls/GWallWest';
 
 export namespace SCENERY {
 const WALL_N_BODY: GRect = {x: 0, y: 0, width: 1024, height: 64};
@@ -56,11 +52,11 @@ const WALL_W_BODY: GRect = {x: 0, y: 0, width: 64, height: 704};
     export const OAK_TREE_DEF: GSceneryDef = { key: 'oak_tree', body: {x: 76, y: 200, width: 116, height: 36} };
     export const PINE_TREE_DEF: GSceneryDef = { key: 'pine_tree', body: {x: 70, y: 264, width: 78, height: 36} };
     export const PADDLE_CACTUS_DEF: GSceneryDef = { key: 'paddle_cactus', body: {x: 8, y: 81, width: 102, height: 30} };
-    export const ROCK_COLUMN_DEF: GSceneryDef = { key: 'rock_column', body: {x: 0, y: 240, width: 160, height: 40} };
+    export const ROCK_COLUMN_DEF: GSceneryDef = { key: 'rock_column', body: {x: 0, y: 240, width: 159, height: 40} };
     export const SPINES_ROCKS_DEF: GSceneryDef = { key: 'spines_rocks', body: {x: 0, y: 38, width: 70, height: 14} };
     export const TALL_CACTUS_DEF: GSceneryDef = { key: 'tall_cactus', body: {x: 46, y: 195, width: 32, height: 24} };
     export const TREE_STUMP_DEF: GSceneryDef = { key: 'tree_stump', body: {x: 0, y: 20, width: 115, height: 36} };
-    export const WONKY_TREE_DEF: GSceneryDef = { key: 'wonky_tree', body: {x: 54, y: 130, width: 65, height: 35} };
+    export const WONKY_TREE_DEF: GSceneryDef = { key: 'wonky_tree', body: {x: 54, y: 130, width: 64, height: 30} };
     // Foreground Decorations:
     export const BIG_FLOWER_DEF: GSceneryDef = { key: 'big_flower', body: {x: 0, y: 0, width: 20, height: 44} };
     export const FIELD_GRASS_DEF: GSceneryDef = { key: 'field_grass', body: {x: 0, y: 0, width: 64, height: 46} };

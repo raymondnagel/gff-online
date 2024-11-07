@@ -1,8 +1,5 @@
-import { GDirection } from "../GDirection";
-import { GGoal } from "../GGoal";
+import { GGoal } from "./GGoal";
 import { GCharSprite } from "../objects/chars/GCharSprite";
-
-const CORRECTION_TOLERANCE = 5;
 
 export class GWalkToPointGoal extends GGoal {
 

@@ -17,7 +17,7 @@ export class GNumberEntry extends GTextEntryControl {
         this.add(this.boxImage);
         this.numberText = scene.add.text(0, 0, '', {
             color: '#000000',
-            fontFamily: 'griffo',
+            fontFamily: 'gemerald',
             fontSize: '28px',
         }).setOrigin(.5, .5).setLetterSpacing(2);
         this.add(this.numberText);

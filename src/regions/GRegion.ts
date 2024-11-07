@@ -1,7 +1,7 @@
 import { GRoom } from "../GRoom";
 import { GRandom } from "../GRandom";
 import { GFF } from "../main";
-import { GRect, GSceneryDef } from "../types";
+import { Dir9, GRect, GSceneryDef } from "../types";
 import { SCENERY } from "../scenery";
 import { GDirection } from "../GDirection";
 
@@ -86,5 +86,5 @@ export abstract class GRegion {
 
     protected abstract _furnishRoom(room: GRoom): void;
 
-    public abstract getWalls(): Record<GDirection.Dir9, GSceneryDef|null>;
+    public abstract getWalls(): Record<Dir9, GSceneryDef|null>;
 }

@@ -34,6 +34,7 @@ export interface BoundedGameObject extends Phaser.GameObjects.GameObject {
     y: number;
     width: number;
     height: number;
+    setPosition: (x: number, y: number) => {};
 }
 
 // Represents a scripture reference and text:
@@ -83,7 +84,20 @@ export interface GSpirit {
     introduced: boolean;
 }
 
-export type CardDir = GDirection.Dir9.N|GDirection.Dir9.E|GDirection.Dir9.S|GDirection.Dir9.W;
+// Represents a compass direction, with the possibility of NONE
+export enum Dir9 {
+    NONE = 0,
+    N    = 1,
+    NE   = 2,
+    E    = 3,
+    SE   = 4,
+    S    = 5,
+    SW   = 6,
+    W    = 7,
+    NW   = 8
+};
+
+export type CardDir = Dir9.N|Dir9.E|Dir9.S|Dir9.W;
 
 // Represents a simple X,Y coordinate point
 export interface GPoint {

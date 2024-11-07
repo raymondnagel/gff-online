@@ -43,6 +43,10 @@ export namespace GRandom {
         return randInt(0, 1) === 1;
     }
 
+    export function distortInt(value: number, range: number) {
+        return randInt(value - range, value + range);
+    }
+
     export function shuffle(array: any[]) {
         let currentIndex = array.length;
 

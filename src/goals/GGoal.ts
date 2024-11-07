@@ -1,5 +1,6 @@
-import { GDirection } from "./GDirection";
-import { GCharSprite } from "./objects/chars/GCharSprite";
+import { GDirection } from "../GDirection";
+import { GCharSprite } from "../objects/chars/GCharSprite";
+import { Dir9 } from "../types";
 
 const DIAGONAL_THRESHOLD: number = 1.5;
 const MIN_TIME_PER_DIR: number = 500;
@@ -61,7 +62,7 @@ export abstract class GGoal {
             yInc = -1;
         }
 
-        let direction: GDirection.Dir9 = GDirection.getDirectionForIncs(xInc, yInc);
+        let direction: Dir9 = GDirection.getDirectionForIncs(xInc, yInc);
         this.char.walkDirection(direction);
     }
 
@@ -108,7 +109,7 @@ export abstract class GGoal {
             }
         }
 
-        let direction: GDirection.Dir9 = GDirection.getDirectionForIncs(xInc, yInc);
+        let direction: Dir9 = GDirection.getDirectionForIncs(xInc, yInc);
         this.char.walkDirection(direction);
     }
 
@@ -133,7 +134,7 @@ export abstract class GGoal {
 
         // If we're moving, but there is still time remaining to move
         // in this direction, continue on:
-        if (charDir !== GDirection.Dir9.NONE && this.directionTime > 0) {
+        if (charDir !== Dir9.NONE && this.directionTime > 0) {
             this.directionTime -= timeDelta;
         } else {
             // We've moved enough in the current direction;

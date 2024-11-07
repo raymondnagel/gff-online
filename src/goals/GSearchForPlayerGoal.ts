@@ -1,4 +1,4 @@
-import { GGoal } from "../GGoal";
+import { GGoal } from "./GGoal";
 import { GFF } from "../main";
 import { GImpSprite } from "../objects/chars/GImpSprite";
 import { GPlayerSprite } from "../objects/chars/GPlayerSprite";

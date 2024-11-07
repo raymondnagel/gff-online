@@ -1,7 +1,7 @@
 import 'phaser';
 import { GArea } from '../areas/GArea';
 import { GDirection } from '../GDirection';
-import { GRect, GPerson, GSpirit, GKeyList, BoundedGameObject, GPoint } from '../types';
+import { GRect, GPerson, GSpirit, GKeyList, BoundedGameObject, GPoint, CardDir, Dir9 } from '../types';
 import { GRandom } from '../GRandom';
 import { GPlayerSprite } from '../objects/chars/GPlayerSprite';
 import { GPersonSprite } from '../objects/chars/GPersonSprite';
@@ -21,9 +21,7 @@ import { GrayscalePostFxPipeline } from '../shaders/GrayscalePostFxPipeline';
 import { GInputMode } from '../GInputMode';
 import { AREA } from '../area';
 import { GTown } from '../GTown';
-import { PEOPLE } from '../people';
 import { GChurch } from '../GChurch';
-import { GSpinesRocks } from '../objects/obstacles/GSpinesRocks';
 
 const MOUSE_UI_BUTTON: string = 'MOUSE_UI_BUTTON';
 
@@ -102,6 +100,9 @@ export class GAdventureContent extends GContentScene {
                     break;
                 case 'y':
                     this.doConversationTest();
+                    break;
+                case 'l':
+                    this.getCurrentRoom()?.logRoomInfo();
                     break;
                 case 'p':
                     GFF.AdventureUI.pauseAdventure();
@@ -228,7 +229,7 @@ export class GAdventureContent extends GContentScene {
                 (obj1 === this.bottomBound || obj2 === this.bottomBound)
                 && (obj1 === this.player || obj2 === this.player)
             ) {
-                this.walkToAdjacentRoom(GDirection.Dir9.S);
+                this.walkToAdjacentRoom(Dir9.S);
             }
 
             // Enemy:
@@ -258,17 +259,17 @@ export class GAdventureContent extends GContentScene {
         this.physics.world.on('worldbounds', (body: Phaser.Physics.Arcade.Body, up: boolean, down: boolean, left: boolean, right: boolean) => {
             let obj = body.gameObject;
             let name = obj.toString();
-            let dir: GDirection.Dir9 =
-                up ? GDirection.Dir9.N :
-                left ? GDirection.Dir9.W :
-                right ? GDirection.Dir9.E :
-                GDirection.Dir9.NONE;
+            let dir: Dir9 =
+                up ? Dir9.N :
+                left ? Dir9.W :
+                right ? Dir9.E :
+                Dir9.NONE;
 
             // Log the collision:
             GFF.log(`${name} collided with ${GDirection.dir9Texts()[dir]} WORLDBOUND`);
 
             // Try to walk to an adjacent room if the player reached the top, left, or right side of the screen:
-            if (dir === GDirection.Dir9.N || dir === GDirection.Dir9.W || dir === GDirection.Dir9.E) {
+            if (dir === Dir9.N || dir === Dir9.W || dir === Dir9.E) {
                 thisScene.walkToAdjacentRoom(dir);
             }
         });
@@ -301,28 +302,31 @@ export class GAdventureContent extends GContentScene {
         (this.bottomBound.body as Phaser.Physics.Arcade.Body).setImmovable(true);
     }
 
-    public walkToAdjacentRoom(dir: GDirection.Dir9) {
+    public walkToAdjacentRoom(dir: CardDir) {
         // Move to the adjacent room, if there is one:
         let newRoomX = this.playerRoomX + GDirection.getHorzInc(dir);
         let newRoomY = this.playerRoomY + GDirection.getVertInc(dir);
 
         if (this.currentArea.containsRoom(this.playerFloor, newRoomX, newRoomY)) {
             // Before transitioning, walk NONE to stop moving and remove diagonals:
-            this.player.walkDirection(GDirection.Dir9.NONE);
+            this.player.walkDirection(Dir9.NONE);
             this.player.stop();
             this.transitionToRoom(newRoomX, newRoomY, this.currentArea, () => {
                 // Re-position player:
-                let newEdge: GDirection.Dir9 = GDirection.getOpposite(dir);
+                let newEdge: Dir9 = GDirection.getOpposite(dir);
                 let newPlayerX: number =
-                    (newEdge === GDirection.Dir9.W || newEdge === GDirection.Dir9.E)
+                    (newEdge === Dir9.W || newEdge === Dir9.E)
                     ? GDirection.getCharPosForEdge(newEdge)
                     : this.player.x;
                 let newPlayerY: number =
-                    (newEdge === GDirection.Dir9.N || newEdge === GDirection.Dir9.S)
+                    (newEdge === Dir9.N || newEdge === Dir9.S)
                     ? GDirection.getCharPosForEdge(newEdge)
                     : this.player.y;
-                    this.player.setX(newPlayerX);
-                    this.player.setY(newPlayerY);
+                this.player.setPosition(newPlayerX, newPlayerY);
+                const playerCtr: GPoint = this.player.getPhysicalCenter();
+                const room: GRoom = this.getCurrentRoom() as GRoom;
+                const wallCtr: GPoint = room.getNearestWallCenter(GDirection.getOpposite(dir) as CardDir, playerCtr);
+                this.player.centerPhysically(wallCtr);
             });
         }
     }
@@ -550,7 +554,7 @@ export class GAdventureContent extends GContentScene {
         this.spawnImp(imp);
     }
 
-    public addObstacle(obstacleObject: GObstacleStatic|GObstacleSprite) {
+    public addObstacle(obstacleObject: GObstacleStatic|GObstacleSprite|Phaser.GameObjects.Rectangle) {
         this.obstaclesGroup.add(obstacleObject);
     }
 
@@ -571,7 +575,7 @@ export class GAdventureContent extends GContentScene {
             this.stopChars();
             this.setInputMode(INPUT_DISABLED);
             enemy.getSpirit().introduced = true;
-            this.player.walkDirection(GDirection.Dir9.NONE);
+            this.player.walkDirection(Dir9.NONE);
             this.getSound().stopMusic();
             ENEMY.init(enemy, enemy.getSpirit(), 'devil_circle', 'battle_devil');
             GFF.AdventureUI.transitionToBattle(this.player.getCenter(), (this.getCurrentRoom() as GRoom).getEncounterBg());
@@ -733,7 +737,7 @@ export class GAdventureContent extends GContentScene {
         // Only process user controls for the player if in adventuring input mode:
         if (this.getInputMode() === INPUT_ADVENTURING) {
             const polledKeys: GKeyList = INPUT_ADVENTURING.getPollKeys();
-            let direction: GDirection.Dir9 = GDirection.getDirectionForKeys(polledKeys);
+            let direction: Dir9 = GDirection.getDirectionForKeys(polledKeys);
             if (polledKeys['Shift'].isDown) {
                 this.player.runDirection(direction);
             } else {

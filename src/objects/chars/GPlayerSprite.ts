@@ -1,11 +1,11 @@
 import 'phaser';
 import { GCharSprite } from './GCharSprite';
-import { GGoal } from '../../GGoal';
 import { GFF } from '../../main';
 import { GDirection } from '../../GDirection';
 import { GAdventureContent } from '../../scenes/GAdventureContent';
-import { GGender, GRect } from '../../types';
+import { Dir9, GGender, GRect } from '../../types';
 import { PLAYER } from '../../player';
+import { GGoal } from '../../goals/GGoal';
 
 const INTERACTION_RANGE: number = 50;
 const INTERACTION_AREA_SIDE: number = 100;
@@ -22,7 +22,7 @@ export class GPlayerSprite extends GCharSprite {
         this.createDirectionalAnimations('run');
 
         // Starts the player with an "idle_s" animation:
-        this.walkDirection(GDirection.Dir9.NONE);
+        this.walkDirection(Dir9.NONE);
 
         // Allow collision events for the player:
         if (this.body !== null) {
@@ -31,7 +31,7 @@ export class GPlayerSprite extends GCharSprite {
         }
     }
 
-    public runDirection(direction: GDirection.Dir9) {
+    public runDirection(direction: Dir9) {
         // Face the direction I am running:
         this.faceDirection(direction);
 
@@ -44,7 +44,7 @@ export class GPlayerSprite extends GCharSprite {
         this.setVelocityY(vertInc * dirSpeed);
 
         // Play the appropriate animation based on direction
-        if (direction !== GDirection.Dir9.NONE) {
+        if (direction !== Dir9.NONE) {
             let dirText = GDirection.dir9Texts()[direction];
             this.play(`adam_run_${dirText}`, true);
         } else {
@@ -71,7 +71,7 @@ export class GPlayerSprite extends GCharSprite {
     }
 
     public getInteractionArea(): GRect {
-        let faceDir: GDirection.Dir9 = this.getDirection();
+        let faceDir: Dir9 = this.getDirection();
         let bodyCtr: Phaser.Math.Vector2 = this.body?.center as Phaser.Math.Vector2;
         let distance: number = GDirection.getDistanceFactor(faceDir) * INTERACTION_RANGE;
         let intCtrX: number = bodyCtr.x + (GDirection.getHorzInc(faceDir) * distance);

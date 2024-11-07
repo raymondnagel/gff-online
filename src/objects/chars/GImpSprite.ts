@@ -3,11 +3,11 @@ import { GCharSprite } from './GCharSprite';
 import { GRandom } from '../../GRandom';
 import { GFF } from '../../main';
 import { GGender, GSpirit } from '../../types';
-import { GGoal } from '../../GGoal';
 import { GAdventureContent } from '../../scenes/GAdventureContent';
 import { GSearchForPlayerGoal } from '../../goals/GSearchForPlayerGoal';
 import { GSpawnImpGoal } from '../../goals/GSpawnImpGoal';
 import { ENEMY } from '../../enemy';
+import { GGoal } from '../../goals/GGoal';
 
 export class GImpSprite extends GCharSprite {
 

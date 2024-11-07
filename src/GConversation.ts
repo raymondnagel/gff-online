@@ -6,7 +6,7 @@ import { GChoiceBubble } from "./objects/GChoiceBubble";
 import { GSpeechBubble } from "./objects/GSpeechBubble";
 import { GThoughtBubble } from "./objects/GThoughtBubble";
 import { PLAYER } from "./player";
-import { CBlurb, CLabeledChar, COption, GBubble } from "./types";
+import { CBlurb, CLabeledChar, COption, Dir9, GBubble } from "./types";
 
 const CMD_FUNCTIONS: Record<string, (...args: any[]) => any> = {
     // Sample functions:
@@ -215,7 +215,7 @@ export class GConversation {
         // If there's only one participant, it is the player:
         } else if (this.participants.length === 1) {
             // Let the speaker face south so we can see his face.
-            this.currentSpeaker.faceDirection(GDirection.Dir9.S, true);
+            this.currentSpeaker.faceDirection(Dir9.S, true);
 
         // Otherwise, it's a group conversation:
         } else {

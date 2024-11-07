@@ -3,7 +3,7 @@ import { GRandom } from "../GRandom";
 import { GRoom } from "../GRoom";
 import { GFF } from "../main";
 import { GRegion } from "../regions/GRegion";
-import { CardDir, GFloor } from "../types";
+import { CardDir, Dir9, GFloor } from "../types";
 
 const HORZ_WALL_SECTIONS: number = 16;
 const VERT_WALL_SECTIONS: number = 11;
@@ -188,20 +188,12 @@ export class GArea {
                 (replaceEmpty && !room.hasAnyWall(dir))
                 || (replaceFull && room.hasFullWall(dir))
             ) {
-                let sections: boolean[];
-                switch(dir) {
-                    case GDirection.Dir9.N:
-                    case GDirection.Dir9.S:
-                        sections = this.getRandomWallSections(HORZ_WALL_SECTIONS);
-                        break;
-                    case GDirection.Dir9.E:
-                    case GDirection.Dir9.W:
-                        sections = this.getRandomWallSections(VERT_WALL_SECTIONS);
-                        break;
-                }
-                room.setWallSections(dir, sections);
+                const wallSections: boolean[] = dir === Dir9.N || dir === Dir9.S
+                ? this.getRandomWallSections(HORZ_WALL_SECTIONS)
+                : this.getRandomWallSections(VERT_WALL_SECTIONS);
+                room.setWallSections(dir, wallSections);
                 room = room.getNeighbor(dir);
-                room?.setWallSections(GDirection.getOpposite(dir) as CardDir, sections);
+                room?.setWallSections(GDirection.getOpposite(dir) as CardDir, wallSections);
             }
         }
     }
@@ -233,6 +225,40 @@ export class GArea {
                 neighboringRoom.setFullWall(GDirection.getOpposite(dir) as CardDir, wall);
             }
         }
+    }
+
+    public isSingleWallSection(room: GRoom, dir: CardDir, section: number) : boolean {
+        return room.getWallSections(dir)[section];
+    }
+
+    public setSingleWallSection(room: GRoom, dir: CardDir, section: number, wall: boolean) {
+        room.getWallSections(dir)[section] = wall;
+        const neighboringRoom = room.getNeighbor(dir);
+        if (neighboringRoom !== null) {
+            neighboringRoom.getWallSections(GDirection.getOpposite(dir) as CardDir)[section] = wall;
+        }
+    }
+
+    public isFirstWallSection(room: GRoom, dir: CardDir) {
+        return room.getWallSections(dir)[0];
+    }
+
+    public setFirstWallSection(room: GRoom, dir: CardDir, wall: boolean) {
+        this.setSingleWallSection(room, dir, 0, wall);
+    }
+
+    public isLastWallSection(room: GRoom, dir: CardDir): boolean {
+        const wallSections: number = dir === Dir9.N || dir === Dir9.S
+            ? HORZ_WALL_SECTIONS
+            : VERT_WALL_SECTIONS;
+        return room.getWallSections(dir)[wallSections - 1];
+    }
+
+    public setLastWallSection(room: GRoom, dir: CardDir, wall: boolean) {
+        const wallSections: number = dir === Dir9.N || dir === Dir9.S
+            ? HORZ_WALL_SECTIONS
+            : VERT_WALL_SECTIONS;
+        this.setSingleWallSection(room, dir, wallSections - 1, wall);
     }
 
     protected getRandomWallSections(sectionCount: number): boolean[] {
@@ -275,8 +301,59 @@ export class GArea {
         return sections;
     }
 
+    protected fixCornerWallSections() {
+        // Corners are shared between neighboring perpendicular walls;
+        // e.g. section 0 of north wall is the same as section 0 of west wall.
+        // Therefore, if the current room has a wall to the north, the rooms
+        // to the west and east should always have wall section 0 = true.
+
+        // We need to run this twice to ensure that nothing is missed.
+
+        for (let t: number = 0; t < 2; t++) {
+            for (let f: number = 0; f < this.floors.length; f++) {
+                for (let room of this.roomsByFloor[f]) {
+                    for (let d: number = 0; d < 4; d++) {
+                        const dir = GDirection.cardDirFrom4(d as 0|1|2|3);
+                        if (this.isFirstWallSection(room, dir)) {
+                            switch (dir) {
+                                case Dir9.N:
+                                    this.setFirstWallSection(room, Dir9.W, true);
+                                    break;
+                                case Dir9.E:
+                                    this.setLastWallSection(room, Dir9.N, true);
+                                    break;
+                                case Dir9.S:
+                                    this.setLastWallSection(room, Dir9.W, true);
+                                    break;
+                                case Dir9.W:
+                                    this.setFirstWallSection(room, Dir9.N, true);
+                                    break;
+                            }
+                        }
+                        if (this.isLastWallSection(room, dir)) {
+                            switch (dir) {
+                                case Dir9.N:
+                                    this.setFirstWallSection(room, Dir9.E, true);
+                                    break;
+                                case Dir9.E:
+                                    this.setLastWallSection(room, Dir9.S, true);
+                                    break;
+                                case Dir9.S:
+                                    this.setLastWallSection(room, Dir9.E, true);
+                                    break;
+                                case Dir9.W:
+                                    this.setFirstWallSection(room, Dir9.S, true);
+                                    break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     protected concealAllRooms(floor: number) {
-                this.roomsByFloor[floor].forEach(r => {
+        this.roomsByFloor[floor].forEach(r => {
             r.conceal();
         });
     }

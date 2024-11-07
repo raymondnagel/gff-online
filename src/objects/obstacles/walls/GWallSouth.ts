@@ -10,5 +10,6 @@ export class GWallSouth extends GObstacleStatic{
             GFF.LEFT_BOUND,
             GFF.BOTTOM_BOUND - 128
         );
+        this.setDepth(1000);
     }
 }

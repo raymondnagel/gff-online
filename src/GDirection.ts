@@ -1,8 +1,8 @@
 /**
- * GDirection is an enum and collection of functions that
- * provide cardinal and diagonal directions for GCharSprites.
+ * GDirection is a collection of functions that
+ * provide cardinal and diagonal directions.
  *
- * The enum is Dir9, which includes NONE.
+ * The enum type is Dir9, which includes NONE.
  * Be careful when using all 9 directions, because NONE
  * is an oddball for which some resources or behavior
  * may not necessarily exist! If you want only actual
@@ -11,21 +11,9 @@
 
 import { GRandom } from "./GRandom";
 import { GFF } from "./main";
-import { CardDir, GKeyList, GPoint } from "./types";
+import { CardDir, Dir9, GKeyList, GPoint } from "./types";
 
 export namespace GDirection {
-
-    export enum Dir9 {
-        NONE = 0,
-        N    = 1,
-        NE   = 2,
-        E    = 3,
-        SE   = 4,
-        S    = 5,
-        SW   = 6,
-        W    = 7,
-        NW   = 8
-    };
 
     const DIR8_TEXTS = [
         'n',
@@ -148,7 +136,7 @@ export namespace GDirection {
         }
     }
 
-    export function getDirectionForKeys(polledKeys: GKeyList): GDirection.Dir9 {
+    export function getDirectionForKeys(polledKeys: GKeyList): Dir9 {
         let x = 0, y = 0;
         if (polledKeys['Up'].isDown) {
             y--;
@@ -176,6 +164,75 @@ export namespace GDirection {
             case Dir9.W: return Dir9.E;
             case Dir9.NW: return Dir9.SE;
             default: return Dir9.NONE;
+        }
+    }
+
+    export function getAdjacents(direction: Dir9): Dir9[] {
+        switch (direction) {
+            case Dir9.N: return [Dir9.NW, Dir9.NE];
+            case Dir9.NE: return [Dir9.N, Dir9.E];
+            case Dir9.E: return [Dir9.NE, Dir9.SE];
+            case Dir9.SE: return [Dir9.E, Dir9.S];
+            case Dir9.S: return [Dir9.SE, Dir9.SW];
+            case Dir9.SW: return [Dir9.S, Dir9.W];
+            case Dir9.W: return [Dir9.SW, Dir9.NW];
+            case Dir9.NW: return [Dir9.W, Dir9.N];
+            default: return [Dir9.NONE];
+        }
+    }
+
+    export function getCardinalAdjacents(direction: CardDir): CardDir[] {
+        switch (direction) {
+            case Dir9.N: return [Dir9.W, Dir9.E];
+            case Dir9.E: return [Dir9.N, Dir9.S];
+            case Dir9.S: return [Dir9.E, Dir9.W];
+            case Dir9.W: return [Dir9.S, Dir9.N];
+        }
+    }
+
+    export function turnCw(direction: Dir9): Dir9 {
+        switch (direction) {
+            case Dir9.N: return Dir9.NE;
+            case Dir9.NE: return Dir9.E;
+            case Dir9.E: return Dir9.SE;
+            case Dir9.SE: return Dir9.S;
+            case Dir9.S: return Dir9.SW;
+            case Dir9.SW: return Dir9.W;
+            case Dir9.W: return Dir9.NW;
+            case Dir9.NW: return Dir9.N;
+            default: return Dir9.NONE;
+        }
+    }
+
+    export function turnCcw(direction: Dir9): Dir9 {
+        switch (direction) {
+            case Dir9.N: return Dir9.NW;
+            case Dir9.NW: return Dir9.W;
+            case Dir9.W: return Dir9.SW;
+            case Dir9.SW: return Dir9.S;
+            case Dir9.S: return Dir9.SE;
+            case Dir9.SE: return Dir9.E;
+            case Dir9.E: return Dir9.NE;
+            case Dir9.NE: return Dir9.N;
+            default: return Dir9.NONE;
+        }
+    }
+
+    export function turnCwCardinal(direction: CardDir): CardDir {
+        switch (direction) {
+            case Dir9.N: return Dir9.E;
+            case Dir9.E: return Dir9.S;
+            case Dir9.S: return Dir9.W;
+            case Dir9.W: return Dir9.N;
+        }
+    }
+
+    export function turnCcwCardinal(direction: CardDir): CardDir {
+        switch (direction) {
+            case Dir9.N: return Dir9.W;
+            case Dir9.W: return Dir9.S;
+            case Dir9.S: return Dir9.E;
+            case Dir9.E: return Dir9.N;
         }
     }
 

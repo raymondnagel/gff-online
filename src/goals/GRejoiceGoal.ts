@@ -1,13 +1,14 @@
 import { GDirection } from "../GDirection";
-import { GGoal } from "../GGoal";
+import { GGoal } from "./GGoal";
 import { GCharSprite } from "../objects/chars/GCharSprite";
+import { Dir9 } from "../types";
 
 export class GRejoiceGoal extends GGoal {
 
     constructor(char: GCharSprite, timeOut: number) {
         super('rejoice', char, timeOut);
 
-        this.char.faceDirection(GDirection.Dir9.S);
+        this.char.faceDirection(Dir9.S);
 
         this.char.play('rejoice_s');
     }

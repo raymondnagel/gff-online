@@ -1,10 +1,7 @@
-import { GDirection } from "../GDirection";
-import { GGoal } from "../GGoal";
-import { GFF } from "../main";
-import { GCharSprite } from "../objects/chars/GCharSprite";
+import { GGoal } from "./GGoal";
 import { GImpSprite } from "../objects/chars/GImpSprite";
-import { GPlayerSprite } from "../objects/chars/GPlayerSprite";
 import { GBaseScene } from "../scenes/GBaseScene";
+import { Dir9 } from "../types";
 
 
 export class GSpawnImpGoal extends GGoal {
@@ -40,7 +37,7 @@ export class GSpawnImpGoal extends GGoal {
         // animation stops.
         if (!this.char.anims.isPlaying) {
             this.char.alpha = 0.35;
-            this.char.walkDirection(GDirection.Dir9.NONE);
+            this.char.walkDirection(Dir9.NONE);
         }
         return false;
     }

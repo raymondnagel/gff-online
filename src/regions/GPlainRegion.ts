@@ -27,6 +27,14 @@ export class GPlainRegion extends GOutsideRegion{
 
         // Call methods to add any quantity of any desired scenery:
 
+        room.planPartialWallScenery([
+            SCENERY.BOULDER_DEF,
+            SCENERY.TREE_STUMP_DEF,
+            SCENERY.OAK_TREE_DEF,
+            SCENERY.PINE_TREE_DEF,
+            SCENERY.WONKY_TREE_DEF
+        ]);
+
         // Grass Tuft: 100% chance to add 5-10;
         room.planSceneryChanceForBatch(SCENERY.GRASS_TUFT_DEF, 1, 5, 10, objectBounds);
         // Field Grass: 100% chance to add 5-10;

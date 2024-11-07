@@ -248,8 +248,8 @@ export class GBattleContent extends GContentScene {
         // Scripture
         this.scriptureText = this.add.text(GFF.GAME_W / 2, SCROLL_Y + 105, '', {
             color: SCRIPTURE_COLOR,
-            fontFamily: 'griffo',
-            fontSize: '18px',
+            fontFamily: 'gemerald',
+            fontSize: '16px',
             lineSpacing: -2
         }).setOrigin(.5, .5).setWordWrapWidth(WORD_WRAP_WIDTH);
 
@@ -772,11 +772,8 @@ export class GBattleContent extends GContentScene {
         this.scriptureText.setAlpha(0.0);
 
         // Use this instead to show the longest verse in the Bible and make sure it fits:
-        // const scripture: string|null = GBible.getVerseText('Esther', 8, 9);
-        // if (scripture !== null) {
-        //     this.scriptureText.setVisible(true);
-        //     this.scriptureText.text = scripture;
-        // }
+        // const scripture: string|null = GBible.getVerseText('Esther', 8, 9) as string;
+        // this.scriptureText.text = scripture;
 
         this.tweens.add({
             targets: this.scriptureText,

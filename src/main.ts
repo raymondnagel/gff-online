@@ -189,28 +189,31 @@ export namespace GFF {
     export const TEST_INFO =
 `Thanks for trying out the current version of "The Good Fight of Faith"!\n
 The game is still in very early stages of development; most of the work thus far has been\n
-on core systems like animation, character movement, sound, conversations, and collisions.\n
-But it's playable! You can walk around, and go in front of or behind obstacles and people.\n
-If you go to the right or bottom edge of the screen, you can move on to the next room.\n
-There are a few people wandering around in each room. You can talk to them.\n
-Watch out for the devils! They can appear out of nowhere, and if they catch you,\n
-they will steal some of your faith! (Once I get the Battle Mode set up, a scripture\n
-battle will open instead.)\n
-Don't pay too much attention to the arrangement of scenery (trees, campfires, etc.);\n
-they are just sprinkled randomly for testing right now.\n
+on core systems, but I am beginning to add content as well. Random world/region generation\n
+is functional, but there is much more to come, so stay tuned! Here are some things you can try:\n
+- Click the Map icon (or press 'M') to view the world map, and see where you are in the world!\n
+  (remember that the world is random; it will be different each time you start a new game)\n
+- Press [Esc] to close the map, or any other subscreen.\n
+- Go to any edge of the screen to move to an adjacent room.\n
+- If you want to find other people, go toward a town. People tend to be in or near towns.\n
+- 1-3 enemies will spawn in each room, and they'll chase you! If they catch you, you'll need to\n
+  defeat them in a scripture battle. You'll gain experience for each battle, but be careful not to lose!\n
+- At the moment, every room has a treasure chest. You can open them and see what they contain!
 \n
-CONTROLS:\n
+ADVENTURE CONTROLS:\n
 Hold down [Arrow] keys to walk. You can hold two directions (e.g. 'up' + 'right') to walk diagonally.\n
 Hold [Shift] key at the same time to run instead.\n
 Hold down [N] to view name tags for all characters. (Names will only be shown if you have met them already.)\n
-Press [P] to pause/unpause the game.\n
-Press [Y] to show a simple test popup.\n
-Press [T] to do a simple test solo conversation.\n
-Press [Space] to talk to another person if they are in front of Adam.\n
-In a conversation, press [Enter] to continue on.\n
-If you see a selection highlighted in yellow, you can use the [Arrow] keys to make a\n
-choice, and then press [Enter] to continue.\n
+[P] : pause/unpause\n
+[Space] : talk to another person (if they are in front of Adam)\n
+[Y] : demo solo conversation.\n
+In a conversation, press [Enter] to continue on; use [Up/Down] arrows to change a highlighted selection.\n
 \n
+BATTLE CONTROLS:\n
+To guess the book, use [Up/Down] arrows to change the selection, and then press [Enter].\n
+To guess the chapter or verse, type in a number and press [Enter].\n
+(You can use [Backspace] or [Delete] if you make a mistake.)\n
+After taking your turn, a score summary is shown based on your guess. Press [Enter] to continue.\n
 Have fun! :)`;
 
 }

@@ -12,6 +12,6 @@ export class GWallSW extends Phaser.GameObjects.Image {
         );
         this.setOrigin(0, 1);
         GFF.AdventureContent.add.existing(this);
-        this.setDepth(1000);
+        this.setDepth(1001);
     }
 }

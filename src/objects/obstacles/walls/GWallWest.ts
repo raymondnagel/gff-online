@@ -10,5 +10,6 @@ export class GWallWest extends GObstacleStatic{
             GFF.LEFT_BOUND,
             GFF.TOP_BOUND
         );
+        this.setDepth(1);
     }
 }

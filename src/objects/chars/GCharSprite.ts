@@ -1,11 +1,10 @@
 import 'phaser';
 import { GDirection } from '../../GDirection';
-import { GGoal } from '../../GGoal';
 import { GFF } from '../../main';
 import { GAdventureContent } from '../../scenes/GAdventureContent';
-import { GSpeechBubble } from '../GSpeechBubble';
-import { GGender, GPoint, GRect } from '../../types';
-import { GPlayerSprite } from './GPlayerSprite';
+import { Dir9, GGender, GPoint, GRect } from '../../types';
+import { GGoal } from '../../goals/GGoal';
+import { PHYSICS } from '../../physics';
 
 const NAMETAG_SPACE: number = 10;
 const NAMETAG_DEPTH: number = 1000;
@@ -16,7 +15,7 @@ export abstract class GCharSprite extends Phaser.Physics.Arcade.Sprite {
     private lastName: string; // Character's last name
     private spriteKeyPrefix: string; // Used to determine sprites for appearance
     private goal: GGoal|null = null; // Current goal which the character will try to achieve
-    private direction: GDirection.Dir9 = GDirection.Dir9.S; // Current facing direction
+    private direction: Dir9 = Dir9.S; // Current facing direction
     private immobile: boolean = false; // Prevents or allows the character to think and act
     private controlled: boolean = false; // Prevents automatic movement, but moves with player input
     private busyTalking: boolean = false; // Prevents movement and thinking, but allows speaking
@@ -107,7 +106,7 @@ export abstract class GCharSprite extends Phaser.Physics.Arcade.Sprite {
         if (this.busyTalking) {
             this.setGoal(null);
             this.setImmovable(true);
-            this.walkDirection(GDirection.Dir9.NONE);
+            this.walkDirection(Dir9.NONE);
         } else {
             this.setImmovable(false);
         }
@@ -115,6 +114,27 @@ export abstract class GCharSprite extends Phaser.Physics.Arcade.Sprite {
 
     public isBusyTalking() {
         return this.busyTalking;
+    }
+
+    public getPhysicalCenter(): GPoint {
+        // // Calculate relative to position using body offset and size;
+        // // don't use body.center, as it may not be accurate if the sprite
+        // // was just repositioned.
+        // const body: Phaser.Physics.Arcade.Body = this.body as Phaser.Physics.Arcade.Body;
+        // return {
+        //     x: this.x + body.offset.x + body.width / 2,
+        //     y: this.y + body.offset.y + body.height / 2
+        // };
+        return PHYSICS.getPhysicalCenter(this) as GPoint;
+    }
+
+    public centerPhysically(point: GPoint) {
+        // if (this.body) {
+        //     const x: number = point.x - (this.body.width / 2) - this.body.offset.x;
+        //     const y: number = point.y - (this.body.height / 2) - this.body.offset.y;
+        //     this.setPosition(x, y);
+        // }
+        PHYSICS.centerPhysically(this, point);
     }
 
     public getDistanceToChar(char: GCharSprite) {
@@ -126,7 +146,7 @@ export abstract class GCharSprite extends Phaser.Physics.Arcade.Sprite {
     public faceChar(char: GCharSprite, setIdle: boolean = false) {
         const ctr1: Phaser.Math.Vector2 = this.body?.center as Phaser.Math.Vector2;
         const ctr2: Phaser.Math.Vector2 = char.body?.center as Phaser.Math.Vector2;
-        const dir: GDirection.Dir9 = GDirection.getDirectionOf(ctr1, ctr2);
+        const dir: Dir9 = GDirection.getDirectionOf(ctr1, ctr2);
         this.faceDirection(dir, setIdle);
     }
 
@@ -138,10 +158,10 @@ export abstract class GCharSprite extends Phaser.Physics.Arcade.Sprite {
             && ctr.y < area.y + area.height;
     }
 
-    public faceDirection(direction: GDirection.Dir9, setIdle: boolean = false) {
+    public faceDirection(direction: Dir9, setIdle: boolean = false) {
         // Only set the facing direction if it is not NONE;
         // a character cannot face no direction.
-        if (direction !== GDirection.Dir9.NONE) {
+        if (direction !== Dir9.NONE) {
             this.direction = direction;
             if (setIdle) {
                 this.playDirectionalAnimation('idle');
@@ -149,7 +169,7 @@ export abstract class GCharSprite extends Phaser.Physics.Arcade.Sprite {
         }
     }
 
-    public walkDirection(direction: GDirection.Dir9) {
+    public walkDirection(direction: Dir9) {
         // Face the direction I am walking:
         this.faceDirection(direction);
 
@@ -162,7 +182,7 @@ export abstract class GCharSprite extends Phaser.Physics.Arcade.Sprite {
         this.setVelocityY(vertInc * dirSpeed);
 
         // Play the appropriate animation based on direction
-        if (direction !== GDirection.Dir9.NONE) {
+        if (direction !== Dir9.NONE) {
             this.playDirectionalAnimation('walk', direction, false);
         } else {
             // Since the assigned direction is NONE, use the facing direction instead:
@@ -170,7 +190,7 @@ export abstract class GCharSprite extends Phaser.Physics.Arcade.Sprite {
         }
     }
 
-    protected playDirectionalAnimation(animName: string, dir?: GDirection.Dir9, force: boolean = false) {
+    protected playDirectionalAnimation(animName: string, dir?: Dir9, force: boolean = false) {
         let dirText = GDirection.dir9Texts()[dir ?? this.direction];
         this.play(`${this.spriteKeyPrefix}_${animName}_${dirText}`, !force);
     }

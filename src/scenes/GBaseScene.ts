@@ -60,7 +60,7 @@ export abstract class GBaseScene extends Phaser.Scene {
             color ?? 0x000000
         );
         this.fadeOverlay.setOrigin(0, 0);
-        this.fadeOverlay.setDepth(1000);
+        this.fadeOverlay.setDepth(10000);
         this.fadeOverlay.setData('permanent', true);
     }
 

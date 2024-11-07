@@ -1,5 +1,5 @@
 import { GRegion } from "./regions/GRegion";
-import { CardDir, GPoint, GRect, GRoomWalls, GSceneryDef, GSceneryPlan } from "./types";
+import { CardDir, Dir9, GPoint, GRect, GRoomWalls, GSceneryDef, GSceneryPlan } from "./types";
 import { SCENERY } from "./scenery";
 import { GAdventureContent } from "./scenes/GAdventureContent";
 import { GFF } from "./main";
@@ -19,6 +19,10 @@ import { GWallNW } from "./objects/obstacles/walls/GWallNW";
 import { GWallSE } from "./objects/obstacles/walls/GWallSE";
 import { GWallSW } from "./objects/obstacles/walls/GWallSW";
 
+const WALL_GUARD_THICK: number = 10;
+const WALL_CTRS: number[] = [
+    32, 96, 160, 224, 288, 352, 416, 480, 544, 608, 672, 736, 800, 864, 928, 992
+];
 const HORZ_WALL_SECTIONS: number = 16;
 const VERT_WALL_SECTIONS: number = 11;
 const TERRAIN_FADE_ALPHA: number = .5;
@@ -43,17 +47,19 @@ export class GRoom {
     private start: boolean = false;
     private discovered: boolean = false;
 
+    private ROOM_LOG: string[] = [];
+
     constructor(floor: number, x: number, y: number, area: GArea) {
         this.area = area;
         this.floor = floor;
         this.x = x;
         this.y = y;
-
+        this.ROOM_LOG.push(`*** Room @ ${x},${y}...`);
         this.walls = {
-            [GDirection.Dir9.N]: new Array(HORZ_WALL_SECTIONS).fill(false),
-            [GDirection.Dir9.E]: new Array(VERT_WALL_SECTIONS).fill(false),
-            [GDirection.Dir9.S]: new Array(HORZ_WALL_SECTIONS).fill(false),
-            [GDirection.Dir9.W]: new Array(VERT_WALL_SECTIONS).fill(false)
+            [Dir9.N]: new Array(HORZ_WALL_SECTIONS).fill(false),
+            [Dir9.E]: new Array(VERT_WALL_SECTIONS).fill(false),
+            [Dir9.S]: new Array(HORZ_WALL_SECTIONS).fill(false),
+            [Dir9.W]: new Array(VERT_WALL_SECTIONS).fill(false)
         };
     }
 
@@ -172,12 +178,50 @@ export class GRoom {
         return this.walls[dir].every(section => section === true);
     }
 
-    public hasNeighbor(direction: GDirection.Dir9): boolean {
+    public getNearestWallCenter(wallDir: CardDir, point: GPoint): GPoint {
+        const findNearest = (wallSections: boolean[], target: number): number|undefined => {
+            const limit = Math.min(WALL_CTRS.length, wallSections.length);
+            return WALL_CTRS.slice(0, limit).reduce((prev, curr, index) => {
+                if (wallSections[index]){
+                    return prev;
+                }
+                if (prev === undefined) {
+                    return curr;
+                }
+                return Math.abs(curr - target) < Math.abs(prev - target) ? curr : prev;
+            }, undefined as number | undefined);
+        };
+
+        switch (wallDir) {
+            case Dir9.N:
+                return {
+                    x: findNearest(this.getWallSections(wallDir), point.x) as number,
+                    y: GFF.TOP_BOUND + (GFF.TILE_H / 2)
+                };
+            case Dir9.E:
+                return {
+                    x: GFF.RIGHT_BOUND - (GFF.TILE_H / 2),
+                    y: findNearest(this.getWallSections(wallDir), point.y) as number
+                };
+            case Dir9.S:
+                return {
+                    x: findNearest(this.getWallSections(wallDir), point.x) as number,
+                    y: GFF.BOTTOM_BOUND - (GFF.TILE_H / 2)
+                };
+            case Dir9.W:
+                return {
+                    x: GFF.LEFT_BOUND + (GFF.TILE_H / 2),
+                    y: findNearest(this.getWallSections(wallDir), point.y) as number
+                };
+        }
+    }
+
+    public hasNeighbor(direction: Dir9): boolean {
         const velocity: GPoint = GDirection.getVelocity(direction);
         return this.area.containsRoom(this.floor, this.x + velocity.x, this.y + velocity.y);
     }
 
-    public getNeighbor(direction: GDirection.Dir9): GRoom|null {
+    public getNeighbor(direction: Dir9): GRoom|null {
         const velocity: GPoint = GDirection.getVelocity(direction);
         return this.area.getRoomAt(this.floor, this.x + velocity.x, this.y + velocity.y);
     }
@@ -232,7 +276,7 @@ export class GRoom {
     }
 
     public isSafe(): boolean {
-        if (this.x === 0 && this.y === 0) {
+        if (this.start || this.church) {
             return true;
         } else {
             return false;
@@ -246,17 +290,23 @@ export class GRoom {
         }
 
         // Create terrain fade images, if applicable, based on neighbors:
-        this.addFadeImageForNeighbor(GDirection.Dir9.N, 'n');
-        this.addFadeImageForNeighbor(GDirection.Dir9.E, 'e');
-        this.addFadeImageForNeighbor(GDirection.Dir9.W, 'w');
-        this.addFadeImageForNeighbor(GDirection.Dir9.S, 's');
+        this.addFadeImageForNeighbor(Dir9.N, 'n');
+        this.addFadeImageForNeighbor(Dir9.E, 'e');
+        this.addFadeImageForNeighbor(Dir9.W, 'w');
+        this.addFadeImageForNeighbor(Dir9.S, 's');
 
         // Create a render-texture for any decorations:
         const decorRenderer: Phaser.GameObjects.RenderTexture = GFF.AdventureContent.add.renderTexture(GFF.ROOM_X, GFF.ROOM_Y, GFF.ROOM_W, GFF.ROOM_H);
         decorRenderer.setOrigin(0, 0);
 
+        // Create partial wall guards: (blocks movement in case player slips past wall scenery)
+        this.addPartialWallGuards();
+
         // Create full wall objects:
         this.addFullWallObjects();
+
+        // Create partial wall indicators (TEST):
+        // this.addPartialWallIndicators();
 
         // Create scenery objects from plan:
         this.plans.forEach((plan) => {
@@ -268,10 +318,10 @@ export class GRoom {
 
         // Help text on first room:
         if (this.isStart()) {
-            GFF.AdventureContent.add.text(30, 30, GFF.TEST_INFO, {
+            GFF.AdventureContent.add.text(64, 64, GFF.TEST_INFO, {
                 color: '#000000',
-                fontSize: '16px',
-                fontFamily: 'time',
+                fontSize: '14px',
+                fontFamily: 'oxygen',
                 fontStyle: 'bold',
                 lineSpacing: -6
             });
@@ -296,14 +346,14 @@ export class GRoom {
         if (neighbor && neighbor.getRegion() !== this.getRegion()) {
             const fadeImageName: string = neighbor.getRegion().getBgImageName() + `_fade_` + dirStr;
             switch (dir) {
-                case GDirection.Dir9.N:
-                case GDirection.Dir9.W:
+                case Dir9.N:
+                case Dir9.W:
                     GFF.AdventureContent.add.image(0, 0, fadeImageName).setOrigin(0, 0).setAlpha(TERRAIN_FADE_ALPHA);
                     break;
-                case GDirection.Dir9.E:
+                case Dir9.E:
                     GFF.AdventureContent.add.image(GFF.ROOM_W, 0, fadeImageName).setOrigin(1, 0).setAlpha(TERRAIN_FADE_ALPHA);
                     break;
-                case GDirection.Dir9.S:
+                case Dir9.S:
                     GFF.AdventureContent.add.image(0, GFF.ROOM_H, fadeImageName).setOrigin(0, 1).setAlpha(TERRAIN_FADE_ALPHA);
                     break;
             }
@@ -311,43 +361,334 @@ export class GRoom {
     }
 
     private addFullWallObjects() {
-        const northWall: boolean = this.hasFullWall(GDirection.Dir9.N);
-        const westWall: boolean = this.hasFullWall(GDirection.Dir9.W);
-        const eastWall: boolean = this.hasFullWall(GDirection.Dir9.E);
-        const southWall: boolean = this.hasFullWall(GDirection.Dir9.S);
-        const wallSet: Record<GDirection.Dir9, GSceneryDef|null> = this.region.getWalls();
+        const northWall: boolean = this.hasFullWall(Dir9.N);
+        const westWall: boolean = this.hasFullWall(Dir9.W);
+        const eastWall: boolean = this.hasFullWall(Dir9.E);
+        const southWall: boolean = this.hasFullWall(Dir9.S);
+        const wallSet: Record<Dir9, GSceneryDef|null> = this.region.getWalls();
 
         // Add cardinal walls:
         if (northWall) {
-            new GWallNorth(wallSet[GDirection.Dir9.N] as GSceneryDef);
+            new GWallNorth(wallSet[Dir9.N] as GSceneryDef);
         }
         if (westWall) {
-            new GWallWest(wallSet[GDirection.Dir9.W] as GSceneryDef);
+            new GWallWest(wallSet[Dir9.W] as GSceneryDef);
         }
         if (eastWall) {
-            new GWallEast(wallSet[GDirection.Dir9.E] as GSceneryDef);
+            new GWallEast(wallSet[Dir9.E] as GSceneryDef);
         }
         if (southWall) {
-            new GWallSouth(wallSet[GDirection.Dir9.S] as GSceneryDef);
+            new GWallSouth(wallSet[Dir9.S] as GSceneryDef);
         }
 
         // Add any required corner pieces (for aesthetics):
         if (northWall && westWall) {
-            new GWallNW(wallSet[GDirection.Dir9.NW] as GSceneryDef);
+            new GWallNW(wallSet[Dir9.NW] as GSceneryDef);
         }
         if (northWall && eastWall) {
-            new GWallNE(wallSet[GDirection.Dir9.NE] as GSceneryDef);
+            new GWallNE(wallSet[Dir9.NE] as GSceneryDef);
         }
         if (southWall && westWall) {
-            new GWallSW(wallSet[GDirection.Dir9.SW] as GSceneryDef);
+            new GWallSW(wallSet[Dir9.SW] as GSceneryDef);
         }
         if (southWall && eastWall) {
-            new GWallSE(wallSet[GDirection.Dir9.SE] as GSceneryDef);
+            new GWallSE(wallSet[Dir9.SE] as GSceneryDef);
         }
+    }
+
+    private addPartialWallIndicators() {
+        const northWall: boolean[] = this.getWallSections(Dir9.N);
+        const westWall: boolean[] = this.getWallSections(Dir9.W);
+        const eastWall: boolean[] = this.getWallSections(Dir9.E);
+        const southWall: boolean[] = this.getWallSections(Dir9.S);
+        let x: number;
+        let y: number;
+
+        // North wall:
+        y = 0;
+        for (let w = 0; w < northWall.length; w++) {
+            x = w * 64;
+            if (northWall[w]) {
+                GFF.AdventureContent.add.rectangle(x, y, 64, 64, 0x000000, .2).setOrigin(0, 0).setStrokeStyle(1, 0x000000, .6);
+            }
+        }
+        // East wall:
+        x = GFF.ROOM_AREA_RIGHT;
+        for (let w = 0; w < eastWall.length; w++) {
+            y = w * 64;
+            if (eastWall[w]) {
+                GFF.AdventureContent.add.rectangle(x, y, 64, 64, 0x000000, .2).setOrigin(0, 0).setStrokeStyle(1, 0x000000, .6);
+            }
+        }
+        // West wall:
+        x = 0;
+        for (let w = 0; w < westWall.length; w++) {
+            y = w * 64;
+            if (westWall[w]) {
+                GFF.AdventureContent.add.rectangle(x, y, 64, 64, 0x000000, .2).setOrigin(0, 0).setStrokeStyle(1, 0x000000, .6);
+            }
+        }
+        // South wall:
+        y = GFF.ROOM_AREA_BOTTOM;
+        for (let w = 0; w < southWall.length; w++) {
+            x = w * 64;
+            if (southWall[w]) {
+                GFF.AdventureContent.add.rectangle(x, y, 64, 64, 0x000000, .2).setOrigin(0, 0).setStrokeStyle(1, 0x000000, .6);
+            }
+        }
+    }
+
+    private addPartialWallGuards() {
+        const northWall: boolean[] = this.getWallSections(Dir9.N);
+        const westWall: boolean[] = this.getWallSections(Dir9.W);
+        const eastWall: boolean[] = this.getWallSections(Dir9.E);
+        const southWall: boolean[] = this.getWallSections(Dir9.S);
+        let x: number;
+        let y: number;
+
+        // North wall:
+        y = GFF.TOP_BOUND;
+        for (let w = 0; w < northWall.length; w++) {
+            x = w * 64;
+            if (northWall[w]) {
+                this.createPartialWallGuard(x, y, GFF.TILE_W, WALL_GUARD_THICK);
+            }
+        }
+        // East wall:
+        x = GFF.RIGHT_BOUND - WALL_GUARD_THICK;
+        for (let w = 0; w < eastWall.length; w++) {
+            y = w * 64;
+            if (eastWall[w]) {
+                this.createPartialWallGuard(x, y, WALL_GUARD_THICK, GFF.TILE_H);
+            }
+        }
+        // West wall:
+        x = GFF.LEFT_BOUND;
+        for (let w = 0; w < westWall.length; w++) {
+            y = w * 64;
+            if (westWall[w]) {
+                this.createPartialWallGuard(x, y, WALL_GUARD_THICK, GFF.TILE_H);
+            }
+        }
+        // South wall:
+        y = GFF.BOTTOM_BOUND - WALL_GUARD_THICK;
+        for (let w = 0; w < southWall.length; w++) {
+            x = w * 64;
+            if (southWall[w]) {
+                this.createPartialWallGuard(x, y, GFF.TILE_W, WALL_GUARD_THICK);
+            }
+        }
+    }
+
+    private createPartialWallGuard(x: number, y: number, width: number, height: number) {
+        const guard: Phaser.GameObjects.Rectangle = GFF.AdventureContent.add.rectangle(x, y, width, height).setOrigin(0, 0);
+        GFF.AdventureContent.physics.add.existing(guard, false);
+        (guard.body as Phaser.Physics.Arcade.Body).setImmovable(true);
+        GFF.AdventureContent.addObstacle(guard);
     }
 
     public addScenery(key: string, x: number, y: number) {
         this.plans.push({key, x, y});
+    }
+
+    public planPartialWallScenery(sceneryDefs: GSceneryDef[]) {
+        this.ROOM_LOG.push(`Planning scenery...`);
+
+        // Omit first/last section of N/S walls IF there is a full wall next to it:
+        const omitFirstNorthSouth: boolean = this.hasFullWall(Dir9.W);
+        const omitLastNorthSouth: boolean = this.hasFullWall(Dir9.E);
+        // Omit first/last section of W/E walls if they are shared with N/S walls:
+        const omitFirstWest: boolean = this.area.isFirstWallSection(this, Dir9.N);
+        const omitLastWest: boolean = this.area.isFirstWallSection(this, Dir9.S);
+        const omitLastEast: boolean = this.area.isLastWallSection(this, Dir9.S);
+        const omitFirstEast: boolean = this.area.isLastWallSection(this, Dir9.N);
+
+        if (this.hasAnyWall(Dir9.N) && !this.hasFullWall(Dir9.N)) {
+            this.planWallSections(Dir9.N, sceneryDefs, omitFirstNorthSouth, omitLastNorthSouth);
+        }
+        if (this.hasAnyWall(Dir9.W) && !this.hasFullWall(Dir9.W)) {
+            this.planWallSections(Dir9.W, sceneryDefs, omitFirstWest, omitLastWest);
+        }
+        if (this.hasAnyWall(Dir9.E) && !this.hasFullWall(Dir9.E)) {
+            this.planWallSections(Dir9.E, sceneryDefs, omitFirstEast, omitLastEast);
+        }
+        if (this.hasAnyWall(Dir9.S) && !this.hasFullWall(Dir9.S)) {
+            this.planWallSections(Dir9.S, sceneryDefs, omitFirstNorthSouth, omitLastNorthSouth);
+        }
+    }
+
+    private planWallSections(dir: CardDir, sceneryPool: GSceneryDef[], omitFirst: boolean, omitLast: boolean) {
+        let wallSections: boolean[] = this.getWallSections(dir);
+        if (omitLast) {
+            wallSections = wallSections.slice(0, -1);
+        }
+        this.ROOM_LOG.push(`Planning ${GDirection.dir9Texts()[dir]} Wall...`);
+
+        let beginWall: number|null = null;
+        let endWall: number|null = null;
+        let startX: number = 0;
+        let startY: number = 0;
+        let wallSpace: number;
+        for (let w = 0; w < wallSections.length; w++) {
+            if (w === 0 && omitFirst) {
+                continue;
+            }
+            this.ROOM_LOG.push(`Checking section ${w}: ${wallSections[w]}`);
+
+            // Check currently indexed section:
+            if (wallSections[w]) {
+                // Section = WALL; begin if not already begun:
+                if (beginWall === null) {
+                    beginWall = w;
+                }
+                // If last wall section = WALL, set the end:
+                if (w === wallSections.length - 1) {
+                    endWall = w;
+                }
+            } else if (beginWall !== null) {
+                // Section = EMPTY, and a wall is in progress; end the current wall:
+                endWall = w - 1;
+            }
+
+            // If a beginning and end are defined, create scenery and reset the delimiters:
+            if (beginWall !== null && endWall !== null) {
+                this.ROOM_LOG.push(`* Wall from ${beginWall} to ${endWall}:`);
+                const tiles: number = (endWall - beginWall) + 1;
+                const sceneryCombination: GSceneryDef[] = this.getSceneryCombinationForWall(sceneryPool, tiles, dir);
+                GRandom.shuffle(sceneryCombination);
+
+                sceneryCombination.forEach(c => {
+                    this.ROOM_LOG.push(`${c.key}: ${c.body.x},${c.body.y} (${c.body.width}x${c.body.height})`);
+                });
+
+                switch(dir) {
+                    case Dir9.N:
+                    case Dir9.S:
+                        wallSpace = tiles * GFF.TILE_W;
+                        startX = beginWall * GFF.TILE_W;
+                        break;
+                    case Dir9.W:
+                    case Dir9.E:
+                        wallSpace = tiles * GFF.TILE_H;
+                        startY = beginWall * GFF.TILE_H;
+                        break;
+                }
+                this.distributeWallScenery(
+                    sceneryCombination,
+                    sceneryPool,
+                    startX,
+                    startY,
+                    dir,
+                    wallSpace
+                );
+                beginWall = null;
+                endWall = null;
+            }
+        }
+    }
+
+    private distributeWallScenery(
+        sceneryCombination: GSceneryDef[],
+        outerSceneryPool: GSceneryDef[],
+        startX: number,
+        startY: number,
+        dir: CardDir,
+        space: number
+    ) {
+        const vert: boolean = dir === Dir9.E || dir == Dir9.W;
+        const minEdgeShown: number = 16;
+
+        // Calculate total width/height of scenery objects:
+        let totalSceneryWidth: number = 0;
+        let totalSceneryHeight: number = 0;
+        sceneryCombination.forEach(c => {
+            totalSceneryWidth += c.body.width;
+            totalSceneryHeight += c.body.height;
+        });
+        this.ROOM_LOG.push(`Space to distribute: ${space - totalSceneryWidth}`);
+
+        // Determine increment:
+        let inc: number = 0;
+        if (sceneryCombination.length > 1) {
+            inc += ((space - (vert ? totalSceneryHeight : totalSceneryWidth)) / (sceneryCombination.length - 1));
+        }
+        this.ROOM_LOG.push(`inc: ${inc}`);
+
+        let x: number = startX;
+        let y: number = startY;
+        let sX: number;
+        let sY: number;
+        let adjustRange: number;
+        for (let s of sceneryCombination) {
+            sX = x;
+            sY = y;
+
+            switch(dir) {
+                case Dir9.N:
+                    adjustRange = s.body.height >= GFF.TILE_H ? GFF.TILE_H - minEdgeShown : GFF.CHAR_BODY_H;
+                    sY = s.body.height >= GFF.TILE_H ? GFF.TOP_BOUND - (s.body.height - minEdgeShown) : GFF.TOP_BOUND;
+                    sY = GRandom.randInt(sY, sY + adjustRange);
+                    break;
+                case Dir9.W:
+                    adjustRange = s.body.width >= GFF.TILE_W ? GFF.TILE_W - minEdgeShown : GFF.CHAR_BODY_W;
+                    sX = s.body.width >= GFF.TILE_W ? GFF.LEFT_BOUND - (s.body.width - minEdgeShown) : GFF.LEFT_BOUND;
+                    sX = GRandom.randInt(sX, sX + adjustRange);
+                    break;
+                case Dir9.E:
+                    adjustRange = s.body.width >= GFF.TILE_W ? GFF.TILE_W - minEdgeShown : GFF.CHAR_BODY_W;
+                    sX = s.body.width >= GFF.TILE_W ? GFF.ROOM_AREA_RIGHT : GFF.ROOM_AREA_RIGHT + minEdgeShown;
+                    sX = GRandom.randInt(sX, sX + adjustRange);
+                    break;
+                case Dir9.S:
+                    adjustRange = s.body.height >= GFF.TILE_H ? GFF.TILE_H - minEdgeShown : GFF.CHAR_BODY_H;
+                    sY = s.body.height >= GFF.TILE_H ? GFF.ROOM_AREA_BOTTOM : GFF.ROOM_AREA_BOTTOM + minEdgeShown;
+                    sY = GRandom.randInt(sY, sY + adjustRange);
+                    break;
+            }
+            this.addScenery(s.key, sX - s.body.x, sY - s.body.y);
+
+            if (vert) {
+                y += (s.body.height + inc);
+            } else {
+                x += (s.body.width + inc);
+            }
+        }
+    }
+
+    private getSceneryCombinationForWall(
+        sceneryPool: GSceneryDef[],
+        tiles: number,
+        dir: CardDir
+    ): GSceneryDef[] {
+        const results: GSceneryDef[][] = [];
+        const vert: boolean = dir === Dir9.E || dir == Dir9.W;
+        const space: number = vert
+            ? tiles * GFF.TILE_H
+            : tiles * GFF.TILE_W;
+        const threshold: number = 32; // This is char body height * 2... hopefully it works!
+
+        function backtrack(start: number, combination: GSceneryDef[], currentSum: number): void {
+            // If the current sum is within the acceptable range, add the combination to results
+            if (currentSum <= space && currentSum >= space - threshold) {
+                results.push([...combination]);
+            }
+
+            // Try adding each item to the combination, starting from the current index
+            for (let i = start; i < sceneryPool.length; i++) {
+                const newSum: number = currentSum + (vert ? sceneryPool[i].body.height : sceneryPool[i].body.width);
+
+                // Stop exploring further if adding this item exceeds space
+                if (newSum > space) continue;
+
+                // Choose the item and backtrack
+                combination.push(sceneryPool[i]);
+                backtrack(i, combination, newSum);
+                combination.pop(); // Remove the item for the next iteration
+            }
+        }
+
+        backtrack(0, [], 0);
+        return GRandom.randElement(results);
     }
 
     // If chance is met, add min-max of scenery type
@@ -452,5 +793,16 @@ export class GRoom {
             }
         }
         return false;
+    }
+
+    public logRoomInfo() {
+        // Print out room log (for testing room generation):
+        this.ROOM_LOG.forEach(s => {
+            console.log(s);
+        });
+
+        // Log scenery plans:
+        console.log('Scenery Plans:');
+        console.dir(this.plans);
     }
 }

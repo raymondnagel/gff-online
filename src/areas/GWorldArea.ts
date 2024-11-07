@@ -1,7 +1,7 @@
 import { GArea } from "./GArea";
 import { GRegion } from "../regions/GRegion";
 import { GRoom } from "../GRoom";
-import { CardDir, GPerson, GPoint } from "../types";
+import { CardDir, Dir9, GPerson, GPoint } from "../types";
 import { GPlainRegion } from "../regions/GPlainRegion";
 import { GForestRegion } from "../regions/GForestRegion";
 import { GDesertRegion } from "../regions/GDesertRegion";
@@ -60,6 +60,7 @@ export class GWorldArea extends GArea {
         this.createRegions();
         this.addRandomWallSections(0, true, false, 200);
         this.createOuterBorder(0);
+        this.fixCornerWallSections();
         this.createCivilization();
         this.createStrongholds();
         this.concealAllRooms(0);
@@ -190,25 +191,25 @@ export class GWorldArea extends GArea {
     private borderRegion(region: GRegion): BorderWall[] {
         const borderWalls: BorderWall[] = [];
         for (let room of region.getRooms()) {
-            let neighbor: GRoom|null = room.getNeighbor(GDirection.Dir9.N);
+            let neighbor: GRoom|null = room.getNeighbor(Dir9.N);
             if (neighbor && neighbor.getRegion() !== room.getRegion()) {
-                this.setWallByRoom(room, GDirection.Dir9.N, true);
-                borderWalls.push({ room, dir: GDirection.Dir9.N });
+                this.setWallByRoom(room, Dir9.N, true);
+                borderWalls.push({ room, dir: Dir9.N });
             }
-            neighbor = room.getNeighbor(GDirection.Dir9.E);
+            neighbor = room.getNeighbor(Dir9.E);
             if (neighbor && neighbor.getRegion() !== room.getRegion()) {
-                this.setWallByRoom(room, GDirection.Dir9.E, true);
-                borderWalls.push({ room, dir: GDirection.Dir9.E });
+                this.setWallByRoom(room, Dir9.E, true);
+                borderWalls.push({ room, dir: Dir9.E });
             }
-            neighbor = room.getNeighbor(GDirection.Dir9.W);
+            neighbor = room.getNeighbor(Dir9.W);
             if (neighbor && neighbor.getRegion() !== room.getRegion()) {
-                this.setWallByRoom(room, GDirection.Dir9.W, true);
-                borderWalls.push({ room, dir: GDirection.Dir9.W });
+                this.setWallByRoom(room, Dir9.W, true);
+                borderWalls.push({ room, dir: Dir9.W });
             }
-            neighbor = room.getNeighbor(GDirection.Dir9.S);
+            neighbor = room.getNeighbor(Dir9.S);
             if (neighbor && neighbor.getRegion() !== room.getRegion()) {
-                this.setWallByRoom(room, GDirection.Dir9.S, true);
-                borderWalls.push({ room, dir: GDirection.Dir9.S });
+                this.setWallByRoom(room, Dir9.S, true);
+                borderWalls.push({ room, dir: Dir9.S });
             }
         }
         return borderWalls;
@@ -387,10 +388,10 @@ export class GWorldArea extends GArea {
 
         // Shuffle expansion directions, so towns don't always look the same when they succeed the first time:
         const dirs: CardDir[] = [
-            GDirection.Dir9.N,
-            GDirection.Dir9.E,
-            GDirection.Dir9.W,
-            GDirection.Dir9.S
+            Dir9.N,
+            Dir9.E,
+            Dir9.W,
+            Dir9.S
         ];
         GRandom.shuffle(dirs);
 

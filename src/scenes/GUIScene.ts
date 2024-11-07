@@ -290,12 +290,12 @@ export abstract class GUIScene extends GBaseScene {
     protected initDesignMode() {
         this.mouseText = this.add.text(0, 0, '', {
             color: '#ffffff',
-            fontFamily: 'pragrom',
+            fontFamily: 'gemerald',
             fontSize: '12px'
         }).setOrigin(0, 0);
         this.blockText = this.add.text(0, 16, '', {
             color: '#ffffff',
-            fontFamily: 'pragrom',
+            fontFamily: 'gemerald',
             fontSize: '12px'
         }).setOrigin(0, 0);
 

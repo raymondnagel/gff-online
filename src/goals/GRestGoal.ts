@@ -1,7 +1,8 @@
 import { GDirection } from "../GDirection";
-import { GGoal } from "../GGoal";
+import { GGoal } from "./GGoal";
 import { GRandom } from "../GRandom";
 import { GCharSprite } from "../objects/chars/GCharSprite";
+import { Dir9 } from "../types";
 
 export class GRestGoal extends GGoal {
 
@@ -14,7 +15,7 @@ export class GRestGoal extends GGoal {
 
         // Walk NONE stops the character and sets the "idle" animation, but
         // keeps the character facing the direction we set previously.
-        this.char.walkDirection(GDirection.Dir9.NONE);
+        this.char.walkDirection(Dir9.NONE);
     }
 
     public doStep(): void {
