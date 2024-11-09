@@ -5,6 +5,8 @@ import { GBaseScene } from './GBaseScene';
 import { GImpSprite } from '../objects/chars/GImpSprite';
 import { AREA } from '../area';
 import { GWorldArea } from '../areas/GWorldArea';
+import { SCENERY } from '../scenery';
+import { BOOKS } from '../books';
 
 const LOAD_COLOR: number     = 0xffffff;
 const PROGRESS_COLOR: number = 0x00c220;
@@ -93,6 +95,13 @@ export class GLoadingScene extends GBaseScene {
                     this.cameras.main.height / 2,
                     'initial_play'
                 ).setInteractive();
+
+                // Init Bible books:
+                BOOKS.initBooks();
+                BOOKS.startWithBook('John');
+
+                // Init scenery definitions:
+                SCENERY.initSceneryDefs();
 
                 // Create the people:
                 GPersonSprite.createAllPeople();

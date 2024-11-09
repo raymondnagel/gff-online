@@ -77,6 +77,10 @@ export abstract class GCharSprite extends Phaser.Physics.Arcade.Sprite {
         (this.scene as GAdventureContent).getSound().playSound(voiceKey);
     }
 
+    public getBody(): Phaser.Physics.Arcade.Body {
+        return this.body as Phaser.Physics.Arcade.Body;
+    }
+
     public getDirection() {
         return this.direction;
     }

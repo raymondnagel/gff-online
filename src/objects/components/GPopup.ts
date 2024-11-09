@@ -1,7 +1,7 @@
-import { GGlossary } from "../../GGlossary";
+import { BOOKS } from "../../books";
+import { GLOSSARY } from "../../glossary";
 import { GFF } from "../../main";
-import { GAdventureContent } from "../../scenes/GAdventureContent";
-import { GActionableOption, GGlossaryEntry, GPoint } from "../../types";
+import { GActionableOption, GBookEntry, GGlossaryEntry, GPoint } from "../../types";
 import { GDistributionContainer } from "./GDistributionContainer";
 import { GDynamicPositioner } from "./GDynamicPositioner";
 import { GTextButton } from "./GTextButton";
@@ -287,7 +287,7 @@ export class GPopup extends Phaser.GameObjects.Image {
      * @param itemName name of the item entry to be pulled from the glossary
      */
     public static createItemPopup(itemName: string): GPopup {
-        const entry: GGlossaryEntry = GGlossary.lookupEntry(itemName) as GGlossaryEntry;
+        const entry: GGlossaryEntry = GLOSSARY.lookupEntry(itemName) as GGlossaryEntry;
         const popup: GPopup = new GPopup();
         GFF.AdventureUI.add.existing(popup);
         popup.createMiniTitle('God hath been gracious unto thee, for thou hast obtained:');
@@ -303,5 +303,29 @@ export class GPopup extends Phaser.GameObjects.Image {
         GFF.AdventureUI.getSound().playSound('fanfare');
         return popup;
     }
+
+    /**
+     * A book popup is identical to an item popup, but looks up a book entry instead
+     * of a regular glossary entry.
+     *
+     * @param bookName name of the book entry to be pulled from BOOKS list
+     */
+        public static createBookPopup(bookName: string): GPopup {
+            const entry: GBookEntry = BOOKS.lookupEntry(bookName) as GBookEntry;
+            const popup: GPopup = new GPopup();
+            GFF.AdventureUI.add.existing(popup);
+            popup.createMiniTitle('God hath been gracious unto thee, for thou hast obtained:');
+            popup.createItemImage('book');
+            popup.createItemTitle(entry.name);
+            popup.createItemBody(entry.title); // TODO: Should be replaced with description when available
+            popup.createAmenButton();
+            popup.sizeAndCenter(popup.minWidth, popup.minHeight);
+            popup.createBorder();
+            popup.positioner.arrangeAll();
+
+            // Play a fanfare when we get a book!
+            GFF.AdventureUI.getSound().playSound('fanfare');
+            return popup;
+        }
 
 }

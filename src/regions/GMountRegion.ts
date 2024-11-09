@@ -25,6 +25,12 @@ export class GMountRegion extends GOutsideRegion{
         const objectBounds: GRect[] = [];
 
         // Call methods to add any quantity of any desired scenery:
-        room.planZonedScenery(SCENERY.BOULDER_DEF, 5, objectBounds, zoneRects);
+
+        // Walls:
+        room.planPartialWallScenery([
+            SCENERY.def('boulder'),
+            SCENERY.def('pine_tree'),
+            SCENERY.def('wonky_tree')
+        ]);
     }
 }

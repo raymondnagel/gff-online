@@ -3,7 +3,12 @@ import { GAdventureContent } from '../../scenes/GAdventureContent';
 import { GSceneryDef } from '../../types';
 import { GFF } from '../../main';
 
-export abstract class GObstacleSprite extends Phaser.Physics.Arcade.Sprite {
+/**
+ * This class should be used directly, since obstacles have no real features
+ * or functionality apart from the common physics provided in this class.
+ * The only diversification is in arguments provided to the constructor.
+ */
+export class GObstacleSprite extends Phaser.Physics.Arcade.Sprite {
 
     private sceneryDef: GSceneryDef;
 
@@ -30,7 +35,6 @@ export abstract class GObstacleSprite extends Phaser.Physics.Arcade.Sprite {
             this.body.updateFromGameObject();
             this.setDepth(this.body.y + this.body.height);
         }
-        this.setCollideWorldBounds(true);
 
         // Add to the scene as an obstacle:
         GFF.AdventureContent.addObstacle(this);

@@ -1,7 +1,6 @@
 import { GRegion } from "./regions/GRegion";
 import { CardDir, Dir9, GPoint, GRect, GRoomWalls, GSceneryDef, GSceneryPlan } from "./types";
 import { SCENERY } from "./scenery";
-import { GAdventureContent } from "./scenes/GAdventureContent";
 import { GFF } from "./main";
 import { GTreasureChest } from "./objects/GTreasureChest";
 import { GRandom } from "./GRandom";
@@ -39,13 +38,15 @@ export class GRoom {
     private x: number;
     private y: number;
     private plans: GSceneryPlan[] = [];
+    private noSceneryZones: GRect[] = [];
     private region: GRegion;
     private town: GTown|null = null;
     private church: GChurch|null = null;
     private stronghold: GStronghold|null = null;
     private walls: GRoomWalls;
-    private start: boolean = false;
+    private startRoom: boolean = false;
     private discovered: boolean = false;
+    private chestItem: string|null = null;
 
     private ROOM_LOG: string[] = [];
 
@@ -64,11 +65,11 @@ export class GRoom {
     }
 
     public setStart() {
-        this.start = true;
+        this.startRoom = true;
     }
 
     public isStart(): boolean {
-        return this.start;
+        return this.startRoom;
     }
 
     public getArea(): GArea {
@@ -85,6 +86,10 @@ export class GRoom {
 
     public getY(): number {
         return this.y;
+    }
+
+    public getChestItem(): string|null {
+        return this.chestItem;
     }
 
     public getTown(): GTown|null {
@@ -145,6 +150,8 @@ export class GRoom {
             return 'map_town';
         } else if (this.stronghold) {
             return 'map_hold';
+        } else if (this.hasPremiumChest()) {
+            return 'map_chest';
         }
         return null;
     }
@@ -276,10 +283,25 @@ export class GRoom {
     }
 
     public isSafe(): boolean {
-        if (this.start || this.church) {
+        if (this.church) {
             return true;
         } else {
             return false;
+        }
+    }
+
+    public hasPremiumChest(): boolean {
+        return this.plans.some(plan => plan.key === 'premium_chest');
+    }
+
+    public canHavePremiumChest(): boolean {
+        return !this.church && !this.town && !this.stronghold && !this.hasPremiumChest();
+    }
+
+    public removePremiumChest() {
+        const index = this.plans.findIndex(plan => plan.key === 'premium_chest');
+        if (index !== -1) {
+            this.plans.splice(index, 1);
         }
     }
 
@@ -310,11 +332,8 @@ export class GRoom {
 
         // Create scenery objects from plan:
         this.plans.forEach((plan) => {
-            SCENERY.create(plan.key, plan.x, plan.y, decorRenderer);
+            SCENERY.create(plan, decorRenderer);
         });
-
-        // Treasure chest test:
-        new GTreasureChest(GFF.AdventureContent, 512, 384, GRandom.flipCoin());
 
         // Help text on first room:
         if (this.isStart()) {
@@ -481,13 +500,13 @@ export class GRoom {
     }
 
     private createPartialWallGuard(x: number, y: number, width: number, height: number) {
-        const guard: Phaser.GameObjects.Rectangle = GFF.AdventureContent.add.rectangle(x, y, width, height).setOrigin(0, 0);
+        const guard: Phaser.GameObjects.Rectangle = GFF.AdventureContent.add.rectangle(x, y, width, height/*, 0xff0000, .3*/).setOrigin(0, 0);
         GFF.AdventureContent.physics.add.existing(guard, false);
         (guard.body as Phaser.Physics.Arcade.Body).setImmovable(true);
         GFF.AdventureContent.addObstacle(guard);
     }
 
-    public addScenery(key: string, x: number, y: number) {
+    public addSceneryPlan(key: string, x: number, y: number) {
         this.plans.push({key, x, y});
     }
 
@@ -497,20 +516,18 @@ export class GRoom {
         // Omit first/last section of N/S walls IF there is a full wall next to it:
         const omitFirstNorthSouth: boolean = this.hasFullWall(Dir9.W);
         const omitLastNorthSouth: boolean = this.hasFullWall(Dir9.E);
-        // Omit first/last section of W/E walls if they are shared with N/S walls:
-        const omitFirstWest: boolean = this.area.isFirstWallSection(this, Dir9.N);
-        const omitLastWest: boolean = this.area.isFirstWallSection(this, Dir9.S);
-        const omitLastEast: boolean = this.area.isLastWallSection(this, Dir9.S);
-        const omitFirstEast: boolean = this.area.isLastWallSection(this, Dir9.N);
+        // Omit first/last section of W/E walls IF there is a full wall next to it:
+        const omitFirstWestEast: boolean = this.hasFullWall(Dir9.N);
+        const omitLastWestEast: boolean = this.hasFullWall(Dir9.S);
 
         if (this.hasAnyWall(Dir9.N) && !this.hasFullWall(Dir9.N)) {
             this.planWallSections(Dir9.N, sceneryDefs, omitFirstNorthSouth, omitLastNorthSouth);
         }
         if (this.hasAnyWall(Dir9.W) && !this.hasFullWall(Dir9.W)) {
-            this.planWallSections(Dir9.W, sceneryDefs, omitFirstWest, omitLastWest);
+            this.planWallSections(Dir9.W, sceneryDefs, omitFirstWestEast, omitLastWestEast);
         }
         if (this.hasAnyWall(Dir9.E) && !this.hasFullWall(Dir9.E)) {
-            this.planWallSections(Dir9.E, sceneryDefs, omitFirstEast, omitLastEast);
+            this.planWallSections(Dir9.E, sceneryDefs, omitFirstWestEast, omitLastWestEast);
         }
         if (this.hasAnyWall(Dir9.S) && !this.hasFullWall(Dir9.S)) {
             this.planWallSections(Dir9.S, sceneryDefs, omitFirstNorthSouth, omitLastNorthSouth);
@@ -605,7 +622,6 @@ export class GRoom {
             totalSceneryWidth += c.body.width;
             totalSceneryHeight += c.body.height;
         });
-        this.ROOM_LOG.push(`Space to distribute: ${space - totalSceneryWidth}`);
 
         // Determine increment:
         let inc: number = 0;
@@ -636,16 +652,18 @@ export class GRoom {
                     break;
                 case Dir9.E:
                     adjustRange = s.body.width >= GFF.TILE_W ? GFF.TILE_W - minEdgeShown : GFF.CHAR_BODY_W;
-                    sX = s.body.width >= GFF.TILE_W ? GFF.ROOM_AREA_RIGHT : GFF.ROOM_AREA_RIGHT + minEdgeShown;
+                    sX = s.body.width >= GFF.TILE_W ? GFF.ROOM_AREA_RIGHT : GFF.RIGHT_BOUND - (s.body.width + GFF.CHAR_BODY_W);
                     sX = GRandom.randInt(sX, sX + adjustRange);
                     break;
                 case Dir9.S:
-                    adjustRange = s.body.height >= GFF.TILE_H ? GFF.TILE_H - minEdgeShown : GFF.CHAR_BODY_H;
-                    sY = s.body.height >= GFF.TILE_H ? GFF.ROOM_AREA_BOTTOM : GFF.ROOM_AREA_BOTTOM + minEdgeShown;
+                    // South wall is the most unique; since scenery can be tall,
+                    // let's move it more southward, even if it's a little off the screen
+                    adjustRange = s.body.height >= GFF.TILE_H ? minEdgeShown : s.body.height * .85;
+                    sY = s.body.height >= GFF.TILE_H ? GFF.ROOM_AREA_BOTTOM + (GFF.TILE_H / 2) : GFF.BOTTOM_BOUND - (s.body.height * .85);
                     sY = GRandom.randInt(sY, sY + adjustRange);
                     break;
             }
-            this.addScenery(s.key, sX - s.body.x, sY - s.body.y);
+            this.addSceneryPlan(s.key, sX - s.body.x, sY - s.body.y);
 
             if (vert) {
                 y += (s.body.height + inc);
@@ -716,7 +734,7 @@ export class GRoom {
                 return;
             }
             objects.push(placement);
-            this.addScenery(sceneryDef.key, placement.x - sceneryDef.body.x, placement.y - sceneryDef.body.y);
+            this.addSceneryPlan(sceneryDef.key, placement.x - sceneryDef.body.x, placement.y - sceneryDef.body.y);
         }
     }
 
@@ -725,6 +743,13 @@ export class GRoom {
         // The default zone allows space for walls around the perimeter.
         if (zones === undefined) {
             zones = [ {x: GFF.ROOM_AREA_LEFT, y: GFF.ROOM_AREA_TOP, width: GFF.ROOM_AREA_WIDTH, height: GFF.ROOM_AREA_HEIGHT} ];
+        }
+
+        // Add no-scenery zones to objects array (it can count as an object for keeping scenery out):
+        for (let nsz of this.noSceneryZones) {
+            if (!objects.includes(nsz)) {
+                objects.push(nsz);
+            }
         }
 
         // Simple placement: try random X,Y:
@@ -737,6 +762,39 @@ export class GRoom {
 
         // Will return null if no placement was available
         return placement;
+    }
+
+    public planPremiumChestShrine(itemName: string) {
+        const shrineAreaWidth: number = 275;
+        const shrineAreaHeight: number = 122;
+        const borderSize: number = 64;
+
+        // Don't need to check for any intersections, because this will be planned before other scenery
+        // Can go anywhere within the room area rectangle - anywhere except space reserved for walls
+        let x: number = GRandom.randInt(GFF.ROOM_AREA_LEFT + borderSize, GFF.ROOM_AREA_RIGHT - shrineAreaWidth - borderSize);
+        let y: number = GRandom.randInt(GFF.ROOM_AREA_TOP + borderSize, GFF.ROOM_AREA_BOTTOM - shrineAreaHeight - borderSize);
+
+        // Create a no-scenery zone:
+        this.noSceneryZones.push({x, y, width: shrineAreaWidth + (borderSize * 2), height: shrineAreaHeight + (borderSize * 2)});
+
+        // Adjust these to the physical bounds of the enclosed objects:
+        x += borderSize;
+        y += borderSize;
+
+        // Add pillars:
+        this.addSceneryPlan('shrine_pillar', x + 55, y - 109); // Upper-left
+        this.addSceneryPlan('shrine_pillar', x + 211, y - 83); // Upper-right
+        this.addSceneryPlan('shrine_pillar', x, y - 43);       // Lower-left
+        this.addSceneryPlan('shrine_pillar', x + 156, y - 16); // Lower-right
+
+        // Add pedestal:
+        this.addSceneryPlan('shrine_pedestal', x + 104, y + 42);
+
+        // Add premium chest:
+        this.addSceneryPlan('premium_chest', x + 111, y + 16);
+
+        // Set item to be obtained when the chest is opened:
+        this.chestItem = itemName;
     }
 
     private sampleFit(objectWidth: number, objectHeight: number, inc: number, objects: GRect[], zones: GRect[]): GRect|null {

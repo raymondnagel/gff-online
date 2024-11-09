@@ -1,6 +1,5 @@
 import { GFF } from "./main";
-import { GCharSprite } from "./objects/chars/GCharSprite";
-import { GPlayerSprite } from "./objects/chars/GPlayerSprite";
+import { GImpSprite } from "./objects/chars/GImpSprite";
 import { PLAYER } from "./player";
 import { GSpirit } from "./types";
 
@@ -13,7 +12,7 @@ export namespace ENEMY {
     let portrait: string;
     let avatar: string;
     let spirit: GSpirit;
-    let sprite: GCharSprite;
+    let sprite: GImpSprite;
 
     export function getXpValue(): number {
         /**
@@ -70,17 +69,21 @@ export namespace ENEMY {
         return avatar;
     }
 
-    export function getSprite(): GCharSprite {
+    export function getSprite(): GImpSprite {
         return sprite;
     }
 
-    export function init(enemy: GCharSprite, enemySpirit: GSpirit, enemyPortrait: string, enemyAvatar: string) {
+    export function init(enemy: GImpSprite, enemySpirit: GSpirit, enemyPortrait: string, enemyAvatar: string) {
         sprite = enemy;
         spirit = enemySpirit;
         portrait = enemyPortrait;
         avatar = enemyAvatar;
         setMaxResistance(GFF.Difficulty.enemyBaseResist + (GFF.Difficulty.enemyResistPerLevel * enemySpirit.level));
         setResistance(getMaxResistance());
+    }
+
+    export function levelUp() {
+        spirit.level = Math.min(50, spirit.level + 1);
     }
 
     export function addImp(impSpirit: GSpirit) {

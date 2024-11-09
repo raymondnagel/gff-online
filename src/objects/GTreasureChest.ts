@@ -1,41 +1,41 @@
+import { BOOKS } from "../books";
+import { GLOSSARY } from "../glossary";
 import { GRandom } from "../GRandom";
+import { GRoom } from "../GRoom";
 import { GFF } from "../main";
 import { PLAYER } from "../player";
-import { GAdventureContent } from "../scenes/GAdventureContent";
-import { GItem } from "../types";
+import { SCENERY } from "../scenery";
+import { GBookEntry, GGlossaryEntry, GItem } from "../types";
 import { GPopup } from "./components/GPopup";
+import { GInteractable } from "./interactables/GInteractable";
 
-export class GTreasureChest extends Phaser.Physics.Arcade.Image {
+export class GTreasureChest extends GInteractable {
 
     private premium: boolean;
 
-    constructor(scene: GAdventureContent, x: number, y: number, premium: boolean) {
-        super(scene, x, y, premium ? 'premium_chest' : 'common_chest');
+    constructor(x: number, y: number, premium: boolean) {
+        super(SCENERY.def(premium ? 'premium_chest' : 'common_chest'), x, y);
         this.setOrigin(0, 0);
         this.premium = premium;
-
-        // Add to scene:
-        scene.add.existing(this);
-
-        // Configure physical properites:
-        scene.physics.add.existing(this);
-        if (this.body !== null) {
-            this.body.setSize(64, 20);
-            this.body.setOffset(0, 34);
-            this.body.immovable = true;
-            this.body.updateFromGameObject();
-            this.setDepth(this.body.bottom);
-        }
-
-        // Add to the scene as a special:
-        scene.addSpecial(this);
     }
 
-    public open() {
+    public canInteract(): boolean {
+        return PLAYER.getFaith() > 0;
+    }
+
+    public interact() {
         const item: GItem = this.premium ? this.getPremiumItem() : this.getCommonItem();
         GFF.AdventureContent.scene.pause();
         GFF.AdventureUI.getSound().playSound('open_chest').once('complete', () => {
-            GPopup.createItemPopup(item.name);
+            GFF.AdventureContent.getCurrentRoom()?.removePremiumChest();
+            switch (item.type) {
+                case 'book':
+                    GPopup.createBookPopup(item.name);
+                    break;
+                case 'item':
+                    GPopup.createItemPopup(item.name);
+                    break;
+            }
             item.onCollect();
             this.destroy();
         });
@@ -44,23 +44,23 @@ export class GTreasureChest extends Phaser.Physics.Arcade.Image {
     private getCommonItem(): GItem {
         const item: GItem = GRandom.randElementWeighted([
             {
-                element: { name: 'seed', onCollect: () => {PLAYER.changeSeeds(1)} },
+                element: { name: 'seed', type: 'item', onCollect: () => {PLAYER.changeSeeds(1)} },
                 weight: 20
             },
             {
-                element: { name: 'milk', onCollect: () => {PLAYER.changeFaith(50)} },
+                element: { name: 'milk', type: 'item', onCollect: () => {PLAYER.changeFaith(50)} },
                 weight: 20
             },
             {
-                element: { name: 'meat', onCollect: () => {PLAYER.changeFaith(200)} },
+                element: { name: 'meat', type: 'item', onCollect: () => {PLAYER.changeFaith(200)} },
                 weight: 10
             },
             {
-                element: { name: 'strong_meat', onCollect: () => {PLAYER.changeFaith(500)} },
+                element: { name: 'strong_meat', type: 'item', onCollect: () => {PLAYER.changeFaith(500)} },
                 weight: 5
             },
             {
-                element: { name: 'sermon', onCollect: () => {PLAYER.changeSermons(1)} },
+                element: { name: 'sermon', type: 'item', onCollect: () => {PLAYER.changeSermons(1)} },
                 weight: 5
             }
         ]) as GItem;
@@ -69,10 +69,25 @@ export class GTreasureChest extends Phaser.Physics.Arcade.Image {
     }
 
     private getPremiumItem(): GItem {
-        return this.getCommonItem();
-    }
+        const room: GRoom = GFF.AdventureContent.getCurrentRoom() as GRoom;
+        const itemName: string = room.getChestItem() as string;
+        let entry: GBookEntry|GGlossaryEntry|undefined = BOOKS.lookupEntry(itemName);
 
-    public toString() {
-        return this.premium ? 'premium_chest' : 'common_chest';
+        // If entry was found in BOOKS, return a book item:
+        if (entry !== undefined) {
+            return {
+                name: itemName,
+                type: 'book',
+                onCollect: () => {BOOKS.obtainBook(itemName)}
+            };
+        } else {
+            // Otherwise, look it up in the GLOSSARY:
+            entry = GLOSSARY.lookupEntry(itemName);
+            return {
+                name: itemName,
+                type: 'item',
+                onCollect: () => {/* Cross this bridge when we get to it */}
+            };
+        }
     }
 }

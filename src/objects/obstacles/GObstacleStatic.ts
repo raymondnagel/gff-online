@@ -2,7 +2,12 @@ import 'phaser';
 import { GFF } from '../../main';
 import { GSceneryDef } from '../../types';
 
-export abstract class GObstacleStatic extends Phaser.Physics.Arcade.Image {
+/**
+ * This class should be used directly, since obstacles have no real features
+ * or functionality apart from the common physics provided in this class.
+ * The only diversification is in arguments provided to the constructor.
+ */
+export class GObstacleStatic extends Phaser.Physics.Arcade.Image {
 
     private sceneryDef: GSceneryDef;
 
@@ -27,7 +32,6 @@ export abstract class GObstacleStatic extends Phaser.Physics.Arcade.Image {
             this.body.updateFromGameObject();
             this.setDepth(this.body.bottom);
         }
-        this.setCollideWorldBounds(true);
 
         // Add to the scene as an obstacle:
         GFF.AdventureContent.addObstacle(this);

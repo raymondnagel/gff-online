@@ -55,9 +55,17 @@ export type GGlossaryEntry = {
     inspiration: string;
 };
 
+// Represents an entry from the Book Info
+export type GBookEntry = {
+    name: string;
+    title: string;
+    description: string;
+};
+
 // Pairs an item name with a function that is called when the item is obtained
 export type GItem = {
     name: string;
+    type: 'item'|'book';
     onCollect: Function;
 };
 
@@ -123,6 +131,7 @@ export interface GSceneryPlan extends GPoint {
 // turning it into a plan; but it doesn't have a location.
 export interface GSceneryDef {
     key: string;
+    type: 'bg_decor'|'fg_decor'|'interactable'|'static'|'sprite';
     body: GRect;
 }
 

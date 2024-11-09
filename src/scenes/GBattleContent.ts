@@ -1,5 +1,6 @@
+import { BIBLE } from "../bible";
+import { BOOKS } from "../books";
 import { ENEMY } from "../enemy";
-import { GBible } from "../GBible";
 import { GInputMode } from "../GInputMode";
 import { GRandom } from "../GRandom";
 import { GFF } from "../main";
@@ -155,6 +156,8 @@ export class GBattleContent extends GContentScene {
     private enemyAttacks: {element: GEnemyAttack, weight: number}[];
     private enemyAttackSlashSprite: Phaser.GameObjects.Sprite;
 
+    private playerBooks: string[];
+
     constructor() {
         super("BattleContent");
         GFF.BattleContent = this;
@@ -165,6 +168,8 @@ export class GBattleContent extends GContentScene {
         GFF.setMouseVisible(false);
         this.initInputModes();
         this.setInputMode(INPUT_DISABLED);
+
+        this.playerBooks = BOOKS.getEnabledBooks();
 
         // Background image:
         this.bgImage = this.add.image(0, 0, GFF.BATTLE_MODE.getBgImage()).setOrigin(0, 0);
@@ -254,7 +259,7 @@ export class GBattleContent extends GContentScene {
         }).setOrigin(.5, .5).setWordWrapWidth(WORD_WRAP_WIDTH);
 
         // Book wheel
-        this.bookWheel = new GOptionWheel(this, 370, GUESS_SCRIPTURE_Y, PLAYER.getBooks());
+        this.bookWheel = new GOptionWheel(this, 370, GUESS_SCRIPTURE_Y, this.playerBooks);
         this.bookWheel.setVisible(false);
         this.add.existing(this.bookWheel);
         // Book text:
@@ -765,7 +770,7 @@ export class GBattleContent extends GContentScene {
     }
 
     public showRandomVerse() {
-        this.servedVerse = GBible.getRandomVerseFromBooks(PLAYER.getBooks());
+        this.servedVerse = BIBLE.getRandomVerseFromBooks(this.playerBooks);
         GFF.log(`Served verse: ${this.servedVerse.book} ${this.servedVerse.chapter}:${this.servedVerse.verse}`);
         this.scriptureText.setVisible(true);
         this.scriptureText.text = this.servedVerse.verseText;
@@ -973,7 +978,7 @@ export class GBattleContent extends GContentScene {
     }
 
     private evaluateGuess(): number {
-        const chapters: Element[] = GBible.getAllChaptersForBook(this.servedVerse.book);
+        const chapters: Element[] = BIBLE.getAllChaptersForBook(this.servedVerse.book);
 
         const actualChapter: number = this.servedVerse.chapter;
         const actualVerse: number = this.servedVerse.verse;
@@ -999,7 +1004,7 @@ export class GBattleContent extends GContentScene {
         const bonusScore: number = perfect ? 100 : 0;
 
         const subTotal: number = Math.floor(bonusScore + chapterBase + ( (chapterBase / 100) * verseBase));
-        const books: number = PLAYER.getBooks().length;
+        const books: number = this.playerBooks.length;
         const finalScore: number = Math.floor(subTotal * books);
 
         this.guessCaption.text = 'Guessed Reference:';

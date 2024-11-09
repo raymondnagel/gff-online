@@ -17,6 +17,7 @@ import { GChurch } from "../GChurch";
 import { CHURCH } from "../church";
 import { GStronghold } from "../GStronghold";
 import { PEOPLE } from "../people";
+import { BOOKS } from "../books";
 
 type BorderWall = {
     room: GRoom,
@@ -446,8 +447,8 @@ export class GWorldArea extends GArea {
         const strongholds: GStronghold[] = [
             new GStronghold('Tower of Deception'),
             new GStronghold('Dungeon of Doubt'),
-            new GStronghold('Keep of Wickedness'),
             new GStronghold('Fortress of Enmity'),
+            new GStronghold('Keep of Wickedness'),
             new GStronghold('Castle of Perdition'),
         ];
         GRandom.shuffle(strongholds);
@@ -481,5 +482,35 @@ export class GWorldArea extends GArea {
         }
 
         GFF.genLog(`Couldn't find a suitable location for ${stronghold.getName()} in ${region.getName()}!`);
+    }
+
+    protected furnishRooms(): void {
+        // Decide where premium treasure chests are going:
+        // There are 35 in World Area: 30 books and 5 commandments
+        const allRooms: GRoom[] = this.getRoomsByFloor(0);
+        let room: GRoom|null = null;
+
+        // For 30 books:
+        for (let b: number = 0; b < 30; b++) {
+            // Try to find a place to put the chest:
+            while (!room || !room.canHavePremiumChest()) {
+                room = GRandom.randElement(allRooms);
+            }
+            const book: string|undefined = BOOKS.getNextBookToFind();
+            if (book !== undefined) {
+                room.planPremiumChestShrine(book);
+            }
+        }
+
+        // For 5 commandments:
+        for (let c: number = 0; c < 5; c++) {
+            // Try to find a place to put the chest:
+            while (!room || !room.canHavePremiumChest()) {
+                room = GRandom.randElement(allRooms);
+            }
+            // room.planPremiumChestShrine(); // Add specific commandment as argument!
+        }
+
+        super.furnishRooms();
     }
 }

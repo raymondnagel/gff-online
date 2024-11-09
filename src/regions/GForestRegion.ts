@@ -27,31 +27,41 @@ export class GForestRegion extends GOutsideRegion{
 
         // Call methods to add any quantity of any desired scenery:
 
+        // Walls:
+        room.planPartialWallScenery([
+            SCENERY.def('oak_tree'),
+            SCENERY.def('pine_tree'),
+            SCENERY.def('tree_stump'),
+            SCENERY.def('bush'),
+            SCENERY.def('shrub'),
+            SCENERY.def('wonky_tree')
+        ]);
+
         // Forest type:
         switch (GRandom.randInt(1, 3)) {
             case 1:
                 // Oak Trees: 100% chance to add 10-20
-                room.planSceneryChanceForBatch(SCENERY.OAK_TREE_DEF, 1, 10, 20, objectBounds, zoneRects);
+                room.planSceneryChanceForBatch(SCENERY.def('oak_tree'), 1, 10, 20, objectBounds, zoneRects);
                 break;
             case 2:
                 // Pine Trees: 100% chance to add 10-20
-                room.planSceneryChanceForBatch(SCENERY.PINE_TREE_DEF, 1, 10, 20, objectBounds, zoneRects);
+                room.planSceneryChanceForBatch(SCENERY.def('pine_tree'), 1, 10, 20, objectBounds, zoneRects);
                 break;
             case 3:
                 // Oak Trees: 100% chance to add 5-10
-                room.planSceneryChanceForBatch(SCENERY.OAK_TREE_DEF, 1, 5, 10, objectBounds, zoneRects);
+                room.planSceneryChanceForBatch(SCENERY.def('oak_tree'), 1, 5, 10, objectBounds, zoneRects);
                 // Pine Trees: 100% chance to add 5-10
-                room.planSceneryChanceForBatch(SCENERY.PINE_TREE_DEF, 1, 5, 10, objectBounds, zoneRects);
+                room.planSceneryChanceForBatch(SCENERY.def('pine_tree'), 1, 5, 10, objectBounds, zoneRects);
                 break;
         }
 
         // Wonky Trees: 20% chance each to add up to 3
-        room.planSceneryChanceForEach(SCENERY.WONKY_TREE_DEF, .2, 3, objectBounds, zoneRects);
+        room.planSceneryChanceForEach(SCENERY.def('wonky_tree'), .2, 3, objectBounds, zoneRects);
         // Tree Stumps: 30% chance each to add up to 3
-        room.planSceneryChanceForBatch(SCENERY.TREE_STUMP_DEF, .3, 1, 3, objectBounds, zoneRects);
+        room.planSceneryChanceForBatch(SCENERY.def('tree_stump'), .3, 1, 3, objectBounds, zoneRects);
         // Boulders: 10% chance each to add up to 3
-        room.planSceneryChanceForEach(SCENERY.BOULDER_DEF, .2, 3, objectBounds, zoneRects);
+        room.planSceneryChanceForEach(SCENERY.def('boulder'), .2, 3, objectBounds, zoneRects);
         // Campfire: 10% chance each to add 1
-        room.planSceneryChanceForEach(SCENERY.CAMPFIRE_DEF, .1, 1, objectBounds, zoneRects);
+        room.planSceneryChanceForEach(SCENERY.def('campfire'), .1, 1, objectBounds, zoneRects);
     }
 }

@@ -22,6 +22,7 @@ import { GInputMode } from '../GInputMode';
 import { AREA } from '../area';
 import { GTown } from '../GTown';
 import { GChurch } from '../GChurch';
+import { GInteractable } from '../objects/interactables/GInteractable';
 
 const MOUSE_UI_BUTTON: string = 'MOUSE_UI_BUTTON';
 
@@ -45,7 +46,7 @@ export class GAdventureContent extends GContentScene {
     private obstaclesGroup: Phaser.GameObjects.Group;
     private personsGroup: Phaser.GameObjects.Group;
     private impsGroup: Phaser.GameObjects.Group;
-    private specialGroup: Phaser.GameObjects.Group;
+    private interactablesGroup: Phaser.GameObjects.Group;
 
     private impSpawnTimeEvent: Phaser.Time.TimerEvent;
 
@@ -62,7 +63,7 @@ export class GAdventureContent extends GContentScene {
         this.obstaclesGroup = this.add.group();
         this.personsGroup = this.add.group();
         this.impsGroup = this.add.group();
-        this.specialGroup = this.add.group();
+        this.interactablesGroup = this.add.group();
     }
 
     public create(): void {
@@ -203,11 +204,11 @@ export class GAdventureContent extends GContentScene {
         this.physics.add.collider(this.player, this.personsGroup);
         this.physics.add.collider(this.player, this.impsGroup);
         this.physics.add.collider(this.player, this.obstaclesGroup);
-        this.physics.add.collider(this.player, this.specialGroup);
+        this.physics.add.collider(this.player, this.interactablesGroup);
         this.physics.add.collider(this.personsGroup, this.bottomBound);
         this.physics.add.collider(this.personsGroup, this.personsGroup);
         this.physics.add.collider(this.personsGroup, this.obstaclesGroup);
-        this.physics.add.collider(this.personsGroup, this.specialGroup);
+        this.physics.add.collider(this.personsGroup, this.interactablesGroup);
         this.physics.add.collider(this.impsGroup, this.impsGroup);
         this.physics.add.collider(this.impsGroup, this.bottomBound);
 
@@ -243,14 +244,15 @@ export class GAdventureContent extends GContentScene {
                 }
             }
 
-            // Treasure chest:
+            // Interactable:
             if (
-                (obj1 instanceof GTreasureChest || obj2 instanceof GTreasureChest)
+                (obj1 instanceof GInteractable || obj2 instanceof GInteractable)
                 && (obj1 === this.player || obj2 === this.player)
-                && PLAYER.getFaith() > 0
             ) {
-                let treasure: GTreasureChest = (obj1 instanceof GTreasureChest ? obj1 : obj2) as GTreasureChest;
-                this.openTreasure(treasure);
+                let interactable: GInteractable = (obj1 instanceof GInteractable ? obj1 : obj2) as GInteractable;
+                if (interactable.canInteract()) {
+                    interactable.interact();
+                }
             }
         });
 
@@ -389,7 +391,14 @@ export class GAdventureContent extends GContentScene {
         this.fadeOut(500, undefined, () => {
             this.setCurrentRoom(roomX, roomY, area);
             this.spawnPeopleForRoom();
+            // Certain things spawn only in non-safe rooms...
             if (!this.getCurrentRoom()?.isSafe()) {
+
+                // 33% chance to spawn a common chest:
+                if (GRandom.randPct() <= .33) {
+                    this.spawnCommonChest();
+                }
+
                 this.impSpawnTimeEvent = this.time.delayedCall(GRandom.randInt(1000, 5000), () => {
                     this.addRandomImp();
                     if (GRandom.flipCoin()) {
@@ -414,10 +423,10 @@ export class GAdventureContent extends GContentScene {
         let t: number = 0;
         // If it is essential to spawn the transient, keep trying forever; we MUST do it!
         while(essential || t < NON_ESS_TRANS_SPAWN_TRIES) {
-            const top: number = GFF.ROOM_AREA_TOP - body.y;
-            const left: number = GFF.ROOM_AREA_LEFT - body.x;
-            const right: number = GFF.ROOM_AREA_RIGHT - (transient.width - (body.x + body.width));
-            const bottom: number = GFF.ROOM_AREA_BOTTOM - (transient.height - (body.y + body.height));
+            const top: number = GFF.ROOM_AREA_TOP;
+            const left: number = GFF.ROOM_AREA_LEFT;
+            const right: number = GFF.ROOM_AREA_RIGHT - body.width;
+            const bottom: number = GFF.ROOM_AREA_BOTTOM - body.height;
             const tX = GRandom.randInt(left, right);
             const tY = GRandom.randInt(top, bottom);
             if (this.spaceClearForTransient(body, tX, tY)) {
@@ -432,7 +441,7 @@ export class GAdventureContent extends GContentScene {
         return (
             !this.intersectsWithGroup(transBody, x, y, this.obstaclesGroup)
             && !this.intersectsWithGroup(transBody, x, y, this.personsGroup)
-            && !this.intersectsWithGroup(transBody, x, y, this.specialGroup)
+            && !this.intersectsWithGroup(transBody, x, y, this.interactablesGroup)
         );
     }
 
@@ -455,7 +464,7 @@ export class GAdventureContent extends GContentScene {
     public spawnPerson(person: GPerson): boolean {
         const sprite: GPersonSprite = new GPersonSprite(this, person, 0, 0);
         sprite.setVisible(false);
-        const body: GRect = {x: GFF.CHAR_BODY_X_OFF, y: GFF.CHAR_BODY_Y_OFF, width: GFF.CHAR_BODY_W, height: GFF.CHAR_BODY_H};
+        const body: GRect = sprite.getBody();
         const spawnPoint: GPoint|null = this.getSpawnPointForTransient(sprite, body, false);
         if (!spawnPoint) {
             sprite.destroy();
@@ -471,7 +480,7 @@ export class GAdventureContent extends GContentScene {
     public spawnImp(imp: GSpirit): boolean {
         const sprite: GImpSprite = new GImpSprite(this, imp, 0, 0);
         sprite.setVisible(false);
-        const body: GRect = {x: GFF.CHAR_BODY_X_OFF, y: GFF.CHAR_BODY_Y_OFF, width: GFF.CHAR_BODY_W, height: GFF.CHAR_BODY_H};
+        const body: GRect = sprite.getBody();
         const spawnPoint: GPoint|null = this.getSpawnPointForTransient(sprite, body, false);
         if (!spawnPoint) {
             sprite.destroy();
@@ -480,6 +489,21 @@ export class GAdventureContent extends GContentScene {
             sprite.setVisible(true);
             sprite.setPosition(spawnPoint.x, spawnPoint.y);
             this.addImp(sprite);
+            return true;
+        }
+    }
+
+    public spawnCommonChest(): boolean {
+        const chest: GTreasureChest = new GTreasureChest(0, 0, false);
+        chest.setVisible(false);
+        const body: GRect = chest.getBody();
+        const spawnPoint: GPoint|null = this.getSpawnPointForTransient(chest, body, false);
+        if (!spawnPoint) {
+            chest.destroy();
+            return false;
+        } else {
+            chest.setVisible(true);
+            chest.setPosition(spawnPoint.x, spawnPoint.y);
             return true;
         }
     }
@@ -566,8 +590,8 @@ export class GAdventureContent extends GContentScene {
         this.impsGroup.add(impSprite);
     }
 
-    public addSpecial(object: Phaser.GameObjects.GameObject) {
-        this.specialGroup.add(object);
+    public addInteractable(interactable: GInteractable) {
+        this.interactablesGroup.add(interactable);
     }
 
     public encounterEnemy(enemy: GImpSprite) {
@@ -585,6 +609,7 @@ export class GAdventureContent extends GContentScene {
     public resumeAfterBattlePreFadeIn(victory: boolean) {
         this.stopChars();
         GFF.showNametags = false;
+        ENEMY.levelUp();
         if (victory) {
             this.impsGroup.remove(ENEMY.getSprite());
             ENEMY.getSprite().destroy();
@@ -630,10 +655,6 @@ export class GAdventureContent extends GContentScene {
                 });
             });
         });
-    }
-
-    public openTreasure(treasure: GTreasureChest) {
-        treasure.open();
     }
 
     public getPersonToTalkTo(): GPersonSprite|null {
@@ -761,7 +782,7 @@ export class GAdventureContent extends GContentScene {
                 fontSize: '32px',
                 fontFamily: 'dyonisius',
                 color: '#ffffff'
-            }).setDepth(1001).setOrigin(0.5, 0.5);
+            }).setDepth(10001).setOrigin(0.5, 0.5);
         });
     }
 

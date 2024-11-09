@@ -12,7 +12,7 @@ import { GSceneryDef } from '../../types';
  * is that foreground decorations do not have a physical body, and they
  * don't obstruct movement.
  */
-export abstract class GForegroundDecoration extends Phaser.GameObjects.Image {
+export class GForegroundDecoration extends Phaser.GameObjects.Image {
 
     private sceneryDef: GSceneryDef;
 
