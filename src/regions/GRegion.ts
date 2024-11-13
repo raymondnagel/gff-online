@@ -1,7 +1,7 @@
 import { GRoom } from "../GRoom";
 import { GRandom } from "../GRandom";
 import { GFF } from "../main";
-import { Dir9, GRect, GSceneryDef } from "../types";
+import { Dir9, GRect, GSceneryDef, ProgressCallback } from "../types";
 import { SCENERY } from "../scenery";
 import { GDirection } from "../GDirection";
 
@@ -72,10 +72,7 @@ export abstract class GRegion {
         return this.rooms;
     }
 
-    private static roomCount: number = 0;
     public furnishRoom(room: GRoom) {
-        // console.log(`Furnishing Room #${++GRegion.roomCount}`);
-
         // Don't furnish start room - we want it empty because we're displaying help info there
         if (room.isStart()) {
             return;

@@ -285,7 +285,7 @@ export class GSpeechBubble extends Phaser.GameObjects.Container implements GBubb
     private createWordObj(text: string): Phaser.GameObjects.Text {
         const wordObj = this.scene.add.text(0, 0, text, {
             fontSize: TEXT_SIZE + 'px',
-            fontFamily: 'Arial',
+            fontFamily: 'oxygen',
             color: '#000000'
         });
         wordObj.visible = false;

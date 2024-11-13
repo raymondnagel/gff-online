@@ -756,9 +756,9 @@ export class GRoom {
         let placement: GRect|null = this.simpleFit(objectWidth, objectHeight, 10, objects, zones);
 
         // Sample placement: sample all areas and choose a random acceptable one:
-        // if (!placement) {
-        //     placement = this.sampleFit(objectWidth, objectHeight, 5, objects, zones);
-        // }
+        if (!placement) {
+            placement = this.sampleFit(objectWidth, objectHeight, 5, objects, zones);
+        }
 
         // Will return null if no placement was available
         return placement;

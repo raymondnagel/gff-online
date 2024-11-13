@@ -3,7 +3,7 @@ import { GRandom } from "../GRandom";
 import { GRoom } from "../GRoom";
 import { GFF } from "../main";
 import { GRegion } from "../regions/GRegion";
-import { CardDir, Dir9, GFloor } from "../types";
+import { CardDir, Dir9, GFloor, ProgressCallback } from "../types";
 
 const HORZ_WALL_SECTIONS: number = 16;
 const VERT_WALL_SECTIONS: number = 11;
@@ -370,12 +370,29 @@ export class GArea {
         }
     }
 
-    protected furnishRooms() {
-        for (let f: number = 0; f < this.floors.length; f++) {
-            this.roomsByFloor[f].forEach(r => {
-                r.getRegion().furnishRoom(r);
-            });
+    /**
+     * Using furnishNextRoom() allows this to be called by the world builder
+     * and show a progress update.
+     */
+    private genFloor: number = 0;
+    private genRoom: number = 0;
+    public furnishNextRoom(): boolean {
+        if (this.genRoom >= this.roomsByFloor[this.genFloor].length) {
+            // Out of rooms on the current floor: begin next floor:
+            this.genRoom = 0;
+            this.genFloor++;
+            if (this.genFloor >= this.floors.length) {
+                // Out of floors: return false:
+                return false;
+            }
         }
+        // If we haven't returned, it should be a valid room on a valid floor: furnish it!
+        const room: GRoom = this.roomsByFloor[this.genFloor][this.genRoom];
+        room.getRegion().furnishRoom(room);
+        // Update the room counter for the next room:
+        this.genRoom++;
+        // Return true to signify that we have furnished a room:
+        return true;
     }
 
     protected initRoom(_room: GRoom) {}

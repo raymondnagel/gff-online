@@ -36,7 +36,7 @@ export class GSearchForPlayerGoal extends GGoal {
             playerCtr.y
         );
         if (PLAYER.getFaith() > 0 && distance <= SIGHT_RANGE && !GFF.AdventureContent.isConversationActive()) {
-            this.char.setGoal(new GChasePlayerGoal(this.char, CHASE_TIMEOUT));
+            this.char.setGoal(new GChasePlayerGoal(this.char as GImpSprite, CHASE_TIMEOUT));
             return;
         }
 

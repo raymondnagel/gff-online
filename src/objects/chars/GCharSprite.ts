@@ -8,6 +8,8 @@ import { PHYSICS } from '../../physics';
 
 const NAMETAG_SPACE: number = 10;
 const NAMETAG_DEPTH: number = 1000;
+const FLOAT_TEXT_SPACE: number = 10;
+const FLOAT_TEXT_DEPTH: number = 1000;
 
 export abstract class GCharSprite extends Phaser.Physics.Arcade.Sprite {
 
@@ -20,6 +22,7 @@ export abstract class GCharSprite extends Phaser.Physics.Arcade.Sprite {
     private controlled: boolean = false; // Prevents automatic movement, but moves with player input
     private busyTalking: boolean = false; // Prevents movement and thinking, but allows speaking
     private nametag: Phaser.GameObjects.Text; // Shown above character if global flag is on
+    private floatText: Phaser.GameObjects.Text; // Shown above character if active
 
     constructor(scene: GAdventureContent, spriteKeyPrefix: string, firstName: string, lastName: string, x: number, y: number) {
         super(scene, x, y, `${spriteKeyPrefix}_idle_s`);
@@ -120,24 +123,54 @@ export abstract class GCharSprite extends Phaser.Physics.Arcade.Sprite {
         return this.busyTalking;
     }
 
+    public showFloatingText(text: string) {
+        const point: GPoint = this.getTopCenter();
+        const textObj: Phaser.GameObjects.Text = GFF.AdventureContent.add.text(point.x, point.y - FLOAT_TEXT_SPACE, text, {
+            fontFamily: 'oxygen',
+            fontSize: '16px',
+            color: '#ffffff',
+        })
+        .setLetterSpacing(1)
+        .setShadow(2, 2, '#333333', 2, false, true)
+        .setOrigin(.5, 1)
+        .setDepth(FLOAT_TEXT_DEPTH)
+        .setScale(.2, .2)
+        .setAlpha(.2);
+
+        GFF.AdventureContent.tweens.chain({
+            targets: textObj,
+            tweens: [
+                {
+                    duration: 200,
+                    scaleX: 1,
+                    scaleY: 1,
+                    alpha: 1,
+                    onUpdate: () => {
+                        const point: GPoint = this.getTopCenter();
+                        textObj.setPosition(point.x, point.y - FLOAT_TEXT_SPACE);
+                    }
+                }, {
+                    duration: 800,
+                    scaleX: 2,
+                    scaleY: 2,
+                    alpha: 0,
+                    onUpdate: () => {
+                        const point: GPoint = this.getTopCenter();
+                        textObj.setPosition(point.x, point.y - FLOAT_TEXT_SPACE);
+                    },
+                    onComplete: () => {
+                        textObj.destroy();
+                    }
+                },
+            ]
+        });
+    }
+
     public getPhysicalCenter(): GPoint {
-        // // Calculate relative to position using body offset and size;
-        // // don't use body.center, as it may not be accurate if the sprite
-        // // was just repositioned.
-        // const body: Phaser.Physics.Arcade.Body = this.body as Phaser.Physics.Arcade.Body;
-        // return {
-        //     x: this.x + body.offset.x + body.width / 2,
-        //     y: this.y + body.offset.y + body.height / 2
-        // };
         return PHYSICS.getPhysicalCenter(this) as GPoint;
     }
 
     public centerPhysically(point: GPoint) {
-        // if (this.body) {
-        //     const x: number = point.x - (this.body.width / 2) - this.body.offset.x;
-        //     const y: number = point.y - (this.body.height / 2) - this.body.offset.y;
-        //     this.setPosition(x, y);
-        // }
         PHYSICS.centerPhysically(this, point);
     }
 
@@ -256,15 +289,6 @@ export abstract class GCharSprite extends Phaser.Physics.Arcade.Sprite {
             if (this.goal.isAchieved() || this.goal.isTimedOut()) {
                 this.goal = null;
             }
-        }
-    }
-
-    public say(speechText: string, hearer?: GCharSprite) {
-        this.setBusyTalking(true)
-        if (hearer !== undefined) {
-            this.faceChar(hearer);
-            hearer.faceChar(this);
-            hearer.setBusyTalking(true);
         }
     }
 

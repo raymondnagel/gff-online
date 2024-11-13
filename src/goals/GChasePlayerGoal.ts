@@ -6,14 +6,13 @@ import { GPlayerSprite } from "../objects/chars/GPlayerSprite";
 import { PLAYER } from "../player";
 import { GBaseScene } from "../scenes/GBaseScene";
 
-const DIAGONAL_THRESHOLD: number = 2.0;
-
 export class GChasePlayerGoal extends GGoal {
 
-    constructor(char: GCharSprite, timeOut: number) {
+    constructor(char: GImpSprite, timeOut: number) {
         super('chase-player', char, timeOut);
-        (char as GImpSprite).setChasing(true);
-        (this.char.scene as GBaseScene).getSound().playSound('imp_growl');
+        char.setChasing(true);
+        char.showFloatingText('Grrr!');
+        GFF.AdventureContent.getSound().playSound('imp_growl');
     }
 
     public doStep(): void {

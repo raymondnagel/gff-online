@@ -377,7 +377,7 @@ export class GThoughtBubble extends Phaser.GameObjects.Container implements GBub
     private createWordObj(text: string): Phaser.GameObjects.Text {
         const wordObj = this.scene.add.text(0, 0, text, {
             fontSize: TEXT_SIZE + 'px',
-            fontFamily: 'Arial',
+            fontFamily: 'oxygen',
             fontStyle: 'italic',
             color: '#000000'
         });

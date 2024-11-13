@@ -183,7 +183,7 @@ export class GChoiceBubble extends Phaser.GameObjects.Container implements GBubb
     private createLineObj(optionText: string): Phaser.GameObjects.Text {
         const lineObj = this.scene.add.text(0, 0, optionText, {
             fontSize: TEXT_SIZE + 'px',
-            fontFamily: 'Arial',
+            fontFamily: 'oxygen',
             color: '#000000'
         });
         this.add(lineObj);

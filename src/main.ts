@@ -27,6 +27,8 @@ import { GGlossaryUI } from './scenes/GGlossaryUI';
 import { GOptionsUI } from './scenes/GOptionsUI';
 import { GMainMenuContent } from './scenes/GMainMenuContent';
 import { GDifficulty } from './types';
+import { GWorldBuildMode } from './game_modes/GWorldBuildMode';
+import { GWorldBuildContent } from './scenes/GWorldBuildContent';
 
 const gameWidth: number = 1024;
 const gameHeight: number = 768;
@@ -48,6 +50,7 @@ let configObject: Phaser.Types.Core.GameConfig = {
         GLoadingScene,
         GTitleContent,
         GMainMenuContent,
+        GWorldBuildContent,
         GAdventureContent, GAdventureUI,
         GBattleContent,
         GStatusUI,
@@ -108,6 +111,7 @@ export namespace GFF {
      */
     export const TITLE_MODE: GTitleMode = new GTitleMode();
     export const MAINMENU_MODE: GMainMenuMode = new GMainMenuMode();
+    export const WORLDBUILD_MODE: GWorldBuildMode = new GWorldBuildMode();
     export const ADVENTURE_MODE: GAdventureMode = new GAdventureMode();
     export const BATTLE_MODE: GBattleMode = new GBattleMode();
     export const STATUS_MODE: GStatusMode = new GStatusMode();
@@ -157,6 +161,14 @@ export namespace GFF {
     export let genLogging: boolean = false;
     export let gameLogging: boolean = false;
     export let showNametags: boolean = false;
+
+    export function sleep(ms: number) {
+        const date: number = Date.now();
+        let curDate: number|null = null;
+        do {
+            curDate = Date.now();
+        } while(curDate - date < ms);
+    }
 
     export function log(something: any) {
         if (gameLogging) {

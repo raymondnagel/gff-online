@@ -47,7 +47,7 @@ export class GLoadingScene extends GBaseScene {
             this.cameras.main.width / 2,
             this.cameras.main.height / 2,
             'Loading: 0%',
-            { fontFamily: 'Arial', fontSize: 24, color: '#000000' }
+            { fontFamily: 'oxygen', fontSize: 24, color: '#000000' }
         );
         this.progressText.setX((this.cameras.main.width / 2) - (this.progressText.width / 2));
         this.progressText.setY((this.cameras.main.height / 2) - (this.progressText.height / 2));
@@ -108,9 +108,6 @@ export class GLoadingScene extends GBaseScene {
 
                 // Create the imps:
                 GImpSprite.createAllImps();
-
-                // Set initial area and room (do this in WorldBuilding Mode instead):
-                AREA.WORLD_AREA = new GWorldArea();
 
                 // Add a listener for the mouse leaving the game canvas:
                 GFF.GAME.canvas.addEventListener('mouseleave', () => {

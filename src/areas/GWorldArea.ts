@@ -1,7 +1,7 @@
 import { GArea } from "./GArea";
 import { GRegion } from "../regions/GRegion";
 import { GRoom } from "../GRoom";
-import { CardDir, Dir9, GPerson, GPoint } from "../types";
+import { CardDir, Dir9, GPerson, GPoint, ProgressCallback } from "../types";
 import { GPlainRegion } from "../regions/GPlainRegion";
 import { GForestRegion } from "../regions/GForestRegion";
 import { GDesertRegion } from "../regions/GDesertRegion";
@@ -65,7 +65,7 @@ export class GWorldArea extends GArea {
         this.createCivilization();
         this.createStrongholds();
         this.concealAllRooms(0);
-        this.furnishRooms();
+        this.createShrines();
     }
 
     public getStartRoom(): GRoom {
@@ -484,7 +484,7 @@ export class GWorldArea extends GArea {
         GFF.genLog(`Couldn't find a suitable location for ${stronghold.getName()} in ${region.getName()}!`);
     }
 
-    protected furnishRooms(): void {
+    protected createShrines(): void {
         // Decide where premium treasure chests are going:
         // There are 35 in World Area: 30 books and 5 commandments
         const allRooms: GRoom[] = this.getRoomsByFloor(0);
@@ -510,7 +510,5 @@ export class GWorldArea extends GArea {
             }
             // room.planPremiumChestShrine(); // Add specific commandment as argument!
         }
-
-        super.furnishRooms();
     }
 }

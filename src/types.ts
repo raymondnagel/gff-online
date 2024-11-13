@@ -1,8 +1,10 @@
-import { GDirection } from "./GDirection";
 import { GRoom } from "./GRoom";
 import { GCharSprite } from "./objects/chars/GCharSprite";
 
-// Represents an array of key objects indexed by their names:
+// Represents a callback function for updating progress:
+export type ProgressCallback = (description: string, current: number, total: number) => void;
+
+// Represents an array of keyboard key objects indexed by their names:
 export type GKeyList = {
     [key: string]: Phaser.Input.Keyboard.Key
 };
