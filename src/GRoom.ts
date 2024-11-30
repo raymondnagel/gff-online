@@ -17,6 +17,7 @@ import { GWallNE } from "./objects/obstacles/walls/GWallNE";
 import { GWallNW } from "./objects/obstacles/walls/GWallNW";
 import { GWallSE } from "./objects/obstacles/walls/GWallSE";
 import { GWallSW } from "./objects/obstacles/walls/GWallSW";
+import { DEPTH } from "./depths";
 
 const WALL_GUARD_THICK: number = 10;
 const WALL_CTRS: number[] = [
@@ -150,8 +151,10 @@ export class GRoom {
             return 'map_town';
         } else if (this.stronghold) {
             return 'map_hold';
-        } else if (this.hasPremiumChest()) {
-            return 'map_chest';
+        } else if (this.hasPlanKey('blue_chest')) {
+            return 'map_blue_chest';
+        } else if (this.hasPlanKey('red_chest')) {
+            return 'map_red_chest';
         }
         return null;
     }
@@ -290,8 +293,12 @@ export class GRoom {
         }
     }
 
+    public hasPlanKey(planKey: string): boolean {
+        return this.plans.some(plan => plan.key === planKey);
+    }
+
     public hasPremiumChest(): boolean {
-        return this.plans.some(plan => plan.key === 'premium_chest');
+        return this.plans.some(plan => plan.key === 'blue_chest' || plan.key === 'red_chest');
     }
 
     public canHavePremiumChest(): boolean {
@@ -299,7 +306,7 @@ export class GRoom {
     }
 
     public removePremiumChest() {
-        const index = this.plans.findIndex(plan => plan.key === 'premium_chest');
+        const index = this.plans.findIndex(plan => plan.key === 'blue_chest' || plan.key === 'red_chest');
         if (index !== -1) {
             this.plans.splice(index, 1);
         }
@@ -308,7 +315,7 @@ export class GRoom {
     public load() {
         // Set background image from region:
         if (this.region !== undefined) {
-            GFF.AdventureContent.add.image(0, 0, this.region.getBgImageName()).setOrigin(0, 0);
+            GFF.AdventureContent.add.image(0, 0, this.region.getBgImageName()).setOrigin(0, 0).setDepth(DEPTH.BACKGROUND);
         }
 
         // Create terrain fade images, if applicable, based on neighbors:
@@ -319,7 +326,7 @@ export class GRoom {
 
         // Create a render-texture for any decorations:
         const decorRenderer: Phaser.GameObjects.RenderTexture = GFF.AdventureContent.add.renderTexture(GFF.ROOM_X, GFF.ROOM_Y, GFF.ROOM_W, GFF.ROOM_H);
-        decorRenderer.setOrigin(0, 0);
+        decorRenderer.setOrigin(0, 0).setDepth(DEPTH.BG_DECOR);
 
         // Create partial wall guards: (blocks movement in case player slips past wall scenery)
         this.addPartialWallGuards();
@@ -367,13 +374,13 @@ export class GRoom {
             switch (dir) {
                 case Dir9.N:
                 case Dir9.W:
-                    GFF.AdventureContent.add.image(0, 0, fadeImageName).setOrigin(0, 0).setAlpha(TERRAIN_FADE_ALPHA);
+                    GFF.AdventureContent.add.image(0, 0, fadeImageName).setOrigin(0, 0).setAlpha(TERRAIN_FADE_ALPHA).setDepth(DEPTH.FADE_IMAGE);
                     break;
                 case Dir9.E:
-                    GFF.AdventureContent.add.image(GFF.ROOM_W, 0, fadeImageName).setOrigin(1, 0).setAlpha(TERRAIN_FADE_ALPHA);
+                    GFF.AdventureContent.add.image(GFF.ROOM_W, 0, fadeImageName).setOrigin(1, 0).setAlpha(TERRAIN_FADE_ALPHA).setDepth(DEPTH.FADE_IMAGE);
                     break;
                 case Dir9.S:
-                    GFF.AdventureContent.add.image(0, GFF.ROOM_H, fadeImageName).setOrigin(0, 1).setAlpha(TERRAIN_FADE_ALPHA);
+                    GFF.AdventureContent.add.image(0, GFF.ROOM_H, fadeImageName).setOrigin(0, 1).setAlpha(TERRAIN_FADE_ALPHA).setDepth(DEPTH.FADE_IMAGE);
                     break;
             }
         }
@@ -730,7 +737,7 @@ export class GRoom {
     public planZonedScenery(sceneryDef: GSceneryDef, targetInstances: number, objects: GRect[], zones?: GRect[]) {
         for (let i: number = 0; i < targetInstances; i++) {
             const placement: GRect|null = this.fitScenery(sceneryDef.body.width, sceneryDef.body.height, objects, zones);
-            if (!placement) {
+            if (placement === null) {
                 return;
             }
             objects.push(placement);
@@ -764,7 +771,7 @@ export class GRoom {
         return placement;
     }
 
-    public planPremiumChestShrine(itemName: string) {
+    public planPremiumChestShrine(itemName: string, color: 'blue'|'red' = 'blue') {
         const shrineAreaWidth: number = 275;
         const shrineAreaHeight: number = 122;
         const borderSize: number = 64;
@@ -791,7 +798,11 @@ export class GRoom {
         this.addSceneryPlan('shrine_pedestal', x + 104, y + 42);
 
         // Add premium chest:
-        this.addSceneryPlan('premium_chest', x + 111, y + 16);
+        if (color === 'red') {
+            this.addSceneryPlan('red_chest', x + 111, y + 16);
+        } else {
+            this.addSceneryPlan('blue_chest', x + 111, y + 16);
+        }
 
         // Set item to be obtained when the chest is opened:
         this.chestItem = itemName;

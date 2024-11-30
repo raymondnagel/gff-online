@@ -5,11 +5,10 @@ import { GAdventureContent } from '../../scenes/GAdventureContent';
 import { Dir9, GGender, GPoint, GRect } from '../../types';
 import { GGoal } from '../../goals/GGoal';
 import { PHYSICS } from '../../physics';
+import { DEPTH } from '../../depths';
 
 const NAMETAG_SPACE: number = 10;
-const NAMETAG_DEPTH: number = 1000;
 const FLOAT_TEXT_SPACE: number = 10;
-const FLOAT_TEXT_DEPTH: number = 1000;
 
 export abstract class GCharSprite extends Phaser.Physics.Arcade.Sprite {
 
@@ -133,7 +132,7 @@ export abstract class GCharSprite extends Phaser.Physics.Arcade.Sprite {
         .setLetterSpacing(1)
         .setShadow(2, 2, '#333333', 2, false, true)
         .setOrigin(.5, 1)
-        .setDepth(FLOAT_TEXT_DEPTH)
+        .setDepth(DEPTH.FLOAT_TEXT)
         .setScale(.2, .2)
         .setAlpha(.2);
 
@@ -333,7 +332,7 @@ export abstract class GCharSprite extends Phaser.Physics.Arcade.Sprite {
         .setLetterSpacing(1)
         .setShadow(2, 2, '#333333', 2, false, true)
         .setOrigin(.5, 0)
-        .setDepth(NAMETAG_DEPTH);
+        .setDepth(DEPTH.NAME_TAG);
     }
 
     protected getNametagText(): string {

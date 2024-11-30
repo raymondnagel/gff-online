@@ -1,3 +1,4 @@
+import { DEPTH } from "../../../depths";
 import { GFF } from "../../../main";
 import { GSceneryDef } from "../../../types";
 
@@ -12,6 +13,6 @@ export class GWallSE extends Phaser.GameObjects.Image {
         );
         this.setOrigin(1, 1);
         GFF.AdventureContent.add.existing(this);
-        this.setDepth(1001);
+        this.setDepth(DEPTH.WALL_S_CORNER);
     }
 }

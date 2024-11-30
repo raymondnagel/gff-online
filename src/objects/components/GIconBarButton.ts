@@ -1,3 +1,4 @@
+import { COLOR } from "../../colors";
 import { GInputMode } from "../../GInputMode";
 import { GBaseScene } from "../../scenes/GBaseScene";
 
@@ -44,7 +45,7 @@ export class GIconBarButton extends Phaser.GameObjects.Image {
             this.hotkeyBg = scene.add.image(x, y + 2, 'blank_key').setOrigin(0, 0);
             this.hotkeyText = scene.add.text(this.hotkeyBg.x + this.hotkeyBg.width / 2, this.hotkeyBg.y + this.hotkeyBg.height / 2, this.hotkey.toUpperCase(), {
                 fontSize: '14px',
-                color: '#222222',
+                color: COLOR.GREY_1.str(),
                 fontFamily: 'oxygen'
             });
             this.hotkeyText.setOrigin(.5, .5); // Center the text

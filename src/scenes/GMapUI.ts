@@ -1,4 +1,5 @@
 import { GArea } from "../areas/GArea";
+import { COLOR } from "../colors";
 import { GInputMode } from "../GInputMode";
 import { GRoom } from "../GRoom";
 import { GFF } from "../main";
@@ -38,7 +39,7 @@ export class GMapUI extends GUIScene {
         super.create();
         this.add.image(0, 0, 'rock_bg').setOrigin(0, 0);
         this.add.text(512, 20, 'Map', {
-            color: '#333333',
+            color: COLOR.GREY_1.str(),
             fontFamily: 'dyonisius',
             fontSize: '48px'
         }).setOrigin(.5, 0);
@@ -51,9 +52,9 @@ export class GMapUI extends GUIScene {
         }).setOrigin(.5, 0);
 
         // Discover all rooms (enable to reveal entire map):
-        this.area.getRoomsByFloor(0).forEach(r => {
-            r.discover();
-        });
+        // this.area.getRoomsByFloor(0).forEach(r => {
+        //     r.discover();
+        // });
 
         this.renderMap();
 

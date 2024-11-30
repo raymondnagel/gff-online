@@ -1,8 +1,20 @@
 import { GRandom } from "../GRandom";
 import { GRoom } from "../GRoom";
 import { SCENERY } from "../scenery";
-import { GRect } from "../types";
+import { Dir9, GRect, GSceneryDef } from "../types";
 import { GOutsideRegion } from "./GOutsideRegion";
+
+const WALLS: Record<Dir9, GSceneryDef|null> = {
+    [Dir9.N]: SCENERY.FOREST_WALL_N_DEF,
+    [Dir9.E]: SCENERY.FOREST_WALL_E_DEF,
+    [Dir9.S]: SCENERY.FOREST_WALL_S_DEF,
+    [Dir9.W]: SCENERY.FOREST_WALL_W_DEF,
+    [Dir9.NE]: SCENERY.FOREST_WALL_NE_DEF,
+    [Dir9.SE]: SCENERY.FOREST_WALL_SE_DEF,
+    [Dir9.SW]: SCENERY.FOREST_WALL_SW_DEF,
+    [Dir9.NW]: SCENERY.FOREST_WALL_NW_DEF,
+    [Dir9.NONE]: null,
+};
 
 export class GForestRegion extends GOutsideRegion{
 
@@ -13,6 +25,10 @@ export class GForestRegion extends GOutsideRegion{
             'forest_enc_bg',
             'map_forest'
         );
+    }
+
+    public getWalls(): Record<Dir9, GSceneryDef|null> {
+        return WALLS;
     }
 
     protected _furnishRoom(room: GRoom) {

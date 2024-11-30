@@ -1,3 +1,4 @@
+import { COLOR } from "../colors";
 import { GInputMode } from "../GInputMode";
 import { GFF } from "../main";
 import { GUIScene } from "./GUIScene";
@@ -19,7 +20,7 @@ export class GOptionsUI extends GUIScene {
         super.create();
         this.add.image(0, 0, 'rock_bg').setOrigin(0, 0);
         this.add.text(512, 20, 'Options', {
-            color: '#333333',
+            color: COLOR.GREY_1.str(),
             fontFamily: 'dyonisius',
             fontSize: '48px'
         }).setOrigin(.5, 0);

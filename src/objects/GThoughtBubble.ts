@@ -3,6 +3,7 @@ import { GFF } from '../main';
 import { GCharSprite } from './chars/GCharSprite';
 import { GBubble, GPoint } from '../types';
 import { GRandom } from '../GRandom';
+import { DEPTH } from '../depths';
 
 const SPEAKX_ADJUST: number = 10;
 const SCREEN_EDGE_SPACE: number = 10;
@@ -46,7 +47,7 @@ export class GThoughtBubble extends Phaser.GameObjects.Container implements GBub
         super(GFF.AdventureContent);
         this.thinker = thinker;
         GFF.AdventureContent.add.existing(this);
-        this.setDepth(9999);
+        this.setDepth(DEPTH.CONV_BUBBLE);
 
         // Create graphics objects for the bubble shape and its shadow:
         this.bubbleGraphics = GFF.AdventureContent.add.graphics();

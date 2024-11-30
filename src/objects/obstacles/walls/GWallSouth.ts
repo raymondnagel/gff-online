@@ -1,3 +1,4 @@
+import { DEPTH } from "../../../depths";
 import { GFF } from "../../../main";
 import { GSceneryDef } from "../../../types";
 import { GObstacleStatic } from "../GObstacleStatic";
@@ -10,6 +11,6 @@ export class GWallSouth extends GObstacleStatic{
             GFF.LEFT_BOUND,
             GFF.BOTTOM_BOUND - 128
         );
-        this.setDepth(1000);
+        this.setDepth(DEPTH.WALL_SOUTH);
     }
 }

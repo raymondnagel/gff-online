@@ -1,5 +1,6 @@
 import { GInputMode } from '../GInputMode';
 import { GSoundManager } from '../GSoundManager';
+import { DEPTH } from '../depths';
 import { GBaseGameMode } from '../game_modes/GBaseGameMode';
 
 export abstract class GBaseScene extends Phaser.Scene {
@@ -60,7 +61,7 @@ export abstract class GBaseScene extends Phaser.Scene {
             color ?? 0x000000
         );
         this.fadeOverlay.setOrigin(0, 0);
-        this.fadeOverlay.setDepth(10000);
+        this.fadeOverlay.setDepth(DEPTH.TRANSITION);
         this.fadeOverlay.setData('permanent', true);
     }
 

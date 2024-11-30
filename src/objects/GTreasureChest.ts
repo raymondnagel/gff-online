@@ -1,4 +1,5 @@
 import { BOOKS } from "../books";
+import { COMMANDMENTS } from "../commandments";
 import { GLOSSARY } from "../glossary";
 import { GRandom } from "../GRandom";
 import { GRoom } from "../GRoom";
@@ -13,10 +14,10 @@ export class GTreasureChest extends GInteractable {
 
     private premium: boolean;
 
-    constructor(x: number, y: number, premium: boolean) {
-        super(SCENERY.def(premium ? 'premium_chest' : 'common_chest'), x, y);
+    constructor(x: number, y: number, chestKey: 'common_chest'|'blue_chest'|'red_chest') {
+        super(SCENERY.def(chestKey), x, y);
         this.setOrigin(0, 0);
-        this.premium = premium;
+        this.premium = chestKey !== 'common_chest';
     }
 
     public canInteract(): boolean {
@@ -33,7 +34,11 @@ export class GTreasureChest extends GInteractable {
                     GPopup.createBookPopup(item.name);
                     break;
                 case 'item':
-                    GPopup.createItemPopup(item.name);
+                    GPopup.createItemPopup(item.name).onClose(() => {
+                        if (item.name.startsWith('cmd')) {
+                            GFF.AdventureContent.setVision(false, COMMANDMENTS.getCount());
+                        }
+                    });
                     break;
             }
             item.onCollect();
@@ -81,12 +86,15 @@ export class GTreasureChest extends GInteractable {
                 onCollect: () => {BOOKS.obtainBook(itemName)}
             };
         } else {
-            // Otherwise, look it up in the GLOSSARY:
+            // Otherwise, it's a commandment; look it up in the GLOSSARY:
             entry = GLOSSARY.lookupEntry(itemName);
+            const cmdNum = parseInt(itemName.split('_')[1]) as 1|2|3|4|5|6|7|8|9|10;
             return {
                 name: itemName,
                 type: 'item',
-                onCollect: () => {/* Cross this bridge when we get to it */}
+                onCollect: () => {
+                    COMMANDMENTS.setCommandment(cmdNum, true);
+                }
             };
         }
     }

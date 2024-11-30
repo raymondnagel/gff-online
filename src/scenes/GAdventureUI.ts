@@ -4,6 +4,7 @@ import { GAdventureContent } from './GAdventureContent';
 import { GFF } from '../main';
 import { GPoint } from '../types';
 import { GRandom } from '../GRandom';
+import { DEPTH } from '../depths';
 
 const MOUSE_INACTIVE_INTERVAL: number = 2000;
 
@@ -94,10 +95,8 @@ export class GAdventureUI extends GUIScene {
         const finalY: number = GFF.GAME_H / 2;
 
         // Create the background image
-        // const testBgImages: string[] = ['cave_enc_bg', 'desert_enc_bg', 'forest_enc_bg', 'grass_enc_bg', 'mount_enc_bg', 'stronghold_enc_bg', 'swamp_enc_bg', 'town_enc_bg', 'tundra_enc_bg'];
-        // GFF.BATTLE_MODE.setBgImage(GRandom.randElement(testBgImages) as string);
         GFF.BATTLE_MODE.setBgImage(bgImageKey);
-        const bgImage: Phaser.GameObjects.Image = this.add.image(encounterPoint.x, encounterPoint.y, bgImageKey).setDepth(99999);
+        const bgImage: Phaser.GameObjects.Image = this.add.image(encounterPoint.x, encounterPoint.y, bgImageKey).setDepth(DEPTH.TRANSITION);
 
         // Start with a very small size
         bgImage.setScale(0);

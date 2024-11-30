@@ -48,6 +48,15 @@ export class GTextButton extends Phaser.GameObjects.Container {
         this.height = this.text.height;
     }
 
+    public setText(text: string) {
+        this.text.text = text;
+        this.border.setSize(this.text.width, this.text.height);
+    }
+
+    public getText(): string {
+        return this.text.text;
+    }
+
     public getHotkey(): string|undefined {
         return this.hotkey;
     }
@@ -73,6 +82,7 @@ export class GTextButton extends Phaser.GameObjects.Container {
     }
 
     public destroy(fromScene?: boolean): void {
+        this.text.destroy();
         this.border.destroy();
         super.destroy();
     }

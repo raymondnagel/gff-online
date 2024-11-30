@@ -1,0 +1,73 @@
+[
+    {
+      "id": "1",
+      "speaker": "player",
+      "hearer": "other",
+      "text": "Grace and peace, holy brethren, in the name of our Lord Jesus Christ.",
+      "next": "2"
+    },
+    {
+      "id": "2",
+      "speaker": "player",
+      "hearer": "other",
+      "text": "Jesus said in Luke 21:19, \"In your patience possess ye your souls.\" Patience is very important to a Christian!",
+      "next": "3"
+    },
+    {
+      "id": "3",
+      "chance": 0.1,
+      "speaker": "other",
+      "hearer": "player",
+      "dynamic": "congregation_amen",
+      "next": "4"
+    },
+    {
+      "id": "4",
+      "speaker": "player",
+      "hearer": "other",
+      "text": "\"I waited patiently for the LORD; and he inclined unto me, and heard my cry.\" (Psalm 40:1)",
+      "next": "5"
+    },
+    {
+      "id": "5",
+      "speaker": "player",
+      "hearer": "other",
+      "text": "\"And so, after he had patiently endured, he obtained the promise.\" (Hebrews 6:15)",
+      "next": "6"
+    },
+    {
+      "id": "6",
+      "speaker": "player",
+      "hearer": "other",
+      "text": "\"To them who by patient continuance in well doing seek for glory and honour and immortality, eternal life:\" (Romans 2:7)",
+      "next": "7"
+    },
+    {
+      "id": "7",
+      "speaker": "player",
+      "hearer": "other",
+      "text": "Wait patiently for the LORD, and he will hear you. Patiently endure, and you will obtain his promise. Continue patiently in well doing, and he will render to you eternal life. The Christian life is one of patience!",
+      "next": "8"
+    },
+    {
+      "id": "8",
+      "chance": 0.8,
+      "speaker": "other",
+      "hearer": "player",
+      "dynamic": "congregation_amen",
+      "next": "9"
+    },
+    {
+      "id": "9",
+      "speaker": "player",
+      "hearer": "other",
+      "text": "O Lord, God of patience and consolation, grant unto us to be likeminded; and through patience and comfort of the scriptures, to have hope!",
+      "next": "10"
+    },
+    {
+      "id": "10",
+      "speaker": "other",
+      "hearer": "player",
+      "dynamic": "congregation_amen"
+    }
+]

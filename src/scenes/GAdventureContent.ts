@@ -23,6 +23,8 @@ import { AREA } from '../area';
 import { GTown } from '../GTown';
 import { GChurch } from '../GChurch';
 import { GInteractable } from '../objects/interactables/GInteractable';
+import { DEPTH } from '../depths';
+import { COMMANDMENTS } from '../commandments';
 
 const MOUSE_UI_BUTTON: string = 'MOUSE_UI_BUTTON';
 
@@ -35,6 +37,9 @@ const INPUT_DISABLED: GInputMode = new GInputMode('adv.disabled');
 const NON_ESS_TRANS_SPAWN_TRIES: number = 20;
 
 export class GAdventureContent extends GContentScene {
+
+    private visionRadiusImage: Phaser.GameObjects.Image;
+    private visionBlackRects: Phaser.GameObjects.Rectangle[] = [];
 
     private currentArea: GArea;
     private bottomBound: Phaser.GameObjects.Rectangle;
@@ -76,6 +81,9 @@ export class GAdventureContent extends GContentScene {
         // Init physics:
         this.initPhysics();
 
+        // Init vision objects:
+        this.initVision();
+
         // Init debug tools:
         this.initDebugs();
 
@@ -86,6 +94,24 @@ export class GAdventureContent extends GContentScene {
         // Init input modes:
         this.initInputModes();
         this.setInputMode(INPUT_ADVENTURING);
+
+        // Set vision:
+        this.setVision(true);
+    }
+
+    private initVision() {
+        this.visionRadiusImage = this.add.image(0, 0, 'radius_0')
+            .setDepth(DEPTH.VISION)
+            .setOrigin(.5, .5)
+            .setData('permanent', true);
+        for (let r: number = 0; r < 4; r++) {
+            this.visionBlackRects.push(
+                this.add.rectangle(0, 0, 0, 0, 0x00000)
+                .setDepth(DEPTH.VISION)
+                .setOrigin(0, 0)
+                .setData('permanent', true)
+            );
+        }
     }
 
     private initInputModes() {
@@ -304,6 +330,17 @@ export class GAdventureContent extends GContentScene {
         (this.bottomBound.body as Phaser.Physics.Arcade.Body).setImmovable(true);
     }
 
+    public setVision(full: boolean, commandments: number = 10) {
+        full = full || commandments === 10;
+        this.visionRadiusImage.setVisible(!full);
+        for (let r: number = 0; r < 4; r++) {
+            this.visionBlackRects[r].setVisible(!full);
+        }
+        if (!full) {
+            this.visionRadiusImage.setTexture('radius_' + commandments);
+        }
+    }
+
     public walkToAdjacentRoom(dir: CardDir) {
         // Move to the adjacent room, if there is one:
         let newRoomX = this.playerRoomX + GDirection.getHorzInc(dir);
@@ -391,14 +428,21 @@ export class GAdventureContent extends GContentScene {
         this.fadeOut(500, undefined, () => {
             this.setCurrentRoom(roomX, roomY, area);
             this.spawnPeopleForRoom();
-            // Certain things spawn only in non-safe rooms...
-            if (!this.getCurrentRoom()?.isSafe()) {
+
+            if (this.getCurrentRoom()?.isSafe()) {
+                // Safe rooms:
+                this.setVision(true);
+
+            } else {
+                // Non-safe rooms:
+                this.setVision(false, COMMANDMENTS.getCount());
 
                 // 33% chance to spawn a common chest:
                 if (GRandom.randPct() <= .33) {
                     this.spawnCommonChest();
                 }
 
+                // Spawn an imp in 1-5 seconds, with 50% chance for up to 2 more:
                 this.impSpawnTimeEvent = this.time.delayedCall(GRandom.randInt(1000, 5000), () => {
                     this.addRandomImp();
                     if (GRandom.flipCoin()) {
@@ -494,7 +538,7 @@ export class GAdventureContent extends GContentScene {
     }
 
     public spawnCommonChest(): boolean {
-        const chest: GTreasureChest = new GTreasureChest(0, 0, false);
+        const chest: GTreasureChest = new GTreasureChest(0, 0, 'common_chest');
         chest.setVisible(false);
         const body: GRect = chest.getBody();
         const spawnPoint: GPoint|null = this.getSpawnPointForTransient(chest, body, false);
@@ -754,6 +798,35 @@ export class GAdventureContent extends GContentScene {
         }
     }
 
+    private updateVision() {
+        const playerCtr: GPoint = this.player.getCenter();
+        this.visionRadiusImage.setPosition(playerCtr.x, playerCtr.y);
+        const tlRad: GPoint = {
+            x: this.visionRadiusImage.x - (this.visionRadiusImage.width / 2),
+            y: this.visionRadiusImage.y - (this.visionRadiusImage.height / 2)
+        };
+        const brRad: GPoint = {
+            x: this.visionRadiusImage.x + (this.visionRadiusImage.width / 2),
+            y: this.visionRadiusImage.y + (this.visionRadiusImage.height / 2)
+        };
+        // Top
+        this.visionBlackRects[0]
+            .setPosition(0, 0)
+            .setSize(GFF.GAME_W, tlRad.y);
+        // Left
+        this.visionBlackRects[1]
+            .setPosition(0, tlRad.y)
+            .setSize(tlRad.x, this.visionRadiusImage.height);
+        // Right
+        this.visionBlackRects[2]
+            .setPosition(brRad.x, tlRad.y)
+            .setSize(GFF.GAME_W - brRad.x, this.visionRadiusImage.height);
+        // Bottom
+        this.visionBlackRects[3]
+            .setPosition(0, brRad.y)
+            .setSize(GFF.GAME_W, GFF.BOTTOM_BOUND - brRad.y);
+    }
+
     public update(_time: number, _delta: number): void {
         // Only process user controls for the player if in adventuring input mode:
         if (this.getInputMode() === INPUT_ADVENTURING) {
@@ -764,6 +837,11 @@ export class GAdventureContent extends GContentScene {
             } else {
                 this.player.walkDirection(direction);
             }
+        }
+
+        // Update vision:
+        if (this.visionRadiusImage.visible) {
+            this.updateVision();
         }
 
         // Process current conversation, if there is one:
@@ -782,7 +860,7 @@ export class GAdventureContent extends GContentScene {
                 fontSize: '32px',
                 fontFamily: 'dyonisius',
                 color: '#ffffff'
-            }).setDepth(10001).setOrigin(0.5, 0.5);
+            }).setDepth(DEPTH.TRANSITION).setOrigin(0.5, 0.5);
         });
     }
 

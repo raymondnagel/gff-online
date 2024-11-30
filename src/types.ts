@@ -1,6 +1,17 @@
 import { GRoom } from "./GRoom";
 import { GCharSprite } from "./objects/chars/GCharSprite";
 
+// Allows creating colors that can be used as either numbers or strings as needed:
+export class GColor {
+    constructor(public hexColor: number) {}
+    num(): number {
+        return this.hexColor;
+    }
+    str(): string {
+        return '#' + this.hexColor.toString(16).padStart(6, '0');
+    }
+}
+
 // Represents a callback function for updating progress:
 export type ProgressCallback = (description: string, current: number, total: number) => void;
 

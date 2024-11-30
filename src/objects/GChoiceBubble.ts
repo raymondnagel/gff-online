@@ -2,22 +2,20 @@ import Phaser from 'phaser';
 import { GFF } from '../main';
 import { GCharSprite } from './chars/GCharSprite';
 import { COption, GBubble, GPoint } from '../types';
+import { DEPTH } from '../depths';
 
 const SPEAKX_ADJUST: number = 10;
 const SCREEN_EDGE_SPACE: number = 4;
 const CHAR_HEAD_SPACE: number = 30;
 const CHAR_HEAD_ADJUST: number = 10;
-const DEFAULT_SPACE: number = 4;
 const BUBBLE_PADDING: number = 7;
 const BUBBLE_CORNER_RADIUS: number = 10;
 const TEXT_SIZE: number = 14;
 const TEXT_HEIGHT: number = TEXT_SIZE + 2;
-const TEXT_DEPTH: number = 1000;
 const TAIL_WIDTH_PCT: number = .2;
 const TAIL_HEIGHT: number = 60;
 const TAIL_POS_PCT_THRESH: number = .2;
 const MAX_LINE_PIXELS: number = 256;
-const WORDS_PER_SECOND: number = 8;
 
 export class GChoiceBubble extends Phaser.GameObjects.Container implements GBubble {
 
@@ -32,7 +30,7 @@ export class GChoiceBubble extends Phaser.GameObjects.Container implements GBubb
         super(GFF.AdventureContent);
         this.speaker = speaker;
         GFF.AdventureContent.add.existing(this);
-        this.setDepth(9999);
+        this.setDepth(DEPTH.CONV_BUBBLE);
 
         // Create graphics object for the bubble shape:
         this.bubbleGraphics = GFF.AdventureContent.add.graphics();

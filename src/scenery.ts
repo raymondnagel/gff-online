@@ -31,8 +31,44 @@ export namespace SCENERY {
     export const ROCK_WALL_W_DEF: GSceneryDef = { key: 'rock_wall_w', type: 'static', body: WALL_W_BODY };
     export const ROCK_WALL_NW_DEF: GSceneryDef = { key: 'rock_wall_nw', type: 'static', body: {x: 0, y: 0, width: 114, height: 87} };
     export const ROCK_WALL_NE_DEF: GSceneryDef = { key: 'rock_wall_ne', type: 'static', body: {x: 0, y: 0, width: 116, height: 87} };
-    export const ROCK_WALL_SE_DEF: GSceneryDef = { key: 'rock_wall_se', type: 'static', body: {x: 0, y: 0, width: 58, height: 161} };
+    export const ROCK_WALL_SE_DEF: GSceneryDef = { key: 'rock_wall_se', type: 'static', body: {x: 0, y: 0, width: 57, height: 161} };
     export const ROCK_WALL_SW_DEF: GSceneryDef = { key: 'rock_wall_sw', type: 'static', body: {x: 0, y: 0, width: 58, height: 161} };
+
+    export const PLAIN_WALL_N_DEF: GSceneryDef = { key: 'plain_wall_n', type: 'static', body: WALL_N_BODY };
+    export const PLAIN_WALL_E_DEF: GSceneryDef = { key: 'plain_wall_e', type: 'static', body: WALL_E_BODY };
+    export const PLAIN_WALL_S_DEF: GSceneryDef = { key: 'plain_wall_s', type: 'static', body: WALL_S_BODY };
+    export const PLAIN_WALL_W_DEF: GSceneryDef = { key: 'plain_wall_w', type: 'static', body: WALL_W_BODY };
+    export const PLAIN_WALL_NW_DEF: GSceneryDef = { key: 'plain_wall_nw', type: 'static', body: {x: 0, y: 0, width: 114, height: 87} };
+    export const PLAIN_WALL_NE_DEF: GSceneryDef = { key: 'plain_wall_ne', type: 'static', body: {x: 0, y: 0, width: 116, height: 87} };
+    export const PLAIN_WALL_SE_DEF: GSceneryDef = { key: 'plain_wall_se', type: 'static', body: {x: 0, y: 0, width: 57, height: 161} };
+    export const PLAIN_WALL_SW_DEF: GSceneryDef = { key: 'plain_wall_sw', type: 'static', body: {x: 0, y: 0, width: 58, height: 161} };
+
+    export const DESERT_WALL_N_DEF: GSceneryDef = { key: 'desert_wall_n', type: 'static', body: WALL_N_BODY };
+    export const DESERT_WALL_E_DEF: GSceneryDef = { key: 'desert_wall_e', type: 'static', body: WALL_E_BODY };
+    export const DESERT_WALL_S_DEF: GSceneryDef = { key: 'desert_wall_s', type: 'static', body: WALL_S_BODY };
+    export const DESERT_WALL_W_DEF: GSceneryDef = { key: 'desert_wall_w', type: 'static', body: WALL_W_BODY };
+    export const DESERT_WALL_NW_DEF: GSceneryDef = { key: 'desert_wall_nw', type: 'static', body: {x: 0, y: 0, width: 114, height: 87} };
+    export const DESERT_WALL_NE_DEF: GSceneryDef = { key: 'desert_wall_ne', type: 'static', body: {x: 0, y: 0, width: 116, height: 87} };
+    export const DESERT_WALL_SE_DEF: GSceneryDef = { key: 'desert_wall_se', type: 'static', body: {x: 0, y: 0, width: 57, height: 161} };
+    export const DESERT_WALL_SW_DEF: GSceneryDef = { key: 'desert_wall_sw', type: 'static', body: {x: 0, y: 0, width: 58, height: 161} };
+
+    export const FOREST_WALL_N_DEF: GSceneryDef = { key: 'forest_wall_n', type: 'static', body: WALL_N_BODY };
+    export const FOREST_WALL_E_DEF: GSceneryDef = { key: 'forest_wall_e', type: 'static', body: WALL_E_BODY };
+    export const FOREST_WALL_S_DEF: GSceneryDef = { key: 'forest_wall_s', type: 'static', body: WALL_S_BODY };
+    export const FOREST_WALL_W_DEF: GSceneryDef = { key: 'forest_wall_w', type: 'static', body: WALL_W_BODY };
+    export const FOREST_WALL_NW_DEF: GSceneryDef = { key: 'forest_wall_nw', type: 'static', body: {x: 0, y: 0, width: 114, height: 87} };
+    export const FOREST_WALL_NE_DEF: GSceneryDef = { key: 'forest_wall_ne', type: 'static', body: {x: 0, y: 0, width: 116, height: 87} };
+    export const FOREST_WALL_SE_DEF: GSceneryDef = { key: 'forest_wall_se', type: 'static', body: {x: 0, y: 0, width: 57, height: 161} };
+    export const FOREST_WALL_SW_DEF: GSceneryDef = { key: 'forest_wall_sw', type: 'static', body: {x: 0, y: 0, width: 58, height: 161} };
+
+    export const TUNDRA_WALL_N_DEF: GSceneryDef = { key: 'tundra_wall_n', type: 'static', body: WALL_N_BODY };
+    export const TUNDRA_WALL_E_DEF: GSceneryDef = { key: 'tundra_wall_e', type: 'static', body: WALL_E_BODY };
+    export const TUNDRA_WALL_S_DEF: GSceneryDef = { key: 'tundra_wall_s', type: 'static', body: WALL_S_BODY };
+    export const TUNDRA_WALL_W_DEF: GSceneryDef = { key: 'tundra_wall_w', type: 'static', body: WALL_W_BODY };
+    export const TUNDRA_WALL_NW_DEF: GSceneryDef = { key: 'tundra_wall_nw', type: 'static', body: {x: 0, y: 0, width: 114, height: 87} };
+    export const TUNDRA_WALL_NE_DEF: GSceneryDef = { key: 'tundra_wall_ne', type: 'static', body: {x: 0, y: 0, width: 116, height: 87} };
+    export const TUNDRA_WALL_SE_DEF: GSceneryDef = { key: 'tundra_wall_se', type: 'static', body: {x: 0, y: 0, width: 57, height: 161} };
+    export const TUNDRA_WALL_SW_DEF: GSceneryDef = { key: 'tundra_wall_sw', type: 'static', body: {x: 0, y: 0, width: 63, height: 161} };
 
     const SCENERY_DEFS: Map<string, GSceneryDef> = new Map<string, GSceneryDef>();
 
@@ -65,7 +101,8 @@ export namespace SCENERY {
             { key: 'shrine_pedestal', type: 'bg_decor', body: {x: 0, y: 0, width: 64, height: 47} },
             // Interactables:
             { key: 'common_chest', type: 'interactable', body: {x: 0, y: 21, width: 48, height: 20} },
-            { key: 'premium_chest', type: 'interactable', body: {x: 0, y: 20, width: 48, height: 20} },
+            { key: 'blue_chest', type: 'interactable', body: {x: 0, y: 20, width: 48, height: 20} },
+            { key: 'red_chest', type: 'interactable', body: {x: 0, y: 20, width: 48, height: 20} },
         ].forEach(d => {
             SCENERY_DEFS.set(d.key, d as GSceneryDef);
         });
@@ -94,10 +131,9 @@ export namespace SCENERY {
                         new GObstacleSprite(def('campfire') as GSceneryDef, plan.x, plan.y, 7, 10);
                         break;
                     case 'common_chest':
-                        new GTreasureChest(plan.x, plan.y, false);
-                        break;
-                    case 'premium_chest':
-                        new GTreasureChest(plan.x, plan.y, true);
+                    case 'blue_chest':
+                    case 'red_chest':
+                        new GTreasureChest(plan.x, plan.y, plan.key);
                         break;
                 }
         }

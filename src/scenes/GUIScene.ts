@@ -1,3 +1,4 @@
+import { COLOR } from "../colors";
 import { GFF } from "../main";
 import { GIconBarButton } from "../objects/components/GIconBarButton";
 import { GPopup } from "../objects/components/GPopup";
@@ -29,7 +30,7 @@ export abstract class GUIScene extends GBaseScene {
 
         // Faith meter:
         const faithRatio: number = PLAYER.getFaith() / PLAYER.getMaxFaith();
-        const adjFaithMeterWidth: number = METER_WIDTH * faithRatio;
+        const adjFaithMeterWidth: number = Math.min(METER_WIDTH, METER_WIDTH * faithRatio);
         this.faithMeterTop.setTo(METER_OFFSET, GFF.BOTTOM_BOUND + 36, METER_OFFSET + adjFaithMeterWidth, GFF.BOTTOM_BOUND + 36);
         this.faithMeterCenter.width = adjFaithMeterWidth;
         this.faithMeterBottom.setTo(METER_OFFSET, GFF.BOTTOM_BOUND + 37 + FAITH_METER_HEIGHT, METER_OFFSET + adjFaithMeterWidth, GFF.BOTTOM_BOUND + 37 + FAITH_METER_HEIGHT);
@@ -37,7 +38,7 @@ export abstract class GUIScene extends GBaseScene {
 
         // Experience meter:
         const xpRatio: number = PLAYER.getXp() / PLAYER.getMaxXp();
-        const adjXpMeterWidth: number = METER_WIDTH * xpRatio;
+        const adjXpMeterWidth: number = Math.min(METER_WIDTH, METER_WIDTH * xpRatio);
         this.expMeter.width = adjXpMeterWidth;
 
         // Seed count:
@@ -182,7 +183,7 @@ export abstract class GUIScene extends GBaseScene {
         // Level text:
         this.levelText = this.add.text(28 + (METER_WIDTH / 2), GFF.BOTTOM_BOUND + 10, 'Adam: Level 0', {
             fontSize: '18px',
-            color: '#333333',
+            color: COLOR.GREY_1.str(),
             fontFamily: 'dyonisius'
         });
         this.levelText.setOrigin(0.5, 0);
@@ -190,14 +191,14 @@ export abstract class GUIScene extends GBaseScene {
         // Seed count:
         this.seedText = this.add.text(266, GFF.BOTTOM_BOUND + 15, 'x 00', {
             fontSize: '14px',
-            color: '#333333',
+            color: COLOR.GREY_1.str(),
             fontFamily: 'dyonisius'
         });
 
         // Sermon count:
         this.sermonText = this.add.text(266, GFF.BOTTOM_BOUND + 43, 'x 00', {
             fontSize: '14px',
-            color: '#333333',
+            color: COLOR.GREY_1.str(),
             fontFamily: 'dyonisius'
         });
 

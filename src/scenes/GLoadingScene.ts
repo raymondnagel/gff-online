@@ -7,6 +7,7 @@ import { AREA } from '../area';
 import { GWorldArea } from '../areas/GWorldArea';
 import { SCENERY } from '../scenery';
 import { BOOKS } from '../books';
+import { COMMANDMENTS } from '../commandments';
 
 const LOAD_COLOR: number     = 0xffffff;
 const PROGRESS_COLOR: number = 0x00c220;
@@ -99,6 +100,9 @@ export class GLoadingScene extends GBaseScene {
                 // Init Bible books:
                 BOOKS.initBooks();
                 BOOKS.startWithBook('John');
+
+                // Init Commandments:
+                COMMANDMENTS.initCommandments();
 
                 // Init scenery definitions:
                 SCENERY.initSceneryDefs();

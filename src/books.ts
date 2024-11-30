@@ -36,7 +36,7 @@ export namespace BOOKS {
     }
 
     export function obtainBook(name: string) {
-        books.set(name, 'enabled'); // TODO: Replace with 'acquired' when Books subscreen is ready
+        books.set(name, 'acquired');
     }
 
     export function setBookEnabled(name: string, enabled: boolean) {
@@ -53,10 +53,20 @@ export namespace BOOKS {
         return Array.from(books.entries()).map(([key, _]) => key);
     }
 
+    export function isOnlyEnabledBook(bookName: string): boolean {
+        const enabledBooks: string[] = getEnabledBooks();
+        return enabledBooks.length === 1 && enabledBooks[0] === bookName;
+    }
+
+    export function isNewTestament(bookName: string): boolean {
+        return entries.findIndex(entry => entry.name === bookName) >= 40;
+    }
+
     export function startWithBook(bookName: string) {
         const index = booksToFind.findIndex(obj => obj === bookName);
         booksToFind.splice(index, 1);
         obtainBook(bookName);
+        setBookEnabled(bookName, true);
     }
 
     export function shuffleBooksToFind() {

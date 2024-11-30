@@ -18,6 +18,7 @@ import { CHURCH } from "../church";
 import { GStronghold } from "../GStronghold";
 import { PEOPLE } from "../people";
 import { BOOKS } from "../books";
+import { COMMANDMENTS } from "../commandments";
 
 type BorderWall = {
     room: GRoom,
@@ -498,7 +499,7 @@ export class GWorldArea extends GArea {
             }
             const book: string|undefined = BOOKS.getNextBookToFind();
             if (book !== undefined) {
-                room.planPremiumChestShrine(book);
+                room.planPremiumChestShrine(book, 'blue');
             }
         }
 
@@ -508,7 +509,10 @@ export class GWorldArea extends GArea {
             while (!room || !room.canHavePremiumChest()) {
                 room = GRandom.randElement(allRooms);
             }
-            // room.planPremiumChestShrine(); // Add specific commandment as argument!
+            const commandment: string|undefined = COMMANDMENTS.getNextCommandmentToFind();
+            if (commandment !== undefined) {
+                room.planPremiumChestShrine(commandment, 'red');
+            }
         }
     }
 }

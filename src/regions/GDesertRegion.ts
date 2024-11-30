@@ -1,7 +1,19 @@
 import { GRoom } from "../GRoom";
 import { SCENERY } from "../scenery";
-import { GRect } from "../types";
+import { Dir9, GRect, GSceneryDef } from "../types";
 import { GOutsideRegion } from "./GOutsideRegion";
+
+const WALLS: Record<Dir9, GSceneryDef|null> = {
+    [Dir9.N]: SCENERY.DESERT_WALL_N_DEF,
+    [Dir9.E]: SCENERY.DESERT_WALL_E_DEF,
+    [Dir9.S]: SCENERY.DESERT_WALL_S_DEF,
+    [Dir9.W]: SCENERY.DESERT_WALL_W_DEF,
+    [Dir9.NE]: SCENERY.DESERT_WALL_NE_DEF,
+    [Dir9.SE]: SCENERY.DESERT_WALL_SE_DEF,
+    [Dir9.SW]: SCENERY.DESERT_WALL_SW_DEF,
+    [Dir9.NW]: SCENERY.DESERT_WALL_NW_DEF,
+    [Dir9.NONE]: null,
+};
 
 export class GDesertRegion extends GOutsideRegion{
 
@@ -12,6 +24,10 @@ export class GDesertRegion extends GOutsideRegion{
             'desert_enc_bg',
             'map_desert'
         );
+    }
+
+    public getWalls(): Record<Dir9, GSceneryDef|null> {
+        return WALLS;
     }
 
     protected _furnishRoom(room: GRoom) {
@@ -28,7 +44,6 @@ export class GDesertRegion extends GOutsideRegion{
 
         // Walls:
         room.planPartialWallScenery([
-            SCENERY.def('tall_cactus'),
             SCENERY.def('barrel_cactus'),
             SCENERY.def('paddle_cactus'),
             SCENERY.def('spines_rocks'),

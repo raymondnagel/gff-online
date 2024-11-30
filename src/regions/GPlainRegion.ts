@@ -1,8 +1,20 @@
 import { GRandom } from "../GRandom";
 import { GRoom } from "../GRoom";
 import { SCENERY } from "../scenery";
-import { GRect } from "../types";
+import { Dir9, GRect, GSceneryDef } from "../types";
 import { GOutsideRegion } from "./GOutsideRegion";
+
+const WALLS: Record<Dir9, GSceneryDef|null> = {
+    [Dir9.N]: SCENERY.PLAIN_WALL_N_DEF,
+    [Dir9.E]: SCENERY.PLAIN_WALL_E_DEF,
+    [Dir9.S]: SCENERY.PLAIN_WALL_S_DEF,
+    [Dir9.W]: SCENERY.PLAIN_WALL_W_DEF,
+    [Dir9.NE]: SCENERY.PLAIN_WALL_NE_DEF,
+    [Dir9.SE]: SCENERY.PLAIN_WALL_SE_DEF,
+    [Dir9.SW]: SCENERY.PLAIN_WALL_SW_DEF,
+    [Dir9.NW]: SCENERY.PLAIN_WALL_NW_DEF,
+    [Dir9.NONE]: null,
+};
 
 export class GPlainRegion extends GOutsideRegion{
 
@@ -13,6 +25,10 @@ export class GPlainRegion extends GOutsideRegion{
             'plain_enc_bg',
             'map_plain'
         );
+    }
+
+    public getWalls(): Record<Dir9, GSceneryDef|null> {
+        return WALLS;
     }
 
     protected _furnishRoom(room: GRoom) {
