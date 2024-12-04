@@ -200,17 +200,20 @@ export namespace GFF {
 
     export const TEST_INFO =
 `Thanks for trying out the current version of "The Good Fight of Faith"!\n
-The game is still in very early stages of development; most of the work thus far has been\n
-on core systems, but I am beginning to add content as well. Random world/region generation\n
-is functional, but there is much more to come, so stay tuned! Here are some things you can try:\n
+The game is still in early stages of development. Here are some things to do for now:\n
 - Click the Map icon (or press 'M') to view the world map, and see where you are in the world!\n
   (remember that the world is random; it will be different each time you start a new game)\n
+- Each new room you discover will appear on your map.\n
 - Press [Esc] to close the map, or any other subscreen.\n
-- Go to any edge of the screen to move to an adjacent room.\n
 - If you want to find other people, go toward a town. People tend to be in or near towns.\n
 - 1-3 enemies will spawn in each room, and they'll chase you! If they catch you, you'll need to\n
   defeat them in a scripture battle. You'll gain experience for each battle, but be careful not to lose!\n
-- At the moment, every room has a treasure chest. You can open them and see what they contain!
+- Treasure chests are now scattered throughout the world. Blue chests contain a book of the Bible; red chests\n
+  hold one of the 10 commandments.\n
+- Brown chests have a chance to appear randomly in each room. These can contain minor items to restore your faith.\n
+- You begin with the Gospel of John. Find other books in the world and enable them on the Books subscreen [I]]\n
+  to use them in scripture battles.\n
+- In non-safe areas, your vision is limited. Find the 10 commandments to expand your sight radius!\n
 \n
 ADVENTURE CONTROLS:\n
 Hold down [Arrow] keys to walk. You can hold two directions (e.g. 'up' + 'right') to walk diagonally.\n

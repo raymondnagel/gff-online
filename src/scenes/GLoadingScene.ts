@@ -3,8 +3,6 @@ import { GPersonSprite } from '../objects/chars/GPersonSprite';
 import { GFF } from '../main';
 import { GBaseScene } from './GBaseScene';
 import { GImpSprite } from '../objects/chars/GImpSprite';
-import { AREA } from '../area';
-import { GWorldArea } from '../areas/GWorldArea';
 import { SCENERY } from '../scenery';
 import { BOOKS } from '../books';
 import { COMMANDMENTS } from '../commandments';
@@ -27,6 +25,7 @@ export class GLoadingScene extends GBaseScene {
         this.createObjects();
         this.setLoadEvents();
         this.load.json('json-manifest', 'assets/json-manifest.json');
+        this.load.json('font-manifest', 'assets/font-manifest.json');
         this.load.json('image-manifest', 'assets/image-manifest.json');
         this.load.json('sprite-manifest', 'assets/sprite-manifest.json');
         this.load.json('audio-manifest', 'assets/audio-manifest.json');
@@ -143,6 +142,15 @@ export class GLoadingScene extends GBaseScene {
         });
     }
 
+    private loadFonts() {
+        // Loop through the font-manifest and load each font file
+        const fontManifest: string[] = this.cache.json.get('font-manifest') as string[];
+        fontManifest.forEach(file => {
+            const key = file.replace(/\.[^/.]+$/, "").split('/').pop() as string;
+            this.load.font(key, 'assets/' + file, 'truetype');
+        });
+    }
+
     private loadImages() {
         // Loop through the image-manifest and load each image
         const imageManifest: string[] = this.cache.json.get('image-manifest') as string[];
@@ -193,6 +201,7 @@ export class GLoadingScene extends GBaseScene {
 
     public create(): void {
         this.loadJsons();
+        this.loadFonts();
         this.loadImages();
         this.loadSpritesheets();
         this.loadAudios();

@@ -346,7 +346,7 @@ export class GRoom {
         if (this.isStart()) {
             GFF.AdventureContent.add.text(64, 64, GFF.TEST_INFO, {
                 color: '#000000',
-                fontSize: '14px',
+                fontSize: '12px',
                 fontFamily: 'oxygen',
                 fontStyle: 'bold',
                 lineSpacing: -6

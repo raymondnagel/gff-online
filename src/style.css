@@ -4,46 +4,12 @@
     box-sizing: border-box;
 }
 
-@font-face {
-    font-family: 'dyonisius';
-    src: url('assets/fonts/dyonisius.ttf') format('truetype');
-}
-@font-face {
-    font-family: 'gemerald';
-    src: url('assets/fonts/gemerald.ttf') format('truetype');
-}
-@font-face {
-    font-family: 'imposs';
-    src: url('assets/fonts/imposs.ttf') format('truetype');
-}
-@font-face {
-    font-family: 'olde';
-    src: url('assets/fonts/olde.ttf') format('truetype');
-}
-@font-face {
-    font-family: 'oxygen';
-    src: url('assets/fonts/oxygen.ttf') format('truetype');
-}
-@font-face {
-    font-family: 'time';
-    src: url('assets/fonts/time.ttf') format('truetype');
-}
-@font-face {
-    font-family: 'vanilla';
-    src: url('assets/fonts/vanilla_extract.ttf') format('truetype');
-}
-
 html {
     background-color: black;
 }
 
 body {
     color: gold;
-}
-
-#fonttest h1 {
-    /* Comment next line to test fonts */
-    display: none;
 }
 
 #thegame {
