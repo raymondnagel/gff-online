@@ -291,12 +291,12 @@ export abstract class GUIScene extends GBaseScene {
     protected initDesignMode() {
         this.mouseText = this.add.text(0, 0, '', {
             color: '#ffffff',
-            fontFamily: 'gemerald',
+            fontFamily: 'averia_serif',
             fontSize: '12px'
         }).setOrigin(0, 0);
         this.blockText = this.add.text(0, 16, '', {
             color: '#ffffff',
-            fontFamily: 'gemerald',
+            fontFamily: 'averia_serif',
             fontSize: '12px'
         }).setOrigin(0, 0);
 
@@ -389,7 +389,6 @@ export abstract class GUIScene extends GBaseScene {
             }
         });
         this.input.keyboard?.on('keydown-A', (event: KeyboardEvent) => {
-            // Assuming `rectangles` is your array of Phaser.GameObjects.Rectangle
             const rectanglesData = this.zones.map(rect => ({
                 x: rect.x,
                 y: rect.y,
@@ -400,7 +399,6 @@ export abstract class GUIScene extends GBaseScene {
             // Convert the array to a JSON string
             const jsonData = JSON.stringify(rectanglesData, null, 2); // `null, 2` for pretty-printing
 
-            // If you need to save it as a file in a browser environment, you can use this:
             const blob = new Blob([jsonData], { type: "application/json" });
             const url = URL.createObjectURL(blob);
             const link = document.createElement("a");
@@ -408,6 +406,8 @@ export abstract class GUIScene extends GBaseScene {
             link.download = "zone_template_.json";
             link.click();
             URL.revokeObjectURL(url); // Clean up the URL after download
+
+            this.zones = [];
         });
     }
 }

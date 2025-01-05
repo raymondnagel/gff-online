@@ -8,6 +8,7 @@
   "json/blurb_classes/sinner_introduction.json",
   "json/books_info.json",
   "json/conversations/choice_test_conv.json",
+  "json/conversations/christmas.json",
   "json/conversations/church_sermon_test.json",
   "json/conversations/duo_test_conv.json",
   "json/conversations/dynamic_test_conv.json",
@@ -40,5 +41,10 @@
   "json/names/s_latino_names.json",
   "json/scenery_zone_templates/zone_template_1.json",
   "json/scenery_zone_templates/zone_template_2.json",
-  "json/scenery_zone_templates/zone_template_3.json"
+  "json/scenery_zone_templates/zone_template_3.json",
+  "json/scenery_zone_templates/zone_template_4.json",
+  "json/scenery_zone_templates/zone_template_5.json",
+  "json/scenery_zone_templates/zone_template_6.json",
+  "json/scenery_zone_templates/zone_template_7.json",
+  "json/scenery_zone_templates/zone_template_8.json"
 ]

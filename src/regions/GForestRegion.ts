@@ -71,11 +71,11 @@ export class GForestRegion extends GOutsideRegion{
                 break;
         }
 
+        // Tree Stumps: 30% chance to add 1-3
+        room.planSceneryChanceForBatch(SCENERY.def('tree_stump'), .3, 1, 3, objectBounds, zoneRects);
         // Wonky Trees: 20% chance each to add up to 3
         room.planSceneryChanceForEach(SCENERY.def('wonky_tree'), .2, 3, objectBounds, zoneRects);
-        // Tree Stumps: 30% chance each to add up to 3
-        room.planSceneryChanceForBatch(SCENERY.def('tree_stump'), .3, 1, 3, objectBounds, zoneRects);
-        // Boulders: 10% chance each to add up to 3
+        // Boulders: 20% chance each to add up to 3
         room.planSceneryChanceForEach(SCENERY.def('boulder'), .2, 3, objectBounds, zoneRects);
         // Campfire: 10% chance each to add 1
         room.planSceneryChanceForEach(SCENERY.def('campfire'), .1, 1, objectBounds, zoneRects);

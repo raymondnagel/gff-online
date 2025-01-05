@@ -24,13 +24,23 @@ export class GLoadingScene extends GBaseScene {
         this.setRegistry();
         this.createObjects();
         this.setLoadEvents();
+        this.loadFontsIndividually();
         this.load.json('json-manifest', 'assets/json-manifest.json');
-        this.load.json('font-manifest', 'assets/font-manifest.json');
+        // this.load.json('font-manifest', 'assets/font-manifest.json');
         this.load.json('image-manifest', 'assets/image-manifest.json');
         this.load.json('sprite-manifest', 'assets/sprite-manifest.json');
         this.load.json('audio-manifest', 'assets/audio-manifest.json');
         this.load.xml('kjv', 'assets/xml/kjv.xml');
         this.load.glsl('grayscale', 'assets/shaders/grayscale.frag');
+    }
+
+    private loadFontsIndividually() {
+        this.load.font('dyonisius', 'assets/fonts/dyonisius.ttf', 'truetype');
+        this.load.font('averia_serif', 'assets/fonts/averia_serif.ttf', 'truetype');
+        this.load.font('imposs', 'assets/fonts/imposs.ttf', 'truetype');
+        this.load.font('olde', 'assets/fonts/olde.ttf', 'truetype');
+        this.load.font('oxygen', 'assets/fonts/oxygen.ttf', 'truetype');
+        this.load.font('vanilla', 'assets/fonts/vanilla_extract.ttf', 'truetype');
     }
 
     private createObjects() {
@@ -201,7 +211,7 @@ export class GLoadingScene extends GBaseScene {
 
     public create(): void {
         this.loadJsons();
-        this.loadFonts();
+        // this.loadFonts();
         this.loadImages();
         this.loadSpritesheets();
         this.loadAudios();

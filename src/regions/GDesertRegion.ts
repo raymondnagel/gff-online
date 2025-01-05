@@ -1,3 +1,4 @@
+import { GRandom } from "../GRandom";
 import { GRoom } from "../GRoom";
 import { SCENERY } from "../scenery";
 import { Dir9, GRect, GSceneryDef } from "../types";
@@ -51,8 +52,23 @@ export class GDesertRegion extends GOutsideRegion{
             SCENERY.def('desert_boulder')
         ]);
 
-        // Tall Cactus: 40% chance to add 1-3
-        room.planSceneryChanceForBatch(SCENERY.def('tall_cactus'), .4, 1, 3, objectBounds, zoneRects);
+        // Desert type:
+        switch (GRandom.randInt(1, 3)) {
+            case 1:
+                // Tall Cactus: 100% chance to add 1-3
+                room.planSceneryChanceForBatch(SCENERY.def('tall_cactus'), 1.0, 1, 3, objectBounds, zoneRects);
+                break;
+            case 2:
+                // Palm Trees: 100% chance to add 1-3
+                room.planSceneryChanceForBatch(SCENERY.def('palm_tree'), 1.0, 1, 3, objectBounds, zoneRects);
+                break;
+            case 3:
+                // Tall Cactus: 75% chance to add 1-3
+                room.planSceneryChanceForBatch(SCENERY.def('tall_cactus'), .75, 1, 3, objectBounds, zoneRects);
+                // Palm Trees: 75% chance to add 1-3
+                room.planSceneryChanceForBatch(SCENERY.def('palm_tree'), .75, 1, 3, objectBounds, zoneRects);
+                break;
+        }
 
         // Barrel Cactus: 40% chance to add 1-2
         room.planSceneryChanceForBatch(SCENERY.def('barrel_cactus'), .4, 1, 2, objectBounds, zoneRects);

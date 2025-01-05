@@ -42,7 +42,7 @@ export class GOptionWheel extends GTextEntryControl {
     private createTextObjects(scene: Phaser.Scene) {
         for (let i = 0; i < this.maxVisibleOptions; i++) {
             const text = scene.add.text(0, 0, "", {
-                fontFamily: 'gemerald',
+                fontFamily: 'averia_serif',
                 fontSize: '20px',
                 color: '#000000'
            });

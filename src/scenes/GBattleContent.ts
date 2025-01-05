@@ -253,7 +253,7 @@ export class GBattleContent extends GContentScene {
         // Scripture
         this.scriptureText = this.add.text(GFF.GAME_W / 2, SCROLL_Y + 105, '', {
             color: SCRIPTURE_COLOR,
-            fontFamily: 'gemerald',
+            fontFamily: 'averia_serif',
             fontSize: '16px',
             lineSpacing: -2
         }).setOrigin(.5, .5).setWordWrapWidth(WORD_WRAP_WIDTH);
@@ -429,14 +429,16 @@ export class GBattleContent extends GContentScene {
     private createAnimations() {
         this.enemyAttackSlashSprite = this.add.sprite(PLAYER_PARTICLE_X, GUESS_SCRIPTURE_Y, 'slash').setOrigin(0, .5);
         this.enemyAttackSlashSprite.setVisible(false);
-        this.anims.create({
-            key: 'slash',
-            frames: this.anims.generateFrameNumbers(
-                'slash',
-                { start: 0, end: 7 }
-            ),
-            frameRate: 24
-        });
+        if (!this.anims.exists('slash')) {
+            this.anims.create({
+                key: 'slash',
+                frames: this.anims.generateFrameNumbers(
+                    'slash',
+                    { start: 0, end: 7 }
+                ),
+                frameRate: 24
+            });
+        }
     }
 
     private createGuessResult() {
@@ -777,7 +779,7 @@ export class GBattleContent extends GContentScene {
         this.scriptureText.setAlpha(0.0);
 
         // Use this instead to show the longest verse in the Bible and make sure it fits:
-        // const scripture: string|null = GBible.getVerseText('Esther', 8, 9) as string;
+        // const scripture: string|null = BIBLE.getVerseText('Esther', 8, 9) as string;
         // this.scriptureText.text = scripture;
 
         this.tweens.add({

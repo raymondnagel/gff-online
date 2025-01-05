@@ -26,6 +26,7 @@ const WALL_CTRS: number[] = [
 const HORZ_WALL_SECTIONS: number = 16;
 const VERT_WALL_SECTIONS: number = 11;
 const TERRAIN_FADE_ALPHA: number = .5;
+const MIN_SCENERY_GAP: number = 16;
 
 /**
  * GRoom represents a single screen/room within a GArea.
@@ -816,11 +817,13 @@ export class GRoom {
         let z: number = GRandom.randInt(0, zones.length - 1);
         const start: number = z;
         do {
-            for (y = 0; y < zones[z].height - objectHeight; y += inc) {
-                for (x = 0; x < zones[z].width - objectWidth; x += inc) {
-                    placement = {x, y, width: objectWidth, height: objectHeight};
-                    if (!this.intersectsAny(placement, objects)) {
-                        return placement;
+            if (zones[z].width > objectWidth && zones[z].height > objectHeight) {
+                for (y = zones[z].y; y < zones[z].height - objectHeight; y += inc) {
+                    for (x = zones[z].x; x < zones[z].width - objectWidth; x += inc) {
+                        placement = {x, y, width: objectWidth, height: objectHeight};
+                        if (!this.intersectsAny(placement, objects, MIN_SCENERY_GAP)) {
+                            return placement;
+                        }
                     }
                 }
             }
@@ -840,23 +843,26 @@ export class GRoom {
         let placement: GRect;
         for (let t: number = 0; t < maxTries; t++) {
             zone = GRandom.randElement(zones) as GRect;
-            x = GRandom.randInt(zone.x, zone.x + zone.width - objectWidth);
-            y = GRandom.randInt(zone.y, zone.y + zone.height - objectHeight);
-            placement = {x, y, width: objectWidth, height: objectHeight};
-            if (!this.intersectsAny(placement, objects)) {
-                return placement;
+
+            if (zone.width > objectWidth && zone.height > objectHeight) {
+                x = GRandom.randInt(zone.x, zone.x + zone.width - objectWidth);
+                y = GRandom.randInt(zone.y, zone.y + zone.height - objectHeight);
+                placement = {x, y, width: objectWidth, height: objectHeight};
+                if (!this.intersectsAny(placement, objects, MIN_SCENERY_GAP)) {
+                    return placement;
+                }
             }
         }
         return null;
     }
 
-    private intersectsAny(object: GRect, existingObjects: GRect[]): boolean {
+    private intersectsAny(object: GRect, existingObjects: GRect[], minGap: number = 0): boolean {
         for (let otherObject of existingObjects) {
             if (!(
-                    object.x + object.width <= otherObject.x ||
-                    object.x >= otherObject.x + otherObject.width ||
-                    object.y + object.height <= otherObject.y ||
-                    object.y >= otherObject.y + otherObject.height
+                    object.x + object.width + minGap <= otherObject.x ||
+                    object.x - minGap >= otherObject.x + otherObject.width ||
+                    object.y + object.height + minGap <= otherObject.y ||
+                    object.y - minGap >= otherObject.y + otherObject.height
             )) {
                 return true;
             }

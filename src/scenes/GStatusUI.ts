@@ -26,7 +26,10 @@ export class GStatusUI extends GUIScene {
 
         this.setSubscreen();
         this.initInputMode();
-        //this.createTileGuidelines();
+
+        // For design:
+        this.createTileGuidelines();
+        this.initDesignMode();
     }
 
     private initInputMode() {
