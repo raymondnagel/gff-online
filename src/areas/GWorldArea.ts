@@ -31,7 +31,7 @@ const REGION_MIN: number = 25;
 const REGION_MAX: number = 35;
 const NUM_TOWNS: number = 10;
 const TOWN_MIN: number = 3;
-const TOWN_MAX: number = 5;
+const TOWN_MAX: number = 6;
 const MIN_DIST_REGION_CENTERS: number = 5;
 const MIN_DIST_TOWN_CENTERS: number = 4;
 const START_DIST_HOLDS_TO_TOWNS: number = 5;
@@ -325,6 +325,9 @@ export class GWorldArea extends GArea {
             churchRoom.setChurch(church);
             GFF.genLog(`Created church: ${church.getName()}`);
         }
+
+        // Plan streets for each town room:
+        this.createTownStreets();
     }
 
     private createTowns(numTowns: number): boolean {
@@ -485,7 +488,7 @@ export class GWorldArea extends GArea {
         GFF.genLog(`Couldn't find a suitable location for ${stronghold.getName()} in ${region.getName()}!`);
     }
 
-    protected createShrines(): void {
+    private createShrines(): void {
         // Decide where premium treasure chests are going:
         // There are 35 in World Area: 30 books and 5 commandments
         const allRooms: GRoom[] = this.getRoomsByFloor(0);
@@ -512,6 +515,25 @@ export class GWorldArea extends GArea {
             const commandment: string|undefined = COMMANDMENTS.getNextCommandmentToFind();
             if (commandment !== undefined) {
                 room.planPremiumChestShrine(commandment, 'red');
+            }
+        }
+    }
+
+    private createTownStreets(): void {
+        // Get list of pre-created towns:
+        const towns: GTown[] = TOWN.getTowns();
+        for (let town of towns) {
+            const rooms: GRoom[] = town.getRooms();
+            for (let room of rooms) {
+                let neighbor: GRoom|null = room.getNeighbor(Dir9.N);
+                const roadNorth: boolean = neighbor !== null && neighbor.getTown() !== null;
+                neighbor = room.getNeighbor(Dir9.E);
+                const roadEast: boolean = neighbor !== null && neighbor.getTown() !== null;
+                neighbor = room.getNeighbor(Dir9.S);
+                const roadSouth: boolean = neighbor !== null && neighbor.getTown() !== null;
+                neighbor = room.getNeighbor(Dir9.W);
+                const roadWest: boolean = neighbor !== null && neighbor.getTown() !== null;
+                room.planTownStreets(roadNorth, roadEast, roadSouth, roadWest);
             }
         }
     }

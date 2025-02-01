@@ -52,9 +52,9 @@ export class GMapUI extends GUIScene {
         }).setOrigin(.5, 0);
 
         // Discover all rooms (enable to reveal entire map):
-        // this.area.getRoomsByFloor(0).forEach(r => {
-        //     r.discover();
-        // });
+        this.area.getRoomsByFloor(0).forEach(r => {
+            r.discover();
+        });
 
         this.renderMap();
 

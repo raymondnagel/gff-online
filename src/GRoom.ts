@@ -725,7 +725,7 @@ export class GRoom {
         }
     }
 
-    // Add instance of scenery type, up to max, only if chance is met in succession times
+    // Add instance of scenery type, up to max, only if chance is met in succession
     // (assumes the same rarity for each instance)
     public planSceneryChanceForEach(sceneryDef: GSceneryDef, pctChance: number, max: number, objects: GRect[], zones?: GRect[]) {
         for (let n: number = 0; n < max; n++) {
@@ -809,6 +809,73 @@ export class GRoom {
         this.chestItem = itemName;
     }
 
+    public planTownStreets(roadNorth: boolean, roadEast: boolean, roadSouth: boolean, roadWest: boolean): void {
+
+        // Roads toward other town rooms
+        // These are unaffected by intersection tiles in the center;
+        // if there is an intersection, special center tiles are added after.
+        if (roadNorth) {
+            for (let y: number = 0; y <= 3; y++) {
+                this.planTileScenery('street_vert_w', 7, y);
+                this.planTileScenery('street_vert_e', 8, y);
+            }
+            this.noSceneryZones.push(this.getTileArea(7, 0, 2, 4));
+        }
+        if (roadSouth) {
+            for (let y: number = 7; y <= 10; y++) {
+                this.planTileScenery('street_vert_w', 7, y);
+                this.planTileScenery('street_vert_e', 8, y);
+            }
+            this.noSceneryZones.push(this.getTileArea(7, 7, 2, 4));
+        }
+        if (roadWest) {
+            for (let x: number = 0; x <= 6; x++) {
+                this.planTileScenery('street_horz_n', x, 4);
+                this.planTileScenery('street_horz_c', x, 5);
+                this.planTileScenery('street_horz_s', x, 6);
+            }
+            this.noSceneryZones.push(this.getTileArea(0, 4.5, 7, 2));
+        }
+        if (roadEast) {
+            for (let x: number = 9; x <= 15; x++) {
+                this.planTileScenery('street_horz_n', x, 4);
+                this.planTileScenery('street_horz_c', x, 5);
+                this.planTileScenery('street_horz_s', x, 6);
+            }
+            this.noSceneryZones.push(this.getTileArea(9, 4.5, 7, 2));
+        }
+
+        // Test for different types of intersections, from most directions to least.
+        // As soon as a valid intersection is created, return immediately.
+
+        // 4-way intersection
+        if (roadNorth && roadWest && roadEast && roadSouth) {
+            this.planTileScenery('street_vert_nw_int', 7, 4);
+            this.planTileScenery('street_vert_ne_int', 8, 4);
+            this.planTileScenery('street_t_nws', 7, 5);
+            this.planTileScenery('street_t_nes', 8, 5);
+            this.planTileScenery('street_vert_sw_int', 7, 6);
+            this.planTileScenery('street_vert_se_int', 8, 6);
+            this.noSceneryZones.push(this.getTileArea(7, 4, 2, 3));
+            return;
+        }
+
+        // 3-way intersections (T)
+
+        // 2-way intersections: bends
+
+        if (roadNorth && roadWest && (!roadEast) && (!roadSouth)) {
+            this.planTileScenery('street_vert_nw_int', 7, 4);
+            this.planTileScenery('street_vert_e', 8, 4);
+            this.planTileScenery('street_curve_nw_inner', 7, 5);
+            this.planTileScenery('street_curve_nw_minor', 8, 5);
+            this.planTileScenery('street_horz_s', 7, 6);
+            this.planTileScenery('street_curve_nw_major', 8, 6);
+        }
+
+        // 2-way straight
+    }
+
     private sampleFit(objectWidth: number, objectHeight: number, inc: number, objects: GRect[], zones: GRect[]): GRect|null {
         let x: number;
         let y: number;
@@ -868,6 +935,19 @@ export class GRoom {
             }
         }
         return false;
+    }
+
+    public planTileScenery(key: string, x: number, y: number) {
+        this.addSceneryPlan(key, GFF.ROOM_X + (x * GFF.TILE_W), GFF.ROOM_Y + (y * GFF.TILE_H));
+    }
+
+    public getTileArea(x: number, y: number, w: number, h: number): GRect {
+        return {
+            x: GFF.ROOM_X + (x * GFF.TILE_W),
+            y: GFF.ROOM_Y + (y * GFF.TILE_H),
+            width: (w * GFF.TILE_W),
+            height: (h * GFF.TILE_H)
+        };
     }
 
     public logRoomInfo() {
