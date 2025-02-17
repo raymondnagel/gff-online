@@ -211,7 +211,7 @@ The game is still in early stages of development. Here are some things to do for
 - Treasure chests are now scattered throughout the world. Blue chests contain a book of the Bible; red chests\n
   hold one of the 10 commandments.\n
 - Brown chests have a chance to appear randomly in each room. These can contain minor items to restore your faith.\n
-- You begin with the Gospel of John. Find other books in the world and enable them on the Books subscreen [I]]\n
+- You begin with the Gospel of John. Find other books in the world and enable them on the Books subscreen [I]\n
   to use them in scripture battles.\n
 - In non-safe areas, your vision is limited. Find the 10 commandments to expand your sight radius!\n
 \n

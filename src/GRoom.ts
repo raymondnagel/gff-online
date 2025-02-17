@@ -810,6 +810,10 @@ export class GRoom {
     }
 
     public planTownStreets(roadNorth: boolean, roadEast: boolean, roadSouth: boolean, roadWest: boolean): void {
+        // This method is only called on town rooms, so there will always be
+        // at least one road from an edge to the center. Therfore, ALWAYS put
+        // a no-scenery zone in the center:
+        this.noSceneryZones.push(this.getTileArea(7, 4, 2, 3));
 
         // Roads toward other town rooms
         // These are unaffected by intersection tiles in the center;
@@ -856,14 +860,48 @@ export class GRoom {
             this.planTileScenery('street_t_nes', 8, 5);
             this.planTileScenery('street_vert_sw_int', 7, 6);
             this.planTileScenery('street_vert_se_int', 8, 6);
-            this.noSceneryZones.push(this.getTileArea(7, 4, 2, 3));
             return;
         }
 
         // 3-way intersections (T)
+        if (roadNorth && roadWest && roadEast && (!roadSouth)) {
+            this.planTileScenery('street_vert_nw_int', 7, 4);
+            this.planTileScenery('street_vert_ne_int', 8, 4);
+            this.planTileScenery('street_t_nwe_w', 7, 5);
+            this.planTileScenery('street_t_nwe_e', 8, 5);
+            this.planTileScenery('street_horz_s', 7, 6);
+            this.planTileScenery('street_horz_s', 8, 6);
+            return;
+        }
+        if (roadSouth && roadWest && roadEast && (!roadNorth)) {
+            this.planTileScenery('street_horz_n', 7, 4);
+            this.planTileScenery('street_horz_n', 8, 4);
+            this.planTileScenery('street_t_wes_w', 7, 5);
+            this.planTileScenery('street_t_wes_e', 8, 5);
+            this.planTileScenery('street_vert_sw_int', 7, 6);
+            this.planTileScenery('street_vert_se_int', 8, 6);
+            return;
+        }
+        if (roadNorth && roadWest && roadSouth && (!roadEast)) {
+            this.planTileScenery('street_vert_nw_int', 7, 4);
+            this.planTileScenery('street_vert_e', 8, 4);
+            this.planTileScenery('street_t_nws', 7, 5);
+            this.planTileScenery('street_vert_e', 8, 5);
+            this.planTileScenery('street_vert_sw_int', 7, 6);
+            this.planTileScenery('street_vert_e', 8, 6);
+            return;
+        }
+        if (roadNorth && roadEast && roadSouth && (!roadWest)) {
+            this.planTileScenery('street_vert_w', 7, 4);
+            this.planTileScenery('street_vert_ne_int', 8, 4);
+            this.planTileScenery('street_vert_w', 7, 5);
+            this.planTileScenery('street_t_nes', 8, 5);
+            this.planTileScenery('street_vert_w', 7, 6);
+            this.planTileScenery('street_vert_se_int', 8, 6);
+            return;
+        }
 
         // 2-way intersections: bends
-
         if (roadNorth && roadWest && (!roadEast) && (!roadSouth)) {
             this.planTileScenery('street_vert_nw_int', 7, 4);
             this.planTileScenery('street_vert_e', 8, 4);
@@ -871,9 +909,93 @@ export class GRoom {
             this.planTileScenery('street_curve_nw_minor', 8, 5);
             this.planTileScenery('street_horz_s', 7, 6);
             this.planTileScenery('street_curve_nw_major', 8, 6);
+            return;
+        }
+        if (roadNorth && roadEast && (!roadWest) && (!roadSouth)) {
+            this.planTileScenery('street_vert_w', 7, 4);
+            this.planTileScenery('street_vert_ne_int', 8, 4);
+            this.planTileScenery('street_curve_ne_minor', 7, 5);
+            this.planTileScenery('street_curve_ne_inner', 8, 5);
+            this.planTileScenery('street_curve_ne_major', 7, 6);
+            this.planTileScenery('street_horz_s', 8, 6);
+            return;
+        }
+        if (roadSouth && roadWest && (!roadEast) && (!roadNorth)) {
+            this.planTileScenery('street_horz_n', 7, 4);
+            this.planTileScenery('street_curve_sw_major', 8, 4);
+            this.planTileScenery('street_curve_sw_inner', 7, 5);
+            this.planTileScenery('street_curve_sw_minor', 8, 5);
+            this.planTileScenery('street_vert_sw_int', 7, 6);
+            this.planTileScenery('street_vert_e', 8, 6);
+            return;
+        }
+        if (roadSouth && roadEast && (!roadWest) && (!roadNorth)) {
+            this.planTileScenery('street_curve_se_major', 7, 4);
+            this.planTileScenery('street_horz_n', 8, 4);
+            this.planTileScenery('street_curve_se_minor', 7, 5);
+            this.planTileScenery('street_curve_se_inner', 8, 5);
+            this.planTileScenery('street_vert_w', 7, 6);
+            this.planTileScenery('street_vert_se_int', 8, 6);
+            return;
         }
 
         // 2-way straight
+        if (roadNorth && roadSouth && (!roadWest) && (!roadEast)) {
+            this.planTileScenery('street_vert_w', 7, 4);
+            this.planTileScenery('street_vert_e', 8, 4);
+            this.planTileScenery('street_vert_w', 7, 5);
+            this.planTileScenery('street_vert_e', 8, 5);
+            this.planTileScenery('street_vert_w', 7, 6);
+            this.planTileScenery('street_vert_e', 8, 6);
+            return;
+        }
+        if (roadWest && roadEast && (!roadNorth) && (!roadSouth)) {
+            this.planTileScenery('street_horz_n', 7, 4);
+            this.planTileScenery('street_horz_n', 8, 4);
+            this.planTileScenery('street_horz_c', 7, 5);
+            this.planTileScenery('street_horz_c', 8, 5);
+            this.planTileScenery('street_horz_s', 7, 6);
+            this.planTileScenery('street_horz_s', 8, 6);
+            return;
+        }
+
+        // Dead ends
+        if (roadNorth && (!roadSouth) && (!roadWest) && (!roadEast)) {
+            this.planTileScenery('street_vert_w', 7, 4);
+            this.planTileScenery('street_vert_e', 8, 4);
+            this.planTileScenery('street_curve_ne_minor', 7, 5);
+            this.planTileScenery('street_curve_nw_minor', 8, 5);
+            this.planTileScenery('street_curve_ne_major', 7, 6);
+            this.planTileScenery('street_curve_nw_major', 8, 6);
+            return;
+        }
+        if (roadSouth && (!roadNorth) && (!roadWest) && (!roadEast)) {
+            this.planTileScenery('street_curve_se_major', 7, 4);
+            this.planTileScenery('street_curve_sw_major', 8, 4);
+            this.planTileScenery('street_curve_se_minor', 7, 5);
+            this.planTileScenery('street_curve_sw_minor', 8, 5);
+            this.planTileScenery('street_vert_w', 7, 6);
+            this.planTileScenery('street_vert_e', 8, 6);
+            return;
+        }
+        if (roadWest && (!roadSouth) && (!roadEast) && (!roadNorth)) {
+            this.planTileScenery('street_horz_n', 7, 4);
+            this.planTileScenery('street_curve_sw_major', 8, 4);
+            this.planTileScenery('street_horz_c', 7, 5);
+            this.planTileScenery('street_deadend_w', 8, 5);
+            this.planTileScenery('street_horz_s', 7, 6);
+            this.planTileScenery('street_curve_nw_major', 8, 6);
+            return;
+        }
+        if (roadEast && (!roadSouth) && (!roadWest) && (!roadNorth)) {
+            this.planTileScenery('street_curve_se_major', 7, 4);
+            this.planTileScenery('street_horz_n', 8, 4);
+            this.planTileScenery('street_deadend_e', 7, 5);
+            this.planTileScenery('street_horz_c', 8, 5);
+            this.planTileScenery('street_curve_ne_major', 7, 6);
+            this.planTileScenery('street_horz_s', 8, 6);
+            return;
+        }
     }
 
     private sampleFit(objectWidth: number, objectHeight: number, inc: number, objects: GRect[], zones: GRect[]): GRect|null {
