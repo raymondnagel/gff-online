@@ -158,9 +158,12 @@ export namespace GFF {
     export let AdventureUI: GAdventureUI;
     export let BattleContent: GBattleContent;
 
+    export let debugMode: boolean = false;
     export let genLogging: boolean = false;
     export let gameLogging: boolean = false;
     export let showNametags: boolean = false;
+
+    export let introInit: boolean = true;
 
     export function sleep(ms: number) {
         const date: number = Date.now();
@@ -197,38 +200,5 @@ export namespace GFF {
             GFF.GAME.scale.parent.style.cursor = 'none';
         }
     }
-
-    export const TEST_INFO =
-`Thanks for trying out the current version of "The Good Fight of Faith"!\n
-The game is still in early stages of development. Here are some things to do for now:\n
-- Click the Map icon (or press 'M') to view the world map, and see where you are in the world!\n
-  (remember that the world is random; it will be different each time you start a new game)\n
-- Each new room you discover will appear on your map.\n
-- Press [Esc] to close the map, or any other subscreen.\n
-- If you want to find other people, go toward a town. People tend to be in or near towns.\n
-- 1-3 enemies will spawn in each room, and they'll chase you! If they catch you, you'll need to\n
-  defeat them in a scripture battle. You'll gain experience for each battle, but be careful not to lose!\n
-- Treasure chests are now scattered throughout the world. Blue chests contain a book of the Bible; red chests\n
-  hold one of the 10 commandments.\n
-- Brown chests have a chance to appear randomly in each room. These can contain minor items to restore your faith.\n
-- You begin with the Gospel of John. Find other books in the world and enable them on the Books subscreen [I]\n
-  to use them in scripture battles.\n
-- In non-safe areas, your vision is limited. Find the 10 commandments to expand your sight radius!\n
-\n
-ADVENTURE CONTROLS:\n
-Hold down [Arrow] keys to walk. You can hold two directions (e.g. 'up' + 'right') to walk diagonally.\n
-Hold [Shift] key at the same time to run instead.\n
-Hold down [N] to view name tags for all characters. (Names will only be shown if you have met them already.)\n
-[P] : pause/unpause\n
-[Space] : talk to another person (if they are in front of Adam)\n
-[Y] : demo solo conversation.\n
-In a conversation, press [Enter] to continue on; use [Up/Down] arrows to change a highlighted selection.\n
-\n
-BATTLE CONTROLS:\n
-To guess the book, use [Up/Down] arrows to change the selection, and then press [Enter].\n
-To guess the chapter or verse, type in a number and press [Enter].\n
-(You can use [Backspace] or [Delete] if you make a mistake.)\n
-After taking your turn, a score summary is shown based on your guess. Press [Enter] to continue.\n
-Have fun! :)`;
 
 }

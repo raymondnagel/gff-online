@@ -6,6 +6,8 @@
   "audio/music/togodglory.wav",
   "audio/music/words.wav",
   "audio/sounds/amen.wav",
+  "audio/sounds/debug_off.wav",
+  "audio/sounds/debug_on.wav",
   "audio/sounds/defeat.wav",
   "audio/sounds/delete_char.wav",
   "audio/sounds/encounter.wav",

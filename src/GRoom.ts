@@ -342,17 +342,6 @@ export class GRoom {
         this.plans.forEach((plan) => {
             SCENERY.create(plan, decorRenderer);
         });
-
-        // Help text on first room:
-        if (this.isStart()) {
-            GFF.AdventureContent.add.text(64, 64, GFF.TEST_INFO, {
-                color: '#000000',
-                fontSize: '12px',
-                fontFamily: 'oxygen',
-                fontStyle: 'bold',
-                lineSpacing: -6
-            });
-        }
     }
 
     public unload() {
@@ -717,6 +706,13 @@ export class GRoom {
         return GRandom.randElement(results);
     }
 
+    // Explicitly plan an object at a specific position, regardless of any zones or objects
+    public planPositionedScenery(sceneryDef: GSceneryDef, x: number, y: number, originX: number, originY: number) {
+        const pX: number = x - (sceneryDef.body.width * originX) - sceneryDef.body.x;
+        const pY: number = y - (sceneryDef.body.height * originY) - sceneryDef.body.y;
+        this.addSceneryPlan(sceneryDef.key, pX, pY);
+    }
+
     // If chance is met, add min-max of scenery type
     // (adds a flexible group based on 1 chance)
     public planSceneryChanceForBatch(sceneryDef: GSceneryDef, pctChance: number, min: number, max: number, objects: GRect[], zones?: GRect[]) {
@@ -996,6 +992,13 @@ export class GRoom {
             this.planTileScenery('street_horz_s', 8, 6);
             return;
         }
+    }
+
+    public planChurch() {
+        this.planPositionedScenery(SCENERY.def('church'), 512, 352, .5, .5);
+
+        // A church is an important feature that shouldn't be covered up by random scenery
+        this.noSceneryZones.push({x: 362, y: 128, width: 300, height: 576});
     }
 
     private sampleFit(objectWidth: number, objectHeight: number, inc: number, objects: GRect[], zones: GRect[]): GRect|null {

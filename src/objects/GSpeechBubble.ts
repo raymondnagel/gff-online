@@ -208,9 +208,17 @@ export class GSpeechBubble extends Phaser.GameObjects.Container implements GBubb
                         wordObj.setText(part1);
                         textLine.push(wordObj);
                         this.lines.push(textLine);
+                        // Create a new line and add the second part to it:
                         const wordObj2: Phaser.GameObjects.Text = this.createWordObj(part2).setPadding(0, 0, DEFAULT_SPACE, 0);
                         textLine = [wordObj2];
                         linePixelCount = wordObj2.width;
+
+                    } else {
+                        // The first part didn't fit; we need to create a new line and add the entire word to it:
+                        this.lines.push(textLine);
+                        wordObj.setText(word);
+                        textLine = [wordObj];
+                        linePixelCount = wordObj.width;
                     }
 
                 } else {

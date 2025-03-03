@@ -327,7 +327,7 @@ export class GWorldArea extends GArea {
         }
 
         // Plan streets for each town room:
-        this.createTownStreets();
+        this.createTownStructures();
     }
 
     private createTowns(numTowns: number): boolean {
@@ -519,7 +519,7 @@ export class GWorldArea extends GArea {
         }
     }
 
-    private createTownStreets(): void {
+    private createTownStructures(): void {
         // Get list of pre-created towns:
         const towns: GTown[] = TOWN.getTowns();
         for (let town of towns) {

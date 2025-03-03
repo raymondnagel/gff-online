@@ -73,9 +73,9 @@ export abstract class GRegion {
     }
 
     public furnishRoom(room: GRoom) {
-        // Don't furnish start room - we want it empty because we're displaying help info there
-        if (room.isStart()) {
-            return;
+        // Add things that aren't dependent on the region type
+        if (room.getChurch() !== null) {
+            room.planChurch();
         }
 
         this._furnishRoom(room);

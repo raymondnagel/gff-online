@@ -12,6 +12,7 @@
   "json/conversations/church_sermon_test.json",
   "json/conversations/duo_test_conv.json",
   "json/conversations/dynamic_test_conv.json",
+  "json/conversations/latest_update_intro.json",
   "json/conversations/solo_test_conv.json",
   "json/conversations/_church_sermon_template.json",
   "json/conversations/_duo_template.json",

@@ -98,6 +98,7 @@ export namespace SCENERY {
             { key: 'boulder', type: 'static', body: {x: 0, y: 22, width: 64, height: 24} },
             { key: 'bush', type: 'static', body: {x: 0, y: 36, width: 64, height: 16} },
             { key: 'campfire', type: 'sprite', body: {x: 0, y: 98, width: 112, height: 50} },
+            { key: 'church', type: 'static', body: {x: 25, y: 260, width: 251, height: 136} },
             { key: 'cypress_tree', type: 'static', body: {x: 44, y: 207, width: 144, height: 20} },
             { key: 'desert_boulder', type: 'static', body: {x: 0, y: 22, width: 64, height: 24} },
             { key: 'oak_tree', type: 'static', body: {x: 76, y: 200, width: 116, height: 36} },

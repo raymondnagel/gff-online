@@ -30,7 +30,7 @@ export namespace COMMANDMENTS {
     }
 
     export function getCount(): number {
-        return 10;//mmandments.reduce((count, value) => count + (value ? 1 : 0), 0);
+        return commandments.reduce((count, value) => count + (value ? 1 : 0), 0);
     }
 
     export function shuffleCommandmentsToFind() {

@@ -76,7 +76,7 @@ export class GAdventureContent extends GContentScene {
         this.setCurrentRoom(startRoom.getX(), startRoom.getY(), AREA.WORLD_AREA);
 
         // Create the player:
-        this.player = new GPlayerSprite(this, 500, 500);
+        this.player = new GPlayerSprite(this, 512-(GFF.CHAR_W/2), 400);
 
         // Init physics:
         this.initPhysics();
@@ -97,6 +97,14 @@ export class GAdventureContent extends GContentScene {
 
         // Set vision:
         this.setVision(true);
+
+        // Intro:
+        if (GFF.introInit) {
+            GFF.introInit = false;
+            this.time.delayedCall(1000, () => {
+                GConversation.fromFile('latest_update_intro');
+            });
+        }
     }
 
     private initVision() {
@@ -125,9 +133,12 @@ export class GAdventureContent extends GContentScene {
                 case 'n':
                     GFF.showNametags = true;
                     break;
-                case 'y':
-                    this.doMapExport(0, 0);
+                case 'h':
+                    GConversation.fromFile('latest_update_intro');
                     break;
+                // case 'y':
+                //     this.doMapExport(0, 0);
+                //     break;
                 case 'l':
                     this.getCurrentRoom()?.logRoomInfo();
                     break;
@@ -371,7 +382,7 @@ export class GAdventureContent extends GContentScene {
     }
 
     public setVision(full: boolean, commandments: number = 10) {
-        full = full || commandments === 10;
+        full = full || commandments === 10 || GFF.debugMode;
         this.visionRadiusImage.setVisible(!full);
         for (let r: number = 0; r < 4; r++) {
             this.visionBlackRects[r].setVisible(!full);
@@ -471,6 +482,13 @@ export class GAdventureContent extends GContentScene {
 
             if (this.getCurrentRoom()?.isSafe()) {
                 // Safe rooms:
+                if (PLAYER.getFaith() <= 0) {
+                    PLAYER.setFaith(PLAYER.getMaxFaith());
+                    this.updateFidelityMode();
+                    this.startAreaBgMusic();
+                } else {
+                    PLAYER.setFaith(PLAYER.getMaxFaith());
+                }
                 this.setVision(true);
 
             } else {

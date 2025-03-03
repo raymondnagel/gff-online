@@ -51,11 +51,6 @@ export class GMapUI extends GUIScene {
             fontSize: '42px'
         }).setOrigin(.5, 0);
 
-        // Discover all rooms (enable to reveal entire map):
-        this.area.getRoomsByFloor(0).forEach(r => {
-            r.discover();
-        });
-
         this.renderMap();
 
         this.setSubscreen();
@@ -91,7 +86,7 @@ export class GMapUI extends GUIScene {
             for (let x: number = 0; x < horzRooms; x++) {
                 if (this.area.containsRoom(this.floor, x, y)) {
                     const room: GRoom = this.area.getRoomAt(this.floor, x, y) as GRoom;
-                    if (room.isDiscovered()) {
+                    if (room.isDiscovered() || GFF.debugMode) {
                         const cellX: number = x * CELL_WIDTH;
                         const cellY: number = y * CELL_HEIGHT;
 
@@ -188,16 +183,28 @@ export class GMapUI extends GUIScene {
     }
 
     private drawMapEdgesForRoom(room: GRoom, cellX: number, cellY: number, mapTexture: Phaser.GameObjects.RenderTexture) {
-        if (!room.hasNeighbor(Dir9.N) || !(room.getNeighbor(Dir9.N) as GRoom).isDiscovered()) {
+        if (
+            !room.hasNeighbor(Dir9.N) ||
+            (!(room.getNeighbor(Dir9.N) as GRoom).isDiscovered() && !GFF.debugMode)
+        ) {
             mapTexture.draw('map_edge_n', cellX, cellY);
         }
-        if (!room.hasNeighbor(Dir9.W) || !(room.getNeighbor(Dir9.W) as GRoom).isDiscovered()) {
+        if (
+            !room.hasNeighbor(Dir9.W) ||
+            (!(room.getNeighbor(Dir9.W) as GRoom).isDiscovered() && !GFF.debugMode)
+        ) {
             mapTexture.draw('map_edge_w', cellX, cellY);
         }
-        if (!room.hasNeighbor(Dir9.E) || !(room.getNeighbor(Dir9.E) as GRoom).isDiscovered()) {
+        if (
+            !room.hasNeighbor(Dir9.E) ||
+            (!(room.getNeighbor(Dir9.E) as GRoom).isDiscovered() && !GFF.debugMode)
+        ) {
             mapTexture.draw('map_edge_e', cellX, cellY);
         }
-        if (!room.hasNeighbor(Dir9.S) || !(room.getNeighbor(Dir9.S) as GRoom).isDiscovered()) {
+        if (
+            !room.hasNeighbor(Dir9.S) ||
+            (!(room.getNeighbor(Dir9.S) as GRoom).isDiscovered() && !GFF.debugMode)
+        ) {
             mapTexture.draw('map_edge_s', cellX, cellY);
         }
     }
