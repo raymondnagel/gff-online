@@ -1,5 +1,5 @@
 /**
- * GDirection is a collection of functions that
+ * A collection of functions that
  * provide cardinal and diagonal directions.
  *
  * The enum type is Dir9, which includes NONE.
@@ -9,11 +9,11 @@
  * directions, consider using dir8 functions.
  */
 
-import { GRandom } from "./GRandom";
+import { RANDOM } from "./random";
 import { GFF } from "./main";
 import { CardDir, Dir9, GKeyList, GPoint } from "./types";
 
-export namespace GDirection {
+export namespace DIRECTION {
 
     const DIR8_TEXTS = [
         'n',
@@ -92,7 +92,7 @@ export namespace GDirection {
     }
 
     export function randomCardDir(): CardDir {
-        return GRandom.randElement([
+        return RANDOM.randElement([
             Dir9.N,
             Dir9.E,
             Dir9.S,

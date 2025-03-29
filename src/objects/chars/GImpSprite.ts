@@ -1,6 +1,6 @@
 import 'phaser';
 import { GCharSprite } from './GCharSprite';
-import { GRandom } from '../../GRandom';
+import { RANDOM } from '../../random';
 import { GFF } from '../../main';
 import { GGender, GSpirit } from '../../types';
 import { GAdventureContent } from '../../scenes/GAdventureContent';
@@ -57,8 +57,8 @@ export class GImpSprite extends GCharSprite {
     protected thinkOfNextGoal(): GGoal|null {
         // Set alpha here, just to make sure the spawn didn't mess up and keep it at 1.0:
         this.alpha = 0.35;
-        let x: number = GRandom.randInt(100, 924);
-        let y: number = GRandom.randInt(100, 668);
+        let x: number = RANDOM.randInt(100, 924);
+        let y: number = RANDOM.randInt(100, 668);
         return new GSearchForPlayerGoal(this, x, y, 10, 5000);
     }
 

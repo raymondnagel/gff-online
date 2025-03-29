@@ -1,4 +1,4 @@
-import { GRandom } from "./GRandom";
+import { RANDOM } from "./random";
 import { GFF } from "./main";
 import { GScripture } from "./types";
 
@@ -38,7 +38,7 @@ export namespace BIBLE {
         const verses: Element[] = getAllVersesForBook(bookName);
 
         // Pick a random verse
-        const randomIndex: number = GRandom.randInt(0, verses.length - 1);
+        const randomIndex: number = RANDOM.randInt(0, verses.length - 1);
         const randomVerseNode: Element = verses[randomIndex] as Element;
 
         // Extract the verse text, chapter number, and verse number
@@ -55,7 +55,7 @@ export namespace BIBLE {
     }
 
     export function getRandomVerseFromBooks(books: string[]): GScripture {
-        return getRandomVerseFromBook(GRandom.randElement(books) as string);
+        return getRandomVerseFromBook(RANDOM.randElement(books) as string);
     }
 
 }

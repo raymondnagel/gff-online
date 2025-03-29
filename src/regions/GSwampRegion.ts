@@ -1,4 +1,4 @@
-import { GRandom } from "../GRandom";
+import { RANDOM } from "../random";
 import { GRoom } from "../GRoom";
 import { SCENERY } from "../scenery";
 import { Dir9, GRect, GSceneryDef } from "../types";

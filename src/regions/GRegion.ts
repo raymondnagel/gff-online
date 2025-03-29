@@ -1,9 +1,5 @@
 import { GRoom } from "../GRoom";
-import { GRandom } from "../GRandom";
-import { GFF } from "../main";
-import { Dir9, GRect, GSceneryDef, ProgressCallback } from "../types";
-import { SCENERY } from "../scenery";
-import { GDirection } from "../GDirection";
+import { Dir9, GSceneryDef } from "../types";
 
 /**
  * GRegion represents part of a GArea that should
@@ -82,6 +78,8 @@ export abstract class GRegion {
     }
 
     protected abstract _furnishRoom(room: GRoom): void;
+
+    public abstract isInterior(): boolean;
 
     public abstract getWalls(): Record<Dir9, GSceneryDef|null>;
 }

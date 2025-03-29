@@ -6,6 +6,8 @@ import { GImpSprite } from '../objects/chars/GImpSprite';
 import { SCENERY } from '../scenery';
 import { BOOKS } from '../books';
 import { COMMANDMENTS } from '../commandments';
+import { ARMORS } from '../armors';
+import { EFFECTS } from '../effects';
 
 const LOAD_COLOR: number     = 0xffffff;
 const PROGRESS_COLOR: number = 0x00c220;
@@ -110,11 +112,17 @@ export class GLoadingScene extends GBaseScene {
                 BOOKS.initBooks();
                 BOOKS.startWithBook('John');
 
+                // Grant Sword of the Spirit:
+                ARMORS.setArmor(1, true);
+
                 // Init Commandments:
                 COMMANDMENTS.initCommandments();
 
                 // Init scenery definitions:
                 SCENERY.initSceneryDefs();
+
+                // Create the special effects:
+                EFFECTS.initSpriteEffects();
 
                 // Create the people:
                 GPersonSprite.createAllPeople();

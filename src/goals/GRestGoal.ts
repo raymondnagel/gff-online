@@ -1,6 +1,6 @@
-import { GDirection } from "../GDirection";
+import { DIRECTION } from "../direction";
 import { GGoal } from "./GGoal";
-import { GRandom } from "../GRandom";
+import { RANDOM } from "../random";
 import { GCharSprite } from "../objects/chars/GCharSprite";
 import { Dir9 } from "../types";
 
@@ -11,7 +11,7 @@ export class GRestGoal extends GGoal {
 
         // Facing a random direction gives us an opportunity to see characters
         // from different angles, showcasing the beautiful artwork:
-        this.char.faceDirection(GRandom.randElement(GDirection.dir8Values()));
+        this.char.faceDirection(RANDOM.randElement(DIRECTION.dir8Values()));
 
         // Walk NONE stops the character and sets the "idle" animation, but
         // keeps the character facing the direction we set previously.

@@ -1,5 +1,4 @@
-import { GDirection } from "./GDirection";
-import { GRandom } from "./GRandom";
+import { RANDOM } from "./random";
 import { GFF } from "./main";
 import { GCharSprite } from "./objects/chars/GCharSprite";
 import { GChoiceBubble } from "./objects/GChoiceBubble";
@@ -8,17 +7,31 @@ import { GThoughtBubble } from "./objects/GThoughtBubble";
 import { PLAYER } from "./player";
 import { CBlurb, CLabeledChar, COption, Dir9, GBubble } from "./types";
 
+/**
+ * Functions that are callable from the conversation, encoded in
+ * the JSON as preCmd or postCmd, depending on whether they should
+ * be executed before the blurb appears, or after it disappears.
+ */
 const CMD_FUNCTIONS: Record<string, (...args: any[]) => any> = {
     // Sample functions:
+    playPiano: (songName: string) => {
+        GFF.AdventureContent.getSound().setMusicVolume(0.6);
+        GFF.AdventureContent.getSound().playMusic(songName);
+        PLAYER.getSprite().play('adam_piano_ne', false);
+    },
+    stopPiano: () => {
+        GFF.AdventureContent.getSound().stopMusic();
+        PLAYER.getSprite().play('adam_sit_ne', false);
+    },
+    endPiano: () => {
+        GFF.AdventureContent.playerFinishPiano();
+    },
     // someFunc: (strParam: string, numParam: number) => {
     // },
     // anotherFunc: (num1: number, num2: number, num3: number) => {
     // },
     // noParamFunc: () => {
     // }
-    setMusic: (music: string) => {
-        GFF.AdventureContent.getSound().playMusic(music);
-    },
 };
 
 export class GConversation {
@@ -69,7 +82,7 @@ export class GConversation {
         // Only process this blurb if it always occurs,
         // or its chance was rolled:
         const chance: number|undefined = this.currentBlurb.chance;
-        if (chance === undefined || chance > GRandom.randPct()) {
+        if (chance === undefined || chance > RANDOM.randPct()) {
 
             // Run pre-command, if it exists:
             const preCmd: string|undefined = this.currentBlurb.preCmd;
@@ -214,8 +227,10 @@ export class GConversation {
 
         // If there's only one participant, it is the player:
         } else if (this.participants.length === 1) {
-            // Let the speaker face south so we can see his face.
-            this.currentSpeaker.faceDirection(Dir9.S, true);
+            // If the speaker is idle, face south so we can see his face.
+            if (this.currentSpeaker.isDoing('idle')) {
+                this.currentSpeaker.faceDirection(Dir9.S, true);
+            }
 
         // Otherwise, it's a group conversation:
         } else {
@@ -258,7 +273,7 @@ export class GConversation {
     }
 
     private getRandomDynamicText(dynamicClass: string): string {
-        return GRandom.randElement(GFF.GAME.cache.json.get(dynamicClass));
+        return RANDOM.randElement(GFF.GAME.cache.json.get(dynamicClass));
     }
 
     private getBlurbById(id: string): CBlurb|undefined {
@@ -266,7 +281,7 @@ export class GConversation {
     }
 
     private getRandomCharByLabel(label: string): GCharSprite {
-        return GRandom.randElement(this.getCharsByLabel(label));
+        return RANDOM.randElement(this.getCharsByLabel(label));
     }
 
     private getCharsByLabel(label: string): GCharSprite[] {

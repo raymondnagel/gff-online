@@ -1,4 +1,4 @@
-import { GRandom } from "../GRandom";
+import { RANDOM } from "../random";
 import { GRoom } from "../GRoom";
 import { SCENERY } from "../scenery";
 import { Dir9, GRect, GSceneryDef } from "../types";
@@ -52,7 +52,7 @@ export class GTundraRegion extends GOutsideRegion{
         ]);
 
         // Forest type:
-        switch (GRandom.randInt(1, 3)) {
+        switch (RANDOM.randInt(1, 3)) {
             case 1:
                 // Dead Trees: 100% chance to add 1-5
                 room.planSceneryChanceForBatch(SCENERY.def('snowy_dead_tree'), 1, 1, 5, objectBounds, zoneRects);

@@ -1,12 +1,13 @@
 import { GLOSSARY } from "./glossary";
-import { GRandom } from "./GRandom";
+import { PLAYER } from "./player";
+import { RANDOM } from "./random";
 import { GGlossaryEntry } from "./types";
 
 type Ten = 1|2|3|4|5|6|7|8|9|10;
 
 export namespace COMMANDMENTS {
 
-    // List of books left to find. Next book is popped off the list.
+    // List of commandments left to find. Next commandment is popped off the list.
     let commandmentsToFind: Ten[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
     let commandments: boolean[] = [
@@ -23,6 +24,7 @@ export namespace COMMANDMENTS {
 
     export function setCommandment(num: Ten, has: boolean) {
         commandments[num - 1] = has;
+        PLAYER.calcMaxFaith();
     }
 
     export function hasCommandment(index: number): boolean {
@@ -34,7 +36,7 @@ export namespace COMMANDMENTS {
     }
 
     export function shuffleCommandmentsToFind() {
-        GRandom.shuffle(commandmentsToFind);
+        RANDOM.shuffle(commandmentsToFind);
     }
 
     export function getNextCommandmentToFind(): string|undefined {

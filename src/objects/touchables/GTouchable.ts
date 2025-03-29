@@ -1,7 +1,7 @@
 import { GFF } from "../../main";
 import { GSceneryDef } from "../../types";
 
-export abstract class GInteractable extends Phaser.Physics.Arcade.Image {
+export abstract class GTouchable extends Phaser.Physics.Arcade.Image implements GTouchable {
 
     private sceneryDef: GSceneryDef;
 
@@ -27,17 +27,17 @@ export abstract class GInteractable extends Phaser.Physics.Arcade.Image {
             this.setDepth(this.body.bottom);
         }
 
-        // Add to the scene as an interactable:
-        GFF.AdventureContent.addInteractable(this);
+        // Add to the scene as a touchable:
+        GFF.AdventureContent.addTouchable(this);
     }
 
     public getBody(): Phaser.Physics.Arcade.Body {
         return this.body as Phaser.Physics.Arcade.Body;
     }
 
-    public abstract canInteract(): boolean;
+    public abstract canTouch(): boolean;
 
-    public abstract interact(): void;
+    public abstract doTouch(): void;
 
     public toString() {
         return this.sceneryDef.key;

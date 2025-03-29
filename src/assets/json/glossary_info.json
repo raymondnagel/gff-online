@@ -8,6 +8,54 @@
       "inspiration": "Adam Cesar has been my best friend and brother in Christ since 2007. When I began to work on the game, I needed a main character, and he was the first person I thought of. But I like that his name is Adam, because he represents the everyman - anyone from Adam's race who is redeemed to become a new creature in Jesus Christ."
     },
     {
+      "name": "armor_1",
+      "title": "Sword of the Spirit",
+      "type": "item",
+      "text": "\"For the word of God is quick, and powerful, and sharper than any twoedged sword, piercing even to the dividing asunder of soul and spirit, and of the joints and marrow, and is a discerner of the thoughts and intents of the heart.\" (Hebrews 4:12)",
+      "image": "arm1",
+      "inspiration": "In Ephesians 6:10, Paul says, \"Put on the whole armour of God, that ye may be able to stand against the wiles of the devil.\" Each piece of this armour will help protect the Christian soldier against the attacks of the enemy."
+    },
+    {
+      "name": "armor_2",
+      "title": "Girdle of Truth",
+      "type": "item",
+      "text": "\"For I rejoiced greatly, when the brethren came and testified of the truth that is in thee, even as thou walkest in the truth.\" (3 John 1:3)",
+      "image": "arm2",
+      "inspiration": "In Ephesians 6:10, Paul says, \"Put on the whole armour of God, that ye may be able to stand against the wiles of the devil.\" Each piece of this armour will help protect the Christian soldier against the attacks of the enemy."
+    },
+    {
+      "name": "armor_3",
+      "title": "Breastplate of Righteousness",
+      "type": "item",
+      "text": "\"Hearken unto me, ye that know righteousness, the people in whose heart is my law; fear ye not the reproach of men, neither be ye afraid of their revilings.\" (Isaiah 51:7)",
+      "image": "arm3",
+      "inspiration": "In Ephesians 6:10, Paul says, \"Put on the whole armour of God, that ye may be able to stand against the wiles of the devil.\" Each piece of this armour will help protect the Christian soldier against the attacks of the enemy."
+    },
+    {
+      "name": "armor_4",
+      "title": "Preparation of the Gospel of Peace",
+      "type": "item",
+      "text": "\"How beautiful are the feet of them that preach the gospel of peace, and bring glad tidings of good things!\" (Romans 10:15b)",
+      "image": "arm4",
+      "inspiration": "In Ephesians 6:10, Paul says, \"Put on the whole armour of God, that ye may be able to stand against the wiles of the devil.\" Each piece of this armour will help protect the Christian soldier against the attacks of the enemy."
+    },
+    {
+      "name": "armor_5",
+      "title": "Shield of Faith",
+      "type": "item",
+      "text": "\"Above all, taking the shield of faith, wherewith ye shall be able to quench all the fiery darts of the wicked.\" (Ephesians 6:16)",
+      "image": "arm5",
+      "inspiration": "In Ephesians 6:10, Paul says, \"Put on the whole armour of God, that ye may be able to stand against the wiles of the devil.\" Each piece of this armour will help protect the Christian soldier against the attacks of the enemy."
+    },
+    {
+      "name": "armor_6",
+      "title": "Helmet of Salvation",
+      "type": "item",
+      "text": "\"But let us, who are of the day, be sober, putting on the breastplate of faith and love; and for an helmet, the hope of salvation.\" (1 Thessalonians 5:8)",
+      "image": "arm6",
+      "inspiration": "In Ephesians 6:10, Paul says, \"Put on the whole armour of God, that ye may be able to stand against the wiles of the devil.\" Each piece of this armour will help protect the Christian soldier against the attacks of the enemy."
+    },
+    {
       "name": "cmd_1",
       "title": "1st Commandment",
       "type": "item",
@@ -86,6 +134,78 @@
       "text": "\"Thou shalt not covet thy neighbour's house... nor any thing that is thy neighbour's.\" (Exodus 20:17)",
       "image": "cmd10",
       "inspiration": "Proverbs 6:23 says, \"For the commandment is a lamp; and the law is light; and reproofs of instruction are the way of life\". Each commandment found will brighten your path, allowing you to see farther in the wilderness of this world."
+    },
+    {
+      "name": "fruit_1",
+      "title": "Fruit of the Spirit: Love",
+      "type": "item",
+      "text": "\"By this shall all men now that ye are my disciples, if ye have love one to another.\" (John 13:35)",
+      "image": "fruit1",
+      "inspiration": "James 3:18 says, \"And the fruit of righteousness is sown in peace of them that make peace.\" Each fruit the Spirit has brought forth in you will make you a more effective minister of the gospel of peace, beseeching men to be reconciled to God."
+    },
+    {
+      "name": "fruit_2",
+      "title": "Fruit of the Spirit: Joy",
+      "type": "item",
+      "text": "\"Whom having not seen, ye love; in whom, though ye see him not, yet believing, ye rejoice with joy unspeakable and full of glory:\" (1 Peter 1:8)",
+      "image": "fruit2",
+      "inspiration": "James 3:18 says, \"And the fruit of righteousness is sown in peace of them that make peace.\" Each fruit the Spirit has brought forth in you will make you a more effective minister of the gospel of peace, beseeching men to be reconciled to God."
+    },
+    {
+      "name": "fruit_3",
+      "title": "Fruit of the Spirit: Peace",
+      "type": "item",
+      "text": "\"Peace I leave with you, my peace I give unto you: not as the world giveth, give I unto you. Let not your heart be troubled, neither let it be afraid.\" (John 14:27)",
+      "image": "fruit3",
+      "inspiration": "James 3:18 says, \"And the fruit of righteousness is sown in peace of them that make peace.\" Each fruit the Spirit has brought forth in you will make you a more effective minister of the gospel of peace, beseeching men to be reconciled to God."
+    },
+    {
+      "name": "fruit_4",
+      "title": "Fruit of the Spirit: Longsuffering",
+      "type": "item",
+      "text": "\"Strengthened with all might, according to his glorious power, unto all patience and longsuffering with joyfulness;\" (Colossians 1:11)",
+      "image": "fruit4",
+      "inspiration": "James 3:18 says, \"And the fruit of righteousness is sown in peace of them that make peace.\" Each fruit the Spirit has brought forth in you will make you a more effective minister of the gospel of peace, beseeching men to be reconciled to God."
+    },
+    {
+      "name": "fruit_5",
+      "title": "Fruit of the Spirit: Gentleness",
+      "type": "item",
+      "text": "\"And the servant of the Lord must not strive; but be gentle unto all men, apt to teach, patient,\" (2 Timothy 2:24)",
+      "image": "fruit5",
+      "inspiration": "James 3:18 says, \"And the fruit of righteousness is sown in peace of them that make peace.\" Each fruit the Spirit has brought forth in you will make you a more effective minister of the gospel of peace, beseeching men to be reconciled to God."
+    },
+    {
+      "name": "fruit_6",
+      "title": "Fruit of the Spirit: Goodness",
+      "type": "item",
+      "text": "\"And I myself also am persuaded of you, my brethren, that ye also are full of goodness, filled with all knowledge, able also to admonish one another.\" (Romans 15:14)",
+      "image": "fruit6",
+      "inspiration": "James 3:18 says, \"And the fruit of righteousness is sown in peace of them that make peace.\" Each fruit the Spirit has brought forth in you will make you a more effective minister of the gospel of peace, beseeching men to be reconciled to God."
+    },
+    {
+      "name": "fruit_7",
+      "title": "Fruit of the Spirit: Faith",
+      "type": "item",
+      "text": "\"But without faith it is impossible to please him: for he that cometh to God must believe that he is, and that he is a rewarder of them that diligently seek him.\" (Hebrews 11:6)",
+      "image": "fruit7",
+      "inspiration": "James 3:18 says, \"And the fruit of righteousness is sown in peace of them that make peace.\" Each fruit the Spirit has brought forth in you will make you a more effective minister of the gospel of peace, beseeching men to be reconciled to God."
+    },
+    {
+      "name": "fruit_8",
+      "title": "Fruit of the Spirit: Meekness",
+      "type": "item",
+      "text": "\"Take my yoke upon you, and learn of me; for I am meek and lowly in heart: and ye shall find rest unto your souls.\" (Matthew 11:29)",
+      "image": "fruit8",
+      "inspiration": "James 3:18 says, \"And the fruit of righteousness is sown in peace of them that make peace.\" Each fruit the Spirit has brought forth in you will make you a more effective minister of the gospel of peace, beseeching men to be reconciled to God."
+    },
+    {
+      "name": "fruit_9",
+      "title": "Fruit of the Spirit: Temperance",
+      "type": "item",
+      "text": "\"And every man that striveth for the mastery is temperate in all things. Now they do it to obtain a corruptible crown; but we an incorruptible.\" (1 Corinthians 9:25)",
+      "image": "fruit9",
+      "inspiration": "James 3:18 says, \"And the fruit of righteousness is sown in peace of them that make peace.\" Each fruit the Spirit has brought forth in you will make you a more effective minister of the gospel of peace, beseeching men to be reconciled to God."
     },
     {
         "name": "milk",

@@ -86,7 +86,7 @@
     {
       "id": "update",
       "speaker": "player",
-      "text": "FEBRUARY 2025 UPDATE\n\nIt's a smaller update this month, but here are the new changes:\n- completed roads within towns\n- added church buildings (just a simple object; the setup isn't finalized, but now you can at least see them and restore your faith by visiting them)\n- created this intro conversation to replace the static help text",
+      "text": "MARCH 2025 UPDATE\n\n- TOWNS: Added the encounter background, building objects, and building placement algorithms\n\n- FAITH: Maximum faith is now recalculated as Adam levels up and finds new items, allowing him to keep pace with the enemies\n\n- CHURCHES: You can now enter church buildings, and press [Space] to play the piano!",
       "next": "menu"
     },
     {

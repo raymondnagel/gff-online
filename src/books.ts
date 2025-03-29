@@ -1,6 +1,7 @@
-import { GRandom } from "./GRandom";
+import { RANDOM } from "./random";
 import { GFF } from "./main";
 import { GBookEntry } from "./types";
+import { PLAYER } from "./player";
 
 type BookState = 'missing'|'acquired'|'enabled';
 
@@ -37,6 +38,7 @@ export namespace BOOKS {
 
     export function obtainBook(name: string) {
         books.set(name, 'acquired');
+        PLAYER.calcMaxFaith();
     }
 
     export function setBookEnabled(name: string, enabled: boolean) {
@@ -51,6 +53,11 @@ export namespace BOOKS {
 
     export function getAllBooks(): string[] {
         return Array.from(books.entries()).map(([key, _]) => key);
+    }
+
+    export function getObtainedCount(): number {
+        return Array.from(books.values())
+            .filter(state => state !== "missing").length;
     }
 
     export function isOnlyEnabledBook(bookName: string): boolean {
@@ -70,7 +77,7 @@ export namespace BOOKS {
     }
 
     export function shuffleBooksToFind() {
-        GRandom.shuffle(booksToFind);
+        RANDOM.shuffle(booksToFind);
     }
 
     export function getNextBookToFind(): string|undefined {

@@ -1,5 +1,5 @@
-import { GDirection } from "../GDirection";
-import { GRandom } from "../GRandom";
+import { DIRECTION } from "../direction";
+import { RANDOM } from "../random";
 import { GRoom } from "../GRoom";
 import { GFF } from "../main";
 import { GRegion } from "../regions/GRegion";
@@ -54,6 +54,10 @@ export class GArea {
         return this.name;
     }
 
+    public setName(name: string) {
+        this.name = name;
+    }
+
     public getBgMusic() {
         return this.bgMusic;
     }
@@ -64,6 +68,10 @@ export class GArea {
 
     public getHeight() {
         return this.height;
+    }
+
+    public isSafe(): boolean {
+        return false;
     }
 
     public setRoom(floor: number, x: number, y: number, room: GRoom) {
@@ -87,12 +95,12 @@ export class GArea {
     }
 
     public getRandomRoom(): GRoom {
-        const floor: number = GRandom.randInt(0, this.floors.length - 1);
+        const floor: number = RANDOM.randInt(0, this.floors.length - 1);
         return this.getRandomRoomByFloor(floor);
     }
 
     public getRandomRoomByFloor(floor: number): GRoom {
-        return GRandom.randElement(this.roomsByFloor[floor]) as GRoom;
+        return RANDOM.randElement(this.roomsByFloor[floor]) as GRoom;
     }
 
     public getRoomsWithCondition(condition: (r: GRoom) => boolean): GRoom[] {
@@ -110,7 +118,7 @@ export class GArea {
     protected exploreContiguous(startRoom: GRoom) {
         startRoom.discover();
         for (let d: number = 0; d < 4; d++) {
-            const dir: CardDir = GDirection.cardDirFrom4(d as 0|1|2|3);
+            const dir: CardDir = DIRECTION.cardDirFrom4(d as 0|1|2|3);
             const neighbor: GRoom|null = startRoom.getNeighbor(dir);
             if (neighbor && !neighbor.isDiscovered() && !startRoom.hasFullWall(dir)) {
                 this.exploreContiguous(neighbor);
@@ -121,7 +129,7 @@ export class GArea {
     protected mazeRegion(startRoom: GRoom, region: GRegion) {
         region.getRooms().forEach(r => {
             for (let d: number = 0; d < 4; d++) {
-                this.setWallByRoom(r, GDirection.cardDirFrom4(d as 0|1|2|3), true);
+                this.setWallByRoom(r, DIRECTION.cardDirFrom4(d as 0|1|2|3), true);
             }
         });
 
@@ -148,7 +156,7 @@ export class GArea {
         for (let x: number = 0; x < this.width; x++) {
             for (let y: number = 0; y < this.height; y++) {
                 for (let d: number = 0; d < 4; d++) {
-                    this.setWallAt(floor, x, y, GDirection.cardDirFrom4(d as 0|1|2|3), true);
+                    this.setWallAt(floor, x, y, DIRECTION.cardDirFrom4(d as 0|1|2|3), true);
                 }
             }
         }
@@ -161,7 +169,7 @@ export class GArea {
 
         // Remove some random walls to make it more "open", less like a structured maze:
         for (let n: number = 0; n < wallsToRemove; n++) {
-            const dir: CardDir = GDirection.randomCardDir();
+            const dir: CardDir = DIRECTION.randomCardDir();
             this.setWallByRoom(this.getRandomRoomByFloor(floor), dir, false);
         }
     }
@@ -183,7 +191,7 @@ export class GArea {
     protected addRandomWallSections(floor: number, replaceEmpty: boolean, replaceFull: boolean, partialWalls: number) {
         for (let p: number = 0; p < partialWalls; p++) {
             let room: GRoom|null = this.getRandomRoomByFloor(floor);
-            const dir: CardDir = GDirection.randomCardDir();
+            const dir: CardDir = DIRECTION.randomCardDir();
             if (
                 (replaceEmpty && !room.hasAnyWall(dir))
                 || (replaceFull && room.hasFullWall(dir))
@@ -193,7 +201,7 @@ export class GArea {
                 : this.getRandomWallSections(VERT_WALL_SECTIONS);
                 room.setWallSections(dir, wallSections);
                 room = room.getNeighbor(dir);
-                room?.setWallSections(GDirection.getOpposite(dir) as CardDir, wallSections);
+                room?.setWallSections(DIRECTION.getOpposite(dir) as CardDir, wallSections);
             }
         }
     }
@@ -202,7 +210,7 @@ export class GArea {
         // Place walls wherever there is no neighbor (outer border):
         this.roomsByFloor[floor].forEach(r => {
             for (let d: number = 0; d < 4; d++) {
-                const dir = GDirection.cardDirFrom4(d as 0|1|2|3);
+                const dir = DIRECTION.cardDirFrom4(d as 0|1|2|3);
                 if (!r.hasNeighbor(dir)) {
                     r.setFullWall(dir, true);
                 }
@@ -222,7 +230,7 @@ export class GArea {
             room.setFullWall(dir, wall);
             const neighboringRoom = room.getNeighbor(dir);
             if (neighboringRoom !== null) {
-                neighboringRoom.setFullWall(GDirection.getOpposite(dir) as CardDir, wall);
+                neighboringRoom.setFullWall(DIRECTION.getOpposite(dir) as CardDir, wall);
             }
         }
     }
@@ -235,7 +243,7 @@ export class GArea {
         room.getWallSections(dir)[section] = wall;
         const neighboringRoom = room.getNeighbor(dir);
         if (neighboringRoom !== null) {
-            neighboringRoom.getWallSections(GDirection.getOpposite(dir) as CardDir)[section] = wall;
+            neighboringRoom.getWallSections(DIRECTION.getOpposite(dir) as CardDir)[section] = wall;
         }
     }
 
@@ -263,25 +271,25 @@ export class GArea {
 
     protected getRandomWallSections(sectionCount: number): boolean[] {
         let sections: boolean[] = new Array(sectionCount).fill(false);
-        const type: number = GRandom.randInt(1, 4);
+        const type: number = RANDOM.randInt(1, 4);
         switch(type) {
             case 1: // sprinkle
                 for (let w: number = 0; w < sectionCount - 1; w++) {
-                    sections[GRandom.randInt(0, sectionCount - 1)] = true;
+                    sections[RANDOM.randInt(0, sectionCount - 1)] = true;
                 }
                 break;
             case 2: // symmetrical
-                const h: number = GRandom.randInt(1, Math.floor(sectionCount / 2) - 1);
+                const h: number = RANDOM.randInt(1, Math.floor(sectionCount / 2) - 1);
                 for (let w: number = 0; w < h; w++) {
-                    let s: number = GRandom.randInt(0, h);
+                    let s: number = RANDOM.randInt(0, h);
                     sections[s] = true;
                     sections[sectionCount - 1 - s] = true;
                 }
                 break;
             case 3: // block
-                const bS: number = GRandom.randInt(1, sectionCount - 2);
-                const bI: number = GRandom.flipCoin() ? 1 : -1;
-                let bN: number = GRandom.randInt(1, sectionCount - 1);
+                const bS: number = RANDOM.randInt(1, sectionCount - 2);
+                const bI: number = RANDOM.flipCoin() ? 1 : -1;
+                let bN: number = RANDOM.randInt(1, sectionCount - 1);
                 for (let w: number = bS; w < sectionCount && w >= 0 && bN > 0; w += bI) {
                     sections[w] = true;
                     bN--;
@@ -289,9 +297,9 @@ export class GArea {
                 break;
             case 4: // hole
                 sections = new Array(sectionCount).fill(true);
-                const hS: number = GRandom.randInt(1, sectionCount - 2);
-                const hI: number = GRandom.flipCoin() ? 1 : -1;
-                let hN: number = GRandom.randInt(1, sectionCount - 1);
+                const hS: number = RANDOM.randInt(1, sectionCount - 2);
+                const hI: number = RANDOM.flipCoin() ? 1 : -1;
+                let hN: number = RANDOM.randInt(1, sectionCount - 1);
                 for (let w: number = hS; w < sectionCount && w >= 0 && hN > 0; w += hI) {
                     sections[w] = false;
                     hN--;
@@ -313,7 +321,7 @@ export class GArea {
             for (let f: number = 0; f < this.floors.length; f++) {
                 for (let room of this.roomsByFloor[f]) {
                     for (let d: number = 0; d < 4; d++) {
-                        const dir = GDirection.cardDirFrom4(d as 0|1|2|3);
+                        const dir = DIRECTION.cardDirFrom4(d as 0|1|2|3);
                         if (this.isFirstWallSection(room, dir)) {
                             switch (dir) {
                                 case Dir9.N:
@@ -395,5 +403,8 @@ export class GArea {
         return true;
     }
 
+    /**
+     * Override to define an initialization for every room in the area.
+     */
     protected initRoom(_room: GRoom) {}
 }

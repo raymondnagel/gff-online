@@ -1,4 +1,4 @@
-import { GRandom } from "../GRandom";
+import { RANDOM } from "../random";
 import { GRoom } from "../GRoom";
 import { SCENERY } from "../scenery";
 import { Dir9, GRect, GSceneryDef } from "../types";
@@ -53,7 +53,7 @@ export class GDesertRegion extends GOutsideRegion{
         ]);
 
         // Desert type:
-        switch (GRandom.randInt(1, 3)) {
+        switch (RANDOM.randInt(1, 3)) {
             case 1:
                 // Tall Cactus: 100% chance to add 1-3
                 room.planSceneryChanceForBatch(SCENERY.def('tall_cactus'), 1.0, 1, 3, objectBounds, zoneRects);

@@ -1,4 +1,4 @@
-import { GDirection } from "../GDirection";
+import { DIRECTION } from "../direction";
 import { GCharSprite } from "../objects/chars/GCharSprite";
 import { Dir9 } from "../types";
 
@@ -62,7 +62,7 @@ export abstract class GGoal {
             yInc = -1;
         }
 
-        let direction: Dir9 = GDirection.getDirectionForIncs(xInc, yInc);
+        let direction: Dir9 = DIRECTION.getDirectionForIncs(xInc, yInc);
         this.char.walkDirection(direction);
     }
 
@@ -109,7 +109,7 @@ export abstract class GGoal {
             }
         }
 
-        let direction: Dir9 = GDirection.getDirectionForIncs(xInc, yInc);
+        let direction: Dir9 = DIRECTION.getDirectionForIncs(xInc, yInc);
         this.char.walkDirection(direction);
     }
 
@@ -171,7 +171,7 @@ export abstract class GGoal {
                 }
             }
 
-            this.char.walkDirection(GDirection.getDirectionForIncs(xInc, yInc));
+            this.char.walkDirection(DIRECTION.getDirectionForIncs(xInc, yInc));
             this.lastStepTime = Date.now();
         }
 

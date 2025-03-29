@@ -5,6 +5,9 @@ import { GWorldArea } from '../areas/GWorldArea';
 import { GFF } from '../main';
 import { GArea } from '../areas/GArea';
 import { GInputMode } from '../GInputMode';
+import { CHURCH } from '../church';
+import { GChurchArea } from '../areas/GChurchArea';
+import { TOWN } from '../town';
 
 type AreaGenInfo = { area: GArea, rooms: number };
 
@@ -102,10 +105,28 @@ export class GWorldBuildContent extends GBaseScene {
 
     private areaList: AreaGenInfo[];
     public create(): void {
+
+        // Church Areas (will be assigned to churches once they are created)
+        AREA.CHURCH_AREAS = [];
+        for (let c = 0; c < TOWN.TOWN_COUNT; c++) {
+            AREA.CHURCH_AREAS.push(new GChurchArea());
+        }
+
+        // World Area
         AREA.WORLD_AREA = new GWorldArea();
 
         this.areaList = [
-             { area: AREA.WORLD_AREA, rooms: 256 }
+             { area: AREA.CHURCH_AREAS[0], rooms: 1 },
+             { area: AREA.CHURCH_AREAS[1], rooms: 1 },
+             { area: AREA.CHURCH_AREAS[2], rooms: 1 },
+             { area: AREA.CHURCH_AREAS[3], rooms: 1 },
+             { area: AREA.CHURCH_AREAS[4], rooms: 1 },
+             { area: AREA.CHURCH_AREAS[5], rooms: 1 },
+             { area: AREA.CHURCH_AREAS[6], rooms: 1 },
+             { area: AREA.CHURCH_AREAS[7], rooms: 1 },
+             { area: AREA.CHURCH_AREAS[8], rooms: 1 },
+             { area: AREA.CHURCH_AREAS[9], rooms: 1 },
+             { area: AREA.WORLD_AREA, rooms: 256 },
         ];
 
         this.buildArea(0);

@@ -1,6 +1,13 @@
 import { GRoom } from "./GRoom";
 import { GCharSprite } from "./objects/chars/GCharSprite";
 
+// Packages a sprite animation together with a sound, to be executed once simultaneously:
+export type SpriteEffect = {
+    spriteConfig: Phaser.Types.Animations.Animation,
+    soundKey: string,
+    hideOnFinish: boolean
+}
+
 // Allows creating colors that can be used as either numbers or strings as needed:
 export class GColor {
     constructor(public hexColor: number) {}
@@ -48,6 +55,17 @@ export interface BoundedGameObject extends Phaser.GameObjects.GameObject {
     width: number;
     height: number;
     setPosition: (x: number, y: number) => {};
+}
+
+/**
+ * GInteractable identifies an object that can be interacted
+ * with using the spacebar, if it is currently in range, and
+ * defines what happens when the interaction happens.
+ *
+ * Examples: people can be talked to, the piano can be played, etc.
+ */
+export interface GInteractable extends BoundedGameObject{
+    interact(): void;
 }
 
 // Represents a scripture reference and text:
@@ -144,7 +162,7 @@ export interface GSceneryPlan extends GPoint {
 // turning it into a plan; but it doesn't have a location.
 export interface GSceneryDef {
     key: string;
-    type: 'bg_decor'|'fg_decor'|'interactable'|'static'|'sprite';
+    type: 'bg_decor'|'fg_decor'|'static'|'custom';
     body: GRect;
 }
 
@@ -159,6 +177,18 @@ export interface GActionableOption {
     option: string;
     hotkey: string|undefined;
     action: Function;
+}
+
+// An orientation for positioning and aligning buildings in a city block
+export type GBuildingOrientation = 'top'|'bottom'|'left'|'right';
+
+// Determines a block where buildings may be arranged within a town room
+export type GCityBlock = {
+    name: string;
+    base: number;
+    start: number;
+    end: number;
+    orientation: GBuildingOrientation;
 }
 
 /**

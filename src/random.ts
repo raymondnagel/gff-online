@@ -1,8 +1,8 @@
 /**
- * GRandom is a collection of functions that make it easy
+ * Collection of functions that make it easier
  * to work with randomly-generated numbers.
  */
-export namespace GRandom {
+export namespace RANDOM {
 
     export function randPct() {
         return Math.random();
@@ -62,4 +62,22 @@ export namespace GRandom {
                 array[randomIndex], array[currentIndex]];
         }
     }
+
+    export function toSlices(total: number, sliceCount: number): number[] {
+        // Step 1: Create an array of sliceCount-1 random integers.
+        const slices: number[] = [];
+        let remainingTotal = total;
+
+        for (let i = 0; i < sliceCount - 1; i++) {
+          const max = remainingTotal - (sliceCount - i - 1); // Ensure enough is left for the remaining slices
+          const slice = Math.floor(Math.random() * max) + 1; // Random integer between 1 and remainingTotal
+          slices.push(slice);
+          remainingTotal -= slice;
+        }
+
+        // Step 2: The last slice is the remainder.
+        slices.push(remainingTotal);
+
+        return slices;
+      }
 }

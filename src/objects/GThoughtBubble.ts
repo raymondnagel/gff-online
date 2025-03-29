@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import { GFF } from '../main';
 import { GCharSprite } from './chars/GCharSprite';
 import { GBubble, GPoint } from '../types';
-import { GRandom } from '../GRandom';
+import { RANDOM } from '../random';
 import { DEPTH } from '../depths';
 
 const SPEAKX_ADJUST: number = 10;
@@ -175,28 +175,28 @@ export class GThoughtBubble extends Phaser.GameObjects.Container implements GBub
         let y: number;
 
         // Top/Bottom edges (horizontal):
-        this.makePuff(ctrX, bubbleY, GRandom.randInt(PUFF_MIN_RADIUS, PUFF_MAX_RADIUS));
-        this.makePuff(ctrX, bubbleY + bubbleHeight, GRandom.randInt(PUFF_MIN_RADIUS, PUFF_MAX_RADIUS));
+        this.makePuff(ctrX, bubbleY, RANDOM.randInt(PUFF_MIN_RADIUS, PUFF_MAX_RADIUS));
+        this.makePuff(ctrX, bubbleY + bubbleHeight, RANDOM.randInt(PUFF_MIN_RADIUS, PUFF_MAX_RADIUS));
 
         for (x = PUFF_SPREAD; x < bubbleWidth / 2; x += PUFF_SPREAD) {
             y = bubbleY;
-            this.makePuff(ctrX + x, y, GRandom.randInt(PUFF_MIN_RADIUS, PUFF_MAX_RADIUS));
-            this.makePuff(ctrX - x, y, GRandom.randInt(PUFF_MIN_RADIUS, PUFF_MAX_RADIUS));
+            this.makePuff(ctrX + x, y, RANDOM.randInt(PUFF_MIN_RADIUS, PUFF_MAX_RADIUS));
+            this.makePuff(ctrX - x, y, RANDOM.randInt(PUFF_MIN_RADIUS, PUFF_MAX_RADIUS));
             y = bubbleY + bubbleHeight;
-            this.makePuff(ctrX + x, y, GRandom.randInt(PUFF_MIN_RADIUS, PUFF_MAX_RADIUS));
-            this.makePuff(ctrX - x, y, GRandom.randInt(PUFF_MIN_RADIUS, PUFF_MAX_RADIUS));
+            this.makePuff(ctrX + x, y, RANDOM.randInt(PUFF_MIN_RADIUS, PUFF_MAX_RADIUS));
+            this.makePuff(ctrX - x, y, RANDOM.randInt(PUFF_MIN_RADIUS, PUFF_MAX_RADIUS));
         }
         // Left/Right edges (vertical):
-        this.makePuff(bubbleX, ctrY, GRandom.randInt(PUFF_MIN_RADIUS, PUFF_MAX_RADIUS));
-        this.makePuff(bubbleX + bubbleWidth, ctrY, GRandom.randInt(PUFF_MIN_RADIUS, PUFF_MAX_RADIUS));
+        this.makePuff(bubbleX, ctrY, RANDOM.randInt(PUFF_MIN_RADIUS, PUFF_MAX_RADIUS));
+        this.makePuff(bubbleX + bubbleWidth, ctrY, RANDOM.randInt(PUFF_MIN_RADIUS, PUFF_MAX_RADIUS));
 
         for (y = PUFF_SPREAD; y < bubbleHeight / 2; y += PUFF_SPREAD) {
             x = bubbleX;
-            this.makePuff(x, ctrY + y, GRandom.randInt(PUFF_MIN_RADIUS, PUFF_MAX_RADIUS));
-            this.makePuff(x, ctrY - y, GRandom.randInt(PUFF_MIN_RADIUS, PUFF_MAX_RADIUS));
+            this.makePuff(x, ctrY + y, RANDOM.randInt(PUFF_MIN_RADIUS, PUFF_MAX_RADIUS));
+            this.makePuff(x, ctrY - y, RANDOM.randInt(PUFF_MIN_RADIUS, PUFF_MAX_RADIUS));
             x = bubbleX + bubbleWidth;
-            this.makePuff(x, ctrY + y, GRandom.randInt(PUFF_MIN_RADIUS, PUFF_MAX_RADIUS));
-            this.makePuff(x, ctrY - y, GRandom.randInt(PUFF_MIN_RADIUS, PUFF_MAX_RADIUS));
+            this.makePuff(x, ctrY + y, RANDOM.randInt(PUFF_MIN_RADIUS, PUFF_MAX_RADIUS));
+            this.makePuff(x, ctrY - y, RANDOM.randInt(PUFF_MIN_RADIUS, PUFF_MAX_RADIUS));
         }
     }
 

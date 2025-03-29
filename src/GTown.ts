@@ -1,5 +1,5 @@
 import { GChurch } from "./GChurch";
-import { GRandom } from "./GRandom";
+import { RANDOM } from "./random";
 import { GRoom } from "./GRoom";
 import { GPerson } from "./types";
 
@@ -32,7 +32,7 @@ export class GTown {
     private people: GPerson[] = [];
 
     static {
-        GRandom.shuffle(TOWN_NAMES);
+        RANDOM.shuffle(TOWN_NAMES);
     }
 
     constructor() {

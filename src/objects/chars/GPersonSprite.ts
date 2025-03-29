@@ -1,13 +1,14 @@
 import 'phaser';
 import { GCharSprite } from './GCharSprite';
-import { GRandom } from '../../GRandom';
+import { RANDOM } from '../../random';
 import { GFF } from '../../main';
-import { GGender, GPerson } from '../../types';
+import { GGender, GInteractable, GPerson } from '../../types';
 import { GWalkToPointGoal } from '../../goals/GWalkToPointGoal';
 import { GRestGoal } from '../../goals/GRestGoal';
 import { GAdventureContent } from '../../scenes/GAdventureContent';
 import { PEOPLE } from '../../people';
 import { GGoal } from '../../goals/GGoal';
+import { GConversation } from '../../GConversation';
 
 const GENDER     = ['m', 'f'] as const;
 const SKIN_COLOR = ['w', 'y', 't', 'b'] as const;
@@ -31,7 +32,7 @@ const ETHNICITY_BY_COLOR = {
     'b': ['common', 'indian', 'african']
 };
 
-export class GPersonSprite extends GCharSprite {
+export class GPersonSprite extends GCharSprite implements GInteractable {
 
     private person: GPerson;
 
@@ -64,11 +65,11 @@ export class GPersonSprite extends GCharSprite {
     }
 
     protected thinkOfNextGoal(): GGoal|null {
-        if (GRandom.flipCoin()) {
-            return new GRestGoal(this, GRandom.randInt(1000, 20000));
+        if (RANDOM.flipCoin()) {
+            return new GRestGoal(this, RANDOM.randInt(1000, 20000));
         } else {
-            let x: number = GRandom.randInt(100, 924);
-            let y: number = GRandom.randInt(100, 668);
+            let x: number = RANDOM.randInt(100, 924);
+            let y: number = RANDOM.randInt(100, 668);
             return new GWalkToPointGoal(this, x, y, 10, 5000);
         }
     }
@@ -108,7 +109,7 @@ export class GPersonSprite extends GCharSprite {
                         spriteKeyPrefix = `${g}_${c}_${t}_${s}`;
 
                         // Pick an ethnicity to be used for name generation:
-                        const ethnicity = GRandom.randElement(ETHNICITY_BY_COLOR[c]) as string
+                        const ethnicity = RANDOM.randElement(ETHNICITY_BY_COLOR[c]) as string
 
                         // Create a random person and add him/her to the registry:
                         this.createRandomPerson(spriteKeyPrefix, ethnicity, g);
@@ -120,18 +121,18 @@ export class GPersonSprite extends GCharSprite {
 
     private static createRandomPerson(spriteKeyPrefix: string, ethnicity: string, gender: GGender) {
         // 33% chance to choose an ethnic first name, otherwise common:
-        let useEthnic: boolean = GRandom.randInt(0, 2) === 1;
+        let useEthnic: boolean = RANDOM.randInt(0, 2) === 1;
         let nameProfile: string = `${gender}_${useEthnic ? ethnicity : 'common'}_names`;
-        let firstName: string = GRandom.randElement(GFF.GAME.cache.json.get(nameProfile));
+        let firstName: string = RANDOM.randElement(GFF.GAME.cache.json.get(nameProfile));
 
         // If the first is ethnic, have a higher chance to pick an ethnic last name as well:
-        useEthnic = GRandom.randInt(0, 1 + (useEthnic ? 0 : 1)) === 1;
+        useEthnic = RANDOM.randInt(0, 1 + (useEthnic ? 0 : 1)) === 1;
         nameProfile = `s_${useEthnic ? ethnicity : 'common'}_names`;
-        let lastName: string = GRandom.randElement(GFF.GAME.cache.json.get(nameProfile));
+        let lastName: string = RANDOM.randElement(GFF.GAME.cache.json.get(nameProfile));
 
         // 50% chance for the person to be "reprobate" (-1), and never be converted.
         // 50% chance to begin with a random amount of faith (progress toward conversion).
-        let startingFaith = GRandom.flipCoin() ? -1 : GRandom.randInt(0, 99);
+        let startingFaith = RANDOM.flipCoin() ? -1 : RANDOM.randInt(0, 99);
 
         // Add new person to the people registry:
         PEOPLE.addPerson({
@@ -139,10 +140,18 @@ export class GPersonSprite extends GCharSprite {
             lastName: lastName,
             spriteKeyPrefix: spriteKeyPrefix,
             gender: gender,
-            voice: (GRandom.randInt(1, 5) as 1|2|3|4|5),
+            voice: (RANDOM.randInt(1, 5) as 1|2|3|4|5),
             faith: startingFaith,
             introduced: false,
             knowsPlayer: false
         });
+    }
+
+    public interact(): void {
+        this.getPerson().introduced = true;
+        this.getPerson().knowsPlayer = true;
+        GConversation.fromFile('dynamic_test_conv', [
+            { label: 'other', char: this }
+        ]);
     }
 }

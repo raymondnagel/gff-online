@@ -1,0 +1,46 @@
+[
+    {
+      "id": "play_what",
+      "speaker": "player",
+      "text": "(T)What should I play?",
+      "preCmd": "stopPiano()",
+      "next": "menu"
+    },
+    {
+      "id": "menu",
+      "speaker": "player",
+      "choice": [
+        { "choiceText": "Amazing Grace", "resultId": "amazing_grace"},
+        { "choiceText": "When The Saints Go Marching In", "resultId": "saints_go"},
+        { "choiceText": "Wonderful Words of Life", "resultId": "wonderful_words"},
+        { "choiceText": "(stop playing)", "resultId": "end"}
+      ]
+    },
+    {
+      "id": "amazing_grace",
+      "speaker": "player",
+      "text": "(T)Amazing grace, how sweet the sound! that saved a wretch like me! I once was lost, but now am found; was blind, but now I see.",
+      "preCmd": "playPiano('amazing')",
+      "next": "play_what"
+    },
+    {
+      "id": "saints_go",
+      "speaker": "player",
+      "text": "(T)Oh, when the saints! Go marching in! Oh, when the saints go marching in! Lord, I want to be in that number, when the saints go marching in!",
+      "preCmd": "playPiano('saints')",
+      "next": "play_what"
+    },
+    {
+      "id": "wonderful_words",
+      "speaker": "player",
+      "text": "(T)Sing them over again to me, wonderful words of life; Let me more of their beauty see, wonderful words of life.",
+      "preCmd": "playPiano('words')",
+      "next": "play_what"
+    },
+    {
+      "id": "end",
+      "speaker": "player",
+      "text": "Time to go!",
+      "postCmd": "endPiano()"
+    }
+]

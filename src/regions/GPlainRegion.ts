@@ -1,4 +1,4 @@
-import { GRandom } from "../GRandom";
+import { RANDOM } from "../random";
 import { GRoom } from "../GRoom";
 import { SCENERY } from "../scenery";
 import { Dir9, GRect, GSceneryDef } from "../types";
@@ -74,7 +74,7 @@ export class GPlainRegion extends GOutsideRegion{
         room.planSceneryChanceForBatch(SCENERY.def('shrub'), .2, 1, 4, objectBounds, zoneRects);
 
         // Occasionally add a tree or two:
-        switch (GRandom.randInt(1, 3)) {
+        switch (RANDOM.randInt(1, 3)) {
             case 1:
                 // Oak Trees: 10% chance to add 1-2
                 room.planSceneryChanceForBatch(SCENERY.def('oak_tree'), .2, 1, 2, objectBounds, zoneRects);

@@ -1,4 +1,4 @@
-import { GDirection } from "../GDirection";
+import { DIRECTION } from "../direction";
 import { GGoal } from "./GGoal";
 import { GCharSprite } from "../objects/chars/GCharSprite";
 import { Dir9 } from "../types";

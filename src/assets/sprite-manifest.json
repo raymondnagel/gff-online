@@ -24,6 +24,7 @@
   "sprites/chars/adam/adam_kneel_se.png",
   "sprites/chars/adam/adam_kneel_sw.png",
   "sprites/chars/adam/adam_kneel_w.png",
+  "sprites/chars/adam/adam_piano_ne.png",
   "sprites/chars/adam/adam_raisehands_s.png",
   "sprites/chars/adam/adam_rejoice_s.png",
   "sprites/chars/adam/adam_run_e.png",
@@ -4071,6 +4072,8 @@
   "sprites/chars/male/m_y_thug_2/m_y_thug_2_walk_se.png",
   "sprites/chars/male/m_y_thug_2/m_y_thug_2_walk_sw.png",
   "sprites/chars/male/m_y_thug_2/m_y_thug_2_walk_w.png",
+  "sprites/chars/travel_agent/travel_agent_idle_s.png",
+  "sprites/effects/church_door-120x130.png",
   "sprites/effects/imp_puff-100x100.png",
   "sprites/effects/slash-600x200.png",
   "sprites/scenery/campfire-116x150.png"

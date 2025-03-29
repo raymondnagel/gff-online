@@ -1,11 +1,10 @@
 import { GRegion } from "./regions/GRegion";
-import { CardDir, Dir9, GPoint, GRect, GRoomWalls, GSceneryDef, GSceneryPlan } from "./types";
+import { CardDir, Dir9, GCityBlock, GPoint, GRect, GRoomWalls, GSceneryDef, GSceneryPlan } from "./types";
 import { SCENERY } from "./scenery";
 import { GFF } from "./main";
-import { GTreasureChest } from "./objects/GTreasureChest";
-import { GRandom } from "./GRandom";
+import { RANDOM } from "./random";
 import { GArea } from "./areas/GArea";
-import { GDirection } from "./GDirection";
+import { DIRECTION } from "./direction";
 import { GTown } from "./GTown";
 import { GChurch } from "./GChurch";
 import { GStronghold } from "./GStronghold";
@@ -18,6 +17,10 @@ import { GWallNW } from "./objects/obstacles/walls/GWallNW";
 import { GWallSE } from "./objects/obstacles/walls/GWallSE";
 import { GWallSW } from "./objects/obstacles/walls/GWallSW";
 import { DEPTH } from "./depths";
+import { ARRAY } from "./array";
+import { GWallSouthInside } from "./objects/obstacles/walls/GWallSouthInside";
+import { GEventTrigger } from "./triggers/GEventTrigger";
+import { GChurchDoorTrigger } from "./triggers/GChurchDoorTrigger";
 
 const WALL_GUARD_THICK: number = 10;
 const WALL_CTRS: number[] = [
@@ -45,10 +48,13 @@ export class GRoom {
     private town: GTown|null = null;
     private church: GChurch|null = null;
     private stronghold: GStronghold|null = null;
+    private portalRoom: GRoom|null = null;
     private walls: GRoomWalls;
     private startRoom: boolean = false;
     private discovered: boolean = false;
+    private travelAgency: boolean = false;
     private chestItem: string|null = null;
+    private eventTriggers: GEventTrigger[] = [];
 
     private ROOM_LOG: string[] = [];
 
@@ -72,6 +78,14 @@ export class GRoom {
 
     public isStart(): boolean {
         return this.startRoom;
+    }
+
+    public setTravelLocation() {
+        this.travelAgency = true;
+    }
+
+    public isTravelLocation(): boolean {
+        return this.travelAgency;
     }
 
     public getArea(): GArea {
@@ -120,6 +134,10 @@ export class GRoom {
         this.stronghold?.setWorldRoom(this);
     }
 
+    public getPortalRoom(): GRoom|null {
+        return this.portalRoom;
+    }
+
     public setRegion(region: GRegion) {
         this.region = region;
         this.region.addRoom(this);
@@ -161,7 +179,19 @@ export class GRoom {
     }
 
     public getEncounterBg(): string {
-        return this.region.getEncBgImageName();
+        if (this.town) {
+            return 'town_enc_bg';
+        } else {
+            return this.region.getEncBgImageName();
+        }
+    }
+
+    public addEventTrigger(trigger: GEventTrigger) {
+        this.eventTriggers.push(trigger);
+    }
+
+    public getEventTriggers(): GEventTrigger[] {
+        return this.eventTriggers;
     }
 
     public setFullWall(dir: CardDir, wall: boolean) {
@@ -173,7 +203,7 @@ export class GRoom {
         if (this.walls[dir] && this.walls[dir].length === sections.length) {
             this.walls[dir] = sections;
         } else {
-            throw new Error(`Wall (${GDirection.dir9Texts()[dir]}) sections (${sections.length}) length mismatch!`);
+            throw new Error(`Wall (${DIRECTION.dir9Texts()[dir]}) sections (${sections.length}) length mismatch!`);
         }
     }
 
@@ -228,19 +258,19 @@ export class GRoom {
     }
 
     public hasNeighbor(direction: Dir9): boolean {
-        const velocity: GPoint = GDirection.getVelocity(direction);
+        const velocity: GPoint = DIRECTION.getVelocity(direction);
         return this.area.containsRoom(this.floor, this.x + velocity.x, this.y + velocity.y);
     }
 
     public getNeighbor(direction: Dir9): GRoom|null {
-        const velocity: GPoint = GDirection.getVelocity(direction);
+        const velocity: GPoint = DIRECTION.getVelocity(direction);
         return this.area.getRoomAt(this.floor, this.x + velocity.x, this.y + velocity.y);
     }
 
     public getNeighbors(condition?: (n: GRoom) => boolean): GRoom[] {
         const neighbors: GRoom[] = [];
         for (let d: number = 0; d < 4; d++) {
-            const neighbor: GRoom|null = this.getNeighbor(GDirection.cardDirFrom4(d as 0|1|2|3));
+            const neighbor: GRoom|null = this.getNeighbor(DIRECTION.cardDirFrom4(d as 0|1|2|3));
             if (neighbor) {
                 if (condition === undefined || condition(neighbor)) {
                     neighbors.push(neighbor);
@@ -251,10 +281,10 @@ export class GRoom {
     }
 
     public connectToRandomUndiscoveredNeighbor(): GRoom|null {
-        let d: number = GRandom.randInt(0, 3);
+        let d: number = RANDOM.randInt(0, 3);
         const start: number = d;
         do {
-            const dir: CardDir = GDirection.cardDirFrom4(d as 0|1|2|3);
+            const dir: CardDir = DIRECTION.cardDirFrom4(d as 0|1|2|3);
             const neighbor: GRoom|null = this.getNeighbor(dir);
             if (neighbor && !neighbor.isDiscovered()) {
                 this.area.setWallByRoom(this, dir, false);
@@ -269,10 +299,10 @@ export class GRoom {
     }
 
     public connectToRandomUndiscoveredNeighborInRegion(): GRoom|null {
-        let d: number = GRandom.randInt(0, 3);
+        let d: number = RANDOM.randInt(0, 3);
         const start: number = d;
         do {
-            const dir: CardDir = GDirection.cardDirFrom4(d as 0|1|2|3);
+            const dir: CardDir = DIRECTION.cardDirFrom4(d as 0|1|2|3);
             const neighbor: GRoom|null = this.getNeighbor(dir);
             if (neighbor && !neighbor.isDiscovered() && neighbor.getRegion() === this.getRegion()) {
                 this.area.setWallByRoom(this, dir, false);
@@ -287,7 +317,7 @@ export class GRoom {
     }
 
     public isSafe(): boolean {
-        if (this.church) {
+        if (this.church || this.area.isSafe()) {
             return true;
         } else {
             return false;
@@ -355,6 +385,11 @@ export class GRoom {
                 }
             }
         }
+
+        // Reset the event triggers:
+        this.eventTriggers.forEach(t => {
+            t.resetTimes();
+        });
     }
 
     private addFadeImageForNeighbor(dir: CardDir, dirStr: string) {
@@ -394,7 +429,11 @@ export class GRoom {
             new GWallEast(wallSet[Dir9.E] as GSceneryDef);
         }
         if (southWall) {
-            new GWallSouth(wallSet[Dir9.S] as GSceneryDef);
+            if (this.region.isInterior()) {
+                new GWallSouthInside(wallSet[Dir9.S] as GSceneryDef);
+            } else {
+                new GWallSouth(wallSet[Dir9.S] as GSceneryDef);
+            }
         }
 
         // Add any required corner pieces (for aesthetics):
@@ -536,7 +575,7 @@ export class GRoom {
         if (omitLast) {
             wallSections = wallSections.slice(0, -1);
         }
-        this.ROOM_LOG.push(`Planning ${GDirection.dir9Texts()[dir]} Wall...`);
+        this.ROOM_LOG.push(`Planning ${DIRECTION.dir9Texts()[dir]} Wall...`);
 
         let beginWall: number|null = null;
         let endWall: number|null = null;
@@ -569,7 +608,7 @@ export class GRoom {
                 this.ROOM_LOG.push(`* Wall from ${beginWall} to ${endWall}:`);
                 const tiles: number = (endWall - beginWall) + 1;
                 const sceneryCombination: GSceneryDef[] = this.getSceneryCombinationForWall(sceneryPool, tiles, dir);
-                GRandom.shuffle(sceneryCombination);
+                RANDOM.shuffle(sceneryCombination);
 
                 sceneryCombination.forEach(c => {
                     this.ROOM_LOG.push(`${c.key}: ${c.body.x},${c.body.y} (${c.body.width}x${c.body.height})`);
@@ -640,24 +679,24 @@ export class GRoom {
                 case Dir9.N:
                     adjustRange = s.body.height >= GFF.TILE_H ? GFF.TILE_H - minEdgeShown : GFF.CHAR_BODY_H;
                     sY = s.body.height >= GFF.TILE_H ? GFF.TOP_BOUND - (s.body.height - minEdgeShown) : GFF.TOP_BOUND;
-                    sY = GRandom.randInt(sY, sY + adjustRange);
+                    sY = RANDOM.randInt(sY, sY + adjustRange);
                     break;
                 case Dir9.W:
                     adjustRange = s.body.width >= GFF.TILE_W ? GFF.TILE_W - minEdgeShown : GFF.CHAR_BODY_W;
                     sX = s.body.width >= GFF.TILE_W ? GFF.LEFT_BOUND - (s.body.width - minEdgeShown) : GFF.LEFT_BOUND;
-                    sX = GRandom.randInt(sX, sX + adjustRange);
+                    sX = RANDOM.randInt(sX, sX + adjustRange);
                     break;
                 case Dir9.E:
                     adjustRange = s.body.width >= GFF.TILE_W ? GFF.TILE_W - minEdgeShown : GFF.CHAR_BODY_W;
                     sX = s.body.width >= GFF.TILE_W ? GFF.ROOM_AREA_RIGHT : GFF.RIGHT_BOUND - (s.body.width + GFF.CHAR_BODY_W);
-                    sX = GRandom.randInt(sX, sX + adjustRange);
+                    sX = RANDOM.randInt(sX, sX + adjustRange);
                     break;
                 case Dir9.S:
                     // South wall is the most unique; since scenery can be tall,
                     // let's move it more southward, even if it's a little off the screen
                     adjustRange = s.body.height >= GFF.TILE_H ? minEdgeShown : s.body.height * .85;
                     sY = s.body.height >= GFF.TILE_H ? GFF.ROOM_AREA_BOTTOM + (GFF.TILE_H / 2) : GFF.BOTTOM_BOUND - (s.body.height * .85);
-                    sY = GRandom.randInt(sY, sY + adjustRange);
+                    sY = RANDOM.randInt(sY, sY + adjustRange);
                     break;
             }
             this.addSceneryPlan(s.key, sX - s.body.x, sY - s.body.y);
@@ -703,11 +742,11 @@ export class GRoom {
         }
 
         backtrack(0, [], 0);
-        return GRandom.randElement(results);
+        return RANDOM.randElement(results);
     }
 
     // Explicitly plan an object at a specific position, regardless of any zones or objects
-    public planPositionedScenery(sceneryDef: GSceneryDef, x: number, y: number, originX: number, originY: number) {
+    public planPositionedScenery(sceneryDef: GSceneryDef, x: number, y: number, originX: number = 0, originY: number = 0) {
         const pX: number = x - (sceneryDef.body.width * originX) - sceneryDef.body.x;
         const pY: number = y - (sceneryDef.body.height * originY) - sceneryDef.body.y;
         this.addSceneryPlan(sceneryDef.key, pX, pY);
@@ -716,8 +755,8 @@ export class GRoom {
     // If chance is met, add min-max of scenery type
     // (adds a flexible group based on 1 chance)
     public planSceneryChanceForBatch(sceneryDef: GSceneryDef, pctChance: number, min: number, max: number, objects: GRect[], zones?: GRect[]) {
-        if (GRandom.randPct() < pctChance) {
-            this.planZonedScenery(sceneryDef, GRandom.randInt(min, max), objects, zones);
+        if (RANDOM.randPct() < pctChance) {
+            this.planZonedScenery(sceneryDef, RANDOM.randInt(min, max), objects, zones);
         }
     }
 
@@ -725,7 +764,7 @@ export class GRoom {
     // (assumes the same rarity for each instance)
     public planSceneryChanceForEach(sceneryDef: GSceneryDef, pctChance: number, max: number, objects: GRect[], zones?: GRect[]) {
         for (let n: number = 0; n < max; n++) {
-            if (GRandom.randPct() < pctChance) {
+            if (RANDOM.randPct() < pctChance) {
                 this.planZonedScenery(sceneryDef, 1, objects, zones);
             }
         }
@@ -775,8 +814,8 @@ export class GRoom {
 
         // Don't need to check for any intersections, because this will be planned before other scenery
         // Can go anywhere within the room area rectangle - anywhere except space reserved for walls
-        let x: number = GRandom.randInt(GFF.ROOM_AREA_LEFT + borderSize, GFF.ROOM_AREA_RIGHT - shrineAreaWidth - borderSize);
-        let y: number = GRandom.randInt(GFF.ROOM_AREA_TOP + borderSize, GFF.ROOM_AREA_BOTTOM - shrineAreaHeight - borderSize);
+        let x: number = RANDOM.randInt(GFF.ROOM_AREA_LEFT + borderSize, GFF.ROOM_AREA_RIGHT - shrineAreaWidth - borderSize);
+        let y: number = RANDOM.randInt(GFF.ROOM_AREA_TOP + borderSize, GFF.ROOM_AREA_BOTTOM - shrineAreaHeight - borderSize);
 
         // Create a no-scenery zone:
         this.noSceneryZones.push({x, y, width: shrineAreaWidth + (borderSize * 2), height: shrineAreaHeight + (borderSize * 2)});
@@ -805,7 +844,173 @@ export class GRoom {
         this.chestItem = itemName;
     }
 
-    public planTownStreets(roadNorth: boolean, roadEast: boolean, roadSouth: boolean, roadWest: boolean): void {
+    public planTownStreets(roadNorth: boolean, roadEast: boolean, roadSouth: boolean, roadWest: boolean): GCityBlock[] {
+
+        const horzNorthBaseline: number = 256;
+        const horzSouthBaseline: number = 640;
+        const vertWestBaseline: number = 416;
+        const vertEastBaseline: number = 608;
+        const horzWestEnd: number = 384;
+        const vertSouthStart: number = 512;
+
+        const fullNorthHorzBlock: GCityBlock = {
+            name: 'full-north horz',
+            base: horzNorthBaseline,
+            start: GFF.ROOM_X,
+            end: GFF.ROOM_W,
+            orientation: 'bottom'
+        };
+        const fullSouthHorzBlock: GCityBlock = {
+            name: 'full-south horz',
+            base: horzSouthBaseline,
+            start: GFF.ROOM_X,
+            end: GFF.ROOM_W,
+            orientation: 'bottom'
+        };
+        const fullWestVertBlock: GCityBlock = {
+            name: 'full-west vert',
+            base: vertWestBaseline,
+            start: GFF.ROOM_Y,
+            end: GFF.ROOM_H,
+            orientation: 'right'
+        };
+        const fullEastVertBlock: GCityBlock = {
+            name: 'full-east vert',
+            base: vertEastBaseline,
+            start: GFF.ROOM_Y,
+            end: GFF.ROOM_H,
+            orientation: 'left'
+        };
+        const nwHorz: GCityBlock = {
+            name: 'NW horz',
+            base: horzNorthBaseline,
+            start: GFF.ROOM_X,
+            end: horzWestEnd,
+            orientation: 'bottom'
+        };
+        const neHorz: GCityBlock = {
+            name: 'NE horz',
+            base: horzNorthBaseline,
+            start: vertEastBaseline,
+            end: GFF.ROOM_W,
+            orientation: 'bottom'
+        };
+        const swHorz: GCityBlock = {
+            name: 'SW horz',
+            base: horzSouthBaseline,
+            start: GFF.ROOM_X,
+            end: horzWestEnd,
+            orientation: 'bottom'
+        };
+        const seHorz: GCityBlock = {
+            name: 'SE horz',
+            base: horzSouthBaseline,
+            start: vertEastBaseline,
+            end: GFF.ROOM_W,
+            orientation: 'bottom'
+        };
+        const nwVert: GCityBlock = {
+            name: 'NW vert',
+            base: vertWestBaseline,
+            start: GFF.ROOM_Y,
+            end: horzNorthBaseline,
+            orientation: 'right'
+        };
+        const neVert: GCityBlock = {
+            name: 'NE vert',
+            base: vertEastBaseline,
+            start: GFF.ROOM_Y,
+            end: horzNorthBaseline,
+            orientation: 'left'
+        };
+        const swVert: GCityBlock = {
+            name: 'SW vert',
+            base: vertWestBaseline,
+            start: vertSouthStart,
+            end: GFF.ROOM_H,
+            orientation: 'right'
+        };
+        const seVert: GCityBlock = {
+            name: 'SE vert',
+            base: vertEastBaseline,
+            start: vertSouthStart,
+            end: GFF.ROOM_H,
+            orientation: 'left'
+        };
+
+        // Add eligible blocks based on road rules:
+        const cityBlocks: GCityBlock[] = [];
+        if (roadWest && roadEast && !roadNorth) {
+            cityBlocks.push(fullNorthHorzBlock);
+        }
+        if (roadWest && roadEast && !roadSouth) {
+            cityBlocks.push(fullSouthHorzBlock);
+        }
+        if (roadNorth && roadSouth && !roadWest) {
+            cityBlocks.push(fullWestVertBlock);
+        }
+        if (roadNorth && roadSouth && !roadEast) {
+            cityBlocks.push(fullEastVertBlock);
+        }
+        if (roadWest) {
+            cityBlocks.push(nwHorz);
+            cityBlocks.push(swHorz);
+        }
+        if (roadEast) {
+            cityBlocks.push(neHorz);
+            cityBlocks.push(seHorz);
+        }
+        if (roadNorth) {
+            cityBlocks.push(nwVert);
+            cityBlocks.push(neVert);
+        }
+        if (roadSouth) {
+            cityBlocks.push(swVert);
+            cityBlocks.push(seVert);
+        }
+
+        // At this point, if there are any full blocks, we can
+        // remove any partial blocks that make up the same areas:
+        if (cityBlocks.includes(fullNorthHorzBlock)) {
+            ARRAY.removeIfExistsIn(nwHorz, cityBlocks);
+            ARRAY.removeIfExistsIn(neHorz, cityBlocks);
+            ARRAY.removeIfExistsIn(nwVert, cityBlocks);
+            ARRAY.removeIfExistsIn(neVert, cityBlocks);
+        }
+        if (cityBlocks.includes(fullSouthHorzBlock)) {
+            ARRAY.removeIfExistsIn(swHorz, cityBlocks);
+            ARRAY.removeIfExistsIn(seHorz, cityBlocks);
+            ARRAY.removeIfExistsIn(swVert, cityBlocks);
+            ARRAY.removeIfExistsIn(seVert, cityBlocks);
+        }
+        if (cityBlocks.includes(fullWestVertBlock)) {
+            ARRAY.removeIfExistsIn(nwHorz, cityBlocks);
+            ARRAY.removeIfExistsIn(swHorz, cityBlocks);
+            ARRAY.removeIfExistsIn(nwVert, cityBlocks);
+            ARRAY.removeIfExistsIn(swVert, cityBlocks);
+        }
+        if (cityBlocks.includes(fullEastVertBlock)) {
+            ARRAY.removeIfExistsIn(neHorz, cityBlocks);
+            ARRAY.removeIfExistsIn(seHorz, cityBlocks);
+            ARRAY.removeIfExistsIn(neVert, cityBlocks);
+            ARRAY.removeIfExistsIn(seVert, cityBlocks);
+        }
+
+        // Check partial (corner) blocks; if the same block exists for both
+        // directions, prefer horz and remove vert
+        if (cityBlocks.includes(nwHorz) && cityBlocks.includes(nwVert)) {
+            ARRAY.removeIfExistsIn(nwVert, cityBlocks);
+        }
+        if (cityBlocks.includes(neHorz) && cityBlocks.includes(neVert)) {
+            ARRAY.removeIfExistsIn(neVert, cityBlocks);
+        }
+        if (cityBlocks.includes(swHorz) && cityBlocks.includes(swVert)) {
+            ARRAY.removeIfExistsIn(swVert, cityBlocks);
+        }
+        if (cityBlocks.includes(seHorz) && cityBlocks.includes(seVert)) {
+            ARRAY.removeIfExistsIn(seVert, cityBlocks);
+        }
+
         // This method is only called on town rooms, so there will always be
         // at least one road from an edge to the center. Therfore, ALWAYS put
         // a no-scenery zone in the center:
@@ -846,7 +1051,6 @@ export class GRoom {
         }
 
         // Test for different types of intersections, from most directions to least.
-        // As soon as a valid intersection is created, return immediately.
 
         // 4-way intersection
         if (roadNorth && roadWest && roadEast && roadSouth) {
@@ -856,7 +1060,6 @@ export class GRoom {
             this.planTileScenery('street_t_nes', 8, 5);
             this.planTileScenery('street_vert_sw_int', 7, 6);
             this.planTileScenery('street_vert_se_int', 8, 6);
-            return;
         }
 
         // 3-way intersections (T)
@@ -867,7 +1070,6 @@ export class GRoom {
             this.planTileScenery('street_t_nwe_e', 8, 5);
             this.planTileScenery('street_horz_s', 7, 6);
             this.planTileScenery('street_horz_s', 8, 6);
-            return;
         }
         if (roadSouth && roadWest && roadEast && (!roadNorth)) {
             this.planTileScenery('street_horz_n', 7, 4);
@@ -876,7 +1078,6 @@ export class GRoom {
             this.planTileScenery('street_t_wes_e', 8, 5);
             this.planTileScenery('street_vert_sw_int', 7, 6);
             this.planTileScenery('street_vert_se_int', 8, 6);
-            return;
         }
         if (roadNorth && roadWest && roadSouth && (!roadEast)) {
             this.planTileScenery('street_vert_nw_int', 7, 4);
@@ -885,7 +1086,6 @@ export class GRoom {
             this.planTileScenery('street_vert_e', 8, 5);
             this.planTileScenery('street_vert_sw_int', 7, 6);
             this.planTileScenery('street_vert_e', 8, 6);
-            return;
         }
         if (roadNorth && roadEast && roadSouth && (!roadWest)) {
             this.planTileScenery('street_vert_w', 7, 4);
@@ -894,7 +1094,6 @@ export class GRoom {
             this.planTileScenery('street_t_nes', 8, 5);
             this.planTileScenery('street_vert_w', 7, 6);
             this.planTileScenery('street_vert_se_int', 8, 6);
-            return;
         }
 
         // 2-way intersections: bends
@@ -905,7 +1104,6 @@ export class GRoom {
             this.planTileScenery('street_curve_nw_minor', 8, 5);
             this.planTileScenery('street_horz_s', 7, 6);
             this.planTileScenery('street_curve_nw_major', 8, 6);
-            return;
         }
         if (roadNorth && roadEast && (!roadWest) && (!roadSouth)) {
             this.planTileScenery('street_vert_w', 7, 4);
@@ -914,7 +1112,6 @@ export class GRoom {
             this.planTileScenery('street_curve_ne_inner', 8, 5);
             this.planTileScenery('street_curve_ne_major', 7, 6);
             this.planTileScenery('street_horz_s', 8, 6);
-            return;
         }
         if (roadSouth && roadWest && (!roadEast) && (!roadNorth)) {
             this.planTileScenery('street_horz_n', 7, 4);
@@ -923,7 +1120,6 @@ export class GRoom {
             this.planTileScenery('street_curve_sw_minor', 8, 5);
             this.planTileScenery('street_vert_sw_int', 7, 6);
             this.planTileScenery('street_vert_e', 8, 6);
-            return;
         }
         if (roadSouth && roadEast && (!roadWest) && (!roadNorth)) {
             this.planTileScenery('street_curve_se_major', 7, 4);
@@ -932,7 +1128,6 @@ export class GRoom {
             this.planTileScenery('street_curve_se_inner', 8, 5);
             this.planTileScenery('street_vert_w', 7, 6);
             this.planTileScenery('street_vert_se_int', 8, 6);
-            return;
         }
 
         // 2-way straight
@@ -943,7 +1138,6 @@ export class GRoom {
             this.planTileScenery('street_vert_e', 8, 5);
             this.planTileScenery('street_vert_w', 7, 6);
             this.planTileScenery('street_vert_e', 8, 6);
-            return;
         }
         if (roadWest && roadEast && (!roadNorth) && (!roadSouth)) {
             this.planTileScenery('street_horz_n', 7, 4);
@@ -952,7 +1146,6 @@ export class GRoom {
             this.planTileScenery('street_horz_c', 8, 5);
             this.planTileScenery('street_horz_s', 7, 6);
             this.planTileScenery('street_horz_s', 8, 6);
-            return;
         }
 
         // Dead ends
@@ -963,7 +1156,6 @@ export class GRoom {
             this.planTileScenery('street_curve_nw_minor', 8, 5);
             this.planTileScenery('street_curve_ne_major', 7, 6);
             this.planTileScenery('street_curve_nw_major', 8, 6);
-            return;
         }
         if (roadSouth && (!roadNorth) && (!roadWest) && (!roadEast)) {
             this.planTileScenery('street_curve_se_major', 7, 4);
@@ -972,7 +1164,6 @@ export class GRoom {
             this.planTileScenery('street_curve_sw_minor', 8, 5);
             this.planTileScenery('street_vert_w', 7, 6);
             this.planTileScenery('street_vert_e', 8, 6);
-            return;
         }
         if (roadWest && (!roadSouth) && (!roadEast) && (!roadNorth)) {
             this.planTileScenery('street_horz_n', 7, 4);
@@ -981,7 +1172,6 @@ export class GRoom {
             this.planTileScenery('street_deadend_w', 8, 5);
             this.planTileScenery('street_horz_s', 7, 6);
             this.planTileScenery('street_curve_nw_major', 8, 6);
-            return;
         }
         if (roadEast && (!roadSouth) && (!roadWest) && (!roadNorth)) {
             this.planTileScenery('street_curve_se_major', 7, 4);
@@ -990,15 +1180,127 @@ export class GRoom {
             this.planTileScenery('street_horz_c', 8, 5);
             this.planTileScenery('street_curve_ne_major', 7, 6);
             this.planTileScenery('street_horz_s', 8, 6);
-            return;
+        }
+
+        return cityBlocks;
+    }
+
+    public planCityBlock(block: GCityBlock, buildingPool: GSceneryDef[]) {
+        this.ROOM_LOG.push(`Block: name:${block.name} ${block.orientation} base:${block.base} start:${block.start} end:${block.end}`)
+
+        const totalSpace: number = block.end - block.start;
+        const buildings: GSceneryDef[] = [];
+        let usedSpace: number = 0;
+
+        // Add some buildings to the block:
+        while (buildingPool.length > 0 && usedSpace < totalSpace) {
+            const nextBuilding: GSceneryDef = buildingPool[buildingPool.length-1];
+            const size: number = this.getBuildingSize(nextBuilding, block);
+
+            if (size < totalSpace - usedSpace) {
+                buildingPool.pop();
+                buildings.push(nextBuilding);
+                usedSpace += size;
+            } else {
+                // There wasn't room for the next building;
+                // leave it in the pool and break out of the loop.
+                break;
+            }
+        }
+
+        const spaces: number[] = RANDOM.toSlices(totalSpace - usedSpace, buildings.length + 1);
+
+        let p: number = block.start;
+        for (let building of buildings) {
+            p += (spaces.pop() as number);
+            p += (this.positionBuilding(building, block, p));
+        }
+    }
+
+    private positionBuilding(building: GSceneryDef, block: GCityBlock, p: number): number {
+        let x: number, y: number, size: number;
+
+        switch(block.orientation) {
+            case 'top':
+                x = p - building.body.x;
+                y = block.base - building.body.y;
+                size = building.body.width;
+                break;
+            case 'bottom':
+                x = p - building.body.x;
+                y = block.base - building.body.height - building.body.y;
+                size = building.body.width;
+                break;
+            case 'left':
+                x = block.base - building.body.x;
+                y = p - building.body.y;
+                size = building.body.height;
+                break;
+            case 'right':
+                x = block.base - building.body.width - building.body.x;
+                y = p - building.body.y;
+                size = building.body.height;
+                break;
+        }
+        this.addSceneryPlan(building.key, x, y);
+        this.ROOM_LOG.push(`Building:${building.key} x:${x} y:${y}`);
+        return size;
+    }
+
+    private getBuildingSize(building: GSceneryDef, block: GCityBlock): number {
+        switch(block.orientation) {
+            case 'top':
+            case 'bottom':
+                return building.body.width;
+            case 'left':
+            case 'right':
+                return building.body.height;
         }
     }
 
     public planChurch() {
-        this.planPositionedScenery(SCENERY.def('church'), 512, 352, .5, .5);
+        const churchX: number = 362;
+        const churchY: number = 64;
+        const bodyX: number = 25;
+        const bodyY: number = 260;
+        const churchWidth: number = 300;
+        const churchHeight: number = 363;
+        this.planPositionedScenery(SCENERY.def('church_house'), churchX + bodyX, churchY + bodyY);
+
+        // As we plan the church, we can also add a trigger for the door:
+        const radius: number = 100;
+        const doorX: number = churchX + (churchWidth / 2);
+        const doorY: number = churchY + churchHeight;
+        const triggerArea: GRect = {x: doorX-radius, y: doorY-radius, width: radius*2, height: radius*2};
+        const doorOpenLocation: GPoint = {x: churchX + 94, y: churchY + 244};
+        const doorSpriteDepth: number = churchY + churchHeight + 1;
+        this.addEventTrigger(new GChurchDoorTrigger(triggerArea, doorOpenLocation, doorSpriteDepth));
 
         // A church is an important feature that shouldn't be covered up by random scenery
         this.noSceneryZones.push({x: 362, y: 128, width: 300, height: 576});
+    }
+
+    public planChurchInterior() {
+        // Pulpit:
+        this.planPositionedScenery(SCENERY.def('church_pulpit'), 512, 210, .5, .5);
+
+        // Piano:
+        this.planPositionedScenery(SCENERY.def('church_piano'), 832, 160, .5, .5);
+
+        // Left-side pews:
+        let h: number = 310;
+        this.planPositionedScenery(SCENERY.def('church_pew'), 287, h, .5, .5);
+        this.planPositionedScenery(SCENERY.def('church_pew'), 287, h += 128, .5, .5);
+        this.planPositionedScenery(SCENERY.def('church_pew'), 287, h += 128, .5, .5);
+
+        // Right-side pews:
+        h = 310;
+        this.planPositionedScenery(SCENERY.def('church_pew'), 735, h, .5, .5);
+        this.planPositionedScenery(SCENERY.def('church_pew'), 735, h += 128, .5, .5);
+        this.planPositionedScenery(SCENERY.def('church_pew'), 735, h += 128, .5, .5);
+
+        // Exit:
+        this.planPositionedScenery(SCENERY.def('building_exit'), GFF.ROOM_X + (GFF.ROOM_W / 2) - 36, GFF.ROOM_AREA_BOTTOM - 1);
     }
 
     private sampleFit(objectWidth: number, objectHeight: number, inc: number, objects: GRect[], zones: GRect[]): GRect|null {
@@ -1006,7 +1308,7 @@ export class GRoom {
         let y: number;
         let placement: GRect;
 
-        let z: number = GRandom.randInt(0, zones.length - 1);
+        let z: number = RANDOM.randInt(0, zones.length - 1);
         const start: number = z;
         do {
             if (zones[z].width > objectWidth && zones[z].height > objectHeight) {
@@ -1034,11 +1336,11 @@ export class GRoom {
         let y: number;
         let placement: GRect;
         for (let t: number = 0; t < maxTries; t++) {
-            zone = GRandom.randElement(zones) as GRect;
+            zone = RANDOM.randElement(zones) as GRect;
 
             if (zone.width > objectWidth && zone.height > objectHeight) {
-                x = GRandom.randInt(zone.x, zone.x + zone.width - objectWidth);
-                y = GRandom.randInt(zone.y, zone.y + zone.height - objectHeight);
+                x = RANDOM.randInt(zone.x, zone.x + zone.width - objectWidth);
+                y = RANDOM.randInt(zone.y, zone.y + zone.height - objectHeight);
                 placement = {x, y, width: objectWidth, height: objectHeight};
                 if (!this.intersectsAny(placement, objects, MIN_SCENERY_GAP)) {
                     return placement;
@@ -1084,5 +1386,10 @@ export class GRoom {
         // Log scenery plans:
         console.log('Scenery Plans:');
         console.dir(this.plans);
+    }
+
+    public static createPortal(room1: GRoom, room2: GRoom) {
+        room1.portalRoom = room2;
+        room2.portalRoom = room1;
     }
 }

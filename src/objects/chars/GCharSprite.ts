@@ -1,5 +1,5 @@
 import 'phaser';
-import { GDirection } from '../../GDirection';
+import { DIRECTION } from '../../direction';
 import { GFF } from '../../main';
 import { GAdventureContent } from '../../scenes/GAdventureContent';
 import { Dir9, GGender, GPoint, GRect } from '../../types';
@@ -112,7 +112,10 @@ export abstract class GCharSprite extends Phaser.Physics.Arcade.Sprite {
         if (this.busyTalking) {
             this.setGoal(null);
             this.setImmovable(true);
-            this.walkDirection(Dir9.NONE);
+            // Stop a walking or running char, but no other animations
+            if (this.isDoing('walk') || this.isDoing('run')) {
+                this.walkDirection(Dir9.NONE);
+            }
         } else {
             this.setImmovable(false);
         }
@@ -174,24 +177,14 @@ export abstract class GCharSprite extends Phaser.Physics.Arcade.Sprite {
     }
 
     public getDistanceToChar(char: GCharSprite) {
-        const ctr1: Phaser.Math.Vector2 = this.body?.center as Phaser.Math.Vector2;
-        const ctr2: Phaser.Math.Vector2 = char.body?.center as Phaser.Math.Vector2;
-        return Phaser.Math.Distance.BetweenPoints(ctr1, ctr2);
+        return PHYSICS.getDistanceBetween(this, char);
     }
 
     public faceChar(char: GCharSprite, setIdle: boolean = false) {
         const ctr1: Phaser.Math.Vector2 = this.body?.center as Phaser.Math.Vector2;
         const ctr2: Phaser.Math.Vector2 = char.body?.center as Phaser.Math.Vector2;
-        const dir: Dir9 = GDirection.getDirectionOf(ctr1, ctr2);
+        const dir: Dir9 = DIRECTION.getDirectionOf(ctr1, ctr2);
         this.faceDirection(dir, setIdle);
-    }
-
-    public isWithin(area: GRect) {
-        const ctr: Phaser.Math.Vector2 = this.body?.center as Phaser.Math.Vector2;
-        return ctr.x >= area.x
-            && ctr.x < area.x + area.width
-            && ctr.y >= area.y
-            && ctr.y < area.y + area.height;
     }
 
     public faceDirection(direction: Dir9, setIdle: boolean = false) {
@@ -210,10 +203,10 @@ export abstract class GCharSprite extends Phaser.Physics.Arcade.Sprite {
         this.faceDirection(direction);
 
         // Calculate and assign x/y velocities
-        let horzInc: number = GDirection.getHorzInc(direction);
-        let vertInc: number = GDirection.getVertInc(direction);
+        let horzInc: number = DIRECTION.getHorzInc(direction);
+        let vertInc: number = DIRECTION.getVertInc(direction);
         let speed: number = this.getSpeed();
-        let dirSpeed = speed * GDirection.getDistanceFactor(direction);
+        let dirSpeed = speed * DIRECTION.getDistanceFactor(direction);
         this.setVelocityX(horzInc * dirSpeed);
         this.setVelocityY(vertInc * dirSpeed);
 
@@ -227,7 +220,7 @@ export abstract class GCharSprite extends Phaser.Physics.Arcade.Sprite {
     }
 
     protected playDirectionalAnimation(animName: string, dir?: Dir9, force: boolean = false) {
-        let dirText = GDirection.dir9Texts()[dir ?? this.direction];
+        let dirText = DIRECTION.dir9Texts()[dir ?? this.direction];
         this.play(`${this.spriteKeyPrefix}_${animName}_${dirText}`, !force);
     }
 
@@ -244,7 +237,7 @@ export abstract class GCharSprite extends Phaser.Physics.Arcade.Sprite {
     }
 
     protected createDirectionalAnimations(animName: string) {
-        GDirection.dir8Texts().forEach(direction => {
+        DIRECTION.dir8Texts().forEach(direction => {
             this.anims.create({
                 key: `${this.spriteKeyPrefix}_${animName}_${direction}`,
                 frames: this.anims.generateFrameNumbers(
@@ -255,6 +248,14 @@ export abstract class GCharSprite extends Phaser.Physics.Arcade.Sprite {
                 repeat: -1 // Infinite loop
             });
         });
+    }
+
+    // Returns true if this character is executing the given
+    // animation name.
+    public isDoing(animName: string): boolean {
+        return this.anims.currentAnim === null ?
+            false :
+            this.anims.currentAnim.key.includes(`_${animName}_`);
     }
 
     public setGoal(goal: GGoal|null) {

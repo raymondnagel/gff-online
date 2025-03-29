@@ -2,7 +2,7 @@ import { BIBLE } from "../bible";
 import { BOOKS } from "../books";
 import { ENEMY } from "../enemy";
 import { GInputMode } from "../GInputMode";
-import { GRandom } from "../GRandom";
+import { RANDOM } from "../random";
 import { GFF } from "../main";
 import { GNumberEntry } from "../objects/components/GNumberEntry";
 import { GOptionWheel } from "../objects/components/GOptionWheel";
@@ -648,7 +648,7 @@ export class GBattleContent extends GContentScene {
 
     private doEnemyAttack() {
         this.setInputMode(INPUT_DISABLED);
-        const chosenAttack: GEnemyAttack = GRandom.randElementWeighted(this.enemyAttacks) as GEnemyAttack;
+        const chosenAttack: GEnemyAttack = RANDOM.randElementWeighted(this.enemyAttacks) as GEnemyAttack;
 
         this.tweens.add({
             targets: [

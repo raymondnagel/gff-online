@@ -1,16 +1,16 @@
-import { BOOKS } from "../books";
-import { COMMANDMENTS } from "../commandments";
-import { GLOSSARY } from "../glossary";
-import { GRandom } from "../GRandom";
-import { GRoom } from "../GRoom";
-import { GFF } from "../main";
-import { PLAYER } from "../player";
-import { SCENERY } from "../scenery";
-import { GBookEntry, GGlossaryEntry, GItem } from "../types";
-import { GPopup } from "./components/GPopup";
-import { GInteractable } from "./interactables/GInteractable";
+import { BOOKS } from "../../books";
+import { COMMANDMENTS } from "../../commandments";
+import { GLOSSARY } from "../../glossary";
+import { RANDOM } from "../../random";
+import { GRoom } from "../../GRoom";
+import { GFF } from "../../main";
+import { PLAYER } from "../../player";
+import { SCENERY } from "../../scenery";
+import { GBookEntry, GGlossaryEntry, GItem } from "../../types";
+import { GPopup } from "../components/GPopup";
+import { GTouchable } from "./GTouchable";
 
-export class GTreasureChest extends GInteractable {
+export class GTreasureChest extends GTouchable {
 
     private premium: boolean;
 
@@ -20,11 +20,11 @@ export class GTreasureChest extends GInteractable {
         this.premium = chestKey !== 'common_chest';
     }
 
-    public canInteract(): boolean {
+    public canTouch(): boolean {
         return PLAYER.getFaith() > 0;
     }
 
-    public interact() {
+    public doTouch() {
         const item: GItem = this.premium ? this.getPremiumItem() : this.getCommonItem();
         GFF.AdventureContent.scene.pause();
         GFF.AdventureUI.getSound().playSound('open_chest').once('complete', () => {
@@ -47,7 +47,7 @@ export class GTreasureChest extends GInteractable {
     }
 
     private getCommonItem(): GItem {
-        const item: GItem = GRandom.randElementWeighted([
+        const item: GItem = RANDOM.randElementWeighted([
             {
                 element: { name: 'seed', type: 'item', onCollect: () => {PLAYER.changeSeeds(1)} },
                 weight: 20

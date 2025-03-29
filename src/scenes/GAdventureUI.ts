@@ -3,7 +3,7 @@ import { GUIScene } from './GUIScene';
 import { GAdventureContent } from './GAdventureContent';
 import { GFF } from '../main';
 import { GPoint } from '../types';
-import { GRandom } from '../GRandom';
+import { RANDOM } from '../random';
 import { DEPTH } from '../depths';
 
 const MOUSE_INACTIVE_INTERVAL: number = 2000;

@@ -1,8 +1,8 @@
 import 'phaser';
 import { GArea } from '../areas/GArea';
-import { GDirection } from '../GDirection';
-import { GRect, GPerson, GSpirit, GKeyList, BoundedGameObject, GPoint, CardDir, Dir9 } from '../types';
-import { GRandom } from '../GRandom';
+import { DIRECTION } from '../direction';
+import { GRect, GPerson, GSpirit, GKeyList, BoundedGameObject, GPoint, CardDir, Dir9, GInteractable } from '../types';
+import { RANDOM } from '../random';
 import { GPlayerSprite } from '../objects/chars/GPlayerSprite';
 import { GPersonSprite } from '../objects/chars/GPersonSprite';
 import { GObstacleStatic } from '../objects/obstacles/GObstacleStatic';
@@ -14,7 +14,7 @@ import { GCharSprite } from '../objects/chars/GCharSprite';
 import { GContentScene } from './GContentScene';
 import { GConversation } from '../GConversation';
 import { GPopup } from '../objects/components/GPopup';
-import { GTreasureChest } from '../objects/GTreasureChest';
+import { GTreasureChest } from '../objects/touchables/GTreasureChest';
 import { PLAYER } from '../player';
 import { ENEMY } from '../enemy';
 import { GrayscalePostFxPipeline } from '../shaders/GrayscalePostFxPipeline';
@@ -22,9 +22,14 @@ import { GInputMode } from '../GInputMode';
 import { AREA } from '../area';
 import { GTown } from '../GTown';
 import { GChurch } from '../GChurch';
-import { GInteractable } from '../objects/interactables/GInteractable';
 import { DEPTH } from '../depths';
 import { COMMANDMENTS } from '../commandments';
+import { GTouchable } from '../objects/touchables/GTouchable';
+import { PHYSICS } from '../physics';
+import { COLOR } from '../colors';
+import { GPiano } from '../objects/interactables/GPiano';
+import { GBuildingExit } from '../objects/touchables/GBuildingExit';
+import { GBuildingEntrance } from '../objects/touchables/GBuildingEntrance';
 
 const MOUSE_UI_BUTTON: string = 'MOUSE_UI_BUTTON';
 
@@ -51,7 +56,7 @@ export class GAdventureContent extends GContentScene {
     private obstaclesGroup: Phaser.GameObjects.Group;
     private personsGroup: Phaser.GameObjects.Group;
     private impsGroup: Phaser.GameObjects.Group;
-    private interactablesGroup: Phaser.GameObjects.Group;
+    private touchablesGroup: Phaser.GameObjects.Group;
 
     private impSpawnTimeEvent: Phaser.Time.TimerEvent;
 
@@ -68,7 +73,7 @@ export class GAdventureContent extends GContentScene {
         this.obstaclesGroup = this.add.group();
         this.personsGroup = this.add.group();
         this.impsGroup = this.add.group();
-        this.interactablesGroup = this.add.group();
+        this.touchablesGroup = this.add.group();
     }
 
     public create(): void {
@@ -76,7 +81,7 @@ export class GAdventureContent extends GContentScene {
         this.setCurrentRoom(startRoom.getX(), startRoom.getY(), AREA.WORLD_AREA);
 
         // Create the player:
-        this.player = new GPlayerSprite(this, 512-(GFF.CHAR_W/2), 400);
+        this.player = new GPlayerSprite(this, 512-(GFF.CHAR_W/2), 460);
 
         // Init physics:
         this.initPhysics();
@@ -128,7 +133,7 @@ export class GAdventureContent extends GContentScene {
         INPUT_ADVENTURING.onKeyDown((keyEvent: KeyboardEvent) => {
             switch(keyEvent.key) {
                 case ' ':
-                    this.playerTalk();
+                    this.playerTalkOrInteract();
                     break;
                 case 'n':
                     GFF.showNametags = true;
@@ -229,7 +234,55 @@ export class GAdventureContent extends GContentScene {
         INPUT_DISABLED.setScene(this);
     }
 
-    // private mapRt: Phaser.GameObjects.RenderTexture;
+    public playerEnterBuilding() {
+        const room: GRoom = this.getCurrentRoom() as GRoom;
+        const portalRoom: GRoom|null = room.getPortalRoom();
+
+        if (portalRoom !== null) {
+            this.player.walkDirection(Dir9.NONE);
+            this.player.faceDirection(Dir9.N);
+            this.player.stop();
+            this.transitionToRoom(portalRoom.getX(), portalRoom.getY(), portalRoom.getArea(), () => {
+                // Although you entered through an entrance, you'll actually come in the exit:
+                const exit: GBuildingExit = this.children.list.find(gameObject =>
+                    gameObject instanceof GBuildingExit
+                ) as GBuildingExit;
+
+                // Re-position player:
+                const newPlayerX: number = exit.x + (exit.width / 2);
+                const newPlayerY: number = exit.y - (GFF.CHAR_BODY_H / 2) - 1;
+                this.player.centerPhysically({x: newPlayerX, y: newPlayerY});
+            });
+        }
+    }
+
+    public playerExitBuilding() {
+        const room: GRoom = this.getCurrentRoom() as GRoom;
+        const portalRoom: GRoom|null = room.getPortalRoom();
+
+        if (portalRoom !== null) {
+            this.player.walkDirection(Dir9.NONE);
+            this.player.faceDirection(Dir9.S);
+            this.player.stop();
+            this.transitionToRoom(portalRoom.getX(), portalRoom.getY(), portalRoom.getArea(), () => {
+                // We'll initially hide the player.
+                // When the new room is loaded, his position will cause the door-open trigger,
+                // and we'll make him visible when that animation is finished.
+                this.player.setVisible(false);
+
+                // Although you left through an exit, you'll actually come out the entrance:
+                const entrance: GBuildingEntrance = this.children.list.find(gameObject =>
+                    gameObject instanceof GBuildingEntrance
+                ) as GBuildingEntrance;
+
+                // Re-position player:
+                const newPlayerX: number = entrance.x + (entrance.width / 2);
+                const newPlayerY: number = entrance.y + (GFF.CHAR_BODY_H / 2) + 1;
+                this.player.centerPhysically({x: newPlayerX, y: newPlayerY});
+            });
+        }
+    }
+
     private doMapExport(fromX: number, fromY: number) {
         // if (this.mapRt === undefined) {
         //     this.mapRt = new Phaser.GameObjects.RenderTexture(this, 0, 0, 2000, 1200);
@@ -281,11 +334,11 @@ export class GAdventureContent extends GContentScene {
         this.physics.add.collider(this.player, this.personsGroup);
         this.physics.add.collider(this.player, this.impsGroup);
         this.physics.add.collider(this.player, this.obstaclesGroup);
-        this.physics.add.collider(this.player, this.interactablesGroup);
+        this.physics.add.collider(this.player, this.touchablesGroup);
         this.physics.add.collider(this.personsGroup, this.bottomBound);
         this.physics.add.collider(this.personsGroup, this.personsGroup);
         this.physics.add.collider(this.personsGroup, this.obstaclesGroup);
-        this.physics.add.collider(this.personsGroup, this.interactablesGroup);
+        this.physics.add.collider(this.personsGroup, this.touchablesGroup);
         this.physics.add.collider(this.impsGroup, this.impsGroup);
         this.physics.add.collider(this.impsGroup, this.bottomBound);
 
@@ -321,14 +374,14 @@ export class GAdventureContent extends GContentScene {
                 }
             }
 
-            // Interactable:
+            // Touchable:
             if (
-                (obj1 instanceof GInteractable || obj2 instanceof GInteractable)
+                (obj1 instanceof GTouchable || obj2 instanceof GTouchable)
                 && (obj1 === this.player || obj2 === this.player)
             ) {
-                let interactable: GInteractable = (obj1 instanceof GInteractable ? obj1 : obj2) as GInteractable;
-                if (interactable.canInteract()) {
-                    interactable.interact();
+                let touchable: GTouchable = (obj1 instanceof GTouchable ? obj1 : obj2) as GTouchable;
+                if (touchable.canTouch()) {
+                    touchable.doTouch();
                 }
             }
         });
@@ -345,7 +398,7 @@ export class GAdventureContent extends GContentScene {
                 Dir9.NONE;
 
             // Log the collision:
-            GFF.log(`${name} collided with ${GDirection.dir9Texts()[dir]} WORLDBOUND`);
+            GFF.log(`${name} collided with ${DIRECTION.dir9Texts()[dir]} WORLDBOUND`);
 
             // Try to walk to an adjacent room if the player reached the top, left, or right side of the screen:
             if (dir === Dir9.N || dir === Dir9.W || dir === Dir9.E) {
@@ -394,8 +447,8 @@ export class GAdventureContent extends GContentScene {
 
     public walkToAdjacentRoom(dir: CardDir) {
         // Move to the adjacent room, if there is one:
-        let newRoomX = this.playerRoomX + GDirection.getHorzInc(dir);
-        let newRoomY = this.playerRoomY + GDirection.getVertInc(dir);
+        let newRoomX = this.playerRoomX + DIRECTION.getHorzInc(dir);
+        let newRoomY = this.playerRoomY + DIRECTION.getVertInc(dir);
 
         if (this.currentArea.containsRoom(this.playerFloor, newRoomX, newRoomY)) {
             // Before transitioning, walk NONE to stop moving and remove diagonals:
@@ -403,19 +456,19 @@ export class GAdventureContent extends GContentScene {
             this.player.stop();
             this.transitionToRoom(newRoomX, newRoomY, this.currentArea, () => {
                 // Re-position player:
-                let newEdge: Dir9 = GDirection.getOpposite(dir);
+                let newEdge: Dir9 = DIRECTION.getOpposite(dir);
                 let newPlayerX: number =
                     (newEdge === Dir9.W || newEdge === Dir9.E)
-                    ? GDirection.getCharPosForEdge(newEdge)
+                    ? DIRECTION.getCharPosForEdge(newEdge)
                     : this.player.x;
                 let newPlayerY: number =
                     (newEdge === Dir9.N || newEdge === Dir9.S)
-                    ? GDirection.getCharPosForEdge(newEdge)
+                    ? DIRECTION.getCharPosForEdge(newEdge)
                     : this.player.y;
                 this.player.setPosition(newPlayerX, newPlayerY);
                 const playerCtr: GPoint = this.player.getPhysicalCenter();
                 const room: GRoom = this.getCurrentRoom() as GRoom;
-                const wallCtr: GPoint = room.getNearestWallCenter(GDirection.getOpposite(dir) as CardDir, playerCtr);
+                const wallCtr: GPoint = room.getNearestWallCenter(DIRECTION.getOpposite(dir) as CardDir, playerCtr);
                 this.player.centerPhysically(wallCtr);
             });
         }
@@ -496,18 +549,18 @@ export class GAdventureContent extends GContentScene {
                 this.setVision(false, COMMANDMENTS.getCount());
 
                 // 33% chance to spawn a common chest:
-                if (GRandom.randPct() <= .33) {
+                if (RANDOM.randPct() <= .33) {
                     this.spawnCommonChest();
                 }
 
                 // Spawn an imp in 1-5 seconds, with 50% chance for up to 2 more:
-                this.impSpawnTimeEvent = this.time.delayedCall(GRandom.randInt(1000, 5000), () => {
+                this.impSpawnTimeEvent = this.time.delayedCall(RANDOM.randInt(1000, 5000), () => {
                     this.addRandomImp();
-                    if (GRandom.flipCoin()) {
-                        this.impSpawnTimeEvent = this.time.delayedCall(GRandom.randInt(1000, 5000), () => {
+                    if (RANDOM.flipCoin()) {
+                        this.impSpawnTimeEvent = this.time.delayedCall(RANDOM.randInt(1000, 5000), () => {
                             this.addRandomImp();
-                            if (GRandom.flipCoin()) {
-                                this.impSpawnTimeEvent = this.time.delayedCall(GRandom.randInt(1000, 5000), () => {
+                            if (RANDOM.flipCoin()) {
+                                this.impSpawnTimeEvent = this.time.delayedCall(RANDOM.randInt(1000, 5000), () => {
                                     this.addRandomImp();
                                 });
                             }
@@ -529,8 +582,8 @@ export class GAdventureContent extends GContentScene {
             const left: number = GFF.ROOM_AREA_LEFT;
             const right: number = GFF.ROOM_AREA_RIGHT - body.width;
             const bottom: number = GFF.ROOM_AREA_BOTTOM - body.height;
-            const tX = GRandom.randInt(left, right);
-            const tY = GRandom.randInt(top, bottom);
+            const tX = RANDOM.randInt(left, right);
+            const tY = RANDOM.randInt(top, bottom);
             if (this.spaceClearForTransient(body, tX, tY)) {
                 return {x: tX - body.x, y: tY - body.y};
             }
@@ -543,7 +596,7 @@ export class GAdventureContent extends GContentScene {
         return (
             !this.intersectsWithGroup(transBody, x, y, this.obstaclesGroup)
             && !this.intersectsWithGroup(transBody, x, y, this.personsGroup)
-            && !this.intersectsWithGroup(transBody, x, y, this.interactablesGroup)
+            && !this.intersectsWithGroup(transBody, x, y, this.touchablesGroup)
         );
     }
 
@@ -635,7 +688,7 @@ export class GAdventureContent extends GContentScene {
         if (town) {
             const citizens: GPerson[] = town.getPeople();
             for (let p of citizens) {
-                if (GRandom.randPct() <= .3) {
+                if (RANDOM.randPct() <= .3) {
                     this.spawnPerson(p);
                 }
             }
@@ -658,7 +711,7 @@ export class GAdventureContent extends GContentScene {
         for (let t of neighboringTowns) {
             const citizens: GPerson[] = t.getPeople();
             for (let p of citizens) {
-                if (GRandom.randPct() <= .1) {
+                if (RANDOM.randPct() <= .1) {
                     this.spawnPerson(p);
                 }
             }
@@ -670,7 +723,7 @@ export class GAdventureContent extends GContentScene {
         let exists: boolean;
         do {
             exists = false;
-            imp = GRandom.randElement(ENEMY.getImps());
+            imp = RANDOM.randElement(ENEMY.getImps());
             for (let i of this.impsGroup.getChildren() as GImpSprite[]) {
                 if (i.getSpirit() === imp) {
                     exists = true;
@@ -692,8 +745,8 @@ export class GAdventureContent extends GContentScene {
         this.impsGroup.add(impSprite);
     }
 
-    public addInteractable(interactable: GInteractable) {
-        this.interactablesGroup.add(interactable);
+    public addTouchable(touchable: GTouchable) {
+        this.touchablesGroup.add(touchable);
     }
 
     public encounterEnemy(enemy: GImpSprite) {
@@ -759,34 +812,55 @@ export class GAdventureContent extends GContentScene {
         });
     }
 
-    public getPersonToTalkTo(): GPersonSprite|null {
-        const speakArea: GRect = this.player.getInteractionArea();
-        const persons: GPersonSprite[] = this.children.list.filter(gameObject =>
-            gameObject instanceof GPersonSprite && gameObject.isWithin(speakArea)
-        ) as GPersonSprite[];
+    public getInteractionTarget(): GInteractable|null {
+        const interactArea: GRect = this.player.getInteractionArea();
+        const interactables: GInteractable[] = this.children.list.filter(gameObject =>
+            'interact' in gameObject
+        ) as GInteractable[];
 
-        let talkPartner: GPersonSprite|null = null;
+        let target: GInteractable|null = null;
         let closestDist: number = Number.MAX_VALUE;
-        persons.forEach(p => {
-            const distToPerson: number = this.player.getDistanceToChar(p);
-            if (distToPerson <= closestDist) {
-                closestDist = distToPerson;
-                talkPartner = p;
+        interactables.forEach(i => {
+            const dist: number = PHYSICS.getDistanceBetween(this.player, i);
+            if (PHYSICS.isCenterWithin(i, interactArea) && dist <= closestDist) {
+                closestDist = dist;
+                target = i;
             }
         });
 
-        return talkPartner;
+        return target;
     }
 
-    public playerTalk() {
-        const talkPartner: GPersonSprite|null = this.getPersonToTalkTo();
-        if (talkPartner !== null) {
-            talkPartner.getPerson().introduced = true;
-            talkPartner.getPerson().knowsPlayer = true;
-            GConversation.fromFile('dynamic_test_conv', [
-                { label: 'other', char: talkPartner }
-            ]);
+    public playerTalkOrInteract() {
+        const target: GInteractable|null = this.getInteractionTarget();
+        if (target !== null) {
+            target.interact();
         }
+    }
+
+    public playerPlayPiano(piano: GPiano) {
+        this.setInputMode(INPUT_CONVERSATION);
+        this.stopChars();
+        this.getSound().fadeOutMusic(500);
+        this.fadeOut(500, COLOR.BLACK.num(), () => {
+            PHYSICS.setPositionRelativeTo(this.player, piano, -12, 2);
+            this.player.play('adam_sit_ne', false);
+            this.fadeIn(500, COLOR.BLACK.num(), () => {
+                GConversation.fromFile('play_piano');
+            });
+        });
+    }
+
+    public playerFinishPiano() {
+        this.fadeOut(500, COLOR.BLACK.num(), () => {
+            PHYSICS.setPositionRelativeTo(this.player, this.player, 0, 24);
+            this.player.walkDirection(Dir9.S);
+            this.getSound().fadeInMusic(this.currentArea.getBgMusic(), 500);
+            this.fadeIn(500, COLOR.BLACK.num(), () => {
+                this.startChars();
+                this.setInputMode(INPUT_ADVENTURING);
+            });
+        });
     }
 
     public setConversation(conversation: GConversation) {
@@ -836,6 +910,7 @@ export class GAdventureContent extends GContentScene {
         objs.forEach(obj => {
             (obj as GCharSprite).setImmobile(false);
         });
+        this.player.setImmobile(false);
     }
 
     public stopChars() {
@@ -847,6 +922,7 @@ export class GAdventureContent extends GContentScene {
         objs.forEach(obj => {
             (obj as GCharSprite).setImmobile(true);
         });
+        this.player.setImmobile(true);
     }
 
     public updateFidelityMode() {
@@ -889,7 +965,7 @@ export class GAdventureContent extends GContentScene {
         // Only process user controls for the player if in adventuring input mode:
         if (this.getInputMode() === INPUT_ADVENTURING) {
             const polledKeys: GKeyList = INPUT_ADVENTURING.getPollKeys();
-            let direction: Dir9 = GDirection.getDirectionForKeys(polledKeys);
+            let direction: Dir9 = DIRECTION.getDirectionForKeys(polledKeys);
             if (polledKeys['Shift'].isDown) {
                 this.player.runDirection(direction);
             } else {
@@ -901,6 +977,11 @@ export class GAdventureContent extends GContentScene {
         if (this.visionRadiusImage.visible) {
             this.updateVision();
         }
+
+        // Process event triggers:
+        this.getCurrentRoom()?.getEventTriggers().forEach(t => {
+            t.process();
+        });
 
         // Process current conversation, if there is one:
         if (this.conversation !== null) {

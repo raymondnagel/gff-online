@@ -1,16 +1,16 @@
 import { GArea } from "./GArea";
 import { GRegion } from "../regions/GRegion";
 import { GRoom } from "../GRoom";
-import { CardDir, Dir9, GPerson, GPoint, ProgressCallback } from "../types";
+import { CardDir, Dir9, GCityBlock, GPerson, GPoint, GSceneryDef, ProgressCallback } from "../types";
 import { GPlainRegion } from "../regions/GPlainRegion";
 import { GForestRegion } from "../regions/GForestRegion";
 import { GDesertRegion } from "../regions/GDesertRegion";
 import { GSwampRegion } from "../regions/GSwampRegion";
 import { GTundraRegion } from "../regions/GTundraRegion";
 import { GMountRegion } from "../regions/GMountRegion";
-import { GRandom } from "../GRandom";
+import { RANDOM } from "../random";
 import { GFF } from "../main";
-import { GDirection } from "../GDirection";
+import { DIRECTION } from "../direction";
 import { TOWN } from "../town";
 import { GTown } from "../GTown";
 import { GChurch } from "../GChurch";
@@ -19,6 +19,9 @@ import { GStronghold } from "../GStronghold";
 import { PEOPLE } from "../people";
 import { BOOKS } from "../books";
 import { COMMANDMENTS } from "../commandments";
+import { SCENERY } from "../scenery";
+import { AREA } from "../area";
+import { GChurchArea } from "./GChurchArea";
 
 type BorderWall = {
     room: GRoom,
@@ -29,7 +32,6 @@ const WORLD_WIDTH: number = 16;
 const WORLD_HEIGHT: number = 16;
 const REGION_MIN: number = 25;
 const REGION_MAX: number = 35;
-const NUM_TOWNS: number = 10;
 const TOWN_MIN: number = 3;
 const TOWN_MAX: number = 6;
 const MIN_DIST_REGION_CENTERS: number = 5;
@@ -121,7 +123,7 @@ export class GWorldArea extends GArea {
     private expandContiguous(startRoom: GRoom, region: GRegion) {
         startRoom.setRegion(region);
         for (let d: number = 0; d < 4; d++) {
-            const dir: CardDir = GDirection.cardDirFrom4(d as 0|1|2|3);
+            const dir: CardDir = DIRECTION.cardDirFrom4(d as 0|1|2|3);
             const neighbor: GRoom|null = startRoom.getNeighbor(dir);
             if (neighbor && !neighbor.getRegion() && !startRoom.hasFullWall(dir)) {
                 this.expandContiguous(neighbor, region);
@@ -131,14 +133,14 @@ export class GWorldArea extends GArea {
 
     private createInitialRegionGateways(region: GRegion, borderWall: BorderWall[]) {
         const otherRegions: GRegion[] = [];
-        GRandom.shuffle(borderWall);
+        RANDOM.shuffle(borderWall);
         for (let b of borderWall) {
             const outerNeighbor: GRoom|null = b.room.getNeighbor(b.dir);
             if (outerNeighbor) {
                 if (!otherRegions.includes(outerNeighbor.getRegion())) {
                     otherRegions.push(outerNeighbor.getRegion());
                     this.setWallByRoom(b.room, b.dir, false);
-                    GFF.log(`Initial Gateway: ${b.room.getX()}, ${b.room.getY()} : ${GDirection.dir9Texts()[b.dir]}`);
+                    GFF.log(`Initial Gateway: ${b.room.getX()}, ${b.room.getY()} : ${DIRECTION.dir9Texts()[b.dir]}`);
                 }
             }
         }
@@ -149,7 +151,7 @@ export class GWorldArea extends GArea {
             const outerNeighbor: GRoom|null = b.room.getNeighbor(b.dir);
             if (outerNeighbor && !outerNeighbor.isDiscovered()) {
                 this.setWallByRoom(b.room, b.dir, false);
-                GFF.log(`Extra Gateway: ${b.room.getX()}, ${b.room.getY()} : ${GDirection.dir9Texts()[b.dir]}`);
+                GFF.log(`Extra Gateway: ${b.room.getX()}, ${b.room.getY()} : ${DIRECTION.dir9Texts()[b.dir]}`);
                 this.exploreContiguous(outerNeighbor);
             }
         }
@@ -164,14 +166,14 @@ export class GWorldArea extends GArea {
         }
         region.setCenter(centerRoom);
 
-        const targetSize: number = GRandom.randInt(REGION_MIN, REGION_MAX);
+        const targetSize: number = RANDOM.randInt(REGION_MIN, REGION_MAX);
         const candidates: GRoom[] = [centerRoom];
         const neighborCondition = (n: GRoom): boolean => {
             return n.getRegion() === undefined;
         };
 
         while (region.getRooms().length < targetSize && candidates.length > 0) {
-            let current: GRoom = GRandom.randElement(candidates);
+            let current: GRoom = RANDOM.randElement(candidates);
             let neighbors: GRoom[] = current.getNeighbors(neighborCondition);
 
             for (let neighbor of neighbors) {
@@ -224,7 +226,7 @@ export class GWorldArea extends GArea {
         });
 
         // Shuffle the list:
-        GRandom.shuffle(eligibleRooms);
+        RANDOM.shuffle(eligibleRooms);
 
         // Proceed through the list until we find one far enough away from other centers:
         for (let room of eligibleRooms) {
@@ -248,13 +250,16 @@ export class GWorldArea extends GArea {
     }
 
     private createCivilization() {
-        for (let t: number = 0; t < NUM_TOWNS; t++) {
+        for (let t: number = 0; t < TOWN.TOWN_COUNT; t++) {
             const town: GTown = new GTown();
             TOWN.addTown(town);
-            CHURCH.addChurch(new GChurch(town));
+            const church: GChurch = new GChurch(town);
+            const interior: GChurchArea = AREA.CHURCH_AREAS[t];
+            church.setInteriorArea(interior);
+            CHURCH.addChurch(church);
         }
 
-        while (!this.createTowns(NUM_TOWNS)) {
+        while (!this.createTowns(TOWN.TOWN_COUNT)) {
             this.clearTowns();
         }
 
@@ -263,12 +268,12 @@ export class GWorldArea extends GArea {
         this.addPopulation();
 
         // Create start location:
-        this.startRoom = (GRandom.randElement(CHURCH.getChurches()) as GChurch).getWorldRoom();
+        this.startRoom = (RANDOM.randElement(CHURCH.getChurches()) as GChurch).getWorldRoom();
         this.startRoom.setStart();
 
         // Test population by town:
         // const towns: GTown[] = TOWN.getTowns();
-        // for (let t: number = 0; t < NUM_TOWNS; t++) {
+        // for (let t: number = 0; t < TOWN.TOWN_COUNT; t++) {
         //     GFF.genLog(`${towns[t].getName()}, citizens: ${towns[t].getPeople().length}`);
         //     // console.dir(towns[t].getPeople());
         //     GFF.genLog(`${towns[t].getChurch().getName()}, saints: ${towns[t].getChurch().getPeople().length}`);
@@ -281,11 +286,11 @@ export class GWorldArea extends GArea {
         const towns: GTown[] = TOWN.getTowns();
 
         // Shuffle people and towns:
-        GRandom.shuffle(people);
-        GRandom.shuffle(towns);
+        RANDOM.shuffle(people);
+        RANDOM.shuffle(towns);
 
         // Reserve some people who will be "captured":
-        const capturedPeople: number = GRandom.randInt(3, 7);
+        const capturedPeople: number = RANDOM.randInt(3, 7);
         for (let p: number = 0; p < capturedPeople; p++) {
             PEOPLE.addCapturedPerson(people[p]);
         }
@@ -301,8 +306,8 @@ export class GWorldArea extends GArea {
         }
 
         // Pre-convert a handful of people in each town:
-        for (let t: number = 0; t < NUM_TOWNS; t++) {
-            const converts: number = GRandom.randInt(4, 6);
+        for (let t: number = 0; t < TOWN.TOWN_COUNT; t++) {
+            const converts: number = RANDOM.randInt(4, 6);
             for (let c: number = 0; c < converts; c++) {
                 towns[t].transferAnyoneToChurch();
             }
@@ -316,14 +321,24 @@ export class GWorldArea extends GArea {
             room.getTown()?.addRoom(room);
         }
 
-        // Create a church in each town:
+        // Create a church and travel agency in each town:
         const towns: GTown[] = TOWN.getTowns();
         for (let t: number = 0; t < towns.length; t++) {
-            const churchRoom: GRoom = GRandom.randElement(towns[t].getRooms());
+
+            // Pick a random room for the church:
+            const churchRoom: GRoom = RANDOM.randElement(towns[t].getRooms());
             const church: GChurch = CHURCH.getChurches()[t];
             towns[t].setChurch(church);
             churchRoom.setChurch(church);
             GFF.genLog(`Created church: ${church.getName()}`);
+
+            // Create a copy of the town rooms, without the church room:
+            const otherRooms: GRoom[] = towns[t].getRooms().filter(room => room !== churchRoom);
+
+            // Pick a random room for the travel agency:
+            const agencyRoom: GRoom = RANDOM.randElement(otherRooms);
+            agencyRoom.setTravelLocation();
+            GFF.genLog(`Created travel agency in: ${towns[t].getName()}`);
         }
 
         // Plan streets for each town room:
@@ -349,7 +364,7 @@ export class GWorldArea extends GArea {
         }
 
         // Create each town:
-        for (let t: number = 0; t < NUM_TOWNS; t++) {
+        for (let t: number = 0; t < TOWN.TOWN_COUNT; t++) {
             GFF.genLog(`Creating town #${t}`);
             if (!this.createTown(this.townCenters[t], towns[t])) {
                 GFF.genLog(`Couldn't expand town enough!`);
@@ -362,7 +377,7 @@ export class GWorldArea extends GArea {
 
     private findValidTownCenter(): GRoom|null {
         const rooms: GRoom[] = this.getRoomsByFloor(0);
-        GRandom.shuffle(rooms);
+        RANDOM.shuffle(rooms);
 
         // Proceed through the list until we find one far enough away from other centers:
         for (let room of rooms) {
@@ -376,7 +391,7 @@ export class GWorldArea extends GArea {
     }
 
     private createTown(townCenter: GRoom, town: GTown): boolean {
-        const targetSize: number = GRandom.randInt(TOWN_MIN, TOWN_MAX);
+        const targetSize: number = RANDOM.randInt(TOWN_MIN, TOWN_MAX);
 
         GFF.genLog(`Creating town: ${town.getName()}, targetSize: ${targetSize}`);
         if (this.expandTown(townCenter, town, targetSize) > 0) {
@@ -398,7 +413,7 @@ export class GWorldArea extends GArea {
             Dir9.W,
             Dir9.S
         ];
-        GRandom.shuffle(dirs);
+        RANDOM.shuffle(dirs);
 
         for (let dir of dirs) {
             if (total > 0) {
@@ -412,7 +427,7 @@ export class GWorldArea extends GArea {
                 ) {
                     this.setWallByRoom(startRoom, dir, false);
                     neighbor.setTown(town);
-                    if (GRandom.flipCoin()) {
+                    if (RANDOM.flipCoin()) {
                         // Expand to neighbor, but don't recurse yet
                         expansions.push(neighbor);
                         total--;
@@ -455,7 +470,7 @@ export class GWorldArea extends GArea {
             new GStronghold('Keep of Wickedness'),
             new GStronghold('Castle of Perdition'),
         ];
-        GRandom.shuffle(strongholds);
+        RANDOM.shuffle(strongholds);
 
         this.createStronghold(REGION_FOREST, strongholds[0]);
         this.createStronghold(REGION_DESERT, strongholds[1]);
@@ -466,7 +481,7 @@ export class GWorldArea extends GArea {
 
     private createStronghold(region: GRegion, stronghold: GStronghold) {
         const rooms: GRoom[] = region.getRooms();
-        GRandom.shuffle(rooms);
+        RANDOM.shuffle(rooms);
 
         // We would prefer a stronghold location as far away as possible from town centers;
         // we'll start at the max distance, and repeat the algorithm with a lower distance
@@ -498,7 +513,7 @@ export class GWorldArea extends GArea {
         for (let b: number = 0; b < 30; b++) {
             // Try to find a place to put the chest:
             while (!room || !room.canHavePremiumChest()) {
-                room = GRandom.randElement(allRooms);
+                room = RANDOM.randElement(allRooms);
             }
             const book: string|undefined = BOOKS.getNextBookToFind();
             if (book !== undefined) {
@@ -510,7 +525,7 @@ export class GWorldArea extends GArea {
         for (let c: number = 0; c < 5; c++) {
             // Try to find a place to put the chest:
             while (!room || !room.canHavePremiumChest()) {
-                room = GRandom.randElement(allRooms);
+                room = RANDOM.randElement(allRooms);
             }
             const commandment: string|undefined = COMMANDMENTS.getNextCommandmentToFind();
             if (commandment !== undefined) {
@@ -533,7 +548,31 @@ export class GWorldArea extends GArea {
                 const roadSouth: boolean = neighbor !== null && neighbor.getTown() !== null;
                 neighbor = room.getNeighbor(Dir9.W);
                 const roadWest: boolean = neighbor !== null && neighbor.getTown() !== null;
-                room.planTownStreets(roadNorth, roadEast, roadSouth, roadWest);
+
+                const cityBlocks: GCityBlock[] = room.planTownStreets(roadNorth, roadEast, roadSouth, roadWest);
+
+                if (room.getChurch() === null) {
+                    const buildingPool: GSceneryDef[] = [
+                        SCENERY.def('house_1'),
+                        SCENERY.def('house_2'),
+                        SCENERY.def('house_3'),
+                        SCENERY.def('house_4'),
+                        SCENERY.def('house_5'),
+                        SCENERY.def('house_6'),
+                        SCENERY.def('duplex'),
+                        SCENERY.def('garage'),
+                        SCENERY.def('factory'),
+                        SCENERY.def('shop'),
+                    ];
+                    RANDOM.shuffle(buildingPool);
+                    if (room.isTravelLocation()) {
+                        buildingPool.push(SCENERY.def('travel_agency'));
+                    }
+
+                    for (let block of cityBlocks) {
+                        room.planCityBlock(block, buildingPool);
+                    }
+                }
             }
         }
     }
