@@ -11,6 +11,7 @@ export abstract class GGoal {
     private name: string;
     private startTime: number;
     private timeOut: number|undefined;
+    private aftermath: Function|undefined;
 
     private lastStepTime: number = 0;
     private directionTime: number = 0;
@@ -44,6 +45,14 @@ export abstract class GGoal {
         return Date.now() > this.startTime + this.timeOut;
     }
 
+    public setAftermath(aftermath: Function) {
+        this.aftermath = aftermath;
+    }
+
+    public getAftermath(): Function|undefined {
+        return this.aftermath;
+    }
+
     protected walkToward(tX: number, tY: number) {
         let xInc: number = 0;
         let yInc: number = 0;
@@ -60,53 +69,6 @@ export abstract class GGoal {
             yInc = 1;
         } else if (myCtr.y > tY + CORRECTION_TOLERANCE) {
             yInc = -1;
-        }
-
-        let direction: Dir9 = DIRECTION.getDirectionForIncs(xInc, yInc);
-        this.char.walkDirection(direction);
-    }
-
-    protected walkTowardExperimental(tX: number, tY: number) {
-        let xInc: number = 0;
-        let yInc: number = 0;
-        let myCtr = this.char.getBottomCenter();
-        let dx: number = tX - myCtr.x;
-        let dy: number = tY - myCtr.y;
-
-        // Determine which axis has the greater distance
-        let absDx: number = Math.abs(dx);
-        let absDy: number = Math.abs(dy);
-
-        let absDiff: number = Math.abs(absDx - absDy);
-
-        if (absDx > absDy * DIAGONAL_THRESHOLD) {
-            // Prioritize horizontal movement
-            if (dx > 0) {
-                xInc = 1; // Move right
-            } else {
-                xInc = -1; // Move left
-            }
-            yInc = 0; // Don't move vertically
-        } else if (absDy > absDx * DIAGONAL_THRESHOLD) {
-            // Prioritize vertical movement
-            if (dy > 0) {
-                yInc = 1; // Move down
-            } else {
-                yInc = -1; // Move up
-            }
-            xInc = 0; // Don't move horizontally
-        } else {
-            // Distances are close or nearly equal, move diagonally
-            if (dx > 0) {
-                xInc = 1; // Move right
-            } else {
-                xInc = -1; // Move left
-            }
-            if (dy > 0) {
-                yInc = 1; // Move down
-            } else {
-                yInc = -1; // Move up
-            }
         }
 
         let direction: Dir9 = DIRECTION.getDirectionForIncs(xInc, yInc);

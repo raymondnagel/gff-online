@@ -1,16 +1,19 @@
 import { GGoal } from "./GGoal";
 import { GCharSprite } from "../objects/chars/GCharSprite";
+import { Dir9 } from "../types";
+import { DIRECTION } from "../direction";
 
-export class GWalkToPointGoal extends GGoal {
+export class GWalkDirGoal extends GGoal {
 
     private targetX: number;
     private targetY: number;
     private range: number;
 
-    constructor(char: GCharSprite, x: number, y: number, range: number, timeOut?: number) {
-        super('walk-to-point', char, timeOut);
-        this.targetX = x;
-        this.targetY = y;
+    constructor(char: GCharSprite, direction: Dir9, distance: number, range: number = 0, timeOut?: number) {
+        super('walk-dir', char, timeOut);
+        this.targetX = char.getBottomCenter().x + (DIRECTION.getHorzInc(direction) * distance);
+        this.targetY = char.getBottomCenter().y + (DIRECTION.getVertInc(direction) * distance);
+        console.log(`Walking to target: ${this.targetX},${this.targetY}`);
         this.range = range;
     }
 

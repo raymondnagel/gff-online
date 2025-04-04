@@ -30,6 +30,7 @@ import { COLOR } from '../colors';
 import { GPiano } from '../objects/interactables/GPiano';
 import { GBuildingExit } from '../objects/touchables/GBuildingExit';
 import { GBuildingEntrance } from '../objects/touchables/GBuildingEntrance';
+import { GChurchServiceCutscene } from '../cutscenes/GChurchServiceCutscene';
 
 const MOUSE_UI_BUTTON: string = 'MOUSE_UI_BUTTON';
 
@@ -140,6 +141,9 @@ export class GAdventureContent extends GContentScene {
                     break;
                 case 'h':
                     GConversation.fromFile('latest_update_intro');
+                    break;
+                case 'y':
+                    this.doChurchServiceTest();
                     break;
                 // case 'y':
                 //     this.doMapExport(0, 0);
@@ -280,6 +284,19 @@ export class GAdventureContent extends GContentScene {
                 const newPlayerY: number = entrance.y + (GFF.CHAR_BODY_H / 2) + 1;
                 this.player.centerPhysically({x: newPlayerX, y: newPlayerY});
             });
+        }
+    }
+
+    private doChurchServiceTest() {
+        const room: GRoom = this.getCurrentRoom() as GRoom;
+        const churchRoom: GRoom|null = room.getPortalRoom();
+
+        if (churchRoom !== null) {
+            const church: GChurch = churchRoom.getChurch() as GChurch;
+            const cutscene: GChurchServiceCutscene = new GChurchServiceCutscene(church);
+
+            this.setInputMode(INPUT_CONVERSATION);
+            cutscene.play();
         }
     }
 
@@ -616,35 +633,62 @@ export class GAdventureContent extends GContentScene {
         }
     }
 
-    public spawnPerson(person: GPerson): boolean {
-        const sprite: GPersonSprite = new GPersonSprite(this, person, 0, 0);
+    /**
+     * Spawn a person sprite at a given or random location.
+     * If person is a GPersonSprite, the existing sprite is positioned.
+     * If person is a GPerson, a sprite is created for it.
+     *
+     * The sprite is destroyed if it doesn't fit in the chosen location;
+     * for that reason, only spawn important sprites at locations that
+     * are known to be safe. Sprites attempting to spawn at random
+     * locations are deemed to be non-critical, and may not spawn at all
+     * if an invalid location is chosen.
+     */
+    public spawnPerson(person: GPerson|GPersonSprite, location?: GPoint): GCharSprite|null {
+        const sprite: GPersonSprite = person instanceof GPersonSprite ?
+            person :
+            new GPersonSprite(this, person, 0, 0);
+
         sprite.setVisible(false);
         const body: GRect = sprite.getBody();
-        const spawnPoint: GPoint|null = this.getSpawnPointForTransient(sprite, body, false);
+        const spawnPoint: GPoint|null = location ?? this.getSpawnPointForTransient(sprite, body, false);
         if (!spawnPoint) {
             sprite.destroy();
-            return false;
+            return null;
         } else {
             sprite.setVisible(true);
             sprite.setPosition(spawnPoint.x, spawnPoint.y);
             this.addPerson(sprite);
-            return true;
+            return sprite;
         }
     }
 
-    public spawnImp(imp: GSpirit): boolean {
-        const sprite: GImpSprite = new GImpSprite(this, imp, 0, 0);
+    /**
+     * Spawn an imp sprite at a given or random location.
+     * If imp is a GImpSprite, the existing sprite is positioned.
+     * If imp is a GSpirit, a sprite is created for it.
+     *
+     * The sprite is destroyed if it doesn't fit in the chosen location;
+     * for that reason, only spawn important sprites at locations that
+     * are known to be safe. Sprites attempting to spawn at random
+     * locations are deemed to be non-critical, and may not spawn at all
+     * if an invalid location is chosen.
+     */
+    public spawnImp(imp: GSpirit|GImpSprite, location?: GPoint): GCharSprite|null {
+        const sprite: GImpSprite = imp instanceof GImpSprite ?
+            imp :
+            new GImpSprite(this, imp, 0, 0);
         sprite.setVisible(false);
         const body: GRect = sprite.getBody();
-        const spawnPoint: GPoint|null = this.getSpawnPointForTransient(sprite, body, false);
+        const spawnPoint: GPoint|null = location ?? this.getSpawnPointForTransient(sprite, body, false);
         if (!spawnPoint) {
             sprite.destroy();
-            return false;
+            return null;
         } else {
             sprite.setVisible(true);
             sprite.setPosition(spawnPoint.x, spawnPoint.y);
             this.addImp(sprite);
-            return true;
+            return sprite;
         }
     }
 

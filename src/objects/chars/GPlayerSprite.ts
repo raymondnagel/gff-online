@@ -6,7 +6,6 @@ import { GAdventureContent } from '../../scenes/GAdventureContent';
 import { Dir9, GGender, GRect } from '../../types';
 import { PLAYER } from '../../player';
 import { GGoal } from '../../goals/GGoal';
-import { GPiano } from '../interactables/GPiano';
 
 const INTERACTION_RANGE: number = 50;
 const INTERACTION_AREA_SIDE: number = 100;

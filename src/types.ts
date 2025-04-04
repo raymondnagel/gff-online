@@ -1,6 +1,14 @@
 import { GRoom } from "./GRoom";
 import { GCharSprite } from "./objects/chars/GCharSprite";
 
+export type GActorCommand = {
+    eventId: string,
+    actor: string,
+    command: string,
+    after: string,
+    since: number
+};
+
 // Packages a sprite animation together with a sound, to be executed once simultaneously:
 export type SpriteEffect = {
     spriteConfig: Phaser.Types.Animations.Animation,

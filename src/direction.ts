@@ -100,6 +100,10 @@ export namespace DIRECTION {
         ]);
     }
 
+    export function fromDir8String(dir: 'n'|'ne'|'e'|'se'|'s'|'sw'|'w'|'nw'): Dir9 {
+        return DIR8_VALUES[DIR8_TEXTS.indexOf(dir)];
+    }
+
     export function cardDirFrom4(n: 0|1|2|3): CardDir {
         switch (n) {
             case 0:
@@ -113,7 +117,7 @@ export namespace DIRECTION {
         }
     }
 
-    export function getDirectionForIncs(xInc: number, yInc: number) {
+    export function getDirectionForIncs(xInc: number, yInc: number): Dir9 {
         switch(true) {
             case xInc === 0 && yInc === -1:
                 return Dir9.N;

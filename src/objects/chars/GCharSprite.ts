@@ -2,7 +2,7 @@ import 'phaser';
 import { DIRECTION } from '../../direction';
 import { GFF } from '../../main';
 import { GAdventureContent } from '../../scenes/GAdventureContent';
-import { Dir9, GGender, GPoint, GRect } from '../../types';
+import { Dir9, GGender, GKeyList, GPoint, GRect } from '../../types';
 import { GGoal } from '../../goals/GGoal';
 import { PHYSICS } from '../../physics';
 import { DEPTH } from '../../depths';
@@ -18,7 +18,7 @@ export abstract class GCharSprite extends Phaser.Physics.Arcade.Sprite {
     private goal: GGoal|null = null; // Current goal which the character will try to achieve
     private direction: Dir9 = Dir9.S; // Current facing direction
     private immobile: boolean = false; // Prevents or allows the character to think and act
-    private controlled: boolean = false; // Prevents automatic movement, but moves with player input
+    private controlled: boolean = false; // Prevents automatic movement; char will be controlled externally
     private busyTalking: boolean = false; // Prevents movement and thinking, but allows speaking
     private nametag: Phaser.GameObjects.Text; // Shown above character if global flag is on
     private floatText: Phaser.GameObjects.Text; // Shown above character if active
@@ -44,6 +44,7 @@ export abstract class GCharSprite extends Phaser.Physics.Arcade.Sprite {
         }
         this.setCollideWorldBounds(true);
 
+        // Only create animations that are used for ALL characters!
         this.createSingleAnimation('carryidle_s');
         this.createSingleAnimation('kneel_ne');
         this.createSingleAnimation('rejoice_s');
@@ -76,7 +77,7 @@ export abstract class GCharSprite extends Phaser.Physics.Arcade.Sprite {
 
     public pronounceWord() {
         const voiceKey: string = this.getVoiceKey();
-        (this.scene as GAdventureContent).getSound().playSound(voiceKey);
+        GFF.AdventureContent.getSound().playSound(voiceKey);
     }
 
     public getBody(): Phaser.Physics.Arcade.Body {
@@ -85,6 +86,24 @@ export abstract class GCharSprite extends Phaser.Physics.Arcade.Sprite {
 
     public getDirection() {
         return this.direction;
+    }
+
+    /**
+     * "Automated" is a status that applies to a character that:
+     * - isn't controlled (either by user input or a cutscene)
+     * - isn't immobilized (for example, during a transition)
+     * - isn't busy talking
+     * If isAutomated() returns true, the character should be
+     * allowed to think of new goals and execute them autonomously.
+     *
+     * Player is always controlled, so will never be automated.
+     * Other chars can have their automation turned off by talking,
+     * or by being immobilized, or by being controlled in a cutscene.
+     */
+    public isAutomated(): boolean {
+        return !this.isBusyTalking() &&
+        !this.isImmobile() &&
+        !this.isControlled();
     }
 
     public setImmobile(immobile: boolean) {
@@ -127,7 +146,7 @@ export abstract class GCharSprite extends Phaser.Physics.Arcade.Sprite {
 
     public showFloatingText(text: string) {
         const point: GPoint = this.getTopCenter();
-        const textObj: Phaser.GameObjects.Text = GFF.AdventureContent.add.text(point.x, point.y - FLOAT_TEXT_SPACE, text, {
+        this.floatText = GFF.AdventureContent.add.text(point.x, point.y - FLOAT_TEXT_SPACE, text, {
             fontFamily: 'oxygen',
             fontSize: '16px',
             color: '#ffffff',
@@ -140,7 +159,7 @@ export abstract class GCharSprite extends Phaser.Physics.Arcade.Sprite {
         .setAlpha(.2);
 
         GFF.AdventureContent.tweens.chain({
-            targets: textObj,
+            targets: this.floatText,
             tweens: [
                 {
                     duration: 200,
@@ -149,7 +168,7 @@ export abstract class GCharSprite extends Phaser.Physics.Arcade.Sprite {
                     alpha: 1,
                     onUpdate: () => {
                         const point: GPoint = this.getTopCenter();
-                        textObj.setPosition(point.x, point.y - FLOAT_TEXT_SPACE);
+                        this.floatText.setPosition(point.x, point.y - FLOAT_TEXT_SPACE);
                     }
                 }, {
                     duration: 800,
@@ -158,10 +177,10 @@ export abstract class GCharSprite extends Phaser.Physics.Arcade.Sprite {
                     alpha: 0,
                     onUpdate: () => {
                         const point: GPoint = this.getTopCenter();
-                        textObj.setPosition(point.x, point.y - FLOAT_TEXT_SPACE);
+                        this.floatText.setPosition(point.x, point.y - FLOAT_TEXT_SPACE);
                     },
                     onComplete: () => {
-                        textObj.destroy();
+                        this.floatText.destroy();
                     }
                 },
             ]
@@ -268,13 +287,14 @@ export abstract class GCharSprite extends Phaser.Physics.Arcade.Sprite {
 
     protected thinkOfNextGoal(): GGoal|null { return null };
 
-    protected controlWithInput(): void {};
-
     private processGoal() {
-        // Choose a new goal if I don't currently have one, and I'm not busy talking:
-        if (this.goal === null && !this.isBusyTalking()) {
+        // Choose a new goal if I don't currently have one, but I'm automated:
+        if (this.goal === null && this.isAutomated()) {
             this.setGoal(this.thinkOfNextGoal());
         }
+
+        // Even if not automated, the character may have a manually-set
+        // (commanded) goal at this point, and it should be processed.
 
         // Check goal because null may have been set during thinking:
         if (this.goal !== null) {
@@ -287,7 +307,13 @@ export abstract class GCharSprite extends Phaser.Physics.Arcade.Sprite {
             // If the goal has been achieved or timed out,
             // clear it and choose another one on the next pre-update.
             if (this.goal.isAchieved() || this.goal.isTimedOut()) {
+
+                // Get the finish event for this goal:
+                const finishEvent: Function|undefined = this.goal.getAftermath();
+                // Reset the goal to null:
                 this.goal = null;
+                // Call the finish event function, if it's defined:
+                finishEvent?.call(this);
             }
         }
     }
@@ -301,13 +327,8 @@ export abstract class GCharSprite extends Phaser.Physics.Arcade.Sprite {
         // Default pre-update logic
         super.preUpdate(time, delta);
 
-        // Process current goal, or potentially choose a new one,
-        // if this character is able to think on its own
-        // (neither immobilized nor controlled by player input) OR
-        // if the character is busy talking:
-        if (this.isBusyTalking() || (!this.isImmobile() && !this.isControlled())) {
-            this.processGoal();
-        }
+        // Process current goal, if applicable:
+        this.processGoal();
 
         this.updateNametag();
     }
@@ -343,12 +364,6 @@ export abstract class GCharSprite extends Phaser.Physics.Arcade.Sprite {
     public destroy(fromScene?: boolean): void {
         super.destroy(fromScene);
         this.nametag?.destroy();
-    }
-
-    public update(...args: any[]): void {
-        if (this.isControlled()) {
-            this.controlWithInput();
-        }
     }
 
     public toString() {
