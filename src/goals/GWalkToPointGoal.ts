@@ -7,8 +7,8 @@ export class GWalkToPointGoal extends GGoal {
     private targetY: number;
     private range: number;
 
-    constructor(char: GCharSprite, x: number, y: number, range: number, timeOut?: number) {
-        super('walk-to-point', char, timeOut);
+    constructor(x: number, y: number, range: number, timeOut?: number) {
+        super('walk-to-point', timeOut);
         this.targetX = x;
         this.targetY = y;
         this.range = range;
@@ -20,8 +20,8 @@ export class GWalkToPointGoal extends GGoal {
 
     public isAchieved(): boolean {
         const distance = Phaser.Math.Distance.Between(
-            this.char.x,
-            this.char.y,
+            this.char.getBottomCenter().x,
+            this.char.getBottomCenter().y,
             this.targetX,
             this.targetY
         );

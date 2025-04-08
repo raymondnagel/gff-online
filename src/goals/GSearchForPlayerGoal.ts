@@ -14,13 +14,15 @@ export class GSearchForPlayerGoal extends GGoal {
     private targetY: number;
     private range: number;
 
-    constructor(char: GImpSprite, x: number, y: number, range: number, timeOut: number) {
-        super('search-for-player', char, timeOut);
+    constructor(x: number, y: number, range: number, timeOut: number) {
+        super('search-for-player', timeOut);
         this.targetX = x;
         this.targetY = y;
         this.range = range;
+    }
 
-        char.setChasing(false);
+    public start(): void {
+        (this.char as GImpSprite).setChasing(false);
     }
 
     public doStep(): void {
@@ -36,7 +38,7 @@ export class GSearchForPlayerGoal extends GGoal {
             playerCtr.y
         );
         if (PLAYER.getFaith() > 0 && distance <= SIGHT_RANGE && !GFF.AdventureContent.isConversationActive()) {
-            this.char.setGoal(new GChasePlayerGoal(this.char as GImpSprite, CHASE_TIMEOUT));
+            this.char.setGoal(new GChasePlayerGoal(CHASE_TIMEOUT));
             return;
         }
 

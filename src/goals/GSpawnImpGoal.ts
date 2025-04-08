@@ -6,9 +6,12 @@ import { Dir9 } from "../types";
 
 export class GSpawnImpGoal extends GGoal {
 
-    constructor(char: GImpSprite, timeOut: number) {
-        super('spawn-imp', char, timeOut);
+    constructor(timeOut: number) {
+        super('spawn-imp', timeOut);
+    }
 
+    public start(): void {
+        const char: GImpSprite = this.char as GImpSprite;
         char.anims.create({
             key: 'imp_puff',
             frames: char.anims.generateFrameNumbers(

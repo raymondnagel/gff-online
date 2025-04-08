@@ -1,5 +1,6 @@
 import { DIRECTION } from "../direction";
 import { GGoal } from "../goals/GGoal";
+import { GRejoiceGoal } from "../goals/GRejoiceGoal";
 import { GWalkDirGoal } from "../goals/GWalkDirGoal";
 import { GFF } from "../main";
 import { GCharSprite } from "../objects/chars/GCharSprite";
@@ -54,10 +55,13 @@ export abstract class GCutscene {
         let sprite: GCharSprite;
         if ('faith' in actor) {
             sprite = new GPersonSprite(GFF.AdventureContent, actor, 0, 0);
+            GFF.AdventureContent.addPerson(sprite as GPersonSprite);
         } else {
             sprite = new GImpSprite(GFF.AdventureContent, actor, 0, 0);
+            GFF.AdventureContent.addImp(sprite as GImpSprite);
         }
         sprite.setVisible(false);
+        sprite.setControlled(true);
 
         if (label === undefined) {
             this.actors.push({ label: `actor_${++this.genericActorsCount}`, char: sprite });
@@ -99,7 +103,6 @@ export abstract class GCutscene {
             console.log(`Creating goal for ${c.actor} to ${c.command}...`);
             const actor: GCharSprite = this.getSpecificActor(c.actor) as GCharSprite;
             const goal: GGoal|Function = this.createGoalOrEventForCommand(actor, c);
-
             // Determine whether to finish instantly, or after a delay:
             if (c.since <= 0) {
                 // Instant:
@@ -116,7 +119,9 @@ export abstract class GCutscene {
                 }
             } else {
                 // Delayed:
+                console.log(`Delaying for ${c.since}...`);
                 GFF.AdventureContent.time.delayedCall(c.since, () => {
+                    console.log(`Delay ${c.since} has ended! Time to execute!`);
                     if (goal instanceof Function) {
                         // If goal is a function, call it and finish the event:
                         goal.call(this);
@@ -154,7 +159,7 @@ export abstract class GCutscene {
 
         // The first token is the command name; use it to determine the type of goal.
         // Some commands will return an event as a function, instead of a character-based goal.
-        switch(commandTokens[0] as 'spawnAt'|'walkDir') {
+        switch(commandTokens[0] as 'spawnAt'|'rejoice'|'faceDir'|'walkDir') {
             case 'spawnAt':
                 return () => {
                     console.log(`Spawning actor: ${actorSprite.getName()}...`);
@@ -162,14 +167,23 @@ export abstract class GCutscene {
                     const spawnY: number = parseInt(commandTokens[2]);
                     this.spawnActorAt(actorSprite, spawnX, spawnY);
                 };
+            case 'rejoice':
+                const time: number = parseInt(commandTokens[1]);
+                return new GRejoiceGoal(time);
+            case 'faceDir':
+                const faceDir: Dir9 = DIRECTION.fromDir8String(commandTokens[1] as 'n'|'ne'|'e'|'se'|'s'|'sw'|'w'|'nw');
+                return () => {
+                    actorSprite.faceDirection(faceDir, true);
+                };
             case 'walkDir':
-                const dir: Dir9 = DIRECTION.fromDir8String(commandTokens[1] as 'n'|'ne'|'e'|'se'|'s'|'sw'|'w'|'nw');
+                const walkDir: Dir9 = DIRECTION.fromDir8String(commandTokens[1] as 'n'|'ne'|'e'|'se'|'s'|'sw'|'w'|'nw');
                 const dist: number = parseInt(commandTokens[2]);
-                return new GWalkDirGoal(actorSprite, dir, dist);
+                return new GWalkDirGoal(walkDir, dist, 10);
         }
     }
 
     private finishEvent(eventId: string) {
+        // console.log(`Finishing event: "${eventId}"; beginning next...`);
         this.finishedEvents.push(eventId);
         this.beginNext(eventId);
     }

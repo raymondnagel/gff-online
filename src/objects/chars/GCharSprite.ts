@@ -2,7 +2,7 @@ import 'phaser';
 import { DIRECTION } from '../../direction';
 import { GFF } from '../../main';
 import { GAdventureContent } from '../../scenes/GAdventureContent';
-import { Dir9, GGender, GKeyList, GPoint, GRect } from '../../types';
+import { Dir9, GGender, GPoint } from '../../types';
 import { GGoal } from '../../goals/GGoal';
 import { PHYSICS } from '../../physics';
 import { DEPTH } from '../../depths';
@@ -238,6 +238,14 @@ export abstract class GCharSprite extends Phaser.Physics.Arcade.Sprite {
         }
     }
 
+    public rejoice() {
+        this.playSingleAnimation('rejoice_s', true);
+    }
+
+    protected playSingleAnimation(animName: string, force: boolean = false) {
+        this.play(`${this.spriteKeyPrefix}_${animName}`, !force);
+    }
+
     protected playDirectionalAnimation(animName: string, dir?: Dir9, force: boolean = false) {
         let dirText = DIRECTION.dir9Texts()[dir ?? this.direction];
         this.play(`${this.spriteKeyPrefix}_${animName}_${dirText}`, !force);
@@ -279,6 +287,7 @@ export abstract class GCharSprite extends Phaser.Physics.Arcade.Sprite {
 
     public setGoal(goal: GGoal|null) {
         this.goal = goal;
+        this.goal?.setChar(this);
     }
 
     public getGoal(): GGoal|null {
@@ -307,13 +316,15 @@ export abstract class GCharSprite extends Phaser.Physics.Arcade.Sprite {
             // If the goal has been achieved or timed out,
             // clear it and choose another one on the next pre-update.
             if (this.goal.isAchieved() || this.goal.isTimedOut()) {
-
+                // Stop the goal:
+                this.goal.stop();
+                console.log(`Goal achieved: ${this.getName()}.${this.goal.getName()}`);
                 // Get the finish event for this goal:
-                const finishEvent: Function|undefined = this.goal.getAftermath();
+                const aftermath: Function|undefined = this.goal.getAftermath();
                 // Reset the goal to null:
                 this.goal = null;
                 // Call the finish event function, if it's defined:
-                finishEvent?.call(this);
+                aftermath?.call(this);
             }
         }
     }

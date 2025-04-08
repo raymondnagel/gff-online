@@ -26,7 +26,7 @@ export class GImpSprite extends GCharSprite {
         this.spirit = spirit;
 
         // Imps spawn before they can move:
-        this.setGoal(new GSpawnImpGoal(this, 2000));
+        this.setGoal(new GSpawnImpGoal(2000));
     }
 
     public getSpirit(): GSpirit {
@@ -59,7 +59,7 @@ export class GImpSprite extends GCharSprite {
         this.alpha = 0.35;
         let x: number = RANDOM.randInt(100, 924);
         let y: number = RANDOM.randInt(100, 668);
-        return new GSearchForPlayerGoal(this, x, y, 10, 5000);
+        return new GSearchForPlayerGoal(x, y, 10, 5000);
     }
 
     protected getNametagText(): string {

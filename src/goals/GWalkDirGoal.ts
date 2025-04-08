@@ -1,20 +1,27 @@
 import { GGoal } from "./GGoal";
-import { GCharSprite } from "../objects/chars/GCharSprite";
 import { Dir9 } from "../types";
 import { DIRECTION } from "../direction";
 
 export class GWalkDirGoal extends GGoal {
 
+    private direction: Dir9;
+    private distance: number;
     private targetX: number;
     private targetY: number;
     private range: number;
 
-    constructor(char: GCharSprite, direction: Dir9, distance: number, range: number = 0, timeOut?: number) {
-        super('walk-dir', char, timeOut);
-        this.targetX = char.getBottomCenter().x + (DIRECTION.getHorzInc(direction) * distance);
-        this.targetY = char.getBottomCenter().y + (DIRECTION.getVertInc(direction) * distance);
-        console.log(`Walking to target: ${this.targetX},${this.targetY}`);
+    constructor(direction: Dir9, distance: number, range: number = 0, timeOut?: number) {
+        super('walk-dir', timeOut);
+        this.direction = direction;
+        this.distance = distance;
         this.range = range;
+    }
+
+    public start(): void {
+        const xDist: number = (DIRECTION.getHorzInc(this.direction) * this.distance);
+        const yDist: number = (DIRECTION.getVertInc(this.direction) * this.distance);
+        this.targetX = this.char.getBottomCenter().x + xDist;
+        this.targetY = this.char.getBottomCenter().y + yDist;
     }
 
     public doStep(): void {
@@ -23,8 +30,8 @@ export class GWalkDirGoal extends GGoal {
 
     public isAchieved(): boolean {
         const distance = Phaser.Math.Distance.Between(
-            this.char.x,
-            this.char.y,
+            this.char.getBottomCenter().x,
+            this.char.getBottomCenter().y,
             this.targetX,
             this.targetY
         );

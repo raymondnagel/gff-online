@@ -70,7 +70,7 @@ export class GPersonSprite extends GCharSprite implements GInteractable {
         } else {
             let x: number = RANDOM.randInt(100, 924);
             let y: number = RANDOM.randInt(100, 668);
-            return new GWalkToPointGoal(this, x, y, 10, 5000);
+            return new GWalkToPointGoal(x, y, 10, 5000);
         }
     }
 

@@ -18,16 +18,26 @@ export abstract class GGoal {
 
     protected char: GCharSprite;
 
-    constructor(name: string, char: GCharSprite, timeOut?: number) {
+    constructor(name: string, timeOut?: number) {
         this.name = name;
-        this.char = char;
         this.timeOut = timeOut;
-        this.startTime = Date.now();
-        this.lastStepTime = this.startTime;
     }
 
     public getName() {
         return this.name;
+    }
+
+    /**
+     * Setting the char (which should only be called
+     * by char.setGoal) is when the goal actually
+     * kicks off, begins the timeout timer, and
+     * does any one-time starting code.
+     */
+    public setChar(char: GCharSprite) {
+        this.char = char;
+        this.startTime = Date.now();
+        this.lastStepTime = this.startTime;
+        this.start();
     }
 
     public getChar(): GCharSprite {
@@ -57,8 +67,6 @@ export abstract class GGoal {
         let xInc: number = 0;
         let yInc: number = 0;
         let myCtr = this.char.getBottomCenter();
-        let dx: number = tX - myCtr.x;
-        let dy: number = tY - myCtr.y;
 
         if (myCtr.x < tX - CORRECTION_TOLERANCE) {
             xInc = 1;
@@ -142,4 +150,30 @@ export abstract class GGoal {
     public abstract doStep(): void;
 
     public abstract isAchieved(): boolean;
+
+    /**
+     * If something should happen just once, at the
+     * beginning of the goal, before doing a step-based
+     * activity, put it in here.
+     *
+     * This allows us to both set the char and kick
+     * off the goal anytime AFTER its creation, instead
+     * of doing both in the constructor.
+     */
+    public start(): void {}
+
+    /**
+     * Once the goal is finished, whether achieved or
+     * timed out, call this to cease and desist any
+     * activity that was part of this goal.
+     *
+     * Since most goals are about character movement,
+     * a good default "stop" behavior is to simply
+     * stop the character from moving. For goals that
+     * do other things, override this method with
+     * any other needed stoppage.
+     */
+    public stop(): void {
+        this.char.walkDirection(Dir9.NONE);
+    }
 }

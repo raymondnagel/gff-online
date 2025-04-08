@@ -1,24 +1,23 @@
-import { DIRECTION } from "../direction";
 import { GGoal } from "./GGoal";
-import { GCharSprite } from "../objects/chars/GCharSprite";
 import { Dir9 } from "../types";
 
 export class GRejoiceGoal extends GGoal {
 
-    constructor(char: GCharSprite, timeOut: number) {
-        super('rejoice', char, timeOut);
+    constructor(timeOut: number) {
+        super('rejoice', timeOut);
+    }
 
+    public start(): void {
         this.char.faceDirection(Dir9.S);
-
-        this.char.play('rejoice_s');
+        this.char.rejoice();
     }
 
     public doStep(): void {
-        // We don't take steps when we're resting!
+        // We don't take steps when we're rejoicing!
     }
 
     public isAchieved(): boolean {
-        // Rather than try to achieve something, we just let the Rest
+        // Rather than try to achieve something, we just let the Rejoice
         // run until it times out.
         return false;
     }

@@ -39,15 +39,64 @@ export class GChurchServiceCutscene extends GCutscene {
             actor: 'preacher',
             command: `spawnAt(${SPAWN_POINT.x},${SPAWN_POINT.y})`,
             after: 'start',
-            since: 5000
+            since: 0
         });
         this.addActorCommand({
-            eventId: 'preacherWalk',
+            eventId: 'preacherWalkToThreshold',
             actor: 'preacher',
             command: 'walkDir(n,100)',
             after: 'preacherSpawn',
-            since: 2000
+            since: 0
         });
+        this.addActorCommand({
+            eventId: 'preacherWalkToPulpit',
+            actor: 'preacher',
+            command: 'walkDir(n,262)',
+            after: 'preacherWalkToThreshold',
+            since: 0
+        });
+        this.addActorCommand({
+            eventId: 'preacherWalkAroundPulpit',
+            actor: 'preacher',
+            command: 'walkDir(nw,70)',
+            after: 'preacherWalkToPulpit',
+            since: 0
+        });
+        this.addActorCommand({
+            eventId: 'preacherWalkPastPulpit',
+            actor: 'preacher',
+            command: 'walkDir(n,53)',
+            after: 'preacherWalkAroundPulpit',
+            since: 0
+        });
+        this.addActorCommand({
+            eventId: 'preacherWalkBehindPulpit',
+            actor: 'preacher',
+            command: 'walkDir(e,73)',
+            after: 'preacherWalkPastPulpit',
+            since: 0
+        });
+        this.addActorCommand({
+            eventId: 'preacherFaceCongregation',
+            actor: 'preacher',
+            command: 'faceDir(s)',
+            after: 'preacherWalkBehindPulpit',
+            since: 0
+        });
+        this.addActorCommand({
+            eventId: 'preacherRejoice',
+            actor: 'preacher',
+            command: 'rejoice(800)',
+            after: 'preacherFaceCongregation',
+            since: 10000
+        });
+
+        //TODO: Add a function like "stop" to GGoal to be executed before the aftermath.
+        // For examplem, in stop, stop the character from walking, but don't change direction.
+
+        //TODO: Modify preacher selection so that Adam is only chosen to preach if he is at max faith.
+        // Since hearing a sermon will restore his faith, this will make it so his faith is only restored
+        // when he hears a sermon, not when he preaches (already full).
 
         // After the preacher, we'll need to use a loop to add commands
         // for the other actors, since we don't know how many people

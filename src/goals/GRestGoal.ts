@@ -7,8 +7,10 @@ import { Dir9 } from "../types";
 export class GRestGoal extends GGoal {
 
     constructor(char: GCharSprite, timeOut: number) {
-        super('rest', char, timeOut);
+        super('rest', timeOut);
+    }
 
+    public start(): void {
         // Facing a random direction gives us an opportunity to see characters
         // from different angles, showcasing the beautiful artwork:
         this.char.faceDirection(RANDOM.randElement(DIRECTION.dir8Values()));
