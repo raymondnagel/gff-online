@@ -1,7 +1,11 @@
 import { GGoal } from "./GGoal";
-import { Dir9 } from "../types";
+import { Dir9, GPoint } from "../types";
 import { DIRECTION } from "../direction";
 
+/**
+ * This goal works the same way as the GWalkToPointGoal, but calculates the
+ * target point based on the direction and distance.
+ */
 export class GWalkDirGoal extends GGoal {
 
     private direction: Dir9;
@@ -20,18 +24,20 @@ export class GWalkDirGoal extends GGoal {
     public start(): void {
         const xDist: number = (DIRECTION.getHorzInc(this.direction) * this.distance);
         const yDist: number = (DIRECTION.getVertInc(this.direction) * this.distance);
-        this.targetX = this.char.getBottomCenter().x + xDist;
-        this.targetY = this.char.getBottomCenter().y + yDist;
+        const charCtr: GPoint = this.char.getPhysicalCenter();
+        this.targetX = charCtr.x + xDist;
+        this.targetY = charCtr.y + yDist;
     }
 
-    public doStep(): void {
-        this.walkToward(this.targetX, this.targetY);
+    public doStep(time: number, delta: number): void {
+        this.walkTo(this.targetX, this.targetY, time, delta);
     }
 
     public isAchieved(): boolean {
+        const charCtr: GPoint = this.char.getPhysicalCenter();
         const distance = Phaser.Math.Distance.Between(
-            this.char.getBottomCenter().x,
-            this.char.getBottomCenter().y,
+            charCtr.x,
+            charCtr.y,
             this.targetX,
             this.targetY
         );

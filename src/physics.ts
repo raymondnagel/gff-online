@@ -19,7 +19,6 @@ export namespace PHYSICS {
             'height' in object && typeof object.height === "number" &&
             'setPosition' in object && typeof object.setPosition === "function"
         ) {
-            console.log(`Verified object: x:${object.x} y:${object.y} w:${object.width} h:${object.height}`)
             return object as BoundedGameObject;
         }
         return null;

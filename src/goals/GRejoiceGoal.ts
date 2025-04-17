@@ -12,7 +12,7 @@ export class GRejoiceGoal extends GGoal {
         this.char.rejoice();
     }
 
-    public doStep(): void {
+    public doStep(_time: number, _delta: number): void {
         // We don't take steps when we're rejoicing!
     }
 

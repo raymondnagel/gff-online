@@ -26,7 +26,7 @@ export class GSpawnImpGoal extends GGoal {
         (char.scene as GBaseScene).getSound().playSound('imp_poof');
     }
 
-    public doStep(): void {
+    public doStep(_time: number, _delta: number): void {
         // No steps are necessary.
         // There is no goal to achieve. The spawn will just timeout.
     }

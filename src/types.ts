@@ -1,13 +1,30 @@
 import { GRoom } from "./GRoom";
 import { GCharSprite } from "./objects/chars/GCharSprite";
 
-export type GActorCommand = {
+export type GActorEvent = {
     eventId: string,
     actor: string,
     command: string,
+    postCode?: () => void,
     after: string,
     since: number
 };
+
+export type GConditionEvent = {
+    eventId: string,
+    condition: () => boolean,
+    after: string,
+    since: number
+};
+
+export type GGeneralEvent = {
+    eventId: string,
+    eventCode: () => void,
+    after: string,
+    since: number
+};
+
+export type GCutsceneEvent = GActorEvent | GConditionEvent | GGeneralEvent;
 
 // Packages a sprite animation together with a sound, to be executed once simultaneously:
 export type SpriteEffect = {

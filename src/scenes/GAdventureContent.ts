@@ -31,6 +31,8 @@ import { GPiano } from '../objects/interactables/GPiano';
 import { GBuildingExit } from '../objects/touchables/GBuildingExit';
 import { GBuildingEntrance } from '../objects/touchables/GBuildingEntrance';
 import { GChurchServiceCutscene } from '../cutscenes/GChurchServiceCutscene';
+import { GRestGoal } from '../goals/GRestGoal';
+import { GCutscene } from '../cutscenes/GCutscene';
 
 const MOUSE_UI_BUTTON: string = 'MOUSE_UI_BUTTON';
 
@@ -63,6 +65,7 @@ export class GAdventureContent extends GContentScene {
 
     private popup: GPopup|null = null;
     private conversation: GConversation|null = null;
+    private cutscene: GCutscene|null = null;
 
     constructor() {
         super("AdventureContent");
@@ -133,6 +136,9 @@ export class GAdventureContent extends GContentScene {
         INPUT_ADVENTURING.setScene(this);
         INPUT_ADVENTURING.onKeyDown((keyEvent: KeyboardEvent) => {
             switch(keyEvent.key) {
+                case '`':
+                    this.reportPlayerPosition();
+                    break;
                 case ' ':
                     this.playerTalkOrInteract();
                     break;
@@ -238,6 +244,11 @@ export class GAdventureContent extends GContentScene {
         INPUT_DISABLED.setScene(this);
     }
 
+    public reportPlayerPosition() {
+        const playerCtr: GPoint = this.player.getPhysicalCenter();
+        console.log(`Player physical center: ${playerCtr.x},${playerCtr.y}`);
+    }
+
     public playerEnterBuilding() {
         const room: GRoom = this.getCurrentRoom() as GRoom;
         const portalRoom: GRoom|null = room.getPortalRoom();
@@ -246,16 +257,22 @@ export class GAdventureContent extends GContentScene {
             this.player.walkDirection(Dir9.NONE);
             this.player.faceDirection(Dir9.N);
             this.player.stop();
-            this.transitionToRoom(portalRoom.getX(), portalRoom.getY(), portalRoom.getArea(), () => {
-                // Although you entered through an entrance, you'll actually come in the exit:
-                const exit: GBuildingExit = this.children.list.find(gameObject =>
-                    gameObject instanceof GBuildingExit
-                ) as GBuildingExit;
 
-                // Re-position player:
-                const newPlayerX: number = exit.x + (exit.width / 2);
-                const newPlayerY: number = exit.y - (GFF.CHAR_BODY_H / 2) - 1;
-                this.player.centerPhysically({x: newPlayerX, y: newPlayerY});
+            this.transitionToRoom(portalRoom.getX(), portalRoom.getY(), portalRoom.getArea(), () => {
+                // If the player is entering a church, we need to play the service cutscene:
+                if (room.getChurch() !== null) {
+                    const church: GChurch = room.getChurch() as GChurch;
+                    new GChurchServiceCutscene(church).play();
+                } else {
+                    // If not starting a cutscene, we'll just position the player at the exit
+                    const exit: GBuildingExit = this.children.list.find(gameObject =>
+                        gameObject instanceof GBuildingExit
+                    ) as GBuildingExit;
+
+                    const newPlayerX: number = exit.x + (exit.width / 2);
+                    const newPlayerY: number = exit.y - (GFF.CHAR_BODY_H / 2) - 1;
+                    this.player.centerPhysically({x: newPlayerX, y: newPlayerY});
+                }
             });
         }
     }
@@ -293,10 +310,7 @@ export class GAdventureContent extends GContentScene {
 
         if (churchRoom !== null) {
             const church: GChurch = churchRoom.getChurch() as GChurch;
-            const cutscene: GChurchServiceCutscene = new GChurchServiceCutscene(church);
-
-            this.setInputMode(INPUT_CONVERSATION);
-            cutscene.play();
+            new GChurchServiceCutscene(church).play();
         }
     }
 
@@ -311,7 +325,6 @@ export class GAdventureContent extends GContentScene {
         const finalX = fromX;
         const finalY = fromY;
         const n = (finalY * w) + finalX;
-        // console.log(`Working on ${area.getName()}__${finalX}_${finalY}.png`);
         this.setCurrentRoom(finalX, finalY);
         this.sys.game.renderer.snapshotArea(
             0, 0, GFF.ROOM_W, GFF.ROOM_H,
@@ -371,6 +384,26 @@ export class GAdventureContent extends GContentScene {
             let name1 = obj1.toString();
             let name2 = obj2.toString();
             GFF.log(`${name1} collided with ${name2}`);
+
+            // Person collisions:
+            if (obj1 instanceof GPersonSprite || obj2 instanceof GPersonSprite) {
+                // If a person collides with the player, make them rest for 1 second,
+                // facing the player, so we'll have a better chance to talk to them.
+                if (obj1 === this.player) {
+                    (obj2 as GPersonSprite).setGoal(new GRestGoal(1000, DIRECTION.getDirectionOf(body2.center, body1.center)));
+                } else if (obj2 === this.player) {
+                    (obj1 as GPersonSprite).setGoal(new GRestGoal(1000, DIRECTION.getDirectionOf(body1.center, body2.center)));
+                } else {
+                    // Otherwise, if a person collides with anything else, reset their goal;
+                    // this will keep them from trying to walk through obstacles.
+                    if (obj1 instanceof GPersonSprite) {
+                        obj1.setGoal(null);
+                    }
+                    if (obj2 instanceof GPersonSprite) {
+                        obj2.setGoal(null);
+                    }
+                }
+            }
 
             // Bottom bound of room:
             if (
@@ -449,6 +482,10 @@ export class GAdventureContent extends GContentScene {
         this.bottomBound.name = 'bottomBound';
         this.physics.add.existing(this.bottomBound, false);
         (this.bottomBound.body as Phaser.Physics.Arcade.Body).setImmovable(true);
+    }
+
+    public setBottomBoundEnabled(enabled: boolean) {
+        (this.bottomBound.body as Phaser.Physics.Arcade.Body).setEnable(enabled);
     }
 
     public setVision(full: boolean, commandments: number = 10) {
@@ -538,6 +575,10 @@ export class GAdventureContent extends GContentScene {
         return this.currentArea === undefined
             ? null
             : this.currentArea.getRoomAt(this.playerFloor, this.playerRoomX, this.playerRoomY);
+    }
+
+    public reloadCurrentRoom(meanwhile: Function) {
+        this.transitionToRoom(this.playerRoomX, this.playerRoomY, this.currentArea, meanwhile);
     }
 
     public transitionToRoom(roomX: number, roomY: number, area: GArea, meanwhile: Function) {
@@ -934,7 +975,7 @@ export class GAdventureContent extends GContentScene {
         return this.popup;
     }
 
-    public clearPopup(postFunction?: Function): void {
+    public clearPopup(postFunction?: Function) {
         this.popup = null;
         this.revertInputMode();
         this.scene.resume();
@@ -943,6 +984,20 @@ export class GAdventureContent extends GContentScene {
 
     public isPopupActive(): boolean {
         return this.popup !== null;
+    }
+
+    public setCutscene(cutscene: GCutscene) {
+        this.cutscene = cutscene;
+        this.setInputMode(INPUT_CONVERSATION);
+    }
+
+    public getCutscene(): GCutscene|null {
+        return this.cutscene;
+    }
+
+    public clearCutscene() {
+        this.cutscene = null;
+        this.setInputMode(INPUT_ADVENTURING);
     }
 
     public startChars() {
@@ -1027,10 +1082,11 @@ export class GAdventureContent extends GContentScene {
             t.process();
         });
 
+        // Check cutscene conditions, allowing conditional events:
+        this.cutscene?.checkConditions();
+
         // Process current conversation, if there is one:
-        if (this.conversation !== null) {
-            this.conversation.update();
-        }
+        this.conversation?.update();
     }
 
     public endGame() {

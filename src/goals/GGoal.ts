@@ -1,6 +1,7 @@
 import { DIRECTION } from "../direction";
 import { GCharSprite } from "../objects/chars/GCharSprite";
-import { Dir9 } from "../types";
+import { PHYSICS } from "../physics";
+import { Dir9, GPoint } from "../types";
 
 const DIAGONAL_THRESHOLD: number = 1.5;
 const MIN_TIME_PER_DIR: number = 500;
@@ -63,24 +64,31 @@ export abstract class GGoal {
         return this.aftermath;
     }
 
-    protected walkToward(tX: number, tY: number) {
+    /**
+     * Determines velocities based on the difference
+     * between the target point and the current point,
+     * and then directs the character to walk in the
+     * direction best representing those velocities.
+     */
+    protected walkTo(tX: number, tY: number, time: number, delta: number) {
         let xInc: number = 0;
         let yInc: number = 0;
-        let myCtr = this.char.getBottomCenter();
+        let myCtr: GPoint = this.char.getPhysicalCenter();
 
-        if (myCtr.x < tX - CORRECTION_TOLERANCE) {
+        if (myCtr.x < tX) {
             xInc = 1;
-        } else if (myCtr.x > tX + CORRECTION_TOLERANCE) {
+        } else if (myCtr.x > tX) {
             xInc = -1;
         }
-        if (myCtr.y < tY - CORRECTION_TOLERANCE) {
+
+        if (myCtr.y < tY) {
             yInc = 1;
-        } else if (myCtr.y > tY + CORRECTION_TOLERANCE) {
+        } else if (myCtr.y > tY) {
             yInc = -1;
         }
 
         let direction: Dir9 = DIRECTION.getDirectionForIncs(xInc, yInc);
-        this.char.walkDirection(direction);
+        this.char.walkDirection(direction, time, delta, {x: tX, y: tY});
     }
 
     // This algorithm is good for preventing flickering between
@@ -89,7 +97,7 @@ export abstract class GGoal {
     protected walkTowardForTime(tX: number, tY: number) {
         let xInc: number = 0;
         let yInc: number = 0;
-        let myCtr = this.char.getBottomCenter();
+        let myCtr: GPoint = this.char.getPhysicalCenter();
         let dx: number = tX - myCtr.x;
         let dy: number = tY - myCtr.y;
 
@@ -147,7 +155,7 @@ export abstract class GGoal {
 
     }
 
-    public abstract doStep(): void;
+    public abstract doStep(time: number, delta: number): void;
 
     public abstract isAchieved(): boolean;
 

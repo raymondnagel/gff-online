@@ -1,5 +1,5 @@
 import { GGoal } from "./GGoal";
-import { GCharSprite } from "../objects/chars/GCharSprite";
+import { GPoint } from "../types";
 
 export class GWalkToPointGoal extends GGoal {
 
@@ -14,14 +14,15 @@ export class GWalkToPointGoal extends GGoal {
         this.range = range;
     }
 
-    public doStep(): void {
-        this.walkToward(this.targetX, this.targetY);
+    public doStep(time: number, delta: number): void {
+        this.walkTo(this.targetX, this.targetY, time, delta);
     }
 
     public isAchieved(): boolean {
+        const charCtr: GPoint = this.char.getPhysicalCenter();
         const distance = Phaser.Math.Distance.Between(
-            this.char.getBottomCenter().x,
-            this.char.getBottomCenter().y,
+            charCtr.x,
+            charCtr.y,
             this.targetX,
             this.targetY
         );

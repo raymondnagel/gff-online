@@ -4,6 +4,8 @@ import { GImpSprite } from "../objects/chars/GImpSprite";
 import { GPlayerSprite } from "../objects/chars/GPlayerSprite";
 import { PLAYER } from "../player";
 import { GChasePlayerGoal } from "./GChasePlayerGoal";
+import { PHYSICS } from "../physics";
+import { GPoint } from "../types";
 
 const SIGHT_RANGE: number = 240;
 const CHASE_TIMEOUT: number = 6000;
@@ -25,11 +27,11 @@ export class GSearchForPlayerGoal extends GGoal {
         (this.char as GImpSprite).setChasing(false);
     }
 
-    public doStep(): void {
+    public doStep(time: number, delta: number): void {
         // With each step, evaluate whether the player has been spotted:
         let player: GPlayerSprite = PLAYER.getSprite();
-        let playerCtr = player.getBottomCenter();
-        let myCtr = this.char.getBottomCenter();
+        let playerCtr: GPoint = player.getPhysicalCenter();
+        let myCtr: GPoint = this.char.getPhysicalCenter();
 
         const distance = Phaser.Math.Distance.Between(
             myCtr.x,
@@ -43,7 +45,7 @@ export class GSearchForPlayerGoal extends GGoal {
         }
 
         // Player was not spotted; continue on course
-        this.walkToward(this.targetX, this.targetY);
+        this.walkTo(this.targetX, this.targetY, time, delta);
     }
 
     public isAchieved(): boolean {

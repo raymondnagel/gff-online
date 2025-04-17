@@ -10,7 +10,6 @@ import { GChurch } from "./GChurch";
 import { GStronghold } from "./GStronghold";
 import { GWallEast } from "./objects/obstacles/walls/GWallEast";
 import { GWallNorth } from "./objects/obstacles/walls/GWallNorth";
-import { GWallSouth } from "./objects/obstacles/walls/GWallSouth";
 import { GWallWest } from "./objects/obstacles/walls/GWallWest";
 import { GWallNE } from "./objects/obstacles/walls/GWallNE";
 import { GWallNW } from "./objects/obstacles/walls/GWallNW";
@@ -18,9 +17,13 @@ import { GWallSE } from "./objects/obstacles/walls/GWallSE";
 import { GWallSW } from "./objects/obstacles/walls/GWallSW";
 import { DEPTH } from "./depths";
 import { ARRAY } from "./array";
-import { GWallSouthInside } from "./objects/obstacles/walls/GWallSouthInside";
 import { GEventTrigger } from "./triggers/GEventTrigger";
 import { GChurchDoorTrigger } from "./triggers/GChurchDoorTrigger";
+import { GChurchRegion } from "./regions/GChurchRegion";
+import { GWallSouthWithDoor } from "./objects/obstacles/walls/GWallSouthWithDoor";
+import { GWallSouth } from "./objects/obstacles/walls/GWallSouth";
+import { GInsideRegion } from "./regions/GInsideRegion";
+import { GOutsideRegion } from "./regions/GOutsideRegion";
 
 const WALL_GUARD_THICK: number = 10;
 const WALL_CTRS: number[] = [
@@ -429,8 +432,16 @@ export class GRoom {
             new GWallEast(wallSet[Dir9.E] as GSceneryDef);
         }
         if (southWall) {
-            if (this.region.isInterior()) {
-                new GWallSouthInside(wallSet[Dir9.S] as GSceneryDef);
+            if (this.region instanceof GChurchRegion) {
+                // For a church interior, southWall is set so it is shown on the map;
+                // However, we need to do it in sections: the left and right sections
+                // are solid walls, but the center section is the doorway, which will
+                // be positioned above the player so he can walk under/through it.
+                new GWallSouthWithDoor(
+                    SCENERY.CHURCH_WALL_S_LEFT_DEF,
+                    SCENERY.CHURCH_WALL_S_RIGHT_DEF,
+                    SCENERY.CHURCH_WALL_S_DOORWAY_DEF
+                );
             } else {
                 new GWallSouth(wallSet[Dir9.S] as GSceneryDef);
             }
@@ -529,7 +540,11 @@ export class GRoom {
         y = GFF.BOTTOM_BOUND - WALL_GUARD_THICK;
         for (let w = 0; w < southWall.length; w++) {
             x = w * 64;
-            if (southWall[w]) {
+            // We don't want to add a wall guard if this is a building exit:
+            const openDoorSection: boolean = this.portalRoom !== null &&
+                this.region instanceof GInsideRegion &&
+                (w === 7 || w === 8);
+            if (southWall[w] && !openDoorSection) {
                 this.createPartialWallGuard(x, y, GFF.TILE_W, WALL_GUARD_THICK);
             }
         }
@@ -1298,9 +1313,6 @@ export class GRoom {
         this.planPositionedScenery(SCENERY.def('church_pew'), 735, h, .5, .5);
         this.planPositionedScenery(SCENERY.def('church_pew'), 735, h += 128, .5, .5);
         this.planPositionedScenery(SCENERY.def('church_pew'), 735, h += 128, .5, .5);
-
-        // Exit:
-        this.planPositionedScenery(SCENERY.def('building_exit'), GFF.ROOM_X + (GFF.ROOM_W / 2) - 36, GFF.ROOM_AREA_BOTTOM - 1);
     }
 
     private sampleFit(objectWidth: number, objectHeight: number, inc: number, objects: GRect[], zones: GRect[]): GRect|null {

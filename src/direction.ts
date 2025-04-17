@@ -119,21 +119,21 @@ export namespace DIRECTION {
 
     export function getDirectionForIncs(xInc: number, yInc: number): Dir9 {
         switch(true) {
-            case xInc === 0 && yInc === -1:
+            case xInc === 0 && yInc < 0:
                 return Dir9.N;
-            case xInc === 1 && yInc === -1:
+            case xInc > 0 && yInc < 0:
                 return Dir9.NE;
-            case xInc === 1 && yInc === 0:
+            case xInc > 0 && yInc === 0:
                 return Dir9.E;
-            case xInc === 1 && yInc === 1:
+            case xInc > 0 && yInc > 0:
                 return Dir9.SE;
-            case xInc === 0 && yInc === 1:
+            case xInc === 0 && yInc > 0:
                 return Dir9.S;
-            case xInc === -1 && yInc === 1:
+            case xInc < 0 && yInc > 0:
                 return Dir9.SW;
-            case xInc === -1 && yInc === 0:
+            case xInc < 0 && yInc === 0:
                 return Dir9.W;
-            case xInc === -1 && yInc === -1:
+            case xInc < 0 && yInc < 0:
                 return Dir9.NW;
             default:
                 return Dir9.NONE;

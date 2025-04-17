@@ -1,0 +1,73 @@
+[
+    {
+      "id": "1",
+      "speaker": "preacher",
+      "hearer": "other",
+      "text": "",
+      "next": "2"
+    },
+    {
+      "id": "2",
+      "speaker": "preacher",
+      "hearer": "other",
+      "text": "",
+      "next": "3"
+    },
+    {
+      "id": "3",
+      "chance": 0.1,
+      "speaker": "other",
+      "hearer": "preacher",
+      "dynamic": "congregation_amen",
+      "next": "4"
+    },
+    {
+      "id": "4",
+      "speaker": "preacher",
+      "hearer": "other",
+      "text": "",
+      "next": "5"
+    },
+    {
+      "id": "5",
+      "speaker": "preacher",
+      "hearer": "other",
+      "text": "",
+      "next": "6"
+    },
+    {
+      "id": "6",
+      "speaker": "preacher",
+      "hearer": "other",
+      "text": "",
+      "next": "7"
+    },
+    {
+      "id": "7",
+      "speaker": "preacher",
+      "hearer": "other",
+      "text": "",
+      "next": "8"
+    },
+    {
+      "id": "8",
+      "chance": 0.8,
+      "speaker": "other",
+      "hearer": "preacher",
+      "dynamic": "congregation_amen",
+      "next": "9"
+    },
+    {
+      "id": "9",
+      "speaker": "preacher",
+      "hearer": "other",
+      "text": "",
+      "next": "10"
+    },
+    {
+      "id": "10",
+      "speaker": "other",
+      "hearer": "preacher",
+      "dynamic": "congregation_amen"
+    }
+]

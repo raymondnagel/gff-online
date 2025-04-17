@@ -217,21 +217,77 @@ export abstract class GCharSprite extends Phaser.Physics.Arcade.Sprite {
         }
     }
 
-    public walkDirection(direction: Dir9) {
+    /**
+     * Tells the character to walk in a specified direction.
+     * This doesn't assume that the character is idle or
+     * already walking; it will work in either case.
+     * Can be used in a goal step to continuously direct
+     * the character's movement.
+     *
+     * If a target point is supplied, the distance to travel
+     * will be calculated using the delta; if the actual distance
+     * to the target is less than the projected travel distance,
+     * the coordinates will be snapped to the target to prevent
+     * overshooting it.
+     */
+    public walkDirection(direction: Dir9, time?: number, delta?: number, target?: GPoint) {
+
         // Face the direction I am walking:
         this.faceDirection(direction);
 
-        // Calculate and assign x/y velocities
+        // Get horz/vert increments by direction
         let horzInc: number = DIRECTION.getHorzInc(direction);
         let vertInc: number = DIRECTION.getVertInc(direction);
+
+        // Get the speed we should use for the direction;
+        // this differs for diagonal vs ordinal directions
         let speed: number = this.getSpeed();
         let dirSpeed = speed * DIRECTION.getDistanceFactor(direction);
+
+        // Calculate projected movement
+        if (delta !== undefined && target !== undefined) {
+            const myCtr: GPoint = this.getPhysicalCenter();
+            const seconds: number = delta / 1000;
+            const xMove: number = Math.abs(horzInc * dirSpeed * seconds);
+            const yMove: number = Math.abs(vertInc * dirSpeed * seconds);
+            const tDistX: number = Math.abs(target.x - myCtr.x);
+            const tDistY: number = Math.abs(target.y - myCtr.y);
+
+            // If double projected move for a direction is greater than the distance needed to
+            // travel, we'll get there in less than 2 steps. Halve the increment for that
+            // direction to decrease the velocity calculated later.
+            if (xMove * 2 >= tDistX) {
+                horzInc *= .5;
+            }
+            if (yMove * 2 >= tDistY) {
+                vertInc *= .5;
+            }
+
+            // If the projected movements are greater than the distance to target,
+            // for either X or Y, snap coordinate into place and clear velocity
+            if (xMove >= tDistX) {
+                myCtr.x = target.x;
+                horzInc = 0;
+            }
+            if (yMove >= tDistY) {
+                myCtr.y = target.y;
+                vertInc = 0;
+            }
+            if (horzInc === 0 || vertInc === 0) {
+                // Aww snap!
+                this.centerPhysically(myCtr);
+            }
+        }
+
         this.setVelocityX(horzInc * dirSpeed);
         this.setVelocityY(vertInc * dirSpeed);
 
+        // Recalculate direction from increments, since they may have changed:
+        const finalDirection: Dir9 = DIRECTION.getDirectionForIncs(horzInc, vertInc);
+
         // Play the appropriate animation based on direction
-        if (direction !== Dir9.NONE) {
-            this.playDirectionalAnimation('walk', direction, false);
+        if (finalDirection !== Dir9.NONE) {
+            this.playDirectionalAnimation('walk', finalDirection, false);
         } else {
             // Since the assigned direction is NONE, use the facing direction instead:
             this.playDirectionalAnimation('idle', this.direction, false);
@@ -296,7 +352,7 @@ export abstract class GCharSprite extends Phaser.Physics.Arcade.Sprite {
 
     protected thinkOfNextGoal(): GGoal|null { return null };
 
-    private processGoal() {
+    private processGoal(time: number, delta: number) {
         // Choose a new goal if I don't currently have one, but I'm automated:
         if (this.goal === null && this.isAutomated()) {
             this.setGoal(this.thinkOfNextGoal());
@@ -308,7 +364,7 @@ export abstract class GCharSprite extends Phaser.Physics.Arcade.Sprite {
         // Check goal because null may have been set during thinking:
         if (this.goal !== null) {
             // Perform a step toward the current goal
-            this.goal.doStep();
+            this.goal.doStep(time, delta);
         }
 
         // Check goal again because it may have been set during the step:
@@ -318,7 +374,6 @@ export abstract class GCharSprite extends Phaser.Physics.Arcade.Sprite {
             if (this.goal.isAchieved() || this.goal.isTimedOut()) {
                 // Stop the goal:
                 this.goal.stop();
-                console.log(`Goal achieved: ${this.getName()}.${this.goal.getName()}`);
                 // Get the finish event for this goal:
                 const aftermath: Function|undefined = this.goal.getAftermath();
                 // Reset the goal to null:
@@ -339,7 +394,7 @@ export abstract class GCharSprite extends Phaser.Physics.Arcade.Sprite {
         super.preUpdate(time, delta);
 
         // Process current goal, if applicable:
-        this.processGoal();
+        this.processGoal(time, delta);
 
         this.updateNametag();
     }

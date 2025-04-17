@@ -46,6 +46,12 @@ export class GPersonSprite extends GCharSprite implements GInteractable {
             y
         );
         this.person = person;
+
+        // Allow collision events:
+        if (this.body !== null) {
+            this.body.onCollide = true;
+            this.setCollideWorldBounds(true, 0, 0, true);
+        }
     }
 
     public getPerson(): GPerson {
@@ -66,7 +72,7 @@ export class GPersonSprite extends GCharSprite implements GInteractable {
 
     protected thinkOfNextGoal(): GGoal|null {
         if (RANDOM.flipCoin()) {
-            return new GRestGoal(this, RANDOM.randInt(1000, 20000));
+            return new GRestGoal(RANDOM.randInt(1000, 20000));
         } else {
             let x: number = RANDOM.randInt(100, 924);
             let y: number = RANDOM.randInt(100, 668);

@@ -38,6 +38,9 @@ export namespace SCENERY {
     export const CHURCH_WALL_NE_DEF: GSceneryDef = { key: 'nothing', type: 'static', body: {x: 0, y: 0, width: 0, height: 0} };
     export const CHURCH_WALL_SE_DEF: GSceneryDef = { key: 'nothing', type: 'static', body: {x: 0, y: 0, width: 0, height: 0} };
     export const CHURCH_WALL_SW_DEF: GSceneryDef = { key: 'nothing', type: 'static', body: {x: 0, y: 0, width: 0, height: 0} };
+    export const CHURCH_WALL_S_LEFT_DEF: GSceneryDef = { key: 'church_wall_s_left', type: 'static', body: {x: 0, y: 0, width: 483, height: 64} };
+    export const CHURCH_WALL_S_RIGHT_DEF: GSceneryDef = { key: 'church_wall_s_right', type: 'static', body: {x: 0, y: 0, width: 483, height: 64} };
+    export const CHURCH_WALL_S_DOORWAY_DEF: GSceneryDef = { key: 'church_wall_s_doorway', type: 'static', body: {x: 0, y: 0, width: 58, height: 64} };
 
     export const ROCK_WALL_N_DEF: GSceneryDef = { key: 'rock_wall_n', type: 'static', body: WALL_N_BODY };
     export const ROCK_WALL_E_DEF: GSceneryDef = { key: 'rock_wall_e', type: 'static', body: WALL_E_BODY };
@@ -228,9 +231,6 @@ export namespace SCENERY {
                     case 'blue_chest':
                     case 'red_chest':
                         new GTreasureChest(plan.x, plan.y, plan.key);
-                        break;
-                    case 'building_exit':
-                        new GBuildingExit(plan.x, plan.y);
                         break;
                     case 'church_house':
                         new GChurchHouse(plan.x, plan.y);

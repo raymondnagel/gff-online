@@ -1,7 +1,7 @@
 import { GFF } from "../../main";
 import { GSceneryDef } from "../../types";
 
-export abstract class GTouchable extends Phaser.Physics.Arcade.Image implements GTouchable {
+export abstract class GTouchable extends Phaser.Physics.Arcade.Image {
 
     private sceneryDef: GSceneryDef;
 
