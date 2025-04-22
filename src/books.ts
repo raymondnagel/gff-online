@@ -5,6 +5,26 @@ import { PLAYER } from "./player";
 
 type BookState = 'missing'|'acquired'|'enabled';
 
+/**
+ * There are 66 books in a full game (random Bible, or Bible-in-order):
+ * - the player begins with 1 (given to him in the opening scene)
+ * - 5 books are placed in each stronghold (25 total)
+ * - 30 books are scattered across the world map
+ * - 10 books will be gifted to the player by saints
+ *
+ * For OT-only games, 39 books:
+ * - player begins with 1
+ * - 3 in each stronghold (total 15)
+ * - 20 scattered across the world map
+ * - 3 gifted by saints
+ *
+ * For NT-only games, 27 books:
+ * - player begins with 1
+ * - 2 in each stronghold (total 10)
+ * - 13 scattered across the world map
+ * - 3 gifted by saints
+ */
+
 export namespace BOOKS {
 
     // List of books left to find. Next book is popped off the list.

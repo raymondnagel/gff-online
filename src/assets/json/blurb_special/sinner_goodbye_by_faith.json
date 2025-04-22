@@ -1,0 +1,102 @@
+[
+    {
+        "level": 0,
+        "variants": [
+            "Please leave. I don't want to hear this.",
+            "Just GO AWAY, okay?",
+            "Don't ever talk to me again, okay?",
+            "Ugh... I hate Bible thumpers.",
+            "GAHH! Go preach to someone who cares!"
+        ]
+    },
+    {
+        "level": 1,
+        "variants": [
+            "Yeah, sure. Bye!",
+            "Okay, okay. I'm done with this. See ya!",
+            "You done? Cool. Bye.",
+            "Alright. You have yourself a good day, Mr. Preacher Guy.",
+            "That's enough for today."
+        ]
+    },
+    {
+        "level": 2,
+        "variants": [
+            "Alright, take care... or whatever...",
+            "Later, I guess.",
+            "Sorry, gotta go!",
+            "Thanks... I think? See ya...",
+            "Well, that was... something. Bye..."
+        ]
+    },
+    {
+        "level": 3,
+        "variants": [
+            "Maybe we'll talk again... maybe.",
+            "I've got stuff to do. See you.",
+            "Thanks... I think I need to be alone now.",
+            "I'll think about it. Thanks.",
+            "Not sure what to say... Umm... yeah..."
+        ]
+    },
+    {
+        "level": 4,
+        "variants": [
+            "I'll be thinking about what you said. Thanks.",
+            "That was... interesting. Catch you later.",
+            "I've got questions... maybe next time.",
+            "Thanks for not pushing too hard. See you.",
+            "Guess I'll chew on that. Bye."
+        ]
+    },
+    {
+        "level": 5,
+        "variants": [
+            "Thanks for the chat. That meant something.",
+            "You've given me a lot to process. I'll have to think about it.",
+            "Hope we can talk more later.",
+            "That was deep. I appreciate it. Later.",
+            "Take care... and thanks again."
+        ]
+    },
+    {
+        "level": 6,
+        "variants": [
+            "I'll be looking forward to our next talk.",
+            "Thanks. That really helped.",
+            "It's good to talk with someone like you.",
+            "I'll be thinking about all this.",
+            "I want you to know that you've lit a spark. I hope to see you again."
+        ]
+    },
+    {
+        "level": 7,
+        "variants": [
+            "Please don't stop praying for me!",
+            "God bless you, preacher.",
+            "It's good to know someone cares. Thanks.",
+            "I feel like something's starting to change...",
+            "Thanks... I needed this. Hopefully we'll meet again some day!"
+        ]
+    },
+    {
+        "level": 8,
+        "variants": [
+            "I'll be praying tonight. I really want to know God.",
+            "I really appreciate what you said to me, HEARER_FIRST. I think God is working in my life.",
+            "Thanks for taking the time to explain. Have a great day, HEARER_FIRST!",
+            "Please don't give up on me, preacher. I really want to know the Lord.",
+            "Appreciate you, HEARER_FIRST. Until next time..."
+        ]
+    },
+    {
+        "level": 9,
+        "variants": [
+            "Let's talk again soon. I want to take the next step.",
+            "Keep praying for me, HEARER_FIRST. I know I'm close!",
+            "It's so hard to let go of my sin. But... I know God wants me to.",
+            "God bless you. I'll be praying and reading my Bible!",
+            "Next time we talk... I want to hear more about Jesus."
+        ]
+    }
+]

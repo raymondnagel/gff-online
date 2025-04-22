@@ -46,6 +46,10 @@ export class GChurch {
     }
 
     public addPerson(person: GPerson) {
+        // Adding a person to the church also converts them!
+        person.faith = 100;
+        person.nameLevel = 2;
+        person.reprobate = false;
         this.people.push(person);
     }
 }

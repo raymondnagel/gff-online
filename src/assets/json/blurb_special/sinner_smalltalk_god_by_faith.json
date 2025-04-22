@@ -1,0 +1,72 @@
+[
+    {
+        "level": 0,
+        "variants": [
+            "Ugh... what's wrong with you?",
+            "It was a nice chat until you started talking about God!"
+        ]
+    },
+    {
+        "level": 1,
+        "variants": [
+            "Right, buddy... whatever you say.",
+            "Uh huh... ooookay. Weirdo."
+        ]
+    },
+    {
+        "level": 2,
+        "variants": [
+            "Umm... yeah.",
+            "Right..."
+        ]
+    },
+    {
+        "level": 3,
+        "variants": [
+            "Uhh... yeah! Right! I guess?",
+            "Mmm... sure..."
+        ]
+    },
+    {
+        "level": 4,
+        "variants": [
+            "That's an... interesting perspective, I guess.",
+            "Well... you're entitled to your own opinion."
+        ]
+    },
+    {
+        "level": 5,
+        "variants": [
+            "Hmmm... maybe you're right...",
+            "I've never really thought about it before."
+        ]
+    },
+    {
+        "level": 6,
+        "variants": [
+            "Hmm... that's a good point.",
+            "That's an interesting point of view. Thanks for sharing."
+        ]
+    },
+    {
+        "level": 7,
+        "variants": [
+            "You know... I'd have to agree with you.",
+            "I think you may be right."
+        ]
+    },
+    {
+        "level": 8,
+        "variants": [
+            "Hmm... that's true.",
+            "Yeah! I just love positive people like you!"
+        ]
+    },
+    {
+        "level": 9,
+        "variants": [
+            "Amen! I couldn't agree more!",
+            "That's a really good perspective to have!"
+        ]
+    }
+]

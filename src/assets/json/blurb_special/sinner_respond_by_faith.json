@@ -1,0 +1,112 @@
+[
+    {
+        "level": 0,
+        "variants": [
+            "Keep your fairy tales to yourself, alright?",
+            "Oh great, another preacher. Just what I needed.",
+            "Don't waste your breath on me.",
+            "That Bible nonsense? No thanks.",
+            "Are you trying to save me or just annoy me?"
+        ]
+    },
+    {
+        "level": 1,
+        "variants": [
+            "Yeah yeah, Jesus loves me, I get it...",
+            "I've heard it all before. Doesn't mean it's true.",
+            "Why are you even talking to me about this?",
+            "Whatever. Believe what you want.",
+            "Is this supposed to impress me?"
+        ]
+    },
+    {
+        "level": 2,
+        "variants": [
+            "You believe that stuff? Huh. That's... something.",
+            "Eh... maybe. I dunno.",
+            "Sure, believe in God if it makes you happy.",
+            "I'm not against it, I'm just not into it.",
+            "You do you. I've got my own life to live."
+        ]
+    },
+    {
+        "level": 3,
+        "variants": [
+            "I'm not really ready to talk about that.",
+            "Can we talk about something else?",
+            "I don't know what to think... it's confusing.",
+            "Maybe later. I've got a lot on my mind.",
+            "I've been through a lot. It's hard to trust any of it."
+        ]
+    },
+    {
+        "level": 4,
+        "variants": [
+            "Some of what you're saying makes sense... I think.",
+            "I've always had questions about this stuff.",
+            "It's hard to know what's true anymore.",
+            "What makes you so sure this is real?",
+            "I'm not closed off, just cautious."
+        ]
+    },
+    {
+        "level": 5,
+        "variants": [
+            "You've given me something to think about.",
+            "There's more to life than I thought... maybe you're right.",
+            "I've never looked at it that way before.",
+            "I don't agree with everything, but I'm listening.",
+            "I'm not sure where I stand, but I'm open."
+        ]
+    },
+    {
+        "level": 6,
+        "variants": [
+            "This actually makes a lot of sense.",
+            "Tell me more about this Jesus you follow.",
+            "I've been thinking about faith a lot lately.",
+            "I can feel something stirring in me...",
+            "There's a part of me that wants to believe."
+        ]
+    },
+    {
+        "level": 7,
+        "variants": [
+            "I think there's something real about all this.",
+            "I believe in God... I just don't know what to do next.",
+            "I feel like He's been trying to reach me.",
+            "I've started reading the Bible a little.",
+            "There's got to be more to life than what I've known."
+        ]
+    },
+    {
+        "level": 8,
+        "variants": [
+            "I've been praying... I just hope God hears me.",
+            "I want to know Jesus personally, if... if he's really real.",
+            "I've been going to church, trying to understand more.",
+            "My heart longs for something true.",
+            "I'm ready to change. I just need help getting there."
+        ]
+    },
+    {
+        "level": 9,
+        "variants": [
+            "You've got to tell me more!",
+            "How do I follow Jesus?",
+            "Sir... What must I do to be saved?",
+            "I believe... I think... ",
+            "Jesus is Lord... Umm... I need to repent..."
+        ]
+    },
+    {
+        "level": 10,
+        "variants": [
+            "Wow. Just... wow...",
+            "My God... it's true. It's all true...",
+            "I feel something I've never felt before. It's... the grace of God...",
+            "I know it's true. I... believe...",
+            "I'm so tired of darkness. I need the light of Christ!"
+        ]
+    }
+]

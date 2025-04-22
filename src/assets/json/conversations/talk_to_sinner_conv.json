@@ -1,0 +1,199 @@
+[
+  {
+    "id": "start",
+    "speaker": "player",
+    "hearer": "other",
+    "fork": "personMet('playerGreetMet','playerGreetUnmet')"
+  },
+  {
+    "id": "playerGreetUnmet",
+    "speaker": "player",
+    "hearer": "other",
+    "dynamic": "player_greet_unknown",
+    "next": "playerIntroduction"
+  },
+  {
+    "id": "playerIntroduction",
+    "speaker": "player",
+    "hearer": "other",
+    "dynamic": "player_intro_sinner",
+    "fork": "introCheck('sinnerGreetAndIntro','sinnerGreetStranger')"
+  },
+  {
+    "id": "sinnerGreetAndIntro",
+    "speaker": "other",
+    "hearer": "player",
+    "dynamic": "sinner_greet_familiar",
+    "fork": "coinFlip('sinnerFormalIntro','sinnerInformalIntro')"
+  },
+  {
+    "id": "sinnerFormalIntro",
+    "speaker": "other",
+    "hearer": "player",
+    "preCmd": "prefFormalName()",
+    "dynamic": "sinner_intro_formal",
+    "fork": "seedCheck('playerMenuSeed','playerMenuNoSeed')"
+  },
+  {
+    "id": "sinnerInformalIntro",
+    "speaker": "other",
+    "hearer": "player",
+    "preCmd": "prefInformalName()",
+    "dynamic": "sinner_intro_informal",
+    "fork": "seedCheck('playerMenuSeed','playerMenuNoSeed')"
+  },
+  {
+    "id": "sinnerGreetStranger",
+    "speaker": "other",
+    "hearer": "player",
+    "dynamic": "sinner_greet_stranger",
+    "fork": "seedCheck('playerMenuSeed','playerMenuNoSeed')"
+  },
+  {
+    "id": "playerGreetMet",
+    "speaker": "player",
+    "hearer": "other",
+    "fork": "personKnown('playerGreetFamiliar','playerGreetAgain')"
+  },
+  {
+    "id": "playerGreetFamiliar",
+    "speaker": "player",
+    "hearer": "other",
+    "dynamic": "player_greet_familiar",
+    "next": "sinnerGreetFamiliar"
+  },
+  {
+    "id": "sinnerGreetFamiliar",
+    "speaker": "other",
+    "hearer": "player",
+    "dynamic": "sinner_greet_familiar",
+    "fork": "seedCheck('playerMenuSeed','playerMenuNoSeed')"
+  },
+  {
+    "id": "playerGreetAgain",
+    "speaker": "player",
+    "hearer": "other",
+    "dynamic": "player_greet_again",
+    "next": "sinnerGreetGeneric"
+  },
+  {
+    "id": "sinnerGreetGeneric",
+    "speaker": "other",
+    "hearer": "player",
+    "dynamic": "sinner_greet_generic",
+    "fork": "seedCheck('playerMenuSeed','playerMenuNoSeed')"
+  },
+  {
+    "id": "playerMenuSeed",
+    "speaker": "player",
+    "hearer": "other",
+    "choice": [
+      { "choiceText": "[make small talk]", "resultId": "playerSmalltalk"},
+      { "choiceText": "[preach the gospel]", "resultId": "preachGospel"},
+      { "choiceText": "Sorry to bother you...", "resultId": "endConversation"}
+    ]
+  },
+  {
+    "id": "playerMenuNoSeed",
+    "speaker": "player",
+    "hearer": "other",
+    "choice": [
+      { "choiceText": "[make small talk]", "resultId": "playerSmalltalk"},
+      { "choiceText": "Sorry to bother you...", "resultId": "endConversation"}
+    ]
+  },
+  {
+    "id": "playerSmalltalk",
+    "speaker": "player",
+    "hearer": "other",
+    "postCmd": "familiarize()",
+    "fork": "branchToAny('playerSmalltalkRemark','playerSmalltalkCompliment','playerSmalltalkGod')"
+  },
+  {
+    "id": "playerSmalltalkRemark",
+    "speaker": "player",
+    "hearer": "other",
+    "dynamic": "player_smalltalk_remark",
+    "next": "sinnerSmalltalkRemark"
+  },
+  {
+    "id": "playerSmalltalkCompliment",
+    "speaker": "player",
+    "hearer": "other",
+    "dynamic": "player_smalltalk_compliment",
+    "next": "sinnerSmalltalkCompliment"
+  },
+  {
+    "id": "playerSmalltalkGod",
+    "speaker": "player",
+    "hearer": "other",
+    "dynamic": "player_smalltalk_god",
+    "next": "sinnerSmalltalkGod"
+  },
+  {
+    "id": "sinnerSmalltalkRemark",
+    "speaker": "other",
+    "hearer": "player",
+    "dynamic": "sinner_smalltalk_remark",
+    "next": "sinnerPoliteBye"
+  },
+  {
+    "id": "sinnerSmalltalkCompliment",
+    "speaker": "other",
+    "hearer": "player",
+    "dynamic": "sinner_smalltalk_compliment",
+    "next": "sinnerPoliteBye"
+  },
+  {
+    "id": "sinnerSmalltalkGod",
+    "speaker": "other",
+    "hearer": "player",
+    "preCmd": "changeFaith(1)",
+    "dynamicLevel": "sinner_smalltalk_god_by_faith:faithLevel()",
+    "next": "endConversation"
+  },
+  {
+    "id": "preachGospel",
+    "speaker": "player",
+    "hearer": "other",
+    "text": "Believe on the Lord Jesus Christ, and thou shalt be saved, and thy house.",
+    "postCmd": "preachFaith()",
+    "next": "sinnerResponse"
+  },
+  {
+    "id": "sinnerResponse",
+    "speaker": "other",
+    "hearer": "player",
+    "dynamicLevel": "sinner_respond_by_faith:faithLevel()",
+    "fork": "isConvert('sinnerConversion','sinnerRespondBye')"
+  },
+  {
+    "id": "sinnerConversion",
+    "speaker": "other",
+    "hearer": "player",
+    "dynamic": "sinner_convert",
+    "postCmd": "useSeed()",
+    "next": "endConversation"
+  },
+  {
+    "id": "sinnerRespondBye",
+    "speaker": "other",
+    "hearer": "player",
+    "dynamicLevel": "sinner_goodbye_by_faith:faithLevel()",
+    "postCmd": "useSeed()",
+    "next": "endConversation"
+  },
+  {
+    "id": "sinnerPoliteBye",
+    "speaker": "other",
+    "hearer": "player",
+    "dynamic": "sinner_goodbye_polite",
+    "next": "endConversation"
+  },
+  {
+    "id": "endConversation",
+    "speaker": "player",
+    "hearer": "other",
+    "preCmd": "familiarize()"
+  }
+]

@@ -1,4 +1,5 @@
 import { GRoom } from "./GRoom";
+import { GTown } from "./GTown";
 import { GCharSprite } from "./objects/chars/GCharSprite";
 
 export type GActorEvent = {
@@ -132,12 +133,15 @@ export type GGender = 'm'|'f';
 export interface GPerson {
     firstName: string;
     lastName: string;
-    spriteKeyPrefix: string;
-    gender: GGender;
-    voice: 1|2|3|4|5;
-    faith: number;
-    introduced: boolean;
-    knowsPlayer: boolean;
+    preferredName: string|null; // Name used in conversations
+    spriteKeyPrefix: string; // Determines appearance independently of name
+    gender: GGender; // Male and female created he them
+    voice: 1|2|3|4|5; // Random voice tone
+    faith: number; // Converted = 100+
+    familiarity: number; // +1 for each conversation; +1 for each small-talk
+    nameLevel: 0|1|2; // 0 = unknown; 1 = formal name; 2 = informal name
+    reprobate: boolean; // if true, faith decreases instead of increasing
+    homeTown: GTown|null; // need this so they can join the town's church when converted
 }
 
 // Represents a unique enemy displayed as a GImpSprite
@@ -239,19 +243,65 @@ export type CForm =
     text: string;
     next?: string;
     dynamic?: never;
+    dynamicLevel?: never;
     choice?: never;
+    fork?: never;
 } |
 { // Form 2: dynamic text, optional next
     dynamic: string;
     next?: string;
     text?: never;
+    dynamicLevel?: never;
+    choice?: never;
+    fork?: never;
+} |
+{ // Form 3: dynamic-by-level text, optional next
+    dynamicLevel: string;
+    next?: string;
+    text?: never;
+    dynamic?: never;
+    choice?: never;
+    fork?: never;
+} |
+{ // Form 4: static text, fork replaces next
+    text: string;
+    fork: string;
+    next?: never;
+    dynamic?: never;
+    dynamicLevel?: never;
     choice?: never;
 } |
-{ // Form 3: choice replaces both the text and next
+{ // Form 5: dynamic text, fork replaces next
+    dynamic: string;
+    fork: string;
+    next?: never;
+    text?: never;
+    dynamicLevel?: never;
+    choice?: never;
+} |
+{ // Form 6: dynamic-by-level text, fork replaces next
+    dynamicLevel: string;
+    fork: string;
+    next?: never;
+    text?: never;
+    dynamic?: never;
+    choice?: never;
+} |
+{ // Form 7: no text at all, fork branches the conversation
+    fork: string;
+    next?: never;
+    text?: never;
+    dynamic?: never;
+    dynamicLevel?: string;
+    choice?: never;
+} |
+{ // Form 8: choice replaces both the text and next
     choice: COption[];
     text?: never;
     dynamic?: never;
+    dynamicLevel?: never;
     next?: never;
+    fork?: never;
 };
 
 // Represents a single unit within the conversation, i.e. bubble

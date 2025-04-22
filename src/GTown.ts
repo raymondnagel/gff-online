@@ -65,6 +65,7 @@ export class GTown {
 
     public addPerson(person: GPerson) {
         this.people.push(person);
+        person.homeTown = this;
     }
 
     public transferPersonToChurch(person: GPerson): boolean {

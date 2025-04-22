@@ -85,7 +85,7 @@ export class GAdventureContent extends GContentScene {
         this.setCurrentRoom(startRoom.getX(), startRoom.getY(), AREA.WORLD_AREA);
 
         // Create the player:
-        this.player = new GPlayerSprite(this, 512-(GFF.CHAR_W/2), 460);
+        this.player = new GPlayerSprite(512-(GFF.CHAR_W/2), 460);
 
         // Init physics:
         this.initPhysics();
@@ -149,7 +149,7 @@ export class GAdventureContent extends GContentScene {
                     GConversation.fromFile('latest_update_intro');
                     break;
                 case 'y':
-                    this.doChurchServiceTest();
+                    PLAYER.changeSeeds(1);
                     break;
                 // case 'y':
                 //     this.doMapExport(0, 0);
@@ -301,16 +301,6 @@ export class GAdventureContent extends GContentScene {
                 const newPlayerY: number = entrance.y + (GFF.CHAR_BODY_H / 2) + 1;
                 this.player.centerPhysically({x: newPlayerX, y: newPlayerY});
             });
-        }
-    }
-
-    private doChurchServiceTest() {
-        const room: GRoom = this.getCurrentRoom() as GRoom;
-        const churchRoom: GRoom|null = room.getPortalRoom();
-
-        if (churchRoom !== null) {
-            const church: GChurch = churchRoom.getChurch() as GChurch;
-            new GChurchServiceCutscene(church).play();
         }
     }
 
@@ -688,7 +678,7 @@ export class GAdventureContent extends GContentScene {
     public spawnPerson(person: GPerson|GPersonSprite, location?: GPoint): GCharSprite|null {
         const sprite: GPersonSprite = person instanceof GPersonSprite ?
             person :
-            new GPersonSprite(this, person, 0, 0);
+            new GPersonSprite(person, 0, 0);
 
         sprite.setVisible(false);
         const body: GRect = sprite.getBody();
@@ -718,7 +708,7 @@ export class GAdventureContent extends GContentScene {
     public spawnImp(imp: GSpirit|GImpSprite, location?: GPoint): GCharSprite|null {
         const sprite: GImpSprite = imp instanceof GImpSprite ?
             imp :
-            new GImpSprite(this, imp, 0, 0);
+            new GImpSprite(imp, 0, 0);
         sprite.setVisible(false);
         const body: GRect = sprite.getBody();
         const spawnPoint: GPoint|null = location ?? this.getSpawnPointForTransient(sprite, body, false);

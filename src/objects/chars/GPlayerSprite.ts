@@ -12,8 +12,8 @@ const INTERACTION_AREA_SIDE: number = 100;
 
 export class GPlayerSprite extends GCharSprite {
 
-    constructor(scene: GAdventureContent, x:number, y: number) {
-        super(scene, 'adam', 'Adam', 'Cesar', x, y);
+    constructor(x:number, y: number) {
+        super('adam', 'Adam', 'Cesar', x, y);
         this.setData('permanent', true);
         PLAYER.setSprite(this);
         this.setControlled(true);

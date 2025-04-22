@@ -84,10 +84,10 @@ export abstract class GCutscene {
     public addActor(actor: GPerson|GSpirit, label?: string): void {
         let sprite: GCharSprite;
         if ('faith' in actor) {
-            sprite = new GPersonSprite(GFF.AdventureContent, actor, 0, 0);
+            sprite = new GPersonSprite(actor, 0, 0);
             GFF.AdventureContent.addPerson(sprite as GPersonSprite);
         } else {
-            sprite = new GImpSprite(GFF.AdventureContent, actor, 0, 0);
+            sprite = new GImpSprite(actor, 0, 0);
             GFF.AdventureContent.addImp(sprite as GImpSprite);
         }
         sprite.setVisible(false);

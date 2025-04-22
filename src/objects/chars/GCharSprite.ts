@@ -6,6 +6,7 @@ import { Dir9, GGender, GPoint } from '../../types';
 import { GGoal } from '../../goals/GGoal';
 import { PHYSICS } from '../../physics';
 import { DEPTH } from '../../depths';
+import { GPersonSprite } from './GPersonSprite';
 
 const NAMETAG_SPACE: number = 10;
 const FLOAT_TEXT_SPACE: number = 10;
@@ -23,18 +24,18 @@ export abstract class GCharSprite extends Phaser.Physics.Arcade.Sprite {
     private nametag: Phaser.GameObjects.Text; // Shown above character if global flag is on
     private floatText: Phaser.GameObjects.Text; // Shown above character if active
 
-    constructor(scene: GAdventureContent, spriteKeyPrefix: string, firstName: string, lastName: string, x: number, y: number) {
-        super(scene, x, y, `${spriteKeyPrefix}_idle_s`);
+    constructor(spriteKeyPrefix: string, firstName: string, lastName: string, x: number, y: number) {
+        super(GFF.AdventureContent, x, y, `${spriteKeyPrefix}_idle_s`);
         this.firstName = firstName;
         this.lastName = lastName;
         this.spriteKeyPrefix = spriteKeyPrefix;
         this.setOrigin(0, 0);
 
         // Add to scene:
-        scene.add.existing(this);
+        GFF.AdventureContent.add.existing(this);
 
         // Configure physical properites:
-        scene.physics.add.existing(this);
+        GFF.AdventureContent.physics.add.existing(this);
         if (this.body !== null) {
             this.body.setSize(GFF.CHAR_BODY_W, GFF.CHAR_BODY_H);
             this.body.setOffset(GFF.CHAR_BODY_X_OFF, GFF.CHAR_BODY_Y_OFF);
@@ -111,6 +112,7 @@ export abstract class GCharSprite extends Phaser.Physics.Arcade.Sprite {
         if (this.immobile) {
             this.stop();
             this.setVelocity(0, 0);
+            this.setGoal(null);
         }
     }
 
@@ -434,5 +436,51 @@ export abstract class GCharSprite extends Phaser.Physics.Arcade.Sprite {
 
     public toString() {
         return this.getName();
+    }
+
+    public getFormalName(): string {
+        if (this.getSpriteKeyPrefix().includes('_cop_')) {
+            return 'Officer ' + this.getLastName();
+        }
+        return (
+            this.getGender() === 'm'
+            ? 'Mr. '
+            : 'Ms. '
+        ) + this.getLastName();
+    }
+    public getSaintName(): string {
+        return (
+            this.getGender() === 'm'
+            ? 'Brother '
+            : 'Sister '
+        ) + this.getFirstName();
+    }
+    public getSexType(): string {
+        return (
+            this.getGender() === 'm'
+            ? 'man'
+            : 'woman'
+        );
+    }
+    public getPoliteType(): string {
+        return (
+            this.getGender() === 'm'
+            ? 'gentleman'
+            : 'lady'
+        );
+    }
+    public getHonorific(): string {
+        return (
+            this.getGender() === 'm'
+            ? 'sir'
+            : 'madam'
+        );
+    }
+    public getPreferredName(): string {
+        if (this instanceof GPersonSprite) {
+            return this.getPerson().preferredName ?? this.getName();
+        } else {
+            return this.getName();
+        }
     }
 }

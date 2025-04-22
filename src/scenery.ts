@@ -11,6 +11,7 @@ import { GPiano } from './objects/interactables/GPiano';
 import { GChurchHouse } from './objects/obstacles/GChurchHouse';
 import { GBuildingEntrance } from './objects/touchables/GBuildingEntrance';
 import { GBuildingExit } from './objects/touchables/GBuildingExit';
+import { GTravelAgency } from './objects/obstacles/GTravelAgency';
 
 export namespace SCENERY {
     const WALL_N_BODY: GRect = {x: 0, y: 0, width: 1024, height: 64};
@@ -150,7 +151,7 @@ export namespace SCENERY {
             { key: 'house_5', type: 'static', body: {x: 0, y: 269, width: 335, height: 83} },
             { key: 'house_6', type: 'static', body: {x: 0, y: 258, width: 332, height: 100} },
             { key: 'shop', type: 'static', body: {x: 0, y: 125, width: 240, height: 100} },
-            { key: 'travel_agency', type: 'static', body: {x: 5, y: 253, width: 346, height: 136} },
+            { key: 'travel_agency', type: 'custom', body: {x: 5, y: 253, width: 346, height: 136} },
             // Foreground Decorations:
             { key: 'big_flower', type: 'fg_decor', body: {x: 0, y: 0, width: 20, height: 44} },
             { key: 'cattails', type: 'fg_decor', body: {x: 0, y: 0, width: 66, height: 48} },
@@ -235,6 +236,9 @@ export namespace SCENERY {
                     case 'church_house':
                         new GChurchHouse(plan.x, plan.y);
                         new GBuildingEntrance(plan.x + 118, plan.y + 363);
+                        break;
+                    case 'travel_agency':
+                        new GTravelAgency(plan.x, plan.y);
                         break;
                     case 'church_piano':
                         new GPiano(plan.x, plan.y);

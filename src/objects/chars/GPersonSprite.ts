@@ -5,7 +5,6 @@ import { GFF } from '../../main';
 import { GGender, GInteractable, GPerson } from '../../types';
 import { GWalkToPointGoal } from '../../goals/GWalkToPointGoal';
 import { GRestGoal } from '../../goals/GRestGoal';
-import { GAdventureContent } from '../../scenes/GAdventureContent';
 import { PEOPLE } from '../../people';
 import { GGoal } from '../../goals/GGoal';
 import { GConversation } from '../../GConversation';
@@ -35,10 +34,10 @@ const ETHNICITY_BY_COLOR = {
 export class GPersonSprite extends GCharSprite implements GInteractable {
 
     private person: GPerson;
+    private readyToTalk: boolean = true;
 
-    constructor(scene: GAdventureContent, person: GPerson, x: number, y: number) {
+    constructor(person: GPerson, x: number, y: number) {
         super(
-            scene,
             person.spriteKeyPrefix,
             person.firstName,
             person.lastName,
@@ -81,7 +80,9 @@ export class GPersonSprite extends GCharSprite implements GInteractable {
     }
 
     protected getNametagText(): string {
-        return this.person.introduced ? super.getNametagText() : '???';
+        return this.person.nameLevel > 0 && this.person.familiarity > 0
+            ? super.getNametagText()
+            : '???';
     }
 
     public static createAllPeople() {
@@ -136,28 +137,49 @@ export class GPersonSprite extends GCharSprite implements GInteractable {
         nameProfile = `s_${useEthnic ? ethnicity : 'common'}_names`;
         let lastName: string = RANDOM.randElement(GFF.GAME.cache.json.get(nameProfile));
 
-        // 50% chance for the person to be "reprobate" (-1), and never be converted.
-        // 50% chance to begin with a random amount of faith (progress toward conversion).
-        let startingFaith = RANDOM.flipCoin() ? -1 : RANDOM.randInt(0, 99);
-
         // Add new person to the people registry:
         PEOPLE.addPerson({
             firstName: firstName,
             lastName: lastName,
+            preferredName: null,
             spriteKeyPrefix: spriteKeyPrefix,
             gender: gender,
-            voice: (RANDOM.randInt(1, 5) as 1|2|3|4|5),
-            faith: startingFaith,
-            introduced: false,
-            knowsPlayer: false
+            voice: RANDOM.randInt(1, 5) as 1|2|3|4|5,
+            faith: RANDOM.randInt(0, 99),
+            familiarity: 0,
+            nameLevel: 0,
+            reprobate: RANDOM.flipCoin(),
+            homeTown: null
         });
     }
 
     public interact(): void {
-        this.getPerson().introduced = true;
-        this.getPerson().knowsPlayer = true;
-        GConversation.fromFile('dynamic_test_conv', [
-            { label: 'other', char: this }
-        ]);
+        console.log('Interacting with ' + this.person.firstName + ' ' + this.person.lastName);
+        console.dir(this.person);
+
+        if (this.person.faith >= 100) {
+            // This person is a saint!
+            if (this.person.preferredName === null) {
+                this.person.preferredName = this.getSaintName();
+            }
+            GConversation.fromFile('talk_to_saint_conv', [
+                { label: 'other', char: this }
+            ]);
+        } else {
+            // This person is a sinner!
+            if (this.person.preferredName === null) {
+                this.person.preferredName = this.getFormalName();
+            }
+            if (this.readyToTalk) {
+                this.readyToTalk = false;
+                GConversation.fromFile('talk_to_sinner_conv', [
+                    { label: 'other', char: this }
+                ]);
+            } else {
+                GConversation.fromFile('notalk_to_sinner_conv', [
+                    { label: 'other', char: this }
+                ]);
+            }
+        }
     }
 }

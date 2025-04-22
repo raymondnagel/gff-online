@@ -1,0 +1,77 @@
+[
+  {
+    "id": "start",
+    "speaker": "player",
+    "hearer": "other",
+    "fork": "personMet('playerGreetFamiliar','playerGreetUnknown')"
+  },
+  {
+    "id": "playerGreetUnknown",
+    "speaker": "player",
+    "hearer": "other",
+    "dynamic": "player_greet_unknown",
+    "next": "playerIntroduction"
+  },
+  {
+    "id": "playerIntroduction",
+    "speaker": "player",
+    "hearer": "other",
+    "dynamic": "player_intro_saint",
+    "next": "saintIntroduction"
+  },
+  {
+    "id": "saintIntroduction",
+    "speaker": "other",
+    "hearer": "player",
+    "dynamic": "saint_intro",
+    "next": "playerMenu"
+  },
+  {
+    "id": "playerGreetFamiliar",
+    "speaker": "player",
+    "hearer": "other",
+    "dynamic": "player_greet_familiar",
+    "next": "saintGreetFamiliar"
+  },
+  {
+    "id": "saintGreetFamiliar",
+    "speaker": "other",
+    "hearer": "player",
+    "dynamic": "saint_greet_familiar",
+    "next": "playerMenu"
+  },
+  {
+    "id": "playerMenu",
+    "speaker": "player",
+    "hearer": "other",
+    "preCmd": "familiarize()",
+    "choice": [
+      { "choiceText": "Please tell me about yourself!", "resultId": "notImplementedYet"},
+      { "choiceText": "Do you know anyone from this town?", "resultId": "notImplementedYet"},
+      { "choiceText": "Can you help me find a treasure?", "resultId": "notImplementedYet"},
+      { "choiceText": "What's your favorite book of the Bible?", "resultId": "notImplementedYet"},
+      { "choiceText": "Is there a stronghold nearby?", "resultId": "notImplementedYet"},
+      { "choiceText": "Would you like to come with me?", "resultId": "notImplementedYet"},
+      { "choiceText": "Grace be with you, HEARER_SAINT!", "resultId": "saintGoodbye"}
+    ]
+  },
+  {
+    "id": "notImplementedYet",
+    "speaker": "other",
+    "hearer": "player",
+    "text": "This is a lovely conversation, brother; but I'm afraid I can't help you yet. Please check back later!",
+    "next": "endConversation"
+  },
+  {
+    "id": "saintGoodbye",
+    "speaker": "other",
+    "hearer": "player",
+    "dynamic": "saint_goodbye",
+    "next": "endConversation"
+  },
+  {
+    "id": "endConversation",
+    "speaker": "player",
+    "hearer": "other"
+  }
+]

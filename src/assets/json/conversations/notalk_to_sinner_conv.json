@@ -1,0 +1,28 @@
+[
+  {
+    "id": "start",
+    "speaker": "player",
+    "hearer": "other",
+    "fork": "personKnown('playerGreetFamiliar','playerGreetAgain')"
+  },
+  {
+    "id": "playerGreetFamiliar",
+    "speaker": "player",
+    "hearer": "other",
+    "dynamic": "player_greet_familiar",
+    "next": "sinnerNotalk"
+  },
+  {
+    "id": "playerGreetAgain",
+    "speaker": "player",
+    "hearer": "other",
+    "dynamic": "player_greet_again",
+    "next": "sinnerNotalk"
+  },
+  {
+    "id": "sinnerNotalk",
+    "speaker": "other",
+    "hearer": "player",
+    "dynamic": "sinner_notalk"
+  }
+]

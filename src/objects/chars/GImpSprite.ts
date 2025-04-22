@@ -14,9 +14,8 @@ export class GImpSprite extends GCharSprite {
     private spirit: GSpirit;
     private chasing: boolean = false;
 
-    constructor(scene: GAdventureContent, spirit: GSpirit, x: number, y: number) {
+    constructor(spirit: GSpirit, x: number, y: number) {
         super(
-            scene,
             'imp',
             spirit.name,
             '',

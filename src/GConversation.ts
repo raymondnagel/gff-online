@@ -5,27 +5,148 @@ import { GChoiceBubble } from "./objects/GChoiceBubble";
 import { GSpeechBubble } from "./objects/GSpeechBubble";
 import { GThoughtBubble } from "./objects/GThoughtBubble";
 import { PLAYER } from "./player";
-import { CBlurb, CLabeledChar, COption, Dir9, GBubble } from "./types";
+import { CBlurb, CLabeledChar, COption, Dir9, GBubble, GPerson } from "./types";
+import { GPlayerSprite } from "./objects/chars/GPlayerSprite";
+import { GPersonSprite } from "./objects/chars/GPersonSprite";
+import { FRUITS } from "./fruits";
+import { GChurch } from "./GChurch";
+import { GTown } from "./GTown";
 
-/**
- * Functions that are callable from the conversation, encoded in
- * the JSON as preCmd or postCmd, depending on whether they should
- * be executed before the blurb appears, or after it disappears.
- */
+type LeveledDynamicBlurb = {
+    level: number;
+    variants: string[];
+};
+
 const CMD_FUNCTIONS: Record<string, (...args: any[]) => any> = {
-    // Sample functions:
-    playPiano: (songName: string) => {
+    /**
+     * Pre/post commands (no return value): encoded in the JSON as
+     * 'preCmd' or 'postCmd', depending on whether they should be
+     * executed before the blurb appears, or after it disappears.
+     */
+    playPiano: (_player: GPlayerSprite, _someone: GCharSprite, songName: string) => {
         GFF.AdventureContent.getSound().setMusicVolume(0.6);
         GFF.AdventureContent.getSound().playMusic(songName);
         PLAYER.getSprite().play('adam_piano_ne', false);
     },
-    stopPiano: () => {
+    stopPiano: (_player: GPlayerSprite, _someone: GCharSprite, ) => {
         GFF.AdventureContent.getSound().stopMusic();
         PLAYER.getSprite().play('adam_sit_ne', false);
     },
-    endPiano: () => {
+    endPiano: (_player: GPlayerSprite, _someone: GCharSprite, ) => {
         GFF.AdventureContent.playerFinishPiano();
     },
+    prefFormalName: (_player: GPlayerSprite, someone: GCharSprite) => {
+        if (someone instanceof GPersonSprite) {
+            someone.getPerson().nameLevel = 1;
+            someone.getPerson().preferredName = someone.getFormalName();
+        }
+    },
+    prefInformalName: (_player: GPlayerSprite, someone: GCharSprite) => {
+        if (someone instanceof GPersonSprite) {
+            someone.getPerson().nameLevel = 2;
+            someone.getPerson().preferredName = someone.getFirstName();
+        }
+    },
+    preachFaith: (player: GPlayerSprite, someone: GCharSprite) => {
+        const faithChange: number = RANDOM.randInt(5, 10 + FRUITS.getCount());
+        CMD_FUNCTIONS.changeFaith(player, someone, faithChange);
+    },
+    changeFaith: (_player: GPlayerSprite, someone: GCharSprite, amount: number) => {
+        if (someone instanceof GPersonSprite) {
+            const sinner: GPerson = someone.getPerson();
+            sinner.familiarity++;
+            if (sinner.reprobate) {
+                sinner.faith -= amount;
+                sinner.faith = Math.max(sinner.faith, 0);
+            } else {
+                sinner.faith += amount;
+                sinner.faith = Math.min(sinner.faith, 100);
+            }
+
+            if (sinner.faith >= 100) {
+                // Conversion!
+                const town: GTown = (sinner.homeTown as GTown);
+                town.transferPersonToChurch(sinner);
+                sinner.preferredName = someone.getSaintName();
+            }
+        }
+    },
+    useSeed: (player: GPlayerSprite, _someone: GCharSprite) => {
+        player.showFloatingText('-1 seed');
+        PLAYER.changeSeeds(-1);
+    },
+    familiarize: (_player: GPlayerSprite, someone: GCharSprite) => {
+        if (someone instanceof GPersonSprite) {
+            someone.getPerson().familiarity++;
+        }
+    },
+
+    /**
+     * Fork functions (return id of next blurb as a string): encoded in
+     * the JSON as 'fork', these check a condition and return the id of the
+     * next blurb to be executed.
+     */
+    branchToAny(_player: GPlayerSprite, _someone: GCharSprite, ...ids: string[]): string {
+        return RANDOM.randElement(ids);
+    },
+    introCheck: (_player: GPlayerSprite, someone: GCharSprite, passId: string, failId: string): string => {
+        if (someone instanceof GPersonSprite) {
+            const chanceToIntro: number = someone.getPerson().faith + (someone.getPerson().familiarity * 10);
+            if (chanceToIntro > RANDOM.randInt(0, 100)) {
+                return passId;
+            }
+        }
+        return failId;
+    },
+    isConvert: (_player: GPlayerSprite, someone: GCharSprite, passId: string, failId: string): string => {
+        if (someone instanceof GPersonSprite) {
+            if (someone.getPerson().faith >= 100) {
+                return passId;
+            }
+        }
+        return failId;
+    },
+    seedCheck: (_player: GPlayerSprite, _someone: GCharSprite, passId: string, failId: string): string => {
+        return PLAYER.getSeeds() > 0 ? passId : failId;
+    },
+    coinFlip: (_player: GPlayerSprite, _someone: GCharSprite, headsId: string, tailsId: string): string => {
+        return RANDOM.flipCoin() ? headsId : tailsId;
+    },
+    personMet: (_player: GPlayerSprite, someone: GCharSprite, metId: string, unmetId: string): string => {
+        if (someone instanceof GPersonSprite) {
+            return someone.getPerson().familiarity > 0 ? metId : unmetId;
+        }
+        return unmetId;
+    },
+    personKnown: (_player: GPlayerSprite, someone: GCharSprite, knownId: string, unknownId: string): string => {
+        if (someone instanceof GPersonSprite) {
+            return someone.getPerson().nameLevel > 0 ? knownId : unknownId;
+        }
+        return unknownId;
+    },
+    personCasual: (_player: GPlayerSprite, someone: GCharSprite, casualId: string, formalId: string): string => {
+        if (someone instanceof GPersonSprite) {
+            return someone.getPerson().nameLevel > 1 ? casualId : formalId;
+        }
+        return formalId;
+    },
+
+    /**
+     * Level functions (return a level ID as a number): encoded in the
+     * JSON as 'dynamicLevel', these allow creating dynamic blurb texts
+     * based on a scale. For example, responses of people with high faith
+     * vs. low faith.
+     */
+    faithLevel: (_player: GPlayerSprite, someone: GCharSprite): number => {
+        if (someone instanceof GPersonSprite) {
+            const faith: number = someone.getPerson().faith;
+            const faithLevel: number = Math.floor(faith / 10);
+            return Math.min(faithLevel, 10); // Return a max of 10, which indicates a convert
+        }
+        return 0;
+    },
+
+    // Example functions:
     // someFunc: (strParam: string, numParam: number) => {
     // },
     // anotherFunc: (num1: number, num2: number, num3: number) => {
@@ -99,7 +220,7 @@ export class GConversation {
             // Orient the participants:
             this.orientParticipants();
 
-            // Create the bubble:
+            // Create the bubble (can be skipped if no text or choice):
             this.createBubble();
 
         } else {
@@ -125,6 +246,7 @@ export class GConversation {
         }
 
         const nextId: string|undefined = this.currentBlurb.next;
+        const forkFunction: string|undefined = this.currentBlurb.fork;
         if (nextId !== undefined) {
             // We have the ID for next; use it to get the next blurb:
             const nextBlurb = this.getBlurbById(nextId);
@@ -134,7 +256,7 @@ export class GConversation {
                 throw new Error(`Blurb id "${nextId}" not found!`);
             }
         } else {
-            // There is no next; check for a choice:
+            // There is no next; check for a choice or fork function:
             if (chosenOption !== undefined) {
                 // An option was chosen; process it.
                 const nextBlurb = this.getBlurbById(chosenOption);
@@ -142,6 +264,15 @@ export class GConversation {
                     this.currentBlurb = nextBlurb;
                 } else {
                     throw new Error(`Blurb id "${chosenOption}" not found!`);
+                }
+            } else if (forkFunction !== undefined) {
+                // A fork function was called; execute it and get the next blurb:
+                const nextId = this.executeForkFunctionCall(forkFunction);
+                const nextBlurb = this.getBlurbById(nextId);
+                if (nextBlurb !== undefined) {
+                    this.currentBlurb = nextBlurb;
+                } else {
+                    throw new Error(`Blurb id "${nextId}" not found!`);
                 }
             } else {
                 // There's no way to move forward to another blurb;
@@ -160,10 +291,15 @@ export class GConversation {
      */
     private createBubble() {
         let preparedText: string|undefined;
+
         if (this.currentBlurb.dynamic !== undefined) {
-            // Dynamic text: look up and assign to text, something like this:
+            // Dynamic text: random variant from a given class
             preparedText = this.getRandomDynamicText(this.currentBlurb.dynamic);
+        } else if (this.currentBlurb.dynamicLevel !== undefined) {
+            // Dynamic-by-level: random variant from a class, scaled by a given level
+            preparedText = this.getDynamicTextByLevel(this.currentBlurb.dynamicLevel);
         } else if (this.currentBlurb.text !== undefined) {
+            // Static text, exactly as we have it in the JSON
             preparedText = this.currentBlurb.text;
         }
 
@@ -180,10 +316,16 @@ export class GConversation {
                 this.currentBubble = new GSpeechBubble(this.currentSpeaker, preparedText);
             }
         } else {
-            const choice: COption[]|undefined = this.currentBlurb.choice;
+            const choice: COption[]|undefined = structuredClone(this.currentBlurb.choice);
             if (choice !== undefined) {
                 // Create choice bubble
+                choice.forEach(c => {
+                    c.choiceText = this.replaceLabels(c.choiceText);
+                });
                 this.currentBubble = new GChoiceBubble(this.currentSpeaker, choice);
+            } else {
+                // No text or choice; this blurb is empty.
+                this.finishBlurb(false);
             }
         }
     }
@@ -251,25 +393,29 @@ export class GConversation {
     }
 
     private replaceLabels(text: string): string {
-        text = text
+        let newText = text
             .replaceAll('SPEAKER_FIRST', this.currentSpeaker.getFirstName())
+            .replaceAll('SPEAKER_LAST', this.currentSpeaker.getLastName())
             .replaceAll('SPEAKER_FULL', this.currentSpeaker.getName())
-            .replaceAll('SPEAKER_FORMAL', GConversation.getFormalName(this.currentSpeaker))
-            .replaceAll('SPEAKER_CHURCH', GConversation.getChurchName(this.currentSpeaker))
-            .replaceAll('SPEAKER_SEXTYPE', GConversation.getSexType(this.currentSpeaker))
-            .replaceAll('SPEAKER_POLITE', GConversation.getPoliteType(this.currentSpeaker))
-            .replaceAll('SPEAKER_HONOR', GConversation.getHonorific(this.currentSpeaker));
+            .replaceAll('SPEAKER_FORMAL', this.currentSpeaker.getFormalName())
+            .replaceAll('SPEAKER_SAINT', this.currentSpeaker.getSaintName())
+            .replaceAll('SPEAKER_SEXTYPE', this.currentSpeaker.getSexType())
+            .replaceAll('SPEAKER_POLITE', this.currentSpeaker.getPoliteType())
+            .replaceAll('SPEAKER_HONOR', this.currentSpeaker.getHonorific())
+            .replaceAll('SPEAKER_PREF', this.currentSpeaker.getPreferredName());
         if (this.currentHearer !== undefined) {
-            text = text
+            newText = newText
                 .replaceAll('HEARER_FIRST', this.currentHearer.getFirstName())
+                .replaceAll('HEARER_LAST', this.currentHearer.getLastName())
                 .replaceAll('HEARER_FULL', this.currentHearer.getFirstName())
-                .replaceAll('HEARER_FORMAL', GConversation.getFormalName(this.currentHearer))
-                .replaceAll('HEARER_CHURCH', GConversation.getChurchName(this.currentHearer))
-                .replaceAll('HEARER_SEXTYPE', GConversation.getSexType(this.currentHearer))
-                .replaceAll('HEARER_POLITE', GConversation.getPoliteType(this.currentHearer))
-                .replaceAll('HEARER_HONOR', GConversation.getHonorific(this.currentHearer));
+                .replaceAll('HEARER_FORMAL', this.currentHearer.getFormalName())
+                .replaceAll('HEARER_SAINT', this.currentHearer.getSaintName())
+                .replaceAll('HEARER_SEXTYPE', this.currentHearer.getSexType())
+                .replaceAll('HEARER_POLITE', this.currentHearer.getPoliteType())
+                .replaceAll('HEARER_HONOR', this.currentHearer.getHonorific())
+                .replaceAll('HEARER_PREF', this.currentHearer.getPreferredName());
         }
-        return text;
+        return newText;
     }
 
     private getRandomDynamicText(dynamicClass: string): string {
@@ -350,56 +496,18 @@ export class GConversation {
         return new GConversation(blurbs, chars);
     }
 
-    private static getFormalName(char: GCharSprite): string {
-        return (
-            char.getGender() === 'm'
-            ? 'Mr. '
-            : 'Ms. '
-        ) + char.getLastName();
-    }
-    private static getChurchName(char: GCharSprite): string {
-        return (
-            char.getGender() === 'm'
-            ? 'Brother '
-            : 'Sister '
-        ) + char.getFirstName();
-    }
-    private static getSexType(char: GCharSprite): string {
-        return (
-            char.getGender() === 'm'
-            ? 'man'
-            : 'woman'
-        );
-    }
-    private static getPoliteType(char: GCharSprite): string {
-        return (
-            char.getGender() === 'm'
-            ? 'gentleman'
-            : 'lady'
-        );
-    }
-    private static getHonorific(char: GCharSprite): string {
-        return (
-            char.getGender() === 'm'
-            ? 'sir'
-            : 'madam'
-        );
-    }
-
-    private executeFunctionCall(command: string) {
+    /**
+     * This parsing works, but it is not very robust.
+     * It will not correctly handle commas inside strings arguments, for example.
+     */
+    private parseCommand(command: string): {functionName: string, args: any[]} {
         // Match the function name and the arguments in parentheses
-        const functionCallRegex = /^([a-zA-Z_][a-zA-Z0-9_]*)\((.*)\)$/;
-        const match = command.match(functionCallRegex);
+        const functionCallTokens: string[] = command.split('(');
+        const functionName: string = functionCallTokens[0].trim();
+        const argsString: string = functionCallTokens[1].slice(0, -1).trim();
 
-        if (!match) {
-            throw new Error("Invalid function call format");
-        }
-
-        const functionName = match[1];
-        const argsString = match[2];
-
-        // Extract individual arguments by splitting on commas, taking care of quotes
-        const args = argsString.split(/,(?![^']*')/).map(arg => {
+        // Extract individual arguments by splitting on commas
+        const args = argsString.split(',').map(arg => {
             arg = arg.trim();
 
             // Check if the argument is a string (starts and ends with a single quote)
@@ -416,6 +524,13 @@ export class GConversation {
             return parsedNumber;
         });
 
+        return { functionName, args };
+    }
+
+    private executeFunctionCall(command: string): void {
+        // Parse the command to get the function name and arguments
+        const { functionName, args } = this.parseCommand(command);
+
         // Retrieve the function from CMD_FUNCTIONS
         const func = CMD_FUNCTIONS[functionName];
 
@@ -423,7 +538,71 @@ export class GConversation {
             throw new Error(`Function ${functionName} not found`);
         }
 
-        // Call the function with the parsed arguments
-        func(...args);
+        const someone: GCharSprite|undefined = this.currentSpeaker !== PLAYER.getSprite() ?
+        this.currentSpeaker :
+        this.currentHearer;
+
+        // Add player and the other person as arguments,
+        // along with those parsed from the command string:
+        const newArgs: any[] = [PLAYER.getSprite(), someone, ...args];
+        func(...newArgs) as string;
+    }
+
+    /**
+     * A 'fork' function will return the id for the next blurb.
+     */
+    private executeForkFunctionCall(command: string): string {
+        // Parse the command to get the function name and arguments
+        const { functionName, args } = this.parseCommand(command);
+
+        // Retrieve the function from CMD_FUNCTIONS
+        const func = CMD_FUNCTIONS[functionName];
+
+        if (typeof func !== "function") {
+            throw new Error(`Function ${functionName} not found`);
+        }
+
+        const someone: GCharSprite|undefined = this.currentSpeaker !== PLAYER.getSprite() ?
+            this.currentSpeaker :
+            this.currentHearer;
+
+        // Add player and the other person as arguments,
+        // along with those parsed from the command string:
+        const newArgs: any[] = [PLAYER.getSprite(), someone, ...args];
+        return func(...newArgs) as string;
+    }
+
+    /**
+     * For dynamicLevel, we get the result of a given function, and
+     * use that as an id ("level") to look up a dynamic text. We'll
+     * return the text for the current blurb.
+     */
+    private getDynamicTextByLevel(dynamicLevel: string): string {
+        // Separate the blurb class (file)
+        const tokens: string[] = dynamicLevel.split(':');
+
+        // Parse the command to get the function name and arguments
+        const { functionName, args } = this.parseCommand(tokens[1]);
+
+        // Retrieve the function from CMD_FUNCTIONS
+        const func = CMD_FUNCTIONS[functionName];
+
+        if (typeof func !== "function") {
+            throw new Error(`Function ${functionName} not found`);
+        }
+
+        const someone: GCharSprite|undefined = this.currentSpeaker !== PLAYER.getSprite() ?
+            this.currentSpeaker :
+            this.currentHearer;
+
+        // Add player and the other person as arguments,
+        // along with those parsed from the command string:
+        const newArgs: any[] = [PLAYER.getSprite(), someone, ...args];
+        const levelId: number = func(...newArgs) as number;
+
+        // Lookup the dynamic text using the levelId:
+        const dynamicsByLevel: LeveledDynamicBlurb[] = GFF.GAME.cache.json.get(tokens[0]);
+        const levelDynamics: LeveledDynamicBlurb = dynamicsByLevel.find(b => b.level === levelId) as LeveledDynamicBlurb;
+        return RANDOM.randElement(levelDynamics.variants) as string;
     }
 }

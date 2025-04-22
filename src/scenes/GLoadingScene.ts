@@ -111,6 +111,7 @@ export class GLoadingScene extends GBaseScene {
                 // Init Bible books:
                 BOOKS.initBooks();
                 BOOKS.startWithBook('John');
+                BOOKS.shuffleBooksToFind();
 
                 // Grant Sword of the Spirit:
                 ARMORS.setArmor(1, true);

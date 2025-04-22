@@ -98,4 +98,16 @@ export class GTreasureChest extends GTouchable {
             };
         }
     }
+
+    /**
+     * Overridden so depth is reset when we spawn a common chest.
+     */
+    public setPosition(x?: number, y?: number, z?: number, w?: number): this {
+        const retThis: this = super.setPosition(x, y, z, w);
+        if (this.body !== null) {
+            this.body.updateFromGameObject();
+            this.setDepth(this.body.bottom);
+        }
+        return retThis;
+    }
 }

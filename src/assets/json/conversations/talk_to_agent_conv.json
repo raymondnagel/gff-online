@@ -1,0 +1,68 @@
+[
+  {
+    "id": "start",
+    "speaker": "player",
+    "hearer": "other",
+    "fork": "personMet('playerAgainHello','playerInitialHello')"
+  },
+  {
+    "id": "playerInitialHello",
+    "speaker": "player",
+    "hearer": "other",
+    "text": "Hello! Is this the Spirit Travel Agency?",
+    "postCmd": "familiarize()",
+    "next": "agentInitialHello"
+  },
+  {
+    "id": "agentInitialHello",
+    "speaker": "other",
+    "hearer": "player",
+    "text": "Greetings, sir. Yes, I'm a travel agent with Spirit.",
+    "next": "agentInitialIntro"
+  },
+  {
+    "id": "agentInitialIntro",
+    "speaker": "other",
+    "hearer": "player",
+    "text": "I see that you have an unlimited travel pass with us. Currently we have only one flight available; but there will be more in the future, so check back later.",
+    "next": "flightMenu"
+  },
+  {
+    "id": "playerAgainHello",
+    "speaker": "player",
+    "hearer": "other",
+    "text": "Hello! I have an unlimited travel pass. Can I see what flights are currently available?",
+    "postCmd": "familiarize()",
+    "next": "agentAgainIntro"
+  },
+  {
+    "id": "agentAgainIntro",
+    "speaker": "other",
+    "hearer": "player",
+    "text": "Certainly, sir. One moment...",
+    "next": "flightMenu"
+  },
+  {
+    "id": "flightMenu",
+    "speaker": "player",
+    "hearer": "other",
+    "choice": [
+      { "choiceText": "[flight option 1]", "resultId": "notAvailableYet"},
+      { "choiceText": "[flight option 2]", "resultId": "notAvailableYet"},
+      { "choiceText": "[flight option 3]", "resultId": "notAvailableYet"},
+      { "choiceText": "I'll stay here for now.", "resultId": "endConversation"}
+    ]
+  },
+  {
+    "id": "notAvailableYet",
+    "speaker": "other",
+    "hearer": "player",
+    "text": "Sorry, my mistake! No flights are available yet. Please check back in another update!",
+    "next": "endConversation"
+  },
+  {
+    "id": "endConversation",
+    "speaker": "player",
+    "hearer": "other"
+  }
+]
