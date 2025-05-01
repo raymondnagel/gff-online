@@ -14,9 +14,6 @@ export class GTravelAgency extends GObstacleStatic {
         const agentX: number = x + 190;
         const agentY: number = y + 310;
 
-        console.log(`Spawn travel agency at ${x}, ${y}`);
-        console.log(`Travel agency size: ${this.width} x ${this.height}.`)
-        console.log(`Spawn travel agent at ${agentX}, ${agentY}`);
         GFF.AdventureContent.spawnPerson(travelAgent, {x: agentX, y: agentY});
     }
 

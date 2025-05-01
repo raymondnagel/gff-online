@@ -3,7 +3,7 @@ import { Dir9 } from "../types";
 
 export class GRejoiceGoal extends GGoal {
 
-    constructor(timeOut: number) {
+    constructor(timeOut?: number) {
         super('rejoice', timeOut);
     }
 

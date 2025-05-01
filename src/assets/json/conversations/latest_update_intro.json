@@ -62,13 +62,19 @@
     {
       "id": "objectives_5",
       "speaker": "player",
-      "text": "As you approach towns, you will also encounter some people. Now is a good time to introduce yourself and meet them! Someday, you will also be able to preach to them, and by God's grace, even help to turn their hearts to the Lord.",
+      "text": "As you approach towns, you will also encounter some people. If you've found any seeds, you can sow a seed when talking to them, and try to win them to the Lord. If you don't have a seed, you can only make smalltalk. Listen to their responses to see if they are receptive to the gospel or not.",
+      "next": "objectives_6"
+    },
+    {
+      "id": "objectives_6",
+      "speaker": "player",
+      "text": "You can enter any of the churches by approaching the door and walking inside. One of the men will preach a random sermon. Afterward, you can interact with the piano by pressing [Space], and choose a song to play.",
       "next": "menu"
     },
     {
       "id": "controls_1",
       "speaker": "player",
-      "text": "ADVENTURE CONTROLS:\nHold down [Arrow] keys to walk. You can hold two directions (e.g. 'up' + 'right') to walk diagonally.\nHold [Shift] key at the same time to run instead.\nHold down [N] to view name tags for all characters. (Names will only be shown if you have met them already.)\nPress [P] to pause/unpause\nPress [Space] to talk to another person (if they are in front of me)",
+      "text": "ADVENTURE CONTROLS:\nHold down [Arrow] keys to walk. You can hold two directions (e.g. 'up' + 'right') to walk diagonally.\nHold [Shift] key at the same time to run instead.\nHold down [N] to view name tags for all characters. (Names will only be shown if you have met them already.)\nPress [P] to pause/unpause\nPress [Space] to talk to another person (if they are in front of me), or play the piano.",
       "next": "controls_2"
     },
     {
@@ -86,7 +92,7 @@
     {
       "id": "update",
       "speaker": "player",
-      "text": "MARCH 2025 UPDATE\n\n- TOWNS: Added the encounter background, building objects, and building placement algorithms\n\n- FAITH: Maximum faith is now recalculated as Adam levels up and finds new items, allowing him to keep pace with the enemies\n\n- CHURCHES: You can now enter church buildings, and press [Space] to play the piano!",
+      "text": "APRIL 2025 UPDATE\n\n Add cutscene system\n- create action functions for characters\n- create script/timeline for cutscene design\n- integrate with conversation system\n- create church service cutscene\n\nExpand conversation system\n- added different types of conversation functions for branching and variants\n- added evangelism interactions for sinners\n- added 72 seed verses by faith level\n- converted sinners become saints and join the church",
       "next": "menu"
     },
     {

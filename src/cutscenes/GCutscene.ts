@@ -46,7 +46,7 @@ export abstract class GCutscene {
         // Initialize the cutscene
         this.initialize();
 
-        this.logCast();
+        // this.logCast();
 
         // Start the cutscene by finishing the 'start' event
         this.start();

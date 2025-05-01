@@ -156,7 +156,7 @@
     "id": "preachGospel",
     "speaker": "player",
     "hearer": "other",
-    "text": "Believe on the Lord Jesus Christ, and thou shalt be saved, and thy house.",
+    "dynamicLevel": "player_seed_by_faith:faithLevelBroad()",
     "postCmd": "preachFaith()",
     "next": "sinnerResponse"
   },

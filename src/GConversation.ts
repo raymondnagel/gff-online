@@ -9,8 +9,8 @@ import { CBlurb, CLabeledChar, COption, Dir9, GBubble, GPerson } from "./types";
 import { GPlayerSprite } from "./objects/chars/GPlayerSprite";
 import { GPersonSprite } from "./objects/chars/GPersonSprite";
 import { FRUITS } from "./fruits";
-import { GChurch } from "./GChurch";
 import { GTown } from "./GTown";
+import { GRejoiceGoal } from "./goals/GRejoiceGoal";
 
 type LeveledDynamicBlurb = {
     level: number;
@@ -68,6 +68,7 @@ const CMD_FUNCTIONS: Record<string, (...args: any[]) => any> = {
                 const town: GTown = (sinner.homeTown as GTown);
                 town.transferPersonToChurch(sinner);
                 sinner.preferredName = someone.getSaintName();
+                someone.setGoal(new GRejoiceGoal());
             }
         }
     },
@@ -142,6 +143,14 @@ const CMD_FUNCTIONS: Record<string, (...args: any[]) => any> = {
             const faith: number = someone.getPerson().faith;
             const faithLevel: number = Math.floor(faith / 10);
             return Math.min(faithLevel, 10); // Return a max of 10, which indicates a convert
+        }
+        return 0;
+    },
+    faithLevelBroad: (_player: GPlayerSprite, someone: GCharSprite): number => {
+        if (someone instanceof GPersonSprite) {
+            const faith: number = someone.getPerson().faith;
+            const faithLevel: number = Math.floor(faith / 25);
+            return Math.min(faithLevel, 3); // Return a max of 3, which indicates someone near conversion
         }
         return 0;
     },

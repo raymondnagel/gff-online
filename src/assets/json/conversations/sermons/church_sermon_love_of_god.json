@@ -1,0 +1,88 @@
+[
+    {
+      "id": "1",
+      "speaker": "preacher",
+      "hearer": "other",
+      "text": "The Bible says that the righteous LORD loveth righteousness (Psalm 11:7); that he loveth the righteous (Psalm 146:8); and that he loveth him that followeth after righteousness! (Proverbs 15:9)",
+      "next": "2"
+    },
+    {
+      "id": "2",
+      "speaker": "preacher",
+      "hearer": "other",
+      "text": "Why then, brethren, did God love US?",
+      "next": "3"
+    },
+    {
+      "id": "3",
+      "chance": 0.3,
+      "speaker": "other",
+      "hearer": "preacher",
+      "dynamic": "congregation_question",
+      "next": "4"
+    },
+    {
+      "id": "4",
+      "speaker": "preacher",
+      "hearer": "other",
+      "text": "\"For when we were yet without strength, in due time Christ died for the ungodly. For scarcely for a righteous man will one die: yet peradventure for a good man some would even dare to die. But God commendeth his love toward us, in that, while we were yet sinners, Christ died for us.\" (Romans 5:6-8)",
+      "next": "5"
+    },
+    {
+      "id": "5",
+      "speaker": "preacher",
+      "hearer": "other",
+      "text": "The death of Christ for our sakes was a demonstration of God's love for us. But why would God love ungodly sinners so much?",
+      "next": "6"
+    },
+    {
+      "id": "6",
+      "speaker": "preacher",
+      "hearer": "other",
+      "text": "Is it because we sin-stained creatures, we fountains of iniquity, are so lovable? Because we are so deserving of his affection?",
+      "next": "7"
+    },
+    {
+      "id": "7",
+      "speaker": "preacher",
+      "hearer": "other",
+      "text": "Nay, my brethren. God did not love us because we were so worthy of his love; but because we so desperately needed his love, and he is so compassionate! He is merciful!",
+      "next": "8"
+    },
+    {
+      "id": "8",
+      "chance": 0.8,
+      "speaker": "other",
+      "hearer": "preacher",
+      "dynamic": "congregation_praise",
+      "next": "9"
+    },
+    {
+      "id": "9",
+      "speaker": "preacher",
+      "hearer": "other",
+      "text": "Titus 3:4-5 says that \"the kindness and love of God our Saviour toward man appeared, not by works of righteousness which we have done\". If we had been righteous, we may have been worthy of God's love. But we were unworthy; therefore, \"according to his mercy he saved us\".",
+      "next": "10"
+    },
+    {
+      "id": "10",
+      "speaker": "preacher",
+      "hearer": "other",
+      "text": "In his merciful love, the Father was unwilling that any should perish - even the unworthy sinner. And it is that great, merciful love that was displayed on the cross of Calvary...",
+      "next": "11"
+    },
+    {
+      "id": "11",
+      "speaker": "preacher",
+      "hearer": "other",
+      "text": "\"For God so loved the world, that he gave his only begotten Son, that whosoever believeth in him should not perish, but have everlasting life.\" (John 3:16)",
+      "next": "12"
+    },
+    {
+      "id": "12",
+      "chance": 0.5,
+      "speaker": "other",
+      "hearer": "preacher",
+      "dynamic": "congregation_praise"
+    }
+]
