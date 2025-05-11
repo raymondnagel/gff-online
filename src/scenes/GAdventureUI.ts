@@ -2,7 +2,7 @@ import 'phaser';
 import { GUIScene } from './GUIScene';
 import { GAdventureContent } from './GAdventureContent';
 import { GFF } from '../main';
-import { GPoint } from '../types';
+import { GPoint2D } from '../types';
 import { RANDOM } from '../random';
 import { DEPTH } from '../depths';
 
@@ -87,7 +87,7 @@ export class GAdventureUI extends GUIScene {
         GFF.AdventureContent.getSound().unpauseMusic();
     }
 
-    public transitionToBattle(encounterPoint: GPoint, bgImageKey: string) {
+    public transitionToBattle(encounterPoint: GPoint2D, bgImageKey: string) {
 
         this.getSound().playSound('encounter');
 

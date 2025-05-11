@@ -5,17 +5,18 @@ import { GChoiceBubble } from "./objects/GChoiceBubble";
 import { GSpeechBubble } from "./objects/GSpeechBubble";
 import { GThoughtBubble } from "./objects/GThoughtBubble";
 import { PLAYER } from "./player";
-import { CBlurb, CLabeledChar, COption, Dir9, GBubble, GPerson } from "./types";
+import { CBlurb, CLabeledChar, COption, Dir9, GBubble, GPerson, GPoint2D, GPoint3D, LeveledDynamicBlurb } from "./types";
 import { GPlayerSprite } from "./objects/chars/GPlayerSprite";
 import { GPersonSprite } from "./objects/chars/GPersonSprite";
 import { FRUITS } from "./fruits";
 import { GTown } from "./GTown";
 import { GRejoiceGoal } from "./goals/GRejoiceGoal";
-
-type LeveledDynamicBlurb = {
-    level: number;
-    variants: string[];
-};
+import { PEOPLE } from "./people";
+import { GRoom } from "./GRoom";
+import { DIRECTION } from "./direction";
+import { GArea } from "./areas/GArea";
+import { AREA } from "./area";
+import { GStronghold } from "./GStronghold";
 
 const CMD_FUNCTIONS: Record<string, (...args: any[]) => any> = {
     /**
@@ -34,42 +35,37 @@ const CMD_FUNCTIONS: Record<string, (...args: any[]) => any> = {
     },
     endPiano: (_player: GPlayerSprite, _someone: GCharSprite, ) => {
         GFF.AdventureContent.playerFinishPiano();
-    },
-    prefFormalName: (_player: GPlayerSprite, someone: GCharSprite) => {
-        if (someone instanceof GPersonSprite) {
-            someone.getPerson().nameLevel = 1;
-            someone.getPerson().preferredName = someone.getFormalName();
-        }
+    },    prefFormalName: (_player: GPlayerSprite, someone: GCharSprite) => {
+
+        someone.getPerson().nameLevel = 1;
+        someone.getPerson().preferredName = PEOPLE.getFormalName(someone.getPerson());
     },
     prefInformalName: (_player: GPlayerSprite, someone: GCharSprite) => {
-        if (someone instanceof GPersonSprite) {
-            someone.getPerson().nameLevel = 2;
-            someone.getPerson().preferredName = someone.getFirstName();
-        }
+        someone.getPerson().nameLevel = 2;
+        someone.getPerson().preferredName = someone.getFirstName();
     },
     preachFaith: (player: GPlayerSprite, someone: GCharSprite) => {
         const faithChange: number = RANDOM.randInt(5, 10 + FRUITS.getCount());
         CMD_FUNCTIONS.changeFaith(player, someone, faithChange);
     },
     changeFaith: (_player: GPlayerSprite, someone: GCharSprite, amount: number) => {
-        if (someone instanceof GPersonSprite) {
-            const sinner: GPerson = someone.getPerson();
-            sinner.familiarity++;
-            if (sinner.reprobate) {
-                sinner.faith -= amount;
-                sinner.faith = Math.max(sinner.faith, 0);
-            } else {
-                sinner.faith += amount;
-                sinner.faith = Math.min(sinner.faith, 100);
-            }
+        const sinner: GPerson = someone.getPerson();
+        sinner.familiarity++;
+        if (sinner.reprobate) {
+            sinner.faith -= amount;
+            sinner.faith = Math.max(sinner.faith, 0);
+        } else {
+            sinner.faith += amount;
+            sinner.faith = Math.min(sinner.faith, 100);
+        }
 
-            if (sinner.faith >= 100) {
-                // Conversion!
-                const town: GTown = (sinner.homeTown as GTown);
-                town.transferPersonToChurch(sinner);
-                sinner.preferredName = someone.getSaintName();
-                someone.setGoal(new GRejoiceGoal());
-            }
+        if (sinner.faith >= 100) {
+            // Conversion!
+            const town: GTown = (sinner.homeTown as GTown);
+            town.transferPersonToChurch(sinner);
+            sinner.preferredName = PEOPLE.getSaintName(sinner);
+            (someone as GPersonSprite).generateBio(true);
+            someone.setGoal(new GRejoiceGoal());
         }
     },
     useSeed: (player: GPlayerSprite, _someone: GCharSprite) => {
@@ -77,9 +73,13 @@ const CMD_FUNCTIONS: Record<string, (...args: any[]) => any> = {
         PLAYER.changeSeeds(-1);
     },
     familiarize: (_player: GPlayerSprite, someone: GCharSprite) => {
-        if (someone instanceof GPersonSprite) {
-            someone.getPerson().familiarity++;
-        }
+        someone.getPerson().familiarity++;
+    },
+    inviteCompanion: (_player: GPlayerSprite, someone: GCharSprite) => {
+        PLAYER.setCompanion(someone.getPerson());
+    },
+    dismissCompanion: (_player: GPlayerSprite, _someone: GCharSprite) => {
+        PLAYER.setCompanion(null);
     },
 
     /**
@@ -91,19 +91,21 @@ const CMD_FUNCTIONS: Record<string, (...args: any[]) => any> = {
         return RANDOM.randElement(ids);
     },
     introCheck: (_player: GPlayerSprite, someone: GCharSprite, passId: string, failId: string): string => {
-        if (someone instanceof GPersonSprite) {
-            const chanceToIntro: number = someone.getPerson().faith + (someone.getPerson().familiarity * 10);
-            if (chanceToIntro > RANDOM.randInt(0, 100)) {
-                return passId;
-            }
+        const chanceToIntro: number = someone.getPerson().faith + (someone.getPerson().familiarity * 10);
+        if (chanceToIntro > RANDOM.randInt(0, 100)) {
+            return passId;
         }
         return failId;
     },
     isConvert: (_player: GPlayerSprite, someone: GCharSprite, passId: string, failId: string): string => {
-        if (someone instanceof GPersonSprite) {
-            if (someone.getPerson().faith >= 100) {
-                return passId;
-            }
+        if (someone.getPerson().faith >= 100) {
+            return passId;
+        }
+        return failId;
+    },
+    isCompanion: (_player: GPlayerSprite, someone: GCharSprite, passId: string, failId: string): string => {
+        if ((someone as GPersonSprite).isCompanion()) {
+            return passId;
         }
         return failId;
     },
@@ -114,22 +116,13 @@ const CMD_FUNCTIONS: Record<string, (...args: any[]) => any> = {
         return RANDOM.flipCoin() ? headsId : tailsId;
     },
     personMet: (_player: GPlayerSprite, someone: GCharSprite, metId: string, unmetId: string): string => {
-        if (someone instanceof GPersonSprite) {
-            return someone.getPerson().familiarity > 0 ? metId : unmetId;
-        }
-        return unmetId;
+        return someone.getPerson().familiarity > 0 ? metId : unmetId;
     },
     personKnown: (_player: GPlayerSprite, someone: GCharSprite, knownId: string, unknownId: string): string => {
-        if (someone instanceof GPersonSprite) {
-            return someone.getPerson().nameLevel > 0 ? knownId : unknownId;
-        }
-        return unknownId;
+        return someone.getPerson().nameLevel > 0 ? knownId : unknownId;
     },
     personCasual: (_player: GPlayerSprite, someone: GCharSprite, casualId: string, formalId: string): string => {
-        if (someone instanceof GPersonSprite) {
-            return someone.getPerson().nameLevel > 1 ? casualId : formalId;
-        }
-        return formalId;
+        return someone.getPerson().nameLevel > 1 ? casualId : formalId;
     },
 
     /**
@@ -139,20 +132,74 @@ const CMD_FUNCTIONS: Record<string, (...args: any[]) => any> = {
      * vs. low faith.
      */
     faithLevel: (_player: GPlayerSprite, someone: GCharSprite): number => {
-        if (someone instanceof GPersonSprite) {
-            const faith: number = someone.getPerson().faith;
-            const faithLevel: number = Math.floor(faith / 10);
-            return Math.min(faithLevel, 10); // Return a max of 10, which indicates a convert
-        }
-        return 0;
+        const faith: number = someone.getPerson().faith;
+        const faithLevel: number = Math.floor(faith / 10);
+        return Math.min(faithLevel, 10); // Return a max of 10, which indicates a convert
     },
     faithLevelBroad: (_player: GPlayerSprite, someone: GCharSprite): number => {
-        if (someone instanceof GPersonSprite) {
-            const faith: number = someone.getPerson().faith;
-            const faithLevel: number = Math.floor(faith / 25);
-            return Math.min(faithLevel, 3); // Return a max of 3, which indicates someone near conversion
+        const faith: number = someone.getPerson().faith;
+        const faithLevel: number = Math.floor(faith / 25);
+        return Math.min(faithLevel, 3); // Return a max of 3, which indicates someone near conversion
+    },
+
+    /**
+     * Direct text functions (return text for the blurb): encoded in the
+     * JSON as 'textFunc', these allow blurb text to be generated by
+     * a function.
+     */
+    bio: (_player: GPlayerSprite, someone: GCharSprite, bioNum: number): string => {
+        if (bioNum === 1) {
+            return someone.getPerson().bio1 ?? '';
+        } else if (bioNum === 2) {
+            return someone.getPerson().bio2 ?? '';
         }
-        return 0;
+        return '';
+    },
+    inform: (_player: GPlayerSprite, someone: GCharSprite): string => {
+        const town: GTown = someone.getPerson().homeTown as GTown;
+        if (town.getPeople().length > 0) {
+            const otherPerson: GPerson = RANDOM.randElement(town.getPeople()) as GPerson;
+            return PEOPLE.getInformText(someone.getPerson(), PLAYER.getSprite().getPerson(), otherPerson);
+        }
+        return `Hmm... nobody is really coming to mind. Sorry.`;
+    },
+    favoriteBook: (_player: GPlayerSprite, someone: GCharSprite): string => {
+        return `My favorite book? I would have to say ${someone.getPerson().favoriteBook}. It really speaks to my heart, and I know its contents quite well.`;
+    },
+    markChest: (_player: GPlayerSprite, someone: GCharSprite): string => {
+        const originRoom: GRoom = GFF.AdventureContent.getCurrentRoom() as GRoom;
+        const chestRoom: GRoom|null = originRoom.getArea().findNearestRoomWith(originRoom, room => {
+            return room.hasPremiumChest();
+        });
+        let markedText: string = `Hmm... I'm not sure where to find another one.`;
+        if (chestRoom !== null) {
+            if (chestRoom === PLAYER.getMarkedChestRoom()) {
+                markedText = `Hmm... I know of a treasure chest nearby, but you already have it marked on your map.`;
+            } else {
+                const chestText: string = chestRoom.hasPlanKey('red_chest')
+                    ? 'one of the 10 commandments, which will help to enlighten your path'
+                    : 'a book of the Bible, which will strengthen you to face the enemy';
+                const distText: string = AREA.describeDistanceBetweenRooms(originRoom, chestRoom);
+                markedText = `Okay, I've marked a treasure chest on your map, ${distText}. I think it's ${chestText}.`;
+                const replaceMarkedChest: boolean = PLAYER.setMarkedChestRoom(chestRoom);
+                if (replaceMarkedChest) {
+                    markedText = `${markedText}\n(I replaced the one that was already marked on your map, so you don't get confused.)`;
+                }
+            }
+        }
+        return markedText;
+    },
+    locateStronghold: (_player: GPlayerSprite, someone: GCharSprite): string => {
+        const originRoom: GRoom = GFF.AdventureContent.getCurrentRoom() as GRoom;
+        const strongholdRoom: GRoom|null = originRoom.getArea().findNearestRoomWith(originRoom, room => {
+            return room.getStronghold() !== null;
+        });
+        if (strongholdRoom !== null) {
+            const strongholdName: string = (strongholdRoom.getStronghold() as GStronghold).getName();
+            const distText: string = AREA.describeDistanceBetweenRooms(originRoom, strongholdRoom);
+            return `The nearest enemy stronghold is the ${strongholdName}. It lies ${distText}. The stronghold is a place of great evil and danger; but be of good courage: we are more than conquerors through him that loved us!`;
+        }
+        return `Hmm... there don't seem to be any strongholds. That's good, I suppose...?`;
     },
 
     // Example functions:
@@ -307,6 +354,9 @@ export class GConversation {
         } else if (this.currentBlurb.dynamicLevel !== undefined) {
             // Dynamic-by-level: random variant from a class, scaled by a given level
             preparedText = this.getDynamicTextByLevel(this.currentBlurb.dynamicLevel);
+        } else if (this.currentBlurb.textFunc !== undefined) {
+            // Text function: get text directly from a function
+            preparedText = this.getTextByFunction(this.currentBlurb.textFunc);
         } else if (this.currentBlurb.text !== undefined) {
             // Static text, exactly as we have it in the JSON
             preparedText = this.currentBlurb.text;
@@ -402,29 +452,7 @@ export class GConversation {
     }
 
     private replaceLabels(text: string): string {
-        let newText = text
-            .replaceAll('SPEAKER_FIRST', this.currentSpeaker.getFirstName())
-            .replaceAll('SPEAKER_LAST', this.currentSpeaker.getLastName())
-            .replaceAll('SPEAKER_FULL', this.currentSpeaker.getName())
-            .replaceAll('SPEAKER_FORMAL', this.currentSpeaker.getFormalName())
-            .replaceAll('SPEAKER_SAINT', this.currentSpeaker.getSaintName())
-            .replaceAll('SPEAKER_SEXTYPE', this.currentSpeaker.getSexType())
-            .replaceAll('SPEAKER_POLITE', this.currentSpeaker.getPoliteType())
-            .replaceAll('SPEAKER_HONOR', this.currentSpeaker.getHonorific())
-            .replaceAll('SPEAKER_PREF', this.currentSpeaker.getPreferredName());
-        if (this.currentHearer !== undefined) {
-            newText = newText
-                .replaceAll('HEARER_FIRST', this.currentHearer.getFirstName())
-                .replaceAll('HEARER_LAST', this.currentHearer.getLastName())
-                .replaceAll('HEARER_FULL', this.currentHearer.getFirstName())
-                .replaceAll('HEARER_FORMAL', this.currentHearer.getFormalName())
-                .replaceAll('HEARER_SAINT', this.currentHearer.getSaintName())
-                .replaceAll('HEARER_SEXTYPE', this.currentHearer.getSexType())
-                .replaceAll('HEARER_POLITE', this.currentHearer.getPoliteType())
-                .replaceAll('HEARER_HONOR', this.currentHearer.getHonorific())
-                .replaceAll('HEARER_PREF', this.currentHearer.getPreferredName());
-        }
-        return newText;
+        return PEOPLE.replaceLabels(text, this.currentSpeaker.getPerson(), this.currentHearer?.getPerson());
     }
 
     private getRandomDynamicText(dynamicClass: string): string {
@@ -555,6 +583,30 @@ export class GConversation {
         // along with those parsed from the command string:
         const newArgs: any[] = [PLAYER.getSprite(), someone, ...args];
         func(...newArgs) as string;
+    }
+
+    /**
+     * A 'text' function will directly return the text for the next blurb.
+     */
+    private getTextByFunction(command: string): string {
+        // Parse the command to get the function name and arguments
+        const { functionName, args } = this.parseCommand(command);
+
+        // Retrieve the function from CMD_FUNCTIONS
+        const func = CMD_FUNCTIONS[functionName];
+
+        if (typeof func !== "function") {
+            throw new Error(`Function ${functionName} not found`);
+        }
+
+        const someone: GCharSprite|undefined = this.currentSpeaker !== PLAYER.getSprite() ?
+            this.currentSpeaker :
+            this.currentHearer;
+
+        // Add player and the other person as arguments,
+        // along with those parsed from the command string:
+        const newArgs: any[] = [PLAYER.getSprite(), someone, ...args];
+        return func(...newArgs) as string;
     }
 
     /**

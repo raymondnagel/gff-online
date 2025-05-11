@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { GFF } from '../main';
 import { GCharSprite } from './chars/GCharSprite';
-import { GBubble, GPoint } from '../types';
+import { GBubble, GPoint2D } from '../types';
 import { RANDOM } from '../random';
 import { DEPTH } from '../depths';
 
@@ -36,7 +36,7 @@ export class GThoughtBubble extends Phaser.GameObjects.Container implements GBub
     private longestLinePixels: number = 0;
     private currentWordIndex: number = 0;
 
-    private bubbleLoc: GPoint
+    private bubbleLoc: GPoint2D
     private bubbleWidth: number;
     private bubbleHeight: number;
 
@@ -105,8 +105,8 @@ export class GThoughtBubble extends Phaser.GameObjects.Container implements GBub
         this.add(this.shadowGraphics);
 
         // Get location for where the tail attaches to the bubble:
-        const tailLoc: GPoint = this.getBestTailAttachPoint(speakX, speakY, 0, 0, this.bubbleWidth, this.bubbleHeight);
-        const speakLoc: GPoint = {x: speakX, y: speakY};
+        const tailLoc: GPoint2D = this.getBestTailAttachPoint(speakX, speakY, 0, 0, this.bubbleWidth, this.bubbleHeight);
+        const speakLoc: GPoint2D = {x: speakX, y: speakY};
         // const tailLength = Phaser.Math.Distance.BetweenPoints(tailLoc, speakLoc);
 
         // Tail puff data:
@@ -207,7 +207,7 @@ export class GThoughtBubble extends Phaser.GameObjects.Container implements GBub
         puff.setData('morph', MORPH_AMT);
     }
 
-    private getBestBubbleSpace(speakX: number, speakY: number, bubbleWidth: number, bubbleHeight: number): GPoint {
+    private getBestBubbleSpace(speakX: number, speakY: number, bubbleWidth: number, bubbleHeight: number): GPoint2D {
         // The best space is directly above the thinker, if possible
         let bubbleX: number = speakX - (bubbleWidth / 2);
         let bubbleY: number = speakY - (bubbleHeight + TAIL_HEIGHT);
@@ -230,7 +230,7 @@ export class GThoughtBubble extends Phaser.GameObjects.Container implements GBub
         return {x: bubbleX, y: bubbleY};
     }
 
-    private getBestTailAttachPoint(speakX: number, speakY: number, bubbleX: number, bubbleY: number, bubbleWidth: number, bubbleHeight: number): GPoint {
+    private getBestTailAttachPoint(speakX: number, speakY: number, bubbleX: number, bubbleY: number, bubbleWidth: number, bubbleHeight: number): GPoint2D {
 
         const bubbleCtrX: number = bubbleX + (bubbleWidth / 2);
         const xDiff: number = bubbleCtrX - speakX;

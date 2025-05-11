@@ -3,7 +3,8 @@ import { COLOR } from "../colors";
 import { GInputMode } from "../GInputMode";
 import { GRoom } from "../GRoom";
 import { GFF } from "../main";
-import { Dir9, GPoint } from "../types";
+import { PLAYER } from "../player";
+import { Dir9, GPoint2D } from "../types";
 import { GUIScene } from "./GUIScene";
 
 const INPUT_DEFAULT: GInputMode = new GInputMode('map.default');
@@ -70,7 +71,7 @@ export class GMapUI extends GUIScene {
      * 6. overlays        (independent objects, possibly animated)
      */
     private renderMap() {
-        const drawingDim: GPoint = this.getDrawingDimension();
+        const drawingDim: GPoint2D = this.getDrawingDimension();
         const ctrX: number = Math.floor(GFF.GAME_W / 2);
         const ctrY: number = 408;
 
@@ -78,7 +79,7 @@ export class GMapUI extends GUIScene {
         const vertRooms: number = this.area.getHeight();
 
         this.lowerTexture = this.add.renderTexture(Math.floor(ctrX - (drawingDim.x / 2)), Math.floor(ctrY - (drawingDim.y / 2)), drawingDim.x, drawingDim.y).setOrigin(0, 0);
-        const mapTL: GPoint = this.lowerTexture.getTopLeft();
+        const mapTL: GPoint2D = this.lowerTexture.getTopLeft();
         this.wallGraphics = this.add.graphics().setPosition(mapTL.x - .5, mapTL.y + .5);
         this.upperTexture = this.add.renderTexture(mapTL.x, mapTL.y, drawingDim.x, drawingDim.y).setOrigin(0, 0);
 
@@ -86,21 +87,38 @@ export class GMapUI extends GUIScene {
             for (let x: number = 0; x < horzRooms; x++) {
                 if (this.area.containsRoom(this.floor, x, y)) {
                     const room: GRoom = this.area.getRoomAt(this.floor, x, y) as GRoom;
+                    const cellX: number = x * CELL_WIDTH;
+                    const cellY: number = y * CELL_HEIGHT;
+
+                    const terrain = room.getMapTerrain();
+                    const feature = room.getMapFeature();
+
+                    // Draw terrain base:
                     if (room.isDiscovered() || GFF.debugMode) {
-                        const cellX: number = x * CELL_WIDTH;
-                        const cellY: number = y * CELL_HEIGHT;
-
-                        const terrain = room.getMapTerrain();
-                        const feature = room.getMapFeature();
-
-                        // Draw terrain base:
                         this.lowerTexture.draw(terrain, cellX, cellY);
+                    }
 
-                        // Draw feature, if applicable:
-                        if (feature) {
-                            this.lowerTexture.draw(feature, cellX, cellY);
+                    // Draw feature, if applicable:
+                    if (feature) {
+                        switch (feature) {
+                            case 'map_blue_chest':
+                            case 'map_red_chest':
+                                // Chests are shown if the room is marked, regardless of discovery:
+                                if (PLAYER.getMarkedChestRoom() === room) {
+                                    this.lowerTexture.draw(feature, cellX, cellY);
+                                }
+                                break;
+                            default:
+                                // Other features are shown only if the room is discovered:
+                                if (room.isDiscovered() || GFF.debugMode) {
+                                    this.lowerTexture.draw(feature, cellX, cellY);
+                                }
+                                break;
                         }
+                    }
 
+                    // Draw the rest only if the room is discovered:
+                    if (room.isDiscovered() || GFF.debugMode) {
                         // Draw terrain overlap:
                         this.lowerTexture.draw(terrain + '_overlap', cellX, cellY + CELL_Y_OFFSET);
 
@@ -209,7 +227,7 @@ export class GMapUI extends GUIScene {
         }
     }
 
-    private getDrawingDimension(): GPoint {
+    private getDrawingDimension(): GPoint2D {
         const horzRooms: number = this.area.getWidth();
         const vertRooms: number = this.area.getHeight();
         let topMost: number = 100;

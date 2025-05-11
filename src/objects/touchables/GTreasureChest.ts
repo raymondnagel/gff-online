@@ -26,6 +26,12 @@ export class GTreasureChest extends GTouchable {
 
     public doTouch() {
         const item: GItem = this.premium ? this.getPremiumItem() : this.getCommonItem();
+
+        // Unmark the chest if it is premium and marked::
+        if (this.premium && PLAYER.getMarkedChestRoom() === GFF.AdventureContent.getCurrentRoom()) {
+            PLAYER.setMarkedChestRoom(null);
+        }
+
         GFF.AdventureContent.scene.pause();
         GFF.AdventureUI.getSound().playSound('open_chest').once('complete', () => {
             GFF.AdventureContent.getCurrentRoom()?.removePremiumChest();

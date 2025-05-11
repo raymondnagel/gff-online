@@ -5,23 +5,23 @@ import { GCharSprite } from "../objects/chars/GCharSprite";
 import { GBuildingExit } from "../objects/touchables/GBuildingExit";
 import { PLAYER } from "../player";
 import { RANDOM } from "../random";
-import { CLabeledChar, Dir9, GPoint } from "../types";
+import { CLabeledChar, Dir9, GPoint2D } from "../types";
 import { GCutscene } from "./GCutscene";
 
 type PewSeat = {
-    point: GPoint,
+    point: GPoint2D,
     state: 'empty'|'reserved'|'claimed'
 }
 
 const CENTER_X: number = 512;
 const CENTER_Y: number = 352;
 const THRESH_Y: number = 553;
-const SPAWN_PT: GPoint = {x: CENTER_X, y: 800};
-const THRESH_PT: GPoint = {x: CENTER_X, y: THRESH_Y};
-const BEFORE_PULPIT_PT: GPoint = {x: CENTER_X, y: 290};
-const AROUND_PULPIT_PT: GPoint = {x: BEFORE_PULPIT_PT.x - 70, y: 220};
-const PAST_PULPIT_PT: GPoint = {x: AROUND_PULPIT_PT.x, y: 183};
-const BEHIND_PULPIT_PT: GPoint = {x: CENTER_X, y: PAST_PULPIT_PT.y};
+const SPAWN_PT: GPoint2D = {x: CENTER_X, y: 800};
+const THRESH_PT: GPoint2D = {x: CENTER_X, y: THRESH_Y};
+const BEFORE_PULPIT_PT: GPoint2D = {x: CENTER_X, y: 290};
+const AROUND_PULPIT_PT: GPoint2D = {x: BEFORE_PULPIT_PT.x - 70, y: 220};
+const PAST_PULPIT_PT: GPoint2D = {x: AROUND_PULPIT_PT.x, y: 183};
+const BEHIND_PULPIT_PT: GPoint2D = {x: CENTER_X, y: PAST_PULPIT_PT.y};
 
 export class GChurchServiceCutscene extends GCutscene {
 

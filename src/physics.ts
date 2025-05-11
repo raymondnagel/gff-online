@@ -1,4 +1,4 @@
-import { BoundedGameObject, GPoint, GRect } from "./types";
+import { BoundedGameObject, GPoint2D, GRect } from "./types";
 
 export namespace PHYSICS {
 
@@ -24,7 +24,7 @@ export namespace PHYSICS {
         return null;
     }
 
-    export function getPhysicalCenter(object: BoundedGameObject): GPoint|null {
+    export function getPhysicalCenter(object: BoundedGameObject): GPoint2D|null {
         // Calculate relative to position using body offset and size;
         // don't use body.center, as it may not be accurate if the object
         // was just repositioned.
@@ -38,7 +38,7 @@ export namespace PHYSICS {
         return null;
     }
 
-    export function centerPhysically(object: BoundedGameObject, point: GPoint) {
+    export function centerPhysically(object: BoundedGameObject, point: GPoint2D) {
         if (object.body && 'setPosition' in object) {
             const body: Phaser.Physics.Arcade.Body = object.body as Phaser.Physics.Arcade.Body;
             const x: number = point.x - (body.width / 2) - body.offset.x;
@@ -48,7 +48,7 @@ export namespace PHYSICS {
     }
 
     export function isCenterWithin(object: BoundedGameObject, area: GRect) {
-        const ctr: GPoint = getPhysicalCenter(object) as GPoint;
+        const ctr: GPoint2D = getPhysicalCenter(object) as GPoint2D;
         return ctr.x >= area.x
             && ctr.x < area.x + area.width
             && ctr.y >= area.y
@@ -56,8 +56,8 @@ export namespace PHYSICS {
     }
 
     export function getDistanceBetween(object1: BoundedGameObject, object2: BoundedGameObject) {
-        const ctr1: GPoint = getPhysicalCenter(object1) as GPoint;
-        const ctr2: GPoint = getPhysicalCenter(object2) as GPoint;
+        const ctr1: GPoint2D = getPhysicalCenter(object1) as GPoint2D;
+        const ctr2: GPoint2D = getPhysicalCenter(object2) as GPoint2D;
         return Phaser.Math.Distance.BetweenPoints(ctr1, ctr2);
     }
 

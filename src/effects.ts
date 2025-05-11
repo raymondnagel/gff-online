@@ -1,6 +1,6 @@
 import { GFF } from "./main";
 import { GBaseScene } from "./scenes/GBaseScene";
-import { BoundedGameObject, GPoint, GRect, SpriteEffect } from "./types";
+import { BoundedGameObject, GPoint2D, GRect, SpriteEffect } from "./types";
 
 export namespace EFFECTS {
 

@@ -103,4 +103,9 @@ export namespace BOOKS {
     export function getNextBookToFind(): string|undefined {
         return booksToFind.pop();
     }
+
+    export function getRandomBookName(): string {
+        const books: GBookEntry[] = GFF.GAME.cache.json.get('books_info');
+        return (RANDOM.randElement(books) as GBookEntry).name;
+    }
 }

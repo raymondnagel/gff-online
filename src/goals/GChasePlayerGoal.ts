@@ -3,8 +3,7 @@ import { GFF } from "../main";
 import { GImpSprite } from "../objects/chars/GImpSprite";
 import { GPlayerSprite } from "../objects/chars/GPlayerSprite";
 import { PLAYER } from "../player";
-import { PHYSICS } from "../physics";
-import { GPoint } from "../types";
+import { GPoint2D } from "../types";
 
 export class GChasePlayerGoal extends GGoal {
 
@@ -19,10 +18,10 @@ export class GChasePlayerGoal extends GGoal {
         GFF.AdventureContent.getSound().playSound('imp_growl');
     }
 
-    public doStep(_time: number, _delta: number): void {
+    public doStep(time: number, delta: number): void {
         let player: GPlayerSprite = PLAYER.getSprite();
-        let playerCtr: GPoint = player.getPhysicalCenter();
-        this.walkTowardForTime(playerCtr.x, playerCtr.y);
+        let playerCtr: GPoint2D = player.getPhysicalCenter();
+        this.walkTowardForTime(playerCtr.x, playerCtr.y, time, delta);
     }
 
     public isAchieved(): boolean {

@@ -2,18 +2,35 @@ import 'phaser';
 import { GCharSprite } from './GCharSprite';
 import { GFF } from '../../main';
 import { DIRECTION } from '../../direction';
-import { GAdventureContent } from '../../scenes/GAdventureContent';
-import { Dir9, GGender, GRect } from '../../types';
+import { Dir9, GGender, GPerson, GRect } from '../../types';
 import { PLAYER } from '../../player';
 import { GGoal } from '../../goals/GGoal';
+import { BOOKS } from '../../books';
 
 const INTERACTION_RANGE: number = 50;
 const INTERACTION_AREA_SIDE: number = 100;
 
+const person: GPerson = {
+    firstName: 'Adam',
+    lastName: 'Cesar',
+    preferredName: null,
+    spriteKeyPrefix: '',
+    gender: 'm',
+    voice: 2,
+    faith: 0,
+    familiarity: 0,
+    nameLevel: 0,
+    reprobate: false,
+    homeTown: null,
+    bio1: null,
+    bio2: null,
+    favoriteBook: 'Psalms'
+};
+
 export class GPlayerSprite extends GCharSprite {
 
     constructor(x:number, y: number) {
-        super('adam', 'Adam', 'Cesar', x, y);
+        super('adam', x, y);
         this.setData('permanent', true);
         PLAYER.setSprite(this);
         this.setControlled(true);
@@ -31,6 +48,19 @@ export class GPlayerSprite extends GCharSprite {
             this.body.onCollide = true;
             this.setCollideWorldBounds(true, 0, 0, true);
         }
+    }
+
+    public getName(): string {
+        return person.firstName + ' ' + person.lastName;
+    }
+    public getFirstName(): string {
+        return person.firstName;
+    }
+    public getLastName(): string {
+        return person.lastName;
+    }
+    public getPerson(): GPerson {
+        return person;
     }
 
     public runDirection(direction: Dir9) {

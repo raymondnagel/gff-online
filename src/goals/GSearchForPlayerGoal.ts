@@ -5,7 +5,7 @@ import { GPlayerSprite } from "../objects/chars/GPlayerSprite";
 import { PLAYER } from "../player";
 import { GChasePlayerGoal } from "./GChasePlayerGoal";
 import { PHYSICS } from "../physics";
-import { GPoint } from "../types";
+import { GPoint2D } from "../types";
 
 const SIGHT_RANGE: number = 240;
 const CHASE_TIMEOUT: number = 6000;
@@ -30,8 +30,8 @@ export class GSearchForPlayerGoal extends GGoal {
     public doStep(time: number, delta: number): void {
         // With each step, evaluate whether the player has been spotted:
         let player: GPlayerSprite = PLAYER.getSprite();
-        let playerCtr: GPoint = player.getPhysicalCenter();
-        let myCtr: GPoint = this.char.getPhysicalCenter();
+        let playerCtr: GPoint2D = player.getPhysicalCenter();
+        let myCtr: GPoint2D = this.char.getPhysicalCenter();
 
         const distance = Phaser.Math.Distance.Between(
             myCtr.x,

@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { GFF } from '../main';
 import { GCharSprite } from './chars/GCharSprite';
-import { GBubble, GPoint } from '../types';
+import { GBubble, GPoint2D } from '../types';
 import { DEPTH } from '../depths';
 
 const SPEAKX_ADJUST: number = 10;
@@ -67,7 +67,7 @@ export class GSpeechBubble extends Phaser.GameObjects.Container implements GBubb
         const bubbleHeight = (this.lines.length * TEXT_HEIGHT) + (BUBBLE_PADDING * 2);
 
         // Get best location to place the bubble:
-        const bubbleLoc: GPoint = this.getBestBubbleSpace(speakX, speakY, bubbleWidth, bubbleHeight);
+        const bubbleLoc: GPoint2D = this.getBestBubbleSpace(speakX, speakY, bubbleWidth, bubbleHeight);
 
         // Now we know where the bubble is going; set position for the bubble graphics:
         this.bubbleGraphics.setPosition(bubbleLoc.x, bubbleLoc.y);
@@ -87,7 +87,7 @@ export class GSpeechBubble extends Phaser.GameObjects.Container implements GBubb
         speakY -= bubbleLoc.y;
 
         // Get location for where the tail attaches to the bubble:
-        const tailLoc: GPoint = this.getBestTailAttachPoint(speakX, speakY, 0, 0, bubbleWidth, bubbleHeight);
+        const tailLoc: GPoint2D = this.getBestTailAttachPoint(speakX, speakY, 0, 0, bubbleWidth, bubbleHeight);
 
         // Tail points:
         const tailWidth: number = TAIL_WIDTH_PCT * bubbleWidth;
@@ -116,7 +116,7 @@ export class GSpeechBubble extends Phaser.GameObjects.Container implements GBubb
         this.arrangeTextObjs(bubbleLoc.x + BUBBLE_PADDING, bubbleLoc.y + BUBBLE_PADDING, TEXT_HEIGHT);
     }
 
-    private getBestBubbleSpace(speakX: number, speakY: number, bubbleWidth: number, bubbleHeight: number): GPoint {
+    private getBestBubbleSpace(speakX: number, speakY: number, bubbleWidth: number, bubbleHeight: number): GPoint2D {
         // The best space is directly above the speaker, if possible
         let bubbleX: number = speakX - (bubbleWidth / 2);
         let bubbleY: number = speakY - (bubbleHeight + TAIL_HEIGHT);
@@ -139,7 +139,7 @@ export class GSpeechBubble extends Phaser.GameObjects.Container implements GBubb
         return {x: bubbleX, y: bubbleY};
     }
 
-    private getBestTailAttachPoint(speakX: number, speakY: number, bubbleX: number, bubbleY: number, bubbleWidth: number, bubbleHeight: number): GPoint {
+    private getBestTailAttachPoint(speakX: number, speakY: number, bubbleX: number, bubbleY: number, bubbleWidth: number, bubbleHeight: number): GPoint2D {
 
         const bubbleCtrX: number = bubbleX + (bubbleWidth / 2);
         const xDiff: number = bubbleCtrX - speakX;

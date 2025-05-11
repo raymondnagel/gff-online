@@ -1,7 +1,7 @@
 import { DIRECTION } from "../direction";
 import { GCharSprite } from "../objects/chars/GCharSprite";
 import { PHYSICS } from "../physics";
-import { Dir9, GPoint } from "../types";
+import { Dir9, GPoint2D } from "../types";
 
 const DIAGONAL_THRESHOLD: number = 1.5;
 const MIN_TIME_PER_DIR: number = 500;
@@ -73,7 +73,7 @@ export abstract class GGoal {
     protected walkTo(tX: number, tY: number, time: number, delta: number) {
         let xInc: number = 0;
         let yInc: number = 0;
-        let myCtr: GPoint = this.char.getPhysicalCenter();
+        let myCtr: GPoint2D = this.char.getPhysicalCenter();
 
         if (myCtr.x < tX) {
             xInc = 1;
@@ -94,10 +94,10 @@ export abstract class GGoal {
     // This algorithm is good for preventing flickering between
     // two adjacent direction animations (e.g. NE & E) when
     // chasing a moving target.
-    protected walkTowardForTime(tX: number, tY: number) {
+    protected walkTowardForTime(tX: number, tY: number, _time: number, delta: number) {
         let xInc: number = 0;
         let yInc: number = 0;
-        let myCtr: GPoint = this.char.getPhysicalCenter();
+        let myCtr: GPoint2D = this.char.getPhysicalCenter();
         let dx: number = tX - myCtr.x;
         let dy: number = tY - myCtr.y;
 
@@ -108,12 +108,10 @@ export abstract class GGoal {
         let absDx: number = Math.abs(dx);
         let absDy: number = Math.abs(dy);
 
-        let timeDelta = Date.now() - this.lastStepTime;
-
         // If we're moving, but there is still time remaining to move
         // in this direction, continue on:
         if (charDir !== Dir9.NONE && this.directionTime > 0) {
-            this.directionTime -= timeDelta;
+            this.directionTime -= delta;
         } else {
             // We've moved enough in the current direction;
             // reset the counter and re-choose the best direction
@@ -150,7 +148,6 @@ export abstract class GGoal {
             }
 
             this.char.walkDirection(DIRECTION.getDirectionForIncs(xInc, yInc));
-            this.lastStepTime = Date.now();
         }
 
     }

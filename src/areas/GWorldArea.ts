@@ -1,7 +1,7 @@
 import { GArea } from "./GArea";
 import { GRegion } from "../regions/GRegion";
 import { GRoom } from "../GRoom";
-import { CardDir, Dir9, GCityBlock, GPerson, GPoint, GSceneryDef, ProgressCallback } from "../types";
+import { CardDir, Dir9, GCityBlock, GPerson, GPoint2D, GPoint3D, GSceneryDef, ProgressCallback } from "../types";
 import { GPlainRegion } from "../regions/GPlainRegion";
 import { GForestRegion } from "../regions/GForestRegion";
 import { GDesertRegion } from "../regions/GDesertRegion";

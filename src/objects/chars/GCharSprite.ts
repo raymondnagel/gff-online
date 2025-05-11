@@ -1,20 +1,18 @@
 import 'phaser';
 import { DIRECTION } from '../../direction';
 import { GFF } from '../../main';
-import { GAdventureContent } from '../../scenes/GAdventureContent';
-import { Dir9, GGender, GPoint } from '../../types';
+import { Dir9, GGender, GPerson, GPoint2D } from '../../types';
 import { GGoal } from '../../goals/GGoal';
 import { PHYSICS } from '../../physics';
 import { DEPTH } from '../../depths';
 import { GPersonSprite } from './GPersonSprite';
+import { GTown } from '../../GTown';
 
 const NAMETAG_SPACE: number = 10;
 const FLOAT_TEXT_SPACE: number = 10;
 
 export abstract class GCharSprite extends Phaser.Physics.Arcade.Sprite {
 
-    private firstName: string; // Character's first name
-    private lastName: string; // Character's last name
     private spriteKeyPrefix: string; // Used to determine sprites for appearance
     private goal: GGoal|null = null; // Current goal which the character will try to achieve
     private direction: Dir9 = Dir9.S; // Current facing direction
@@ -24,10 +22,8 @@ export abstract class GCharSprite extends Phaser.Physics.Arcade.Sprite {
     private nametag: Phaser.GameObjects.Text; // Shown above character if global flag is on
     private floatText: Phaser.GameObjects.Text; // Shown above character if active
 
-    constructor(spriteKeyPrefix: string, firstName: string, lastName: string, x: number, y: number) {
+    constructor(spriteKeyPrefix: string, x: number, y: number) {
         super(GFF.AdventureContent, x, y, `${spriteKeyPrefix}_idle_s`);
-        this.firstName = firstName;
-        this.lastName = lastName;
         this.spriteKeyPrefix = spriteKeyPrefix;
         this.setOrigin(0, 0);
 
@@ -54,17 +50,13 @@ export abstract class GCharSprite extends Phaser.Physics.Arcade.Sprite {
         this.createDirectionalAnimations('walk');
     }
 
-    public getName() {
-        return `${this.firstName} ${this.lastName}`;
-    }
+    public abstract getName(): string;
 
-    public getFirstName() {
-        return this.firstName;
-    }
+    public abstract getFirstName(): string;
 
-    public getLastName() {
-        return this.lastName;
-    }
+    public abstract getLastName(): string;
+
+    public abstract getPerson(): GPerson;
 
     public getSpriteKeyPrefix() {
         return this.spriteKeyPrefix;
@@ -147,7 +139,7 @@ export abstract class GCharSprite extends Phaser.Physics.Arcade.Sprite {
     }
 
     public showFloatingText(text: string) {
-        const point: GPoint = this.getTopCenter();
+        const point: GPoint2D = this.getTopCenter();
         this.floatText = GFF.AdventureContent.add.text(point.x, point.y - FLOAT_TEXT_SPACE, text, {
             fontFamily: 'oxygen',
             fontSize: '16px',
@@ -169,7 +161,7 @@ export abstract class GCharSprite extends Phaser.Physics.Arcade.Sprite {
                     scaleY: 1,
                     alpha: 1,
                     onUpdate: () => {
-                        const point: GPoint = this.getTopCenter();
+                        const point: GPoint2D = this.getTopCenter();
                         this.floatText.setPosition(point.x, point.y - FLOAT_TEXT_SPACE);
                     }
                 }, {
@@ -178,7 +170,7 @@ export abstract class GCharSprite extends Phaser.Physics.Arcade.Sprite {
                     scaleY: 2,
                     alpha: 0,
                     onUpdate: () => {
-                        const point: GPoint = this.getTopCenter();
+                        const point: GPoint2D = this.getTopCenter();
                         this.floatText.setPosition(point.x, point.y - FLOAT_TEXT_SPACE);
                     },
                     onComplete: () => {
@@ -189,11 +181,11 @@ export abstract class GCharSprite extends Phaser.Physics.Arcade.Sprite {
         });
     }
 
-    public getPhysicalCenter(): GPoint {
-        return PHYSICS.getPhysicalCenter(this) as GPoint;
+    public getPhysicalCenter(): GPoint2D {
+        return PHYSICS.getPhysicalCenter(this) as GPoint2D;
     }
 
-    public centerPhysically(point: GPoint) {
+    public centerPhysically(point: GPoint2D) {
         PHYSICS.centerPhysically(this, point);
     }
 
@@ -232,7 +224,7 @@ export abstract class GCharSprite extends Phaser.Physics.Arcade.Sprite {
      * the coordinates will be snapped to the target to prevent
      * overshooting it.
      */
-    public walkDirection(direction: Dir9, time?: number, delta?: number, target?: GPoint) {
+    public walkDirection(direction: Dir9, time?: number, delta?: number, target?: GPoint2D) {
 
         // Face the direction I am walking:
         this.faceDirection(direction);
@@ -248,7 +240,7 @@ export abstract class GCharSprite extends Phaser.Physics.Arcade.Sprite {
 
         // Calculate projected movement
         if (delta !== undefined && target !== undefined) {
-            const myCtr: GPoint = this.getPhysicalCenter();
+            const myCtr: GPoint2D = this.getPhysicalCenter();
             const seconds: number = delta / 1000;
             const xMove: number = Math.abs(horzInc * dirSpeed * seconds);
             const yMove: number = Math.abs(vertInc * dirSpeed * seconds);
@@ -403,7 +395,7 @@ export abstract class GCharSprite extends Phaser.Physics.Arcade.Sprite {
 
     private updateNametag() {
         if (GFF.showNametags) {
-            const topCenter: GPoint = this.getTopCenter();
+            const topCenter: GPoint2D = this.getTopCenter();
             if (this.nametag === undefined) {
                 this.nametag = this.createNametag();
             }
@@ -438,49 +430,4 @@ export abstract class GCharSprite extends Phaser.Physics.Arcade.Sprite {
         return this.getName();
     }
 
-    public getFormalName(): string {
-        if (this.getSpriteKeyPrefix().includes('_cop_')) {
-            return 'Officer ' + this.getLastName();
-        }
-        return (
-            this.getGender() === 'm'
-            ? 'Mr. '
-            : 'Ms. '
-        ) + this.getLastName();
-    }
-    public getSaintName(): string {
-        return (
-            this.getGender() === 'm'
-            ? 'Brother '
-            : 'Sister '
-        ) + this.getFirstName();
-    }
-    public getSexType(): string {
-        return (
-            this.getGender() === 'm'
-            ? 'man'
-            : 'woman'
-        );
-    }
-    public getPoliteType(): string {
-        return (
-            this.getGender() === 'm'
-            ? 'gentleman'
-            : 'lady'
-        );
-    }
-    public getHonorific(): string {
-        return (
-            this.getGender() === 'm'
-            ? 'sir'
-            : 'madam'
-        );
-    }
-    public getPreferredName(): string {
-        if (this instanceof GPersonSprite) {
-            return this.getPerson().preferredName ?? this.getName();
-        } else {
-            return this.getName();
-        }
-    }
 }

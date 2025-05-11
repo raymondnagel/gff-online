@@ -44,22 +44,85 @@
     "id": "playerMenu",
     "speaker": "player",
     "hearer": "other",
+    "fork": "isCompanion('playerMenuCompanion','playerMenuNonCompanion')"
+  },
+  {
+    "id": "playerMenuCompanion",
+    "speaker": "player",
+    "hearer": "other",
     "preCmd": "familiarize()",
     "choice": [
-      { "choiceText": "Please tell me about yourself!", "resultId": "notImplementedYet"},
-      { "choiceText": "Do you know anyone from this town?", "resultId": "notImplementedYet"},
-      { "choiceText": "Can you help me find a treasure?", "resultId": "notImplementedYet"},
-      { "choiceText": "What's your favorite book of the Bible?", "resultId": "notImplementedYet"},
-      { "choiceText": "Is there a stronghold nearby?", "resultId": "notImplementedYet"},
-      { "choiceText": "Would you like to come with me?", "resultId": "notImplementedYet"},
+      { "choiceText": "Please tell me about yourself!", "resultId": "bio1"},
+      { "choiceText": "Can you help me find a treasure?", "resultId": "markChest"},
+      { "choiceText": "What's your favorite book of the Bible?", "resultId": "favoriteBook"},
+      { "choiceText": "Is there a stronghold nearby?", "resultId": "locateStronghold"},
+      { "choiceText": "I think we should part ways for now...", "resultId": "saintPartWays"},
+      { "choiceText": "Let's continue on!", "resultId": "endConversation"}
+    ]
+  },
+  {
+    "id": "playerMenuNonCompanion",
+    "speaker": "player",
+    "hearer": "other",
+    "preCmd": "familiarize()",
+    "choice": [
+      { "choiceText": "Please tell me about yourself!", "resultId": "bio1"},
+      { "choiceText": "Do you know anyone from this town?", "resultId": "inform"},
+      { "choiceText": "Can you help me find a treasure?", "resultId": "markChest"},
+      { "choiceText": "What's your favorite book of the Bible?", "resultId": "favoriteBook"},
+      { "choiceText": "Is there a stronghold nearby?", "resultId": "locateStronghold"},
+      { "choiceText": "Would you like to come with me?", "resultId": "inviteCompanion"},
       { "choiceText": "Grace be with you, HEARER_SAINT!", "resultId": "saintGoodbye"}
     ]
   },
   {
-    "id": "notImplementedYet",
+    "id": "bio1",
     "speaker": "other",
     "hearer": "player",
-    "text": "This is a lovely conversation, brother; but I'm afraid I can't help you yet. Please check back later!",
+    "textFunc": "bio(1)",
+    "next": "bio2"
+  },
+  {
+    "id": "bio2",
+    "speaker": "other",
+    "hearer": "player",
+    "textFunc": "bio(2)",
+    "next": "playerMenu"
+  },
+  {
+    "id": "inform",
+    "speaker": "other",
+    "hearer": "player",
+    "textFunc": "inform()",
+    "next": "playerMenu"
+  },
+  {
+    "id": "markChest",
+    "speaker": "other",
+    "hearer": "player",
+    "textFunc": "markChest()",
+    "next": "playerMenu"
+  },
+  {
+    "id": "favoriteBook",
+    "speaker": "other",
+    "hearer": "player",
+    "textFunc": "favoriteBook()",
+    "next": "playerMenu"
+  },
+  {
+    "id": "locateStronghold",
+    "speaker": "other",
+    "hearer": "player",
+    "textFunc": "locateStronghold()",
+    "next": "playerMenu"
+  },
+  {
+    "id": "inviteCompanion",
+    "speaker": "other",
+    "hearer": "player",
+    "text": "I would love to join my brother and fellowsoldier. Let's go!",
+    "postCmd": "inviteCompanion()",
     "next": "endConversation"
   },
   {
@@ -67,6 +130,14 @@
     "speaker": "other",
     "hearer": "player",
     "dynamic": "saint_goodbye",
+    "next": "endConversation"
+  },
+  {
+    "id": "saintPartWays",
+    "speaker": "other",
+    "hearer": "player",
+    "dynamic": "saint_part_ways",
+    "postCmd": "dismissCompanion()",
     "next": "endConversation"
   },
   {

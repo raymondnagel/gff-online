@@ -142,6 +142,9 @@ export interface GPerson {
     nameLevel: 0|1|2; // 0 = unknown; 1 = formal name; 2 = informal name
     reprobate: boolean; // if true, faith decreases instead of increasing
     homeTown: GTown|null; // need this so they can join the town's church when converted
+    bio1: string|null; // Bio part 1: intro, town, background
+    bio2: string|null; // Bio part 2: grace, conversion, current
+    favoriteBook: string; // Favorite book
 }
 
 // Represents a unique enemy displayed as a GImpSprite
@@ -168,13 +171,18 @@ export enum Dir9 {
 export type CardDir = Dir9.N|Dir9.E|Dir9.S|Dir9.W;
 
 // Represents a simple X,Y coordinate point
-export interface GPoint {
+export interface GPoint2D {
     x: number;
     y: number;
 }
 
-// Represents a simple X,Y coordinate point
-export interface GRect extends GPoint {
+// Represents a simple X,Y,Z coordinate point
+export interface GPoint3D extends GPoint2D {
+    z: number;
+}
+
+// Represents a 2D rectangle with a position and size
+export interface GRect extends GPoint2D {
     width: number;
     height: number;
 }
@@ -182,7 +190,7 @@ export interface GRect extends GPoint {
 // Structure for planning placement of a scenery object
 // Since it was already placed, we only care about the key
 // and location now.
-export interface GSceneryPlan extends GPoint {
+export interface GSceneryPlan extends GPoint2D {
     key: string;
 }
 
@@ -242,6 +250,7 @@ export type CForm =
 { // Form 1: static text, optional next
     text: string;
     next?: string;
+    textFunc?: never;
     dynamic?: never;
     dynamicLevel?: never;
     choice?: never;
@@ -251,6 +260,7 @@ export type CForm =
     dynamic: string;
     next?: string;
     text?: never;
+    textFunc?: never;
     dynamicLevel?: never;
     choice?: never;
     fork?: never;
@@ -259,45 +269,60 @@ export type CForm =
     dynamicLevel: string;
     next?: string;
     text?: never;
+    textFunc?: never;
     dynamic?: never;
     choice?: never;
     fork?: never;
 } |
-{ // Form 4: static text, fork replaces next
-    text: string;
-    fork: string;
-    next?: never;
-    dynamic?: never;
-    dynamicLevel?: never;
-    choice?: never;
-} |
-{ // Form 5: dynamic text, fork replaces next
-    dynamic: string;
-    fork: string;
-    next?: never;
-    text?: never;
-    dynamicLevel?: never;
-    choice?: never;
-} |
-{ // Form 6: dynamic-by-level text, fork replaces next
-    dynamicLevel: string;
-    fork: string;
-    next?: never;
-    text?: never;
-    dynamic?: never;
-    choice?: never;
-} |
-{ // Form 7: no text at all, fork branches the conversation
-    fork: string;
-    next?: never;
+{ // Form 4: function text, optional next
+    textFunc: string;
+    next?: string;
     text?: never;
     dynamic?: never;
     dynamicLevel?: string;
     choice?: never;
+    fork?: never;
 } |
-{ // Form 8: choice replaces both the text and next
+{ // Form 5: static text, fork replaces next
+    text: string;
+    fork: string;
+    next?: never;
+    textFunc?: never;
+    dynamic?: never;
+    dynamicLevel?: never;
+    choice?: never;
+} |
+{ // Form 6: dynamic text, fork replaces next
+    dynamic: string;
+    fork: string;
+    next?: never;
+    text?: never;
+    textFunc?: never;
+    dynamicLevel?: never;
+    choice?: never;
+} |
+{ // Form 7: dynamic-by-level text, fork replaces next
+    dynamicLevel: string;
+    fork: string;
+    next?: never;
+    text?: never;
+    textFunc?: never;
+    dynamic?: never;
+    choice?: never;
+} |
+{ // Form 8: no text at all, fork branches the conversation
+    fork: string;
+    next?: never;
+    text?: never;
+    textFunc?: never;
+    dynamic?: never;
+    dynamicLevel?: never;
+    choice?: never;
+} |
+{ // Form 9: choice replaces both the text and next
     choice: COption[];
     text?: never;
+    textFunc?: never;
     dynamic?: never;
     dynamicLevel?: never;
     next?: never;
@@ -317,4 +342,10 @@ export type CBlurb = {
 export type CLabeledChar = {
     label: string;
     char: GCharSprite;
+};
+
+// A structure representing one level of a dynamic blurb, with several variants
+export type LeveledDynamicBlurb = {
+    level: number;
+    variants: string[];
 };

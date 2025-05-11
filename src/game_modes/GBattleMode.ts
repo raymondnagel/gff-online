@@ -1,10 +1,10 @@
-import { GPoint } from "../types";
+import { GPoint2D } from "../types";
 import { GBaseGameMode } from "./GBaseGameMode";
 
 export class GBattleMode extends GBaseGameMode{
 
     private bgImageName: string;
-    private encounterPoint: GPoint;
+    private encounterPoint: GPoint2D;
 
     constructor() {
         super('Battle Mode', 'BattleContent');

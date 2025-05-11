@@ -2,16 +2,16 @@ import { EFFECTS } from "../effects";
 import { GFF } from "../main";
 import { PHYSICS } from "../physics";
 import { PLAYER } from "../player";
-import { GPoint, GRect } from "../types";
+import { GPoint2D, GRect } from "../types";
 import { GEventTrigger } from "./GEventTrigger";
 
 export class GChurchDoorTrigger extends GEventTrigger {
 
     private triggerArea: GRect;
-    private doorOpenLocation: GPoint;
+    private doorOpenLocation: GPoint2D;
     private doorSpriteDepth: number;
 
-    constructor(triggerArea: GRect, doorOpenLocation: GPoint, doorSpriteDepth: number) {
+    constructor(triggerArea: GRect, doorOpenLocation: GPoint2D, doorSpriteDepth: number) {
         super('church door opening', 1);
         this.triggerArea = triggerArea;
         this.doorOpenLocation = doorOpenLocation;

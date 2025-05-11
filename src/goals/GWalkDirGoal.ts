@@ -1,5 +1,5 @@
 import { GGoal } from "./GGoal";
-import { Dir9, GPoint } from "../types";
+import { Dir9, GPoint2D } from "../types";
 import { DIRECTION } from "../direction";
 
 /**
@@ -24,7 +24,7 @@ export class GWalkDirGoal extends GGoal {
     public start(): void {
         const xDist: number = (DIRECTION.getHorzInc(this.direction) * this.distance);
         const yDist: number = (DIRECTION.getVertInc(this.direction) * this.distance);
-        const charCtr: GPoint = this.char.getPhysicalCenter();
+        const charCtr: GPoint2D = this.char.getPhysicalCenter();
         this.targetX = charCtr.x + xDist;
         this.targetY = charCtr.y + yDist;
     }
@@ -34,7 +34,7 @@ export class GWalkDirGoal extends GGoal {
     }
 
     public isAchieved(): boolean {
-        const charCtr: GPoint = this.char.getPhysicalCenter();
+        const charCtr: GPoint2D = this.char.getPhysicalCenter();
         const distance = Phaser.Math.Distance.Between(
             charCtr.x,
             charCtr.y,

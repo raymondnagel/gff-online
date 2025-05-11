@@ -1,7 +1,7 @@
 import { BOOKS } from "../../books";
 import { GLOSSARY } from "../../glossary";
 import { GFF } from "../../main";
-import { GActionableOption, GBookEntry, GGlossaryEntry, GPoint } from "../../types";
+import { GActionableOption, GBookEntry, GGlossaryEntry, GPoint2D } from "../../types";
 import { GDistributionContainer } from "./GDistributionContainer";
 import { GDynamicPositioner } from "./GDynamicPositioner";
 import { GTextButton } from "./GTextButton";
@@ -63,8 +63,8 @@ export class GPopup extends Phaser.GameObjects.Image {
         gfx.strokeRect(this.x, this.y, this.width, this.height);
 
         // Draw a dark, wider dark-grey shadow:
-        const bottomLeft: GPoint = {x: this.x, y: this.y + this.height};
-        const topRight: GPoint = {x: this.x + this.width, y: this.y};
+        const bottomLeft: GPoint2D = {x: this.x, y: this.y + this.height};
+        const topRight: GPoint2D = {x: this.x + this.width, y: this.y};
         gfx.fillStyle(0x000000, .5);
         gfx.fillRect(bottomLeft.x + SHADOW_WIDTH, bottomLeft.y, this.width, SHADOW_WIDTH);
         gfx.fillRect(topRight.x, topRight.y + SHADOW_WIDTH, SHADOW_WIDTH, this.height - SHADOW_WIDTH);

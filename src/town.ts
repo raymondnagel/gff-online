@@ -10,7 +10,10 @@ export namespace TOWN {
         towns.push(town);
     }
 
-    export function getTowns() {
+    export function getTowns(exceptTown?: GTown): GTown[] {
+        if (exceptTown) {
+            return towns.filter(town => town !== exceptTown);
+        }
         return towns;
     }
 }

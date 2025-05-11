@@ -1,7 +1,7 @@
 import 'phaser';
 import { GArea } from '../areas/GArea';
 import { DIRECTION } from '../direction';
-import { GRect, GPerson, GSpirit, GKeyList, BoundedGameObject, GPoint, CardDir, Dir9, GInteractable } from '../types';
+import { GRect, GPerson, GSpirit, GKeyList, BoundedGameObject, GPoint2D, CardDir, Dir9, GInteractable } from '../types';
 import { RANDOM } from '../random';
 import { GPlayerSprite } from '../objects/chars/GPlayerSprite';
 import { GPersonSprite } from '../objects/chars/GPersonSprite';
@@ -43,6 +43,17 @@ const INPUT_PAUSE: GInputMode = new GInputMode('adv.paused');
 const INPUT_DISABLED: GInputMode = new GInputMode('adv.disabled');
 
 const NON_ESS_TRANS_SPAWN_TRIES: number = 20;
+
+const COMPANION_RELATIVE_SPAWN_POINTS: GPoint2D[] = [
+    {x: 0, y: -16},  // N
+    {x: 36, y: 0},   // E
+    {x: 0, y: 16},   // S
+    {x: -36, y: 0},  // W
+    {x: 36, y: -16}, // NE
+    {x: 36, y: 16},  // SE
+    {x: -36, y: 16}, // SW
+    {x: -36, y: -16} // NW
+];
 
 export class GAdventureContent extends GContentScene {
 
@@ -245,7 +256,7 @@ export class GAdventureContent extends GContentScene {
     }
 
     public reportPlayerPosition() {
-        const playerCtr: GPoint = this.player.getPhysicalCenter();
+        const playerCtr: GPoint2D = this.player.getPhysicalCenter();
         console.log(`Player physical center: ${playerCtr.x},${playerCtr.y}`);
     }
 
@@ -510,10 +521,12 @@ export class GAdventureContent extends GContentScene {
                     ? DIRECTION.getCharPosForEdge(newEdge)
                     : this.player.y;
                 this.player.setPosition(newPlayerX, newPlayerY);
-                const playerCtr: GPoint = this.player.getPhysicalCenter();
+                const playerCtr: GPoint2D = this.player.getPhysicalCenter();
                 const room: GRoom = this.getCurrentRoom() as GRoom;
-                const wallCtr: GPoint = room.getNearestWallCenter(DIRECTION.getOpposite(dir) as CardDir, playerCtr);
+                const wallCtr: GPoint2D = room.getNearestWallCenter(DIRECTION.getOpposite(dir) as CardDir, playerCtr);
                 this.player.centerPhysically(wallCtr);
+                // Spawn companion after the player is positioned:
+                this.spawnCompanion();
             });
         }
     }
@@ -622,7 +635,7 @@ export class GAdventureContent extends GContentScene {
         });
     }
 
-    public getSpawnPointForTransient(transient: BoundedGameObject, body: GRect, essential: boolean): GPoint|null {
+    public getSpawnPointForTransient(transient: BoundedGameObject, body: GRect, essential: boolean): GPoint2D|null {
         let t: number = 0;
         // If it is essential to spawn the transient, keep trying forever; we MUST do it!
         while(essential || t < NON_ESS_TRANS_SPAWN_TRIES) {
@@ -675,15 +688,15 @@ export class GAdventureContent extends GContentScene {
      * locations are deemed to be non-critical, and may not spawn at all
      * if an invalid location is chosen.
      */
-    public spawnPerson(person: GPerson|GPersonSprite, location?: GPoint): GCharSprite|null {
+    public spawnPerson(person: GPerson|GPersonSprite, location?: GPoint2D): GCharSprite|null {
         const sprite: GPersonSprite = person instanceof GPersonSprite ?
             person :
             new GPersonSprite(person, 0, 0);
 
         sprite.setVisible(false);
         const body: GRect = sprite.getBody();
-        const spawnPoint: GPoint|null = location ?? this.getSpawnPointForTransient(sprite, body, false);
-        if (!spawnPoint) {
+        const spawnPoint: GPoint2D|null = location ?? this.getSpawnPointForTransient(sprite, body, false);
+        if (spawnPoint === null) {
             sprite.destroy();
             return null;
         } else {
@@ -705,13 +718,13 @@ export class GAdventureContent extends GContentScene {
      * locations are deemed to be non-critical, and may not spawn at all
      * if an invalid location is chosen.
      */
-    public spawnImp(imp: GSpirit|GImpSprite, location?: GPoint): GCharSprite|null {
+    public spawnImp(imp: GSpirit|GImpSprite, location?: GPoint2D): GCharSprite|null {
         const sprite: GImpSprite = imp instanceof GImpSprite ?
             imp :
             new GImpSprite(imp, 0, 0);
         sprite.setVisible(false);
         const body: GRect = sprite.getBody();
-        const spawnPoint: GPoint|null = location ?? this.getSpawnPointForTransient(sprite, body, false);
+        const spawnPoint: GPoint2D|null = location ?? this.getSpawnPointForTransient(sprite, body, false);
         if (!spawnPoint) {
             sprite.destroy();
             return null;
@@ -727,7 +740,7 @@ export class GAdventureContent extends GContentScene {
         const chest: GTreasureChest = new GTreasureChest(0, 0, 'common_chest');
         chest.setVisible(false);
         const body: GRect = chest.getBody();
-        const spawnPoint: GPoint|null = this.getSpawnPointForTransient(chest, body, false);
+        const spawnPoint: GPoint2D|null = this.getSpawnPointForTransient(chest, body, false);
         if (!spawnPoint) {
             chest.destroy();
             return false;
@@ -749,11 +762,30 @@ export class GAdventureContent extends GContentScene {
         }
     }
 
+    public spawnCompanion() {
+        if (PLAYER.getCompanion() !== null) {
+            const companion: GPerson = PLAYER.getCompanion() as GPerson;
+            let companionSprite: GPersonSprite|null;
+            for (let i: number = 1; i <= 3; i++) {
+                for (let point of COMPANION_RELATIVE_SPAWN_POINTS) {
+                    const spawnPoint: GPoint2D = {x: PLAYER.getSprite().x + (point.x * i), y: PLAYER.getSprite().y + (point.y * i)};
+                    companionSprite = this.spawnPerson(companion, spawnPoint) as GPersonSprite|null;
+                    if (companionSprite !== null) {
+                        return;
+                    }
+                }
+            }
+        }
+    }
+
     public spawnChurchPeople(room: GRoom) {
         const church: GChurch = room.getChurch() as GChurch;
         const people: GPerson[] = church.getPeople();
         for (let member of people) {
-            this.spawnPerson(member);
+            // Don't spawn the player companion along with the other church members:
+            if (member !== PLAYER.getCompanion()) {
+                this.spawnPerson(member);
+            }
         }
     }
 
@@ -1022,13 +1054,13 @@ export class GAdventureContent extends GContentScene {
     }
 
     private updateVision() {
-        const playerCtr: GPoint = this.player.getCenter();
+        const playerCtr: GPoint2D = this.player.getCenter();
         this.visionRadiusImage.setPosition(playerCtr.x, playerCtr.y);
-        const tlRad: GPoint = {
+        const tlRad: GPoint2D = {
             x: this.visionRadiusImage.x - (this.visionRadiusImage.width / 2),
             y: this.visionRadiusImage.y - (this.visionRadiusImage.height / 2)
         };
-        const brRad: GPoint = {
+        const brRad: GPoint2D = {
             x: this.visionRadiusImage.x + (this.visionRadiusImage.width / 2),
             y: this.visionRadiusImage.y + (this.visionRadiusImage.height / 2)
         };

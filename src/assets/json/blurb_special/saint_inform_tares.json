@@ -1,0 +1,30 @@
+[
+    {
+        "level": 0,
+        "variants": [
+            "We've tried for a long time to win OTHER_FIRST to the Lord, but OTHER_SUBJECT doesn't want anything to do with God.",
+            "I doubt OTHER_SUBJECT will ever come to the light. OTHER_SUBJECT loves darkness too much."
+        ]
+    },
+    {
+        "level": 1,
+        "variants": [
+            "I see OTHER_OBJECT around town sometimes, but OTHER_SUBJECT tries to avoid me.",
+            "The more I tell OTHER_OBJECT about who God is, the less interested OTHER_SUBJECT seems."
+        ]
+    },
+    {
+        "level": 2,
+        "variants": [
+            "OTHER_FIRST doesn't push me away when I talk about Jesus, but I think OTHER_SUBJECT's just trying to be polite.",
+            "OTHER_SUBJECT will let me tell OTHER_OBJECT about God, but sometimes I think OTHER_SUBJECT is just playing along."
+        ]
+    },
+    {
+        "level": 3,
+        "variants": [
+            "Sometimes I think OTHER_SUBJECT is just pretending to be a Christian.",
+            "OTHER_FIRST seems to really think that OTHER_SUBJECT is a Christian, but... I'm not sure OTHER_POSSESS heart is right with God."
+        ]
+    }
+]

@@ -1,5 +1,5 @@
 import { GGoal } from "./GGoal";
-import { GPoint } from "../types";
+import { GPoint2D } from "../types";
 
 export class GWalkToPointGoal extends GGoal {
 
@@ -19,7 +19,7 @@ export class GWalkToPointGoal extends GGoal {
     }
 
     public isAchieved(): boolean {
-        const charCtr: GPoint = this.char.getPhysicalCenter();
+        const charCtr: GPoint2D = this.char.getPhysicalCenter();
         const distance = Phaser.Math.Distance.Between(
             charCtr.x,
             charCtr.y,

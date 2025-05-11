@@ -2,12 +2,33 @@ import 'phaser';
 import { GCharSprite } from './GCharSprite';
 import { RANDOM } from '../../random';
 import { GFF } from '../../main';
-import { GGender, GSpirit } from '../../types';
-import { GAdventureContent } from '../../scenes/GAdventureContent';
+import { GGender, GPerson, GSpirit } from '../../types';
 import { GSearchForPlayerGoal } from '../../goals/GSearchForPlayerGoal';
 import { GSpawnImpGoal } from '../../goals/GSpawnImpGoal';
 import { ENEMY } from '../../enemy';
 import { GGoal } from '../../goals/GGoal';
+
+/**
+ * Imps use GSpirit rather than GPerson, but we'll have to create a fake GPerson
+ * for them so they can extend GCharSprite, and use that as the base class for
+ * all characters: imps, persons, and the player.
+ */
+const person: GPerson = {
+    firstName: '',
+    lastName: '',
+    preferredName: null,
+    spriteKeyPrefix: '',
+    gender: 'm',
+    voice: 2,
+    faith: 0,
+    familiarity: 0,
+    nameLevel: 0,
+    reprobate: false,
+    homeTown: null,
+    bio1: null,
+    bio2: null,
+    favoriteBook: 'Genesis'
+};
 
 export class GImpSprite extends GCharSprite {
 
@@ -17,8 +38,6 @@ export class GImpSprite extends GCharSprite {
     constructor(spirit: GSpirit, x: number, y: number) {
         super(
             'imp',
-            spirit.name,
-            '',
             x,
             y
         );
@@ -26,6 +45,20 @@ export class GImpSprite extends GCharSprite {
 
         // Imps spawn before they can move:
         this.setGoal(new GSpawnImpGoal(2000));
+    }
+
+    public getName(): string {
+        return this.spirit.name;
+    }
+    public getFirstName(): string {
+        return this.spirit.name;
+    }
+    public getLastName(): string {
+        return '';
+    }
+    // getPerson() should never actually be called, but we need to implement it
+    public getPerson(): GPerson {
+        return person;
     }
 
     public getSpirit(): GSpirit {

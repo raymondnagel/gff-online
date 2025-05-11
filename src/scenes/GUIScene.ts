@@ -3,7 +3,7 @@ import { GFF } from "../main";
 import { GIconBarButton } from "../objects/components/GIconBarButton";
 import { GPopup } from "../objects/components/GPopup";
 import { PLAYER } from "../player";
-import { GActionableOption, GPoint } from "../types";
+import { GActionableOption, GPoint2D } from "../types";
 import { GBaseScene } from "./GBaseScene";
 
 const METER_OFFSET = 31;
@@ -278,8 +278,8 @@ export abstract class GUIScene extends GBaseScene {
     }
 
     private rectColor: number = 0xff0000;
-    private startPt: GPoint = {x: 0, y: 0};
-    private endPt: GPoint = {x: 0, y: 0};
+    private startPt: GPoint2D = {x: 0, y: 0};
+    private endPt: GPoint2D = {x: 0, y: 0};
     private mouseMode: 'none'|'create'|'display' = 'none';
     private mouseRect: Phaser.GameObjects.Rectangle|null = null;
     private mouseText: Phaser.GameObjects.Text;

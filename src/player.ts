@@ -2,7 +2,9 @@ import { ARMORS } from "./armors";
 import { BOOKS } from "./books";
 import { COMMANDMENTS } from "./commandments";
 import { FRUITS } from "./fruits";
+import { GRoom } from "./GRoom";
 import { GPlayerSprite } from "./objects/chars/GPlayerSprite";
+import { GPerson } from "./types";
 
 export namespace PLAYER {
     const START_FAITH: number = 40;
@@ -15,6 +17,8 @@ export namespace PLAYER {
     let maxFaith: number = 0;
     let seeds: number = 0;
     let sermons: number = 0;
+    let markedChestRoom: GRoom|null = null;
+    let companion: GPerson|null = null;
 
     export function getName(): string {
         return 'Adam';
@@ -105,5 +109,30 @@ export namespace PLAYER {
 
     export function changeSermons(byAmount: number) {
         sermons += byAmount;
+    }
+
+    export function getMarkedChestRoom(): GRoom|null {
+        return markedChestRoom;
+    }
+
+    export function getCompanion(): GPerson|null {
+        return companion;
+    }
+
+    export function setCompanion(person: GPerson|null): void {
+        companion = person;
+    }
+
+    export function setMarkedChestRoom(chestRoom: GRoom|null): boolean {
+        if (chestRoom === null) {
+            markedChestRoom = chestRoom;
+            return false;
+        } else if (markedChestRoom === null) {
+            markedChestRoom = chestRoom;
+            return false;
+        } else {
+            markedChestRoom = chestRoom;
+            return true;
+        }
     }
 }

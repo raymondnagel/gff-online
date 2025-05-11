@@ -11,7 +11,7 @@
 
 import { RANDOM } from "./random";
 import { GFF } from "./main";
-import { CardDir, Dir9, GKeyList, GPoint } from "./types";
+import { CardDir, Dir9, GKeyList, GPoint2D } from "./types";
 
 export namespace DIRECTION {
 
@@ -24,6 +24,17 @@ export namespace DIRECTION {
         'sw',
         'w',
         'nw'
+    ];
+
+    const DIR8_FULLTEXTS = [
+        'north',
+        'northeast',
+        'east',
+        'southeast',
+        'south',
+        'southwest',
+        'west',
+        'northwest'
     ];
 
     const DIR8_VALUES = [
@@ -47,6 +58,18 @@ export namespace DIRECTION {
         'sw',
         'w',
         'nw'
+    ];
+
+    const DIR9_FULLTEXTS = [
+        'here',
+        'north',
+        'northeast',
+        'east',
+        'southeast',
+        'south',
+        'southwest',
+        'west',
+        'northwest'
     ];
 
     const DIR9_VALUES = [
@@ -83,12 +106,20 @@ export namespace DIRECTION {
         return DIR8_TEXTS;
     }
 
+    export function dir8FullTexts() {
+        return DIR8_FULLTEXTS;
+    }
+
     export function dir9Values() {
         return DIR9_VALUES;
     }
 
     export function dir9Texts() {
         return DIR9_TEXTS;
+    }
+
+    export function dir9FullTexts() {
+        return DIR9_FULLTEXTS;
     }
 
     export function randomCardDir(): CardDir {
@@ -258,7 +289,7 @@ export namespace DIRECTION {
         return directionData[direction][1];
     }
 
-    export function getVelocity(direction: Dir9): GPoint {
+    export function getVelocity(direction: Dir9): GPoint2D {
         return {
             x: directionData[direction][0],
             y: directionData[direction][1]
@@ -273,7 +304,7 @@ export namespace DIRECTION {
         return isDiagonal(direction) ? DIAGONAL_MODIFIER : 1.0;
     }
 
-    export function getDirectionOf(ptA: GPoint, ptB: GPoint): Dir9 {
+    export function getDirectionOf(ptA: GPoint2D, ptB: GPoint2D): Dir9 {
         const deltaX: number = ptB.x - ptA.x;
         const deltaY: number = ptB.y - ptA.y;
 

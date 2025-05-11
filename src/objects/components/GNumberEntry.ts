@@ -1,5 +1,5 @@
 import { GBaseScene } from "../../scenes/GBaseScene";
-import { GPoint } from "../../types";
+import { GPoint2D } from "../../types";
 import { GTextEntryControl } from "./GTextEntryControl";
 
 const MAX_CHARS: number = 3;
@@ -22,7 +22,7 @@ export class GNumberEntry extends GTextEntryControl {
         }).setOrigin(.5, .5).setLetterSpacing(2);
         this.add(this.numberText);
 
-        const caretPos: GPoint = this.numberText.getRightCenter();
+        const caretPos: GPoint2D = this.numberText.getRightCenter();
         this.caretImage = scene.add.image(caretPos.x, caretPos.y, 'number_entry_caret').setOrigin(0, .5);
         this.add(this.caretImage);
     }
@@ -44,7 +44,7 @@ export class GNumberEntry extends GTextEntryControl {
     }
 
     private updateCaret() {
-        const caretPos: GPoint = this.numberText.getRightCenter();
+        const caretPos: GPoint2D = this.numberText.getRightCenter();
         this.caretImage.setPosition(caretPos.x, caretPos.y);
     }
 

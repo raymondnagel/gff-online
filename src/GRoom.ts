@@ -1,5 +1,5 @@
 import { GRegion } from "./regions/GRegion";
-import { CardDir, Dir9, GCityBlock, GPoint, GRect, GRoomWalls, GSceneryDef, GSceneryPlan } from "./types";
+import { CardDir, Dir9, GCityBlock, GPoint2D, GRect, GRoomWalls, GSceneryDef, GSceneryPlan } from "./types";
 import { SCENERY } from "./scenery";
 import { GFF } from "./main";
 import { RANDOM } from "./random";
@@ -23,7 +23,6 @@ import { GChurchRegion } from "./regions/GChurchRegion";
 import { GWallSouthWithDoor } from "./objects/obstacles/walls/GWallSouthWithDoor";
 import { GWallSouth } from "./objects/obstacles/walls/GWallSouth";
 import { GInsideRegion } from "./regions/GInsideRegion";
-import { GOutsideRegion } from "./regions/GOutsideRegion";
 
 const WALL_GUARD_THICK: number = 10;
 const WALL_CTRS: number[] = [
@@ -222,7 +221,7 @@ export class GRoom {
         return this.walls[dir].every(section => section === true);
     }
 
-    public getNearestWallCenter(wallDir: CardDir, point: GPoint): GPoint {
+    public getNearestWallCenter(wallDir: CardDir, point: GPoint2D): GPoint2D {
         const findNearest = (wallSections: boolean[], target: number): number|undefined => {
             const limit = Math.min(WALL_CTRS.length, wallSections.length);
             return WALL_CTRS.slice(0, limit).reduce((prev, curr, index) => {
@@ -261,12 +260,12 @@ export class GRoom {
     }
 
     public hasNeighbor(direction: Dir9): boolean {
-        const velocity: GPoint = DIRECTION.getVelocity(direction);
+        const velocity: GPoint2D = DIRECTION.getVelocity(direction);
         return this.area.containsRoom(this.floor, this.x + velocity.x, this.y + velocity.y);
     }
 
     public getNeighbor(direction: Dir9): GRoom|null {
-        const velocity: GPoint = DIRECTION.getVelocity(direction);
+        const velocity: GPoint2D = DIRECTION.getVelocity(direction);
         return this.area.getRoomAt(this.floor, this.x + velocity.x, this.y + velocity.y);
     }
 
@@ -1287,7 +1286,7 @@ export class GRoom {
         const doorX: number = churchX + (churchWidth / 2);
         const doorY: number = churchY + churchHeight;
         const triggerArea: GRect = {x: doorX-radius, y: doorY-radius, width: radius*2, height: radius*2};
-        const doorOpenLocation: GPoint = {x: churchX + 94, y: churchY + 244};
+        const doorOpenLocation: GPoint2D = {x: churchX + 94, y: churchY + 244};
         const doorSpriteDepth: number = churchY + churchHeight + 1;
         this.addEventTrigger(new GChurchDoorTrigger(triggerArea, doorOpenLocation, doorSpriteDepth));
 

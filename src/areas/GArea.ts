@@ -3,7 +3,7 @@ import { RANDOM } from "../random";
 import { GRoom } from "../GRoom";
 import { GFF } from "../main";
 import { GRegion } from "../regions/GRegion";
-import { CardDir, Dir9, GFloor, ProgressCallback } from "../types";
+import { CardDir, Dir9, GFloor, GPoint2D, GPoint3D, ProgressCallback } from "../types";
 
 const HORZ_WALL_SECTIONS: number = 16;
 const VERT_WALL_SECTIONS: number = 11;
@@ -113,6 +113,24 @@ export class GArea {
             });
         }
         return rooms;
+    }
+
+    public findNearestRoomWith(origin: GRoom, condition: (r: GRoom) => boolean): GRoom|null {
+        const rooms: GRoom[] = this.getRoomsWithCondition(condition);
+        let nearestRoom: GRoom|null = null;
+        let nearestDistance: number = Number.MAX_VALUE;
+        rooms.forEach(room => {
+            const distance: number = Math.sqrt(
+                Math.pow(room.getX() - origin.getX(), 2) +
+                Math.pow(room.getY() - origin.getY(), 2) +
+                Math.pow(room.getFloor() - origin.getFloor(), 2)
+            );
+            if (distance < nearestDistance) {
+                nearestDistance = distance;
+                nearestRoom = room;
+            }
+        });
+        return nearestRoom;
     }
 
     protected exploreContiguous(startRoom: GRoom) {
