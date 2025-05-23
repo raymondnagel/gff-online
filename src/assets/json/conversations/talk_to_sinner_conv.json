@@ -172,7 +172,7 @@
     "speaker": "other",
     "hearer": "player",
     "dynamic": "sinner_convert",
-    "postCmd": "useSeed()",
+    "postCmd": "conversionMiracle()",
     "next": "endConversation"
   },
   {

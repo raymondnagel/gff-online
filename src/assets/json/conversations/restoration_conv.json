@@ -1,0 +1,41 @@
+[
+  {
+    "id": "start",
+    "speaker": "intercessor",
+    "hearer": "player",
+    "fork": "personMet('introFamiliar','introUnknown')"
+  },
+  {
+    "id": "introFamiliar",
+    "speaker": "intercessor",
+    "hearer": "player",
+    "text": "Ohh, HEARER_SAINT! What has happened to you?!",
+    "next": "callSaintsFamiliar"
+  },
+  {
+    "id": "introUnknown",
+    "speaker": "intercessor",
+    "hearer": "player",
+    "text": "Ohh, brother... you don't look so good...",
+    "next": "callSaintsUnknown"
+  },
+  {
+    "id": "callSaintsFamiliar",
+    "speaker": "intercessor",
+    "hearer": "player",
+    "text": "Saints, come quickly! We need to pray for our dear HEARER_SAINT!",
+    "next": "endConversation"
+  },
+  {
+    "id": "callSaintsUnknown",
+    "speaker": "intercessor",
+    "hearer": "player",
+    "text": "Hurry, everyone! We need to pray for this brother!",
+    "next": "endConversation"
+  },
+  {
+    "id": "endConversation",
+    "speaker": "intercessor",
+    "hearer": "player"
+  }
+]

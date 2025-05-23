@@ -5,8 +5,6 @@ import { Dir9, GGender, GPerson, GPoint2D } from '../../types';
 import { GGoal } from '../../goals/GGoal';
 import { PHYSICS } from '../../physics';
 import { DEPTH } from '../../depths';
-import { GPersonSprite } from './GPersonSprite';
-import { GTown } from '../../GTown';
 
 const NAMETAG_SPACE: number = 10;
 const FLOAT_TEXT_SPACE: number = 10;
@@ -79,6 +77,10 @@ export abstract class GCharSprite extends Phaser.Physics.Arcade.Sprite {
 
     public getDirection() {
         return this.direction;
+    }
+
+    public canInterrupt(): boolean {
+        return this.goal === null || this.goal.isInterruptable();
     }
 
     /**
@@ -292,6 +294,10 @@ export abstract class GCharSprite extends Phaser.Physics.Arcade.Sprite {
         this.playSingleAnimation('rejoice_s', true);
     }
 
+    public kneel() {
+        this.playSingleAnimation('kneel_ne', true);
+    }
+
     protected playSingleAnimation(animName: string, force: boolean = false) {
         this.play(`${this.spriteKeyPrefix}_${animName}`, !force);
     }
@@ -301,7 +307,7 @@ export abstract class GCharSprite extends Phaser.Physics.Arcade.Sprite {
         this.play(`${this.spriteKeyPrefix}_${animName}_${dirText}`, !force);
     }
 
-    protected createSingleAnimation(animName: string) {
+    protected createSingleAnimation(animName: string, times: number = -1) {
         this.anims.create({
             key: `${this.spriteKeyPrefix}_${animName}`,
             frames: this.anims.generateFrameNumbers(
@@ -309,7 +315,7 @@ export abstract class GCharSprite extends Phaser.Physics.Arcade.Sprite {
                 { start: 0, end: 6 }
             ),
             frameRate: 10,
-            repeat: -1 // Infinite loop
+            repeat: times
         });
     }
 
@@ -336,6 +342,9 @@ export abstract class GCharSprite extends Phaser.Physics.Arcade.Sprite {
     }
 
     public setGoal(goal: GGoal|null) {
+        if (this.goal !== null && !this.goal.isInterruptable()) {
+            return;
+        }
         this.goal = goal;
         this.goal?.setChar(this);
     }

@@ -19,7 +19,7 @@ export class GChurchDoorTrigger extends GEventTrigger {
     }
 
     protected condition(): boolean {
-        return PHYSICS.isCenterWithin(PLAYER.getSprite(), this.triggerArea);
+        return PLAYER.getFaith() > 0 && PHYSICS.isCenterWithin(PLAYER.getSprite(), this.triggerArea);
     }
 
     protected action(): void {

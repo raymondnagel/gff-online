@@ -143,6 +143,20 @@
   {
     "id": "endConversation",
     "speaker": "player",
+    "hearer": "other",
+    "fork": "canGiftSeed('giftSeed','end')"
+  },
+  {
+    "id": "giftSeed",
+    "speaker": "other",
+    "hearer": "player",
+    "text": "...wait, HEARER_SAINT! Before you go, I have a gift for you! Take this seed... and may it fall upon good ground in an honest and good heart!",
+    "postCmd": "giftSeed()",
+    "next": "end"
+  },
+  {
+    "id": "end",
+    "speaker": "player",
     "hearer": "other"
   }
 ]

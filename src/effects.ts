@@ -1,6 +1,6 @@
 import { GFF } from "./main";
 import { GBaseScene } from "./scenes/GBaseScene";
-import { BoundedGameObject, GPoint2D, GRect, SpriteEffect } from "./types";
+import { SpriteEffect } from "./types";
 
 export namespace EFFECTS {
 
@@ -20,6 +20,19 @@ export namespace EFFECTS {
                 },
                 soundKey: 'open_chest',
                 hideOnFinish: false
+            },
+            {
+                spriteConfig: {
+                    key: 'preach_sonic',
+                    frames: GFF.GAME.anims.generateFrameNumbers(
+                        'preach_sonic',
+                        { start: 0, end: 9 }
+                    ),
+                    frameRate: 12,
+                    repeat: 0
+                },
+                soundKey: 'gentle_ding',
+                hideOnFinish: true
             }
 
         ].forEach(s => {

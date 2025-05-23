@@ -5,7 +5,7 @@ import { GChoiceBubble } from "./objects/GChoiceBubble";
 import { GSpeechBubble } from "./objects/GSpeechBubble";
 import { GThoughtBubble } from "./objects/GThoughtBubble";
 import { PLAYER } from "./player";
-import { CBlurb, CLabeledChar, COption, Dir9, GBubble, GPerson, GPoint2D, GPoint3D, LeveledDynamicBlurb } from "./types";
+import { CBlurb, CLabeledChar, ConversationType, COption, Dir9, GBubble, GPerson, LeveledDynamicBlurb } from "./types";
 import { GPlayerSprite } from "./objects/chars/GPlayerSprite";
 import { GPersonSprite } from "./objects/chars/GPersonSprite";
 import { FRUITS } from "./fruits";
@@ -13,10 +13,12 @@ import { GTown } from "./GTown";
 import { GRejoiceGoal } from "./goals/GRejoiceGoal";
 import { PEOPLE } from "./people";
 import { GRoom } from "./GRoom";
-import { DIRECTION } from "./direction";
-import { GArea } from "./areas/GArea";
 import { AREA } from "./area";
 import { GStronghold } from "./GStronghold";
+import { GPopup } from "./objects/components/GPopup";
+import { COLOR } from "./colors";
+import { EFFECTS } from "./effects";
+import { DEPTH } from "./depths";
 
 const CMD_FUNCTIONS: Record<string, (...args: any[]) => any> = {
     /**
@@ -24,6 +26,9 @@ const CMD_FUNCTIONS: Record<string, (...args: any[]) => any> = {
      * 'preCmd' or 'postCmd', depending on whether they should be
      * executed before the blurb appears, or after it disappears.
      */
+    playSound: (_player: GPlayerSprite, _someone: GCharSprite, soundName: string) => {
+        GFF.AdventureContent.getSound().playSound(soundName);
+    },
     playPiano: (_player: GPlayerSprite, _someone: GCharSprite, songName: string) => {
         GFF.AdventureContent.getSound().setMusicVolume(0.6);
         GFF.AdventureContent.getSound().playMusic(songName);
@@ -35,8 +40,8 @@ const CMD_FUNCTIONS: Record<string, (...args: any[]) => any> = {
     },
     endPiano: (_player: GPlayerSprite, _someone: GCharSprite, ) => {
         GFF.AdventureContent.playerFinishPiano();
-    },    prefFormalName: (_player: GPlayerSprite, someone: GCharSprite) => {
-
+    },
+    prefFormalName: (_player: GPlayerSprite, someone: GCharSprite) => {
         someone.getPerson().nameLevel = 1;
         someone.getPerson().preferredName = PEOPLE.getFormalName(someone.getPerson());
     },
@@ -46,9 +51,9 @@ const CMD_FUNCTIONS: Record<string, (...args: any[]) => any> = {
     },
     preachFaith: (player: GPlayerSprite, someone: GCharSprite) => {
         const faithChange: number = RANDOM.randInt(5, 10 + FRUITS.getCount());
-        CMD_FUNCTIONS.changeFaith(player, someone, faithChange);
+        CMD_FUNCTIONS.changeFaith(player, someone, faithChange, true);
     },
-    changeFaith: (_player: GPlayerSprite, someone: GCharSprite, amount: number) => {
+    changeFaith: (_player: GPlayerSprite, someone: GCharSprite, amount: number, canConvert: boolean = false) => {
         const sinner: GPerson = someone.getPerson();
         sinner.familiarity++;
         if (sinner.reprobate) {
@@ -58,19 +63,40 @@ const CMD_FUNCTIONS: Record<string, (...args: any[]) => any> = {
             sinner.faith += amount;
             sinner.faith = Math.min(sinner.faith, 100);
         }
-
-        if (sinner.faith >= 100) {
-            // Conversion!
-            const town: GTown = (sinner.homeTown as GTown);
-            town.transferPersonToChurch(sinner);
-            sinner.preferredName = PEOPLE.getSaintName(sinner);
-            (someone as GPersonSprite).generateBio(true);
-            someone.setGoal(new GRejoiceGoal());
+        if (!canConvert) {
+            sinner.faith = Math.min(sinner.faith, 99);
         }
+        if (sinner.faith >= 100) {
+            someone.setImmobile(true);
+            someone.kneel();
+        }
+    },
+    conversionMiracle: (player: GPlayerSprite, someone: GCharSprite) => {
+        CMD_FUNCTIONS.useSeed(player, someone);
+        const convert: GPerson = someone.getPerson();
+        const town: GTown = (convert.homeTown as GTown);
+        town.transferPersonToChurch(convert);
+        convert.preferredName = PEOPLE.getSaintName(convert);
+        (someone as GPersonSprite).generateBio(true);
+        (someone as GPersonSprite).setNewConvert();
+        (someone as GPersonSprite).setReadyToTalk(true);
+        GFF.AdventureContent.getSound().playSound('hallelujah');
+        GFF.AdventureContent.fadeOut(500, COLOR.WHITE.num(), () => {
+            GFF.AdventureContent.fadeIn(500, COLOR.WHITE.num(), () => {
+                CMD_FUNCTIONS.rejoiceEvermore(player, someone);
+            });
+        });
     },
     useSeed: (player: GPlayerSprite, _someone: GCharSprite) => {
         player.showFloatingText('-1 seed');
         PLAYER.changeSeeds(-1);
+    },
+    giftSeed: (_player: GPlayerSprite, _someone: GCharSprite) => {
+        GFF.canGiftSeed = false;
+        GFF.AdventureContent.forceAdventureInputMode();
+        GPopup.createItemPopup('seed').onClose(() => {
+            PLAYER.changeSeeds(1);
+        });
     },
     familiarize: (_player: GPlayerSprite, someone: GCharSprite) => {
         someone.getPerson().familiarity++;
@@ -81,6 +107,48 @@ const CMD_FUNCTIONS: Record<string, (...args: any[]) => any> = {
     dismissCompanion: (_player: GPlayerSprite, _someone: GCharSprite) => {
         PLAYER.setCompanion(null);
     },
+    rejoiceEvermore: (_player: GPlayerSprite, someone: GCharSprite) => {
+        const rejoice: GRejoiceGoal = new GRejoiceGoal();
+        rejoice.setInterruptable(false);
+        someone.setGoal(rejoice);
+    },
+    preachSonic: (player: GPlayerSprite, _someone: GCharSprite) => {
+        const sX: number = player.x + 42;
+        const sY: number = player.y + 42;
+        EFFECTS.doEffect('preach_sonic', GFF.AdventureContent, sX, sY, 0.5, 0.5)
+            .setDepth(DEPTH.SPECIAL_EFFECT);
+    },
+    cheatFaith: (_player: GPlayerSprite, _someone: GCharSprite) => {
+        PLAYER.setFaith(PLAYER.getMaxFaith());
+    },
+    cheatNoFaith: (_player: GPlayerSprite, _someone: GCharSprite) => {
+        PLAYER.setFaith(1);
+    },
+    cheatSeeds: (_player: GPlayerSprite, _someone: GCharSprite) => {
+        PLAYER.changeSeeds(100);
+    },
+    cheatSermons: (_player: GPlayerSprite, _someone: GCharSprite) => {
+        PLAYER.changeSermons(100);
+    },
+    cheatChatty: (_player: GPlayerSprite, _someone: GCharSprite) => {
+        GFF.chatty = true;
+    },
+    cheatNoImps: (_player: GPlayerSprite, _someone: GCharSprite) => {
+        GFF.impRepellant = true;
+    },
+    cheatDivide: (_player: GPlayerSprite, _someone: GCharSprite) => {
+        PEOPLE.getPersons().forEach(person => {
+            if (person.reprobate) {
+                person.faith = 0;
+            } else if (person.faith < 100) {
+                person.faith = 99;
+            }
+        });
+    },
+    cheatDebug: (_player: GPlayerSprite, _someone: GCharSprite) => {
+        GFF.debugMode = true;
+    },
+
 
     /**
      * Fork functions (return id of next blurb as a string): encoded in
@@ -111,6 +179,9 @@ const CMD_FUNCTIONS: Record<string, (...args: any[]) => any> = {
     },
     seedCheck: (_player: GPlayerSprite, _someone: GCharSprite, passId: string, failId: string): string => {
         return PLAYER.getSeeds() > 0 ? passId : failId;
+    },
+    canGiftSeed: (_player: GPlayerSprite, _someone: GCharSprite, passId: string, failId: string): string => {
+        return GFF.canGiftSeed ? passId : failId;
     },
     coinFlip: (_player: GPlayerSprite, _someone: GCharSprite, headsId: string, tailsId: string): string => {
         return RANDOM.flipCoin() ? headsId : tailsId;
@@ -221,9 +292,12 @@ export class GConversation {
     private currentBubble: GBubble;
     private previousMusicVolume: number;
     private advance: boolean = false;
+    private convType: ConversationType = 'default';
+    private faithPerSermonBlurb: number[] = [];
 
-    constructor(blurbs: CBlurb[], participants?: CLabeledChar[]) {
+    constructor(blurbs: CBlurb[], participants?: CLabeledChar[], convType: ConversationType = 'default') {
         GFF.AdventureContent.setConversation(this);
+        this.convType = convType;
         this.blurbs = blurbs;
 
         // Can create a conversation without a list of participants;
@@ -241,8 +315,29 @@ export class GConversation {
         // Pause all participants so they will pay attention!
         this.pauseParticipants();
 
+        // If this is a sermon, we need to count how many blurbs the preacher will speak:
+        if (this.convType === 'sermon') {
+            this.calculateFaithPerSermonBlurb();
+        }
+
         // Begin the first blurb of the conversation:
         this.startBlurb();
+    }
+
+    private calculateFaithPerSermonBlurb() {
+        const missingFaith: number = PLAYER.getMaxFaith() - PLAYER.getFaith();
+        const sermonBlurbCount: number = this.blurbs.filter(blurb => {
+            return blurb.speaker === 'preacher';
+        }).length;
+
+        // Calculate the minimum faith per sermon blurb:
+        const minFaithPerSermon: number = Math.floor(missingFaith / sermonBlurbCount);
+        const remainder: number = missingFaith % sermonBlurbCount;
+
+        // Create an array of faith per sermon blurb:
+        this.faithPerSermonBlurb = Array(sermonBlurbCount).fill(minFaithPerSermon);
+        // Add the remainder to the last index, which will be popped first:
+        this.faithPerSermonBlurb[sermonBlurbCount - 1] += remainder;
     }
 
     /**
@@ -391,10 +486,17 @@ export class GConversation {
 
     private setSpeaker(speaker: string) {
         switch(speaker) {
-            case 'player':
-            case 'churchgoer':
-            case 'other':
             case 'preacher':
+                // Each time the preacher speaks a blurb during a sermon,
+                // we'll increase the player's faith.
+                if (this.convType === 'sermon') {
+                    this.restorePlayerFaith(this.faithPerSermonBlurb.pop() as number);
+                }
+            case 'player':
+            case 'intercessor':
+            case 'saint':
+            case 'sinner':
+            case 'other':
                 this.currentSpeaker = this.getRandomCharByLabel(speaker);
                 break;
             default:
@@ -409,9 +511,11 @@ export class GConversation {
         }
         switch(hearer) {
             case 'player':
-            case 'churchgoer':
-            case 'other':
             case 'preacher':
+            case 'intercessor':
+            case 'saint':
+            case 'sinner':
+            case 'other':
                 this.currentHearer = this.getRandomCharByLabel(hearer);
                 break;
             default:
@@ -422,10 +526,13 @@ export class GConversation {
     private orientParticipants() {
         // If there is a hearer defined, this is a 1-on-1 conversation:
         if (this.currentHearer !== undefined) {
-            // Let the speaker and the hearer face each other.
-            this.currentSpeaker.faceChar(this.currentHearer, true);
-            this.currentHearer.faceChar(this.currentSpeaker, true);
-
+            // Let the speaker and the hearer face each other (if they are idle):
+            if (this.currentSpeaker.isDoing('idle')) {
+                this.currentSpeaker.faceChar(this.currentHearer, true);
+            }
+            if (this.currentHearer.isDoing('idle')) {
+                this.currentHearer.faceChar(this.currentSpeaker, true);
+            }
         // If there's only one participant, it is the player:
         } else if (this.participants.length === 1) {
             // If the speaker is idle, face south so we can see his face.
@@ -437,9 +544,24 @@ export class GConversation {
         } else {
             // Let everyone who isn't the speaker face the speaker:
             this.participants.forEach(p => {
-                p.char.faceChar(this.currentSpeaker, true);
+                if (p.char !== this.currentSpeaker) {
+                    p.char.faceChar(this.currentSpeaker, true);
+                }
             });
         }
+    }
+
+    private restorePlayerFaith(amount: number) {
+        const faithWrapper: {value: number} = {value: PLAYER.getFaith()};
+        const newFaith: number = Math.min(PLAYER.getMaxFaith(), PLAYER.getFaith() + amount);
+        GFF.AdventureContent.tweens.add({
+            targets: [faithWrapper],
+            duration: 300,
+            value: newFaith,
+            onUpdate: () => {
+                PLAYER.setFaith(Math.floor(faithWrapper.value));
+            }
+        });
     }
 
     private runCommand(cmd: string) {
@@ -528,14 +650,14 @@ export class GConversation {
         this.unpauseParticipants();
     }
 
-    public static fromFile(convKey: string, chars?: CLabeledChar[]): GConversation {
+    public static fromFile(convKey: string, chars?: CLabeledChar[], convType: ConversationType = 'default'): GConversation {
         let blurbs: CBlurb[] = GFF.GAME.cache.json.get(convKey);
-        return new GConversation(blurbs, chars);
+        return new GConversation(blurbs, chars, convType);
     }
 
     /**
      * This parsing works, but it is not very robust.
-     * It will not correctly handle commas inside strings arguments, for example.
+     * It will not correctly handle commas inside string arguments, for example.
      */
     private parseCommand(command: string): {functionName: string, args: any[]} {
         // Match the function name and the arguments in parentheses

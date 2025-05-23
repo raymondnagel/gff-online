@@ -16,6 +16,7 @@
   "audio/sounds/fanfare.wav",
   "audio/sounds/fiery_dart.wav",
   "audio/sounds/game_over.wav",
+  "audio/sounds/gentle_ding.wav",
   "audio/sounds/hallelujah.wav",
   "audio/sounds/icon_click.wav",
   "audio/sounds/imp_growl.wav",
@@ -45,5 +46,6 @@
   "audio/sounds/voices/m_voice_4.wav",
   "audio/sounds/voices/m_voice_5.wav",
   "audio/sounds/voices/think.wav",
-  "audio/sounds/wheel_squeak.wav"
+  "audio/sounds/wheel_squeak.wav",
+  "audio/sounds/wind_rush.wav"
 ]

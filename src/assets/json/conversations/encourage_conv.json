@@ -1,0 +1,31 @@
+[
+  {
+    "id": "encourage1",
+    "chance": 0.5,
+    "speaker": "saint",
+    "hearer": "player",
+    "dynamic": "saint_encourage_1",
+    "next": "encourage2"
+  },
+  {
+    "id": "encourage2",
+    "speaker": "saint",
+    "hearer": "player",
+    "dynamic": "saint_encourage_2",
+    "next": "encourage3"
+  },
+  {
+    "id": "encourage3",
+    "chance": 0.5,
+    "speaker": "saint",
+    "hearer": "player",
+    "dynamic": "saint_encourage_3",
+    "next": "endConversation"
+  },
+  {
+    "id": "endConversation",
+    "speaker": "player",
+    "hearer": "saint",
+    "dynamic": "player_encouraged"
+  }
+]

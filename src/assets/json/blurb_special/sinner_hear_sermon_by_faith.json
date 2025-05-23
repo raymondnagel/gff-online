@@ -1,0 +1,60 @@
+[
+    {
+        "level": 0,
+        "variants": [
+            "Ugh! I don't want to hear this!",
+            "Our town was so peaceful before you came here!",
+            "Hey, stop that! You're disturbing the peace!",
+            "So what if I'm a sinner? It's better than being some goody two-shoes Christian!",
+            "But I like my sin! It's fun!",
+            "Oh, come on! God's not even real!",
+            "You're wasting your time! Nobody is interested!",
+            "Pfft... What a loser!",
+            "I don't want to hear about your stupid religion!"
+        ]
+    },
+    {
+        "level": 1,
+        "variants": [
+            "What... what in the world are you doing?",
+            "Why are you doing this? You're so weird!",
+            "I've... never seen someone actually do this before...",
+            "This is... different. I don't know what to think.",
+            "I don't know what to say. This is... unexpected.",
+            "Well there's something you don't see every day!",
+            "Is he trying to have a church service or something out here?",
+            "Well, I've got nothing better to do. I guess I'll listen.",
+            "I'm not sure what to think, but I guess it can't hurt to listen.",
+            "I wonder if he's going to make this a regular thing?"
+        ]
+    },
+    {
+        "level": 2,
+        "variants": [
+            "Hmmm... this could get interesting.",
+            "I have to admit, he has some good points...",
+            "Huh... I never thought about it that way before.",
+            "I think God's been trying to get my attention lately. Maybe this is a sign?",
+            "I'll say this for him: he's got guts to do this in public!",
+            "Man... this guy... he's... why, he's as bold as a lion!",
+            "I can tell this guy really believes what he's saying.",
+            "Some of this stuff really makes you stop and think...",
+            "Hmmm... I wonder if he's actually right...",
+            "Hmmm... I wonder if Jesus was a street preacher, too..."
+        ]
+    },
+    {
+        "level": 3,
+        "variants": [
+            "This guy is a real Christian, that's for sure!",
+            "This message is really... stirring something in my heart...",
+            "Wow... this message is really putting things into perspective.",
+            "Keep on preaching, buddy! The world needs more of this!",
+            "Good for you, sir! We need more people like you in this world!",
+            "I could stay here all day and listen to this guy!",
+            "Wow, I've never heard anything like this!",
+            "He's really doing the Lord's work, that guy.",
+            "If more people did this, maybe there wouldn't be so much evil in the world."
+        ]
+    }
+]

@@ -158,11 +158,15 @@ export namespace GFF {
     export let AdventureUI: GAdventureUI;
     export let BattleContent: GBattleContent;
 
+    export let showNametags: boolean = false;
+    export let canGiftSeed: boolean = true;
+
+    // Debuging flags:
     export let debugMode: boolean = false;
     export let genLogging: boolean = false;
     export let gameLogging: boolean = false;
-    export let showNametags: boolean = false;
-
+    export let chatty: boolean = false;
+    export let impRepellant: boolean = false;
     export let introInit: boolean = true;
 
     export function sleep(ms: number) {

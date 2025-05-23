@@ -1,20 +1,18 @@
 import { DIRECTION } from "../direction";
 import { GCharSprite } from "../objects/chars/GCharSprite";
-import { PHYSICS } from "../physics";
 import { Dir9, GPoint2D } from "../types";
 
 const DIAGONAL_THRESHOLD: number = 1.5;
 const MIN_TIME_PER_DIR: number = 500;
-const CORRECTION_TOLERANCE: number = 5;
 
 export abstract class GGoal {
 
     private name: string;
     private startTime: number;
     private timeOut: number|undefined;
+    private interruptable: boolean = true;
     private aftermath: Function|undefined;
 
-    private lastStepTime: number = 0;
     private directionTime: number = 0;
 
     protected char: GCharSprite;
@@ -37,7 +35,6 @@ export abstract class GGoal {
     public setChar(char: GCharSprite) {
         this.char = char;
         this.startTime = Date.now();
-        this.lastStepTime = this.startTime;
         this.start();
     }
 
@@ -54,6 +51,14 @@ export abstract class GGoal {
             return false;
         }
         return Date.now() > this.startTime + this.timeOut;
+    }
+
+    public setInterruptable(interruptable: boolean) {
+        this.interruptable = interruptable;
+    }
+
+    public isInterruptable(): boolean {
+        return this.interruptable;
     }
 
     public setAftermath(aftermath: Function) {

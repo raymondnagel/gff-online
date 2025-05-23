@@ -29,6 +29,6 @@ export class GChasePlayerGoal extends GGoal {
         // if he gets close enough, the collision will trigger a battle.
         // Usually the chase will timeout, though it should also
         // end if the player has no faith or there is a conversation going on:
-        return PLAYER.getFaith() <= 0 || GFF.AdventureContent.isConversationActive();
+        return PLAYER.getFaith() <= 0 || GFF.AdventureContent.isConversationOrCutsceneActive();
     }
 }

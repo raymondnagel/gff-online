@@ -1,6 +1,9 @@
 import { DIRECTION } from "../direction";
+import { GBullhornGoal } from "../goals/GBullhornGoal";
 import { GGoal } from "../goals/GGoal";
+import { GNoBullhornGoal } from "../goals/GNoBullhornGoal";
 import { GRejoiceGoal } from "../goals/GRejoiceGoal";
+import { GRestGoal } from "../goals/GRestGoal";
 import { GWalkDirGoal } from "../goals/GWalkDirGoal";
 import { GWalkToPointGoal } from "../goals/GWalkToPointGoal";
 import { GFF } from "../main";
@@ -23,16 +26,19 @@ export abstract class GCutscene {
     // Use the registry to store any arbitrary data that needs to be accessed by the cutscene:
     protected registry: Map<string, any> = new Map<string, any>();
 
-    constructor(name: string) {
+    constructor(name: string, active: boolean = false) {
         this.name = name;
 
         // Add the player as a default actor, since we already have his sprite;
         // others can be added via addActor(), which will also create their sprites.
         this.actors.push({ label: 'player', char: PLAYER.getSprite() });
-        // Hide the player sprite; we'll spawn him where we want him in the cutscene implementation.
-        PLAYER.getSprite().setVisible(false);
-        PLAYER.getSprite().setImmobile(true);
-        PLAYER.getSprite().getBody().setEnable(false);
+
+        // If this is not an active cutscene, hide the player sprite; we'll spawn him where we want him in the cutscene implementation.
+        if (!active) {
+            PLAYER.getSprite().setVisible(false);
+            PLAYER.getSprite().setImmobile(true);
+            PLAYER.getSprite().getBody().setEnable(false);
+        }
     }
 
     public getName(): string {
@@ -81,7 +87,7 @@ export abstract class GCutscene {
      * otherwise, it is generically labeled with 'actor_#'.
      * Sprites are invisible and not placed in a particular location yet.
      */
-    public addActor(actor: GPerson|GSpirit, label?: string): void {
+    public createActorSprite(actor: GPerson|GSpirit, label?: string): void {
         let sprite: GCharSprite;
         if ('faith' in actor) {
             sprite = new GPersonSprite(actor, 0, 0);
@@ -95,6 +101,20 @@ export abstract class GCutscene {
         sprite.setImmobile(true);
         sprite.getBody().setEnable(false);
 
+        if (label === undefined) {
+            this.actors.push({ label: `actor_${++this.genericActorsCount}`, char: sprite });
+        } else {
+            this.actors.push({ label, char: sprite });
+        }
+    }
+
+    /**
+     * Use a given sprite as an actor in the cutscene.
+     * This is for starting a cutscene with existing sprites,
+     * without interrupting Adventure Mode.
+     */
+    public useActorSprite(sprite: GCharSprite, label?: string): void {
+        sprite.setControlled(true);
         if (label === undefined) {
             this.actors.push({ label: `actor_${++this.genericActorsCount}`, char: sprite });
         } else {
@@ -238,24 +258,35 @@ export abstract class GCutscene {
      * - say something
      * - switch to a special animation, like kneeling, sitting, or rejoicing
      *
-     * We may also need to make an abstraction of goal, like CutsceneEvent,
-     * that allows things to happen without being the goal of a character.
+     * When setting an animation that should continue indefinitely, don't use a goal,
+     * or the cutscene will get stuck waiting for it to finish.
+     * Instead, just set the animation and finish the event.
      */
     private createActorGoalOrEvent(actorSprite: GCharSprite, actorCommand: GActorEvent): GGoal|Function {
         const commandTokens: string[] = actorCommand.command.split(/[\(\),]+/).filter(Boolean);
 
         // The first token is the command name; use it to determine the type of goal.
         // Some commands will return an event as a function, instead of a character-based goal.
-        switch(commandTokens[0] as 'spawnAt'|'rejoice'|'faceDir'|'walkDir'|'walkTo') {
+        switch(commandTokens[0] as 'spawnAt'|'bullhorn'|'nobullhorn'|'rejoice'|'kneel'|'stand'|'faceDir'|'walkDir'|'walkTo'|'tryWalkTo') {
             case 'spawnAt':
                 return () => {
                     const spawnX: number = parseInt(commandTokens[1]);
                     const spawnY: number = parseInt(commandTokens[2]);
                     this.spawnActorAt(actorSprite, spawnX, spawnY);
                 };
+            case 'bullhorn':
+                return new GBullhornGoal();
+            case 'nobullhorn':
+                return new GNoBullhornGoal();
             case 'rejoice':
-                const time: number = parseInt(commandTokens[1]);
-                return new GRejoiceGoal(time);
+                const rejoiceTime: number = parseInt(commandTokens[1]);
+                return new GRejoiceGoal(rejoiceTime);
+            case 'kneel':
+                return () => {
+                    actorSprite.kneel();
+                };
+            case 'stand':
+                return new GRestGoal(1);
             case 'faceDir':
                 const faceDir: Dir9 = DIRECTION.fromDir8String(commandTokens[1] as 'n'|'ne'|'e'|'se'|'s'|'sw'|'w'|'nw');
                 return () => {
@@ -269,6 +300,12 @@ export abstract class GCutscene {
                 const toX: number = parseInt(commandTokens[1]);
                 const toY: number = parseInt(commandTokens[2]);
                 return new GWalkToPointGoal(toX, toY, 1);
+            case 'tryWalkTo':
+                const toX1: number = parseInt(commandTokens[1]);
+                const toY1: number = parseInt(commandTokens[2]);
+                const dist1: number = Math.abs(Phaser.Math.Distance.BetweenPoints(actorSprite.getPhysicalCenter(), {x: toX1, y: toY1}));
+                const timeout: number = dist1 * 10; // Allow 1 second timeout per 100 pixels
+                return new GWalkToPointGoal(toX1, toY1, 100, timeout);
         }
     }
 

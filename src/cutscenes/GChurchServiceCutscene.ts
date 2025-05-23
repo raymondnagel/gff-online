@@ -121,7 +121,7 @@ export class GChurchServiceCutscene extends GCutscene {
 
         // Add all church saints as actors:
         this.church.getPeople().forEach(saint => {
-            this.addActor(saint);
+            this.createActorSprite(saint);
         });
 
         // Get all the male saints (Adam has already been included),
@@ -257,7 +257,7 @@ export class GChurchServiceCutscene extends GCutscene {
         this.addCutsceneEvent({
             eventId: 'preachSermon',
             eventCode: () => {
-                GConversation.fromFile(sermon, this.getConversationChars());
+                GConversation.fromFile(sermon, this.getConversationChars(), 'sermon');
             },
             after: `beginService`,
             since: 1000

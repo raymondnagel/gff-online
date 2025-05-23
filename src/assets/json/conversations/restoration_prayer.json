@@ -1,0 +1,36 @@
+[
+  {
+    "id": "start",
+    "speaker": "saint",
+    "hearer": "player",
+    "dynamic": "saint_prayer_start",
+    "next": "prayer1"
+  },
+  {
+    "id": "prayer1",
+    "speaker": "saint",
+    "hearer": "player",
+    "dynamic": "saint_prayer_pray_1",
+    "next": "prayer2"
+  },
+  {
+    "id": "prayer2",
+    "speaker": "saint",
+    "hearer": "player",
+    "dynamic": "saint_prayer_pray_2",
+    "next": "prayer3"
+  },
+  {
+    "id": "prayer3",
+    "speaker": "saint",
+    "hearer": "player",
+    "dynamic": "saint_prayer_pray_3",
+    "next": "endConversation"
+  },
+  {
+    "id": "endConversation",
+    "speaker": "saint",
+    "hearer": "player",
+    "dynamic": "saint_prayer_end"
+  }
+]

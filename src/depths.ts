@@ -10,6 +10,8 @@ export namespace DEPTH {
 
     export const NAME_TAG = 7000;
 
+    export const SPECIAL_EFFECT = 6000;
+
     export const WALL_S_CORNER = 1002;
 
     export const WALL_SOUTH = 1001;

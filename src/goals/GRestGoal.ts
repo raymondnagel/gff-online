@@ -1,7 +1,6 @@
 import { DIRECTION } from "../direction";
 import { GGoal } from "./GGoal";
 import { RANDOM } from "../random";
-import { GCharSprite } from "../objects/chars/GCharSprite";
 import { Dir9 } from "../types";
 
 export class GRestGoal extends GGoal {
@@ -13,7 +12,7 @@ export class GRestGoal extends GGoal {
      * while resting. If NONE (the default), a random direction
      * will be chosen.
      */
-    constructor(timeOut: number, faceDir: Dir9 = Dir9.NONE) {
+    constructor(timeOut: number|undefined, faceDir: Dir9 = Dir9.NONE) {
         super('rest', timeOut);
         this.faceDir = faceDir;
     }

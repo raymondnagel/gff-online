@@ -349,3 +349,5 @@ export type LeveledDynamicBlurb = {
     level: number;
     variants: string[];
 };
+
+export type ConversationType = 'sermon'|'streetpreach'|'default';

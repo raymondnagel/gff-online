@@ -13,6 +13,9 @@ import { TOWN } from '../../town';
 import { PLAYER } from '../../player';
 import { BOOKS } from '../../books';
 import { GFollowPlayerGoal } from '../../goals/GFollowPlayerGoal';
+import { GRestorationCutscene } from '../../cutscenes/GRestorationCutscene';
+import { GChurch } from '../../GChurch';
+import { GRoom } from '../../GRoom';
 
 const GENDER     = ['m', 'f'] as const;
 const SKIN_COLOR = ['w', 'y', 't', 'b'] as const;
@@ -40,6 +43,7 @@ export class GPersonSprite extends GCharSprite implements GInteractable {
 
     private person: GPerson;
     private readyToTalk: boolean = true;
+    private justConverted: boolean = false;
 
     constructor(person: GPerson, x: number, y: number) {
         super(
@@ -71,6 +75,18 @@ export class GPersonSprite extends GCharSprite implements GInteractable {
 
     public isCompanion(): boolean {
         return this.person === PLAYER.getCompanion();
+    }
+
+    public setNewConvert() {
+        this.justConverted = true;
+    }
+
+    public setReadyToTalk(ready: boolean) {
+        if (GFF.chatty) {
+            this.readyToTalk = true;
+            return;
+        }
+        this.readyToTalk = ready;
     }
 
     public getGender(): GGender {
@@ -228,25 +244,49 @@ export class GPersonSprite extends GCharSprite implements GInteractable {
     public interact(): void {
         if (this.person.faith >= 100) {
             // This person is a saint!
+
             // Generate a bio, if they don't already have one;
             // (they will have one if talked to before, or if they were converted by the player)
             if (this.person.bio1 === null) {
                 this.generateBio(false);
             }
 
+            // Assign a preferred name, if they don't already have one:
             if (this.person.preferredName === null) {
                 this.person.preferredName = PEOPLE.getSaintName(this.person);
             }
-            GConversation.fromFile('talk_to_saint_conv', [
-                { label: 'other', char: this }
-            ]);
+
+            // Check whether the player is outside a church:
+            const room: GRoom = GFF.AdventureContent.getCurrentRoom() as GRoom;
+            if (room.getChurch() !== null) {
+                // If the player has no faith, we'll begin a restoration cutscene:
+                if (PLAYER.getFaith() <= 0) {
+                    const church: GChurch = this.getPerson().homeTown?.getChurch() as GChurch;
+                    new GRestorationCutscene(this).play();
+                } else {
+                    // Otherwise, we'll just talk to the saint:
+                    GConversation.fromFile('talk_to_saint_conv', [
+                        { label: 'other', char: this }
+                    ]);
+                }
+            } else {
+                // If they are not outside a church, check if they have just been converted;
+                // if so, trigger a special one-time conversation:
+                if (this.justConverted && this.readyToTalk) {
+                    this.setReadyToTalk(false);
+                    GConversation.fromFile('convert_conv', [
+                        { label: 'saint', char: this }
+                    ]);
+                }
+            }
+
         } else {
             // This person is a sinner!
             if (this.person.preferredName === null) {
                 this.person.preferredName = PEOPLE.getFormalName(this.person);
             }
             if (this.readyToTalk) {
-                this.readyToTalk = false;
+                this.setReadyToTalk(false);
                 GConversation.fromFile('talk_to_sinner_conv', [
                     { label: 'other', char: this }
                 ]);

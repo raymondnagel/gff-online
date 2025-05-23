@@ -1,4 +1,5 @@
 [
+  "sprites/chars/adam/adam_bullhorn_sw.png",
   "sprites/chars/adam/adam_carryidle_s.png",
   "sprites/chars/adam/adam_idle_e.png",
   "sprites/chars/adam/adam_idle_n.png",
@@ -24,7 +25,10 @@
   "sprites/chars/adam/adam_kneel_se.png",
   "sprites/chars/adam/adam_kneel_sw.png",
   "sprites/chars/adam/adam_kneel_w.png",
+  "sprites/chars/adam/adam_nobullhorn_sw.png",
   "sprites/chars/adam/adam_piano_ne.png",
+  "sprites/chars/adam/adam_preach_mouth_sw.png",
+  "sprites/chars/adam/adam_preach_sw.png",
   "sprites/chars/adam/adam_raisehands_s.png",
   "sprites/chars/adam/adam_rejoice_s.png",
   "sprites/chars/adam/adam_run_e.png",
@@ -4082,6 +4086,7 @@
   "sprites/chars/travel_agent/travel_agent_idle_w.png",
   "sprites/effects/church_door-120x130.png",
   "sprites/effects/imp_puff-100x100.png",
+  "sprites/effects/preach_sonic-512x512.png",
   "sprites/effects/slash-600x200.png",
   "sprites/scenery/campfire-116x150.png"
 ]

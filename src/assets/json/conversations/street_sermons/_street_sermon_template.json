@@ -1,0 +1,22 @@
+[
+    {
+      "id": "p1",
+      "speaker": "player",
+      "hearer": "sinner",
+      "preCmd": "preachSonic()",
+      "text": "This is a test sermon. Repent and believe the gospel!",
+      "next": "s1"
+    },
+    {
+      "id": "s1",
+      "chance": 0.3,
+      "speaker": "sinner",
+      "hearer": "player",
+      "dynamicLevel": "sinner_hear_sermon_by_faith:faithLevelBroad()",
+      "next": "end"
+    },
+    {
+      "id": "end",
+      "speaker": "player"
+    }
+]

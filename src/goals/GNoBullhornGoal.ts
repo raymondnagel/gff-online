@@ -1,0 +1,28 @@
+import { GGoal } from "./GGoal";
+import { Dir9 } from "../types";
+import { GPlayerSprite } from "../objects/chars/GPlayerSprite";
+
+/**
+ * Not much of a goal, but this lets us play the no-bullhorn animation
+ * (to put it away) and then stop when the animation is done.
+ */
+export class GNoBullhornGoal extends GGoal {
+
+    constructor() {
+        super('bullhorn');
+    }
+
+    public start(): void {
+        this.char.faceDirection(Dir9.S);
+        (this.char as GPlayerSprite).play('adam_nobullhorn_sw', false);
+    }
+
+    public doStep(_time: number, _delta: number): void {
+        // We don't take steps when we're putting away the bullhorn!
+    }
+
+    public isAchieved(): boolean {
+        // Achieved when the player is done with the no-bullhorn animation:
+        return this.char.anims.isPlaying === false;
+    }
+}

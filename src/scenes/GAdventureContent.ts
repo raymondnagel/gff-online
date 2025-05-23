@@ -33,6 +33,8 @@ import { GBuildingEntrance } from '../objects/touchables/GBuildingEntrance';
 import { GChurchServiceCutscene } from '../cutscenes/GChurchServiceCutscene';
 import { GRestGoal } from '../goals/GRestGoal';
 import { GCutscene } from '../cutscenes/GCutscene';
+import { GStreetPreachCutscene } from '../cutscenes/GStreetPreachCutscene';
+import { GTravelAgentSprite } from '../objects/chars/GTravelAgentSprite';
 
 const MOUSE_UI_BUTTON: string = 'MOUSE_UI_BUTTON';
 
@@ -43,6 +45,7 @@ const INPUT_PAUSE: GInputMode = new GInputMode('adv.paused');
 const INPUT_DISABLED: GInputMode = new GInputMode('adv.disabled');
 
 const NON_ESS_TRANS_SPAWN_TRIES: number = 20;
+const UNIQUE_ROOM_THRESHOLD: number = 5;
 
 const COMPANION_RELATIVE_SPAWN_POINTS: GPoint2D[] = [
     {x: 0, y: -16},  // N
@@ -65,6 +68,7 @@ export class GAdventureContent extends GContentScene {
     private playerFloor: number = 0;
     private playerRoomX: number = 0;
     private playerRoomY: number = 0;
+    private uniqueRoomsVisited: GRoom[] = [];
 
     private player: GPlayerSprite;
     private obstaclesGroup: Phaser.GameObjects.Group;
@@ -160,11 +164,11 @@ export class GAdventureContent extends GContentScene {
                     GConversation.fromFile('latest_update_intro');
                     break;
                 case 'y':
-                    PLAYER.changeSeeds(1);
+                    GConversation.fromFile('cheat_conv');
                     break;
-                // case 'y':
-                //     this.doMapExport(0, 0);
-                //     break;
+                case 'v':
+                    this.streetPreach();
+                    break;
                 case 'l':
                     this.getCurrentRoom()?.logRoomInfo();
                     break;
@@ -390,17 +394,26 @@ export class GAdventureContent extends GContentScene {
             if (obj1 instanceof GPersonSprite || obj2 instanceof GPersonSprite) {
                 // If a person collides with the player, make them rest for 1 second,
                 // facing the player, so we'll have a better chance to talk to them.
-                if (obj1 === this.player) {
-                    (obj2 as GPersonSprite).setGoal(new GRestGoal(1000, DIRECTION.getDirectionOf(body2.center, body1.center)));
-                } else if (obj2 === this.player) {
-                    (obj1 as GPersonSprite).setGoal(new GRestGoal(1000, DIRECTION.getDirectionOf(body1.center, body2.center)));
+                // If the person is not moving, just face the player.
+                if (obj1 === this.player && obj2 instanceof GPersonSprite && obj2.canInterrupt()) {
+                    if (obj2.isDoing('walk')) {
+                        obj2.setGoal(new GRestGoal(1000, DIRECTION.getDirectionOf(body2.center, body1.center)));
+                    } else {
+                        obj2.faceChar(this.player, true);
+                    }
+                } else if (obj2 === this.player && obj1 instanceof GPersonSprite && obj1.canInterrupt()) {
+                    if (obj1.isDoing('walk')) {
+                        obj1.setGoal(new GRestGoal(1000, DIRECTION.getDirectionOf(body1.center, body2.center)));
+                    } else {
+                        obj1.faceChar(this.player, true);
+                    }
                 } else {
-                    // Otherwise, if a person collides with anything else, reset their goal;
-                    // this will keep them from trying to walk through obstacles.
-                    if (obj1 instanceof GPersonSprite) {
+                    // Otherwise, if a person collides with anything else (outside of a cutscene)
+                    // while walking, reset their goal; this will keep them from trying to walk through obstacles.
+                    if (this.cutscene === null && obj1 instanceof GPersonSprite && obj1.isDoing('walk') && obj1.canInterrupt()) {
                         obj1.setGoal(null);
                     }
-                    if (obj2 instanceof GPersonSprite) {
+                    if (this.cutscene === null && obj2 instanceof GPersonSprite && obj2.isDoing('walk') && obj2.canInterrupt()) {
                         obj2.setGoal(null);
                     }
                 }
@@ -419,7 +432,7 @@ export class GAdventureContent extends GContentScene {
                 (obj1 instanceof GImpSprite || obj2 instanceof GImpSprite)
                 && (obj1 === this.player || obj2 === this.player)
             ) {
-                if (!this.isConversationActive()) {
+                if (!this.isConversationOrCutsceneActive()) {
                     let enemy: GImpSprite = (obj1 instanceof GImpSprite ? obj1 : obj2) as GImpSprite;
                     this.encounterEnemy(enemy);
                 }
@@ -453,7 +466,9 @@ export class GAdventureContent extends GContentScene {
 
             // Try to walk to an adjacent room if the player reached the top, left, or right side of the screen:
             if (dir === Dir9.N || dir === Dir9.W || dir === Dir9.E) {
-                thisScene.walkToAdjacentRoom(dir);
+                if (obj === PLAYER.getSprite()) {
+                    thisScene.walkToAdjacentRoom(dir);
+                }
             }
         });
     }
@@ -466,9 +481,9 @@ export class GAdventureContent extends GContentScene {
         });
 
         // Enable physics debug:
-        this.physics.world.debugGraphic = this.add.graphics();
         this.input.keyboard?.on('keydown-F2', (_event: KeyboardEvent) => {
             this.physics.world.drawDebug = !this.physics.world.drawDebug;
+            this.physics.world.debugGraphic = this.add.graphics();
             this.physics.world.debugGraphic.clear();
             GFF.log('Physics debug: ' + this.physics.world.drawDebug);
         });
@@ -569,9 +584,19 @@ export class GAdventureContent extends GContentScene {
         this.playerRoomY = roomY;
 
         // Load the new room:
-        currentRoom = this.getCurrentRoom();
-        currentRoom?.discover();
-        currentRoom?.load();
+        currentRoom = this.getCurrentRoom() as GRoom;
+        currentRoom.discover();
+        currentRoom.load();
+
+        // Add the new room to the list of unique rooms visited:
+        if (!this.uniqueRoomsVisited.includes(currentRoom)) {
+            this.uniqueRoomsVisited.push(currentRoom);
+            GFF.log(`Unique rooms visited: ${this.uniqueRoomsVisited.length}`);
+            if (this.uniqueRoomsVisited.length >= UNIQUE_ROOM_THRESHOLD) {
+                this.uniqueRoomsVisited.length = 0;
+                this.resetUniqueRoomsFlags();
+            }
+        }
     }
 
     public getCurrentRoom(): GRoom|null {
@@ -596,13 +621,6 @@ export class GAdventureContent extends GContentScene {
 
             if (this.getCurrentRoom()?.isSafe()) {
                 // Safe rooms:
-                if (PLAYER.getFaith() <= 0) {
-                    PLAYER.setFaith(PLAYER.getMaxFaith());
-                    this.updateFidelityMode();
-                    this.startAreaBgMusic();
-                } else {
-                    PLAYER.setFaith(PLAYER.getMaxFaith());
-                }
                 this.setVision(true);
 
             } else {
@@ -614,25 +632,31 @@ export class GAdventureContent extends GContentScene {
                     this.spawnCommonChest();
                 }
 
-                // Spawn an imp in 1-5 seconds, with 50% chance for up to 2 more:
-                this.impSpawnTimeEvent = this.time.delayedCall(RANDOM.randInt(1000, 5000), () => {
-                    this.addRandomImp();
-                    if (RANDOM.flipCoin()) {
-                        this.impSpawnTimeEvent = this.time.delayedCall(RANDOM.randInt(1000, 5000), () => {
-                            this.addRandomImp();
-                            if (RANDOM.flipCoin()) {
-                                this.impSpawnTimeEvent = this.time.delayedCall(RANDOM.randInt(1000, 5000), () => {
-                                    this.addRandomImp();
-                                });
-                            }
-                        });
-                    }
-                });
+                if (!GFF.impRepellant) {
+                    // Spawn an imp in 1-5 seconds, with 50% chance for up to 2 more:
+                    this.impSpawnTimeEvent = this.time.delayedCall(RANDOM.randInt(1000, 5000), () => {
+                        this.addRandomImp();
+                        if (RANDOM.flipCoin()) {
+                            this.impSpawnTimeEvent = this.time.delayedCall(RANDOM.randInt(1000, 5000), () => {
+                                this.addRandomImp();
+                                if (RANDOM.flipCoin()) {
+                                    this.impSpawnTimeEvent = this.time.delayedCall(RANDOM.randInt(1000, 5000), () => {
+                                        this.addRandomImp();
+                                    });
+                                }
+                            });
+                        }
+                    });
+                }
             }
             this.fadeIn(500, undefined, meanwhile, () => {
                 this.revertInputMode();
             });
         });
+    }
+
+    private resetUniqueRoomsFlags() {
+        GFF.canGiftSeed = true;
     }
 
     public getSpawnPointForTransient(transient: BoundedGameObject, body: GRect, essential: boolean): GPoint2D|null {
@@ -705,6 +729,27 @@ export class GAdventureContent extends GContentScene {
             this.addPerson(sprite);
             return sprite;
         }
+    }
+
+    /**
+     * Same as spawnPerson, but for essential people.
+     * We will keep trying to spawn them until we find a valid location.
+     */
+    public spawnEssentialPerson(person: GPerson|GPersonSprite, location?: GPoint2D): GCharSprite {
+        const sprite: GPersonSprite = person instanceof GPersonSprite ?
+            person :
+            new GPersonSprite(person, 0, 0);
+
+        sprite.setVisible(false);
+        const body: GRect = sprite.getBody();
+
+        // Pass true (essential) if the random point function is used:
+        const spawnPoint: GPoint2D = location ?? this.getSpawnPointForTransient(sprite, body, true) as GPoint2D;
+
+        sprite.setVisible(true);
+        sprite.setPosition(spawnPoint.x, spawnPoint.y);
+        this.addPerson(sprite);
+        return sprite;
     }
 
     /**
@@ -781,12 +826,52 @@ export class GAdventureContent extends GContentScene {
     public spawnChurchPeople(room: GRoom) {
         const church: GChurch = room.getChurch() as GChurch;
         const people: GPerson[] = church.getPeople();
+        // If player has faith, do a normal, random spawn:
+        if (PLAYER.getFaith() > 0) {
+            for (let member of people) {
+                // Don't spawn the player companion along with the other church members:
+                if (member !== PLAYER.getCompanion()) {
+                    this.spawnPerson(member);
+                }
+            }
+        } else {
+            // If player has no faith, spawn the church members in a tight cluster,
+            // and make them all rest; they'll have a prayer meeting soon...
+            this.spawnPeopleCluster(people);
+        }
+    }
+
+    private spawnPeopleCluster(people: GPerson[]) {
+        let ctrPoint: GPoint2D|null = null;
         for (let member of people) {
-            // Don't spawn the player companion along with the other church members:
+            // Don't spawn the player companion if he is one of the people:
             if (member !== PLAYER.getCompanion()) {
-                this.spawnPerson(member);
+                // First person's location will be the center of the cluster:
+                if (ctrPoint === null) {
+                    const firstSprite: GCharSprite = this.spawnEssentialPerson(member);
+                    firstSprite.setGoal(new GRestGoal(undefined));
+                    ctrPoint = firstSprite.getPhysicalCenter();
+                } else {
+                    const sprite: GCharSprite|null = this.spawnPersonNear(member, ctrPoint, 150);
+                    if (sprite !== null) {
+                        sprite.setGoal(new GRestGoal(undefined));
+                    }
+                }
             }
         }
+    }
+
+    private spawnPersonNear(person: GPerson, ctrPoint: GPoint2D, distance: number, tries: number = 10): GCharSprite|null {
+        let sprite: GCharSprite|null = null;
+        for (let t = 0; t < tries; t++) {
+            const x: number = ctrPoint.x + RANDOM.randInt(-distance, distance);
+            const y: number = ctrPoint.y + RANDOM.randInt(-distance, distance);
+            sprite = this.spawnPerson(person, {x, y});
+            if (sprite !== null) {
+                return sprite;
+            }
+        }
+        return null;
     }
 
     public spawnNeighbors(room: GRoom) {
@@ -826,6 +911,11 @@ export class GAdventureContent extends GContentScene {
     }
 
     public addRandomImp() {
+        // Only spawn an imp if the player is not in a conversation or cutscene:
+        if (this.isConversationOrCutsceneActive()) {
+            return;
+        }
+
         let imp: GSpirit;
         let exists: boolean;
         do {
@@ -848,8 +938,21 @@ export class GAdventureContent extends GContentScene {
         this.personsGroup.add(personSprite);
     }
 
+    public getPersons(includeTravelAgent: boolean = false): GPersonSprite[] {
+        const persons: GPersonSprite[] = this.personsGroup.getChildren() as GPersonSprite[];
+        if (includeTravelAgent) {
+            return persons;
+        } else {
+            return persons.filter(p => !(p instanceof GTravelAgentSprite));
+        }
+    }
+
     public addImp(impSprite: GImpSprite) {
         this.impsGroup.add(impSprite);
+    }
+
+    public getImps(): GImpSprite[] {
+        return this.impsGroup.getChildren() as GImpSprite[];
     }
 
     public addTouchable(touchable: GTouchable) {
@@ -970,6 +1073,35 @@ export class GAdventureContent extends GContentScene {
         });
     }
 
+    private streetPreach() {
+        // Can only preach a sermon if the player has one,
+        // the current room is outside (without a church),
+        // and there are people nearby.
+        const room: GRoom = this.getCurrentRoom() as GRoom;
+        if (
+            room.getChurch() === null &&
+            room.getArea() === AREA.WORLD_AREA &&
+            this.getPersons().length > 0 &&
+            PLAYER.getSermons() > 0
+        ) {
+            this.stopChars(true, false, true);
+            this.getPersons().forEach(person => {
+                person.faceChar(PLAYER.getSprite(), true);
+            });
+            new GStreetPreachCutscene().play();
+        }
+    }
+
+    /**
+     * I hate to do this, but it may be necessary in certain cases when
+     * changing from one input mode to another (for example, from Conversation
+     * to Popup) in order to make sure that revertInputMode() correctly switches
+     * back to Adventuring when it is finally called.
+     */
+    public forceAdventureInputMode() {
+        this.setInputMode(INPUT_ADVENTURING);
+    }
+
     public setConversation(conversation: GConversation) {
         this.conversation = conversation;
         this.setInputMode(INPUT_CONVERSATION);
@@ -984,8 +1116,8 @@ export class GAdventureContent extends GContentScene {
         this.revertInputMode();
     }
 
-    public isConversationActive(): boolean {
-        return this.conversation !== null;
+    public isConversationOrCutsceneActive(): boolean {
+        return this.conversation !== null || this.cutscene !== null;
     }
 
     public setPopup(popup: GPopup) {
@@ -1026,24 +1158,33 @@ export class GAdventureContent extends GContentScene {
         let objs: Phaser.GameObjects.GameObject[] = this.impsGroup.getChildren();
         objs.forEach(obj => {
             (obj as GCharSprite).setImmobile(false);
+            (obj as GCharSprite).setControlled(false);
         });
         objs = this.personsGroup.getChildren();
         objs.forEach(obj => {
             (obj as GCharSprite).setImmobile(false);
+            (obj as GCharSprite).setControlled(false);
         });
         this.player.setImmobile(false);
+        this.player.setControlled(true);
     }
 
-    public stopChars() {
+    public stopChars(stopPeople: boolean = true, stopImps: boolean = true, stopPlayer: boolean = true) {
         let objs: Phaser.GameObjects.GameObject[] = this.impsGroup.getChildren();
-        objs.forEach(obj => {
-            (obj as GCharSprite).setImmobile(true);
-        });
-        objs = this.personsGroup.getChildren();
-        objs.forEach(obj => {
-            (obj as GCharSprite).setImmobile(true);
-        });
-        this.player.setImmobile(true);
+        if (stopImps) {
+            objs.forEach(obj => {
+                (obj as GCharSprite).setImmobile(true);
+            });
+        }
+        if (stopPeople) {
+            objs = this.personsGroup.getChildren();
+            objs.forEach(obj => {
+                (obj as GCharSprite).setImmobile(true);
+            });
+        }
+        if (stopPlayer) {
+            this.player.setImmobile(true);
+        }
     }
 
     public updateFidelityMode() {

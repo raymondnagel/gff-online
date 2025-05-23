@@ -1,0 +1,22 @@
+[
+  {
+    "id": "rejoice",
+    "speaker": "saint",
+    "hearer": "player",
+    "dynamic": "convert_rejoice",
+    "next": "epilogue"
+  },
+  {
+    "id": "epilogue",
+    "speaker": "saint",
+    "hearer": "player",
+    "dynamic": "convert_epilogue",
+    "next": "exhortation"
+  },
+  {
+    "id": "exhortation",
+    "speaker": "player",
+    "hearer": "saint",
+    "dynamic": "convert_goodbye"
+  }
+]

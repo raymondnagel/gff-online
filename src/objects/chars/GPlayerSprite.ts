@@ -37,6 +37,9 @@ export class GPlayerSprite extends GCharSprite {
 
         // Add additional, player-specific animations:
         this.createSingleAnimation('piano_ne');
+        this.createSingleAnimation('bullhorn_sw', 0);
+        this.createSingleAnimation('nobullhorn_sw', 0);
+        this.createSingleAnimation('preach_sw');
         this.createDirectionalAnimations('run');
         this.createDirectionalAnimations('sit');
 
