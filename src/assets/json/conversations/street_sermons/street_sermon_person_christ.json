@@ -1,0 +1,98 @@
+[
+    {
+      "id": "p1",
+      "speaker": "player",
+      "hearer": "sinner",
+      "text": "God anointed Jesus of Nazareth with the Holy Ghost and with power: who went about doing good, and healing all that were oppressed of the devil; for God was with him.",
+      "next": "s1"
+    },
+    {
+      "id": "s1",
+      "chance": 0.3,
+      "speaker": "sinner",
+      "hearer": "player",
+      "dynamicLevel": "sinner_hear_sermon_by_faith:faithLevelBroad()",
+      "next": "p2"
+    },
+    {
+      "id": "p2",
+      "speaker": "player",
+      "hearer": "sinner",
+      "text": "He did always those things that pleased God his Father. That's right - he is the Son of God!",
+      "next": "s2"
+    },
+    {
+      "id": "s2",
+      "chance": 0.3,
+      "speaker": "sinner",
+      "hearer": "player",
+      "dynamicLevel": "sinner_hear_sermon_by_faith:faithLevelBroad()",
+      "next": "p3"
+    },
+    {
+      "id": "p3",
+      "speaker": "player",
+      "hearer": "sinner",
+      "text": "Jesus is holy, harmless, undefiled, separate from sinners; who did no sin, neither was guile found in his mouth: who, when he was reviled, reviled not again; when he suffered, he threatened not; but committed himself to him that judgeth righteously.",
+      "next": "s3"
+    },
+    {
+      "id": "s3",
+      "chance": 0.3,
+      "speaker": "sinner",
+      "hearer": "player",
+      "dynamicLevel": "sinner_hear_sermon_by_faith:faithLevelBroad()",
+      "next": "p4"
+    },
+    {
+      "id": "p4",
+      "speaker": "player",
+      "hearer": "sinner",
+      "text": "Mark the perfect man, and behold the upright: certainly this was a righteous man; truly this man was the Son of God.",
+      "next": "s4"
+    },
+    {
+      "id": "s4",
+      "chance": 0.3,
+      "speaker": "sinner",
+      "hearer": "player",
+      "dynamicLevel": "sinner_hear_sermon_by_faith:faithLevelBroad()",
+      "next": "p5"
+    },
+    {
+      "id": "p5",
+      "speaker": "player",
+      "hearer": "sinner",
+      "text": "But he was wounded for our transgressions, he was bruised for our iniquities: the chastisement of our peace was upon him; and with his stripes we are healed. Christ died for OUR sins, the just for the unjust, that he might bring us to God.",
+      "next": "s5"
+    },
+    {
+      "id": "s5",
+      "chance": 0.3,
+      "speaker": "sinner",
+      "hearer": "player",
+      "dynamicLevel": "sinner_hear_sermon_by_faith:faithLevelBroad()",
+      "next": "p6"
+    },
+    {
+      "id": "p6",
+      "speaker": "player",
+      "hearer": "sinner",
+      "text": "Whom God hath raised up, having loosed the pains of death: because it was not possible that he should be holden of it. Now God hath highly exalted him, higher than the heavens; who now sitteth on the right hand of God, from henceforth expecting till his enemies be made his footstool.",
+      "next": "s6"
+    },
+    {
+      "id": "s6",
+      "chance": 0.3,
+      "speaker": "sinner",
+      "hearer": "player",
+      "dynamicLevel": "sinner_hear_sermon_by_faith:faithLevelBroad()",
+      "next": "p7"
+    },
+    {
+      "id": "p7",
+      "speaker": "player",
+      "hearer": "sinner",
+      "text": "Now then we are ambassadors for Christ, as though God did beseech you by us: we pray you in Christ's stead, be ye reconciled to God. For he hath made him to be sin for us, who knew no sin; that we might be made the righteousness of God in him."
+    }
+]

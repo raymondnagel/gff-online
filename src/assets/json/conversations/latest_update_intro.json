@@ -68,13 +68,19 @@
     {
       "id": "objectives_6",
       "speaker": "player",
+      "text": "If you find any sermons, you can press the V key to preach to everyone in the area. (This only works if you have at least one sermon, and if there is at least one unconverted person on the screen.)",
+      "next": "objectives_7"
+    },
+      {
+      "id": "objectives_7",
+      "speaker": "player",
       "text": "You can enter any of the churches by approaching the door and walking inside. One of the men will preach a random sermon. Afterward, you can interact with the piano by pressing [Space], and choose a song to play.",
       "next": "menu"
     },
     {
       "id": "controls_1",
       "speaker": "player",
-      "text": "ADVENTURE CONTROLS:\nHold down [Arrow] keys to walk. You can hold two directions (e.g. 'up' + 'right') to walk diagonally.\nHold [Shift] key at the same time to run instead.\nHold down [N] to view name tags for all characters. (Names will only be shown if you have met them already.)\nPress [P] to pause/unpause\nPress [Space] to talk to another person (if they are in front of me), or play the piano.",
+      "text": "ADVENTURE CONTROLS:\nHold down [Arrow] keys to walk. You can hold two directions (e.g. 'up' + 'right') to walk diagonally.\nHold [Shift] key at the same time to run instead.\nHold down [N] to view name tags for all characters. (Names will only be shown if you have met them already.)\nPress [P] to pause/unpause\nPress [Space] to talk to another person (if they are in front of me), or play the piano.\nPress [V] to preach a sermon (if I have one).",
       "next": "controls_2"
     },
     {
@@ -86,13 +92,13 @@
     {
       "id": "controls_3",
       "speaker": "player",
-      "text": "OTHER CONTROLS:\nYou can click the icons on the interface panel to open subscreens, or press the associated key. (Most of them are still empty, but you can access the Books, Map, and Exit function.\nIf you forget some of the controls, you can press [H] in Adventure Mode to display this intro conversation again.\nYou can also turn on a 'debug mode' by going to the Options subscreen and pressing [D] there. In debug mode, your vision is maxed out and the entire world map is visible.",
+      "text": "OTHER CONTROLS:\nYou can click the icons on the interface panel to open subscreens, or press the associated key. (Most of them are still empty, but you can access the Books, Map, and Exit function.\nIf you forget some of the controls, you can press [H] in Adventure Mode to display this intro conversation again.\nYou can also open a cheat menu by pressing the [Y] key; this is temporary, only for testing purposes, and won't be available in the final game.",
       "next": "menu"
     },
     {
       "id": "update",
       "speaker": "player",
-      "text": "APRIL 2025 UPDATE\n\n Add cutscene system\n- create action functions for characters\n- create script/timeline for cutscene design\n- integrate with conversation system\n- create church service cutscene\n\nExpand conversation system\n- added different types of conversation functions for branching and variants\n- added evangelism interactions for sinners\n- added 72 seed verses by faith level\n- converted sinners become saints and join the church",
+      "text": "MAY 2025 UPDATE\n\n Add church functions\n- add conversation options to church members\n- restore faith during sermon\n- restoration cutscene (approach church member when faith = 0)\n- church members occasionally gift seeds\n\nAdd additional features to conversions\n- kneel in prayer during conversion\n- rejoice animation after conversion\n- mention joining the local church\n\nAdd \"preach sermon\" function (V key)\n- use collected sermon item to preach to everyone on the screen\n- add bullhorn animations\n- add street sermon content\n\nAdd temporary cheat menu (Y key)",
       "next": "menu"
     },
     {

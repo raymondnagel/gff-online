@@ -493,6 +493,9 @@ export class GConversation {
                     this.restorePlayerFaith(this.faithPerSermonBlurb.pop() as number);
                 }
             case 'player':
+                if (this.convType === 'streetpreach') {
+                    this.preachSonic();
+                }
             case 'intercessor':
             case 'saint':
             case 'sinner':
@@ -562,6 +565,13 @@ export class GConversation {
                 PLAYER.setFaith(Math.floor(faithWrapper.value));
             }
         });
+    }
+
+    private preachSonic() {
+        const sX: number = PLAYER.getSprite().x + 42;
+        const sY: number = PLAYER.getSprite().y + 42;
+        EFFECTS.doEffect('preach_sonic', GFF.AdventureContent, sX, sY, 0.5, 0.5)
+            .setDepth(DEPTH.SPECIAL_EFFECT);
     }
 
     private runCommand(cmd: string) {

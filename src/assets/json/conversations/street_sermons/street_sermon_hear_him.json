@@ -3,7 +3,6 @@
       "id": "p1",
       "speaker": "player",
       "hearer": "sinner",
-      "preCmd": "preachSonic()",
       "text": "God, who at sundry times and in divers manners spake in time past unto the fathers by the prophets, hath in these last days spoken unto us by his Son!",
       "next": "s1"
     },
@@ -19,7 +18,6 @@
       "id": "p2",
       "speaker": "player",
       "hearer": "sinner",
-      "preCmd": "preachSonic()",
       "text": "When Jesus was transfigured before his disciples, the voice of God came from heaven, saying, \"This is my beloved Son: hear him.\"",
       "next": "s2"
     },
@@ -35,7 +33,6 @@
       "id": "p3",
       "speaker": "player",
       "hearer": "sinner",
-      "preCmd": "preachSonic()",
       "text": "This is he of whom God spake unto Moses: \"I will raise them up a Prophet from among their brethren, like unto thee, and will put my words in his mouth; and he shall speak unto them all that I shall command him. And it shall come to pass, that whosoever will not hearken unto my words which he shall speak in my name, I will require it of him.\"",
       "next": "s3"
     },
@@ -51,7 +48,6 @@
       "id": "p4",
       "speaker": "player",
       "hearer": "sinner",
-      "preCmd": "preachSonic()",
       "text": "Take earnest heed to the things which we have heard, lest at any time we should let them slip! For if the word spoken by angels was steadfast, and every transgression and disobedience received a just recompence of reward; how shall we escape, if we neglect so great salvation?",
       "next": "s4"
     },
@@ -67,12 +63,6 @@
       "id": "p5",
       "speaker": "player",
       "hearer": "sinner",
-      "preCmd": "preachSonic()",
-      "text": "Verily, verily, I say unto you, The hour is coming, and now is, when the dead shall hear the voice of the Son of God: and they that hear shall live! Dear neighbors and friends: hear his voice, and live! He alone has the words of eternal life!",
-      "next": "end"
-    },
-    {
-      "id": "end",
-      "speaker": "player"
+      "text": "Verily, verily, I say unto you, The hour is coming, and now is, when the dead shall hear the voice of the Son of God: and they that hear shall live! Dear neighbors and friends: hear his voice, and live! He alone has the words of eternal life!"
     }
 ]

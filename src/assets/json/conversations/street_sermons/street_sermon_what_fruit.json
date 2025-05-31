@@ -1,0 +1,83 @@
+[
+    {
+      "id": "p1",
+      "speaker": "player",
+      "hearer": "sinner",
+      "text": "Know ye not that the unrighteous shall not inherit the kingdom of God? Be not deceived: neither fornicators, nor idolaters, nor adulterers, nor effeminate, nor abusers of themselves with mankind, Nor thieves, nor covetous, nor drunkards, nor revilers, nor extortioners, shall inherit the kingdom of God.",
+      "next": "s1"
+    },
+    {
+      "id": "s1",
+      "chance": 0.3,
+      "speaker": "sinner",
+      "hearer": "player",
+      "dynamicLevel": "sinner_hear_sermon_by_faith:faithLevelBroad()",
+      "next": "p2"
+    },
+    {
+      "id": "p2",
+      "speaker": "player",
+      "hearer": "sinner",
+      "text": "No whoremonger, nor unclean person, nor covetous man, who is an idolater, hath any inheritance in the kingdom of Christ and of God. Let no man deceive you with vain words: for because of these things cometh the wrath of God upon the children of disobedience.",
+      "next": "s2"
+    },
+    {
+      "id": "s2",
+      "chance": 0.3,
+      "speaker": "sinner",
+      "hearer": "player",
+      "dynamicLevel": "sinner_hear_sermon_by_faith:faithLevelBroad()",
+      "next": "p3"
+    },
+    {
+      "id": "p3",
+      "speaker": "player",
+      "hearer": "sinner",
+      "text": "What fruit do you have in these things? Broken hearts? Destroyed families? Abused bodies? Corrupted minds? Seared consciences? And worst of all, your sins have separated you from God! You are become his enemies!",
+      "next": "s3"
+    },
+    {
+      "id": "s3",
+      "chance": 0.3,
+      "speaker": "sinner",
+      "hearer": "player",
+      "dynamicLevel": "sinner_hear_sermon_by_faith:faithLevelBroad()",
+      "next": "p4"
+    },
+    {
+      "id": "p4",
+      "speaker": "player",
+      "hearer": "sinner",
+      "text": "If there is any fruit in those things, my friends, it is not good fruit; and the end of those things is death. Every tree that bringeth not forth good fruit is hewn down, and cast into the fire. For God will bring every work into judgment, with every secret thing, whether it be good, or whether it be evil.",
+      "next": "s4"
+    },
+    {
+      "id": "s4",
+      "chance": 0.3,
+      "speaker": "sinner",
+      "hearer": "player",
+      "dynamicLevel": "sinner_hear_sermon_by_faith:faithLevelBroad()",
+      "next": "p5"
+    },
+    {
+      "id": "p5",
+      "speaker": "player",
+      "hearer": "sinner",
+      "text": "Repent, and turn yourselves from all your transgressions; so iniquity shall not be your ruin! Turn to the Lord Jesus Christ, and he will make you free from sin; that your fruit may be unto holiness, and the end everlasting life!",
+      "next": "s5"
+    },
+    {
+      "id": "s5",
+      "chance": 0.3,
+      "speaker": "sinner",
+      "hearer": "player",
+      "dynamicLevel": "sinner_hear_sermon_by_faith:faithLevelBroad()",
+      "next": "p6"
+    },
+    {
+      "id": "p6",
+      "speaker": "player",
+      "hearer": "sinner",
+      "text": "For the wages of sin is death; but the gift of God is eternal life through Jesus Christ our Lord. Amen."
+    }
+]

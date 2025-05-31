@@ -3,7 +3,6 @@
       "id": "p1",
       "speaker": "player",
       "hearer": "sinner",
-      "preCmd": "preachSonic()",
       "text": "This is a test sermon. Repent and believe the gospel!",
       "next": "s1"
     },

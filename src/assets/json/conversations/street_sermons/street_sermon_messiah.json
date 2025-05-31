@@ -1,0 +1,98 @@
+[
+    {
+      "id": "p1",
+      "speaker": "player",
+      "hearer": "sinner",
+      "text": "In the beginning, God created the heaven and the earth, the sea, and all that in them is. And God saw every thing that he had made, and, behold, it was very good.",
+      "next": "s1"
+    },
+    {
+      "id": "s1",
+      "chance": 0.3,
+      "speaker": "sinner",
+      "hearer": "player",
+      "dynamicLevel": "sinner_hear_sermon_by_faith:faithLevelBroad()",
+      "next": "p2"
+    },
+    {
+      "id": "p2",
+      "speaker": "player",
+      "hearer": "sinner",
+      "text": "But the man whom God made in his image, his very offspring, rejected his word and fell prey to the devil, bringing a curse of sin upon God's good creation. By one man sin entered into the world, and death by sin; and so death passed upon all men, for that all have sinned.",
+      "next": "s2"
+    },
+    {
+      "id": "s2",
+      "chance": 0.3,
+      "speaker": "sinner",
+      "hearer": "player",
+      "dynamicLevel": "sinner_hear_sermon_by_faith:faithLevelBroad()",
+      "next": "p3"
+    },
+    {
+      "id": "p3",
+      "speaker": "player",
+      "hearer": "sinner",
+      "text": "One by one, each man is born into this world. One by one, each man sins. And one by one, each man dies. Death, as a ruthless predator, has preyed upon all men from the beginning: his weapon, the sting of sin!",
+      "next": "s3"
+    },
+    {
+      "id": "s3",
+      "chance": 0.3,
+      "speaker": "sinner",
+      "hearer": "player",
+      "dynamicLevel": "sinner_hear_sermon_by_faith:faithLevelBroad()",
+      "next": "p4"
+    },
+    {
+      "id": "p4",
+      "speaker": "player",
+      "hearer": "sinner",
+      "text": "For 3,000 years, God spake by the mouth of his holy prophets to herald the coming of a Saviour. To Moses, God revealed that he would be a great Prophet with the words of God in his mouth. To David, he was revealed as the Son of God, a great King and Lord who would reign... and yet also be forsaken by God in his deepest distress, pierced in his hands and feet by wicked men.",
+      "next": "s4"
+    },
+    {
+      "id": "s4",
+      "chance": 0.3,
+      "speaker": "sinner",
+      "hearer": "player",
+      "dynamicLevel": "sinner_hear_sermon_by_faith:faithLevelBroad()",
+      "next": "p5"
+    },
+    {
+      "id": "p5",
+      "speaker": "player",
+      "hearer": "sinner",
+      "text": "God revealed to Ezekiel that he would come as the good shepherd, seeking to save that which was lost; and to Jeremiah, that he would be the righteous Branch, even THE LORD OUR RIGHTEOUSNESS. He is the hope of the hopeless; the Saviour and the salvation!",
+      "next": "s5"
+    },
+    {
+      "id": "s5",
+      "chance": 0.3,
+      "speaker": "sinner",
+      "hearer": "player",
+      "dynamicLevel": "sinner_hear_sermon_by_faith:faithLevelBroad()",
+      "next": "p6"
+    },
+    {
+      "id": "p6",
+      "speaker": "player",
+      "hearer": "sinner",
+      "text": "Isaiah revealed that he would be the mighty God, the everlasting Father, and yet be born as a child. Micah announced that this child would be born in Bethlehem, and yet had been going forth from everlasting. To Daniel, it was told that Messiah the prince would be cut off to make an end of sins, and to bring in everlasting righteousness.",
+      "next": "s6"
+    },
+    {
+      "id": "s6",
+      "chance": 0.3,
+      "speaker": "sinner",
+      "hearer": "player",
+      "dynamicLevel": "sinner_hear_sermon_by_faith:faithLevelBroad()",
+      "next": "p7"
+    },
+    {
+      "id": "p7",
+      "speaker": "player",
+      "hearer": "sinner",
+      "text": "Wise men who believed God watched for the coming of Messiah, and knew him when he came: \"We have found him, of whom Moses in the law, and the prophets, did write, Jesus of Nazareth\"; and unto them that look for him shall he appear the second time without sin unto salvation!"
+    }
+]
