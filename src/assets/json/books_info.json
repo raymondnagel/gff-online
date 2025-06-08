@@ -1,331 +1,463 @@
 [
     {
         "name": "Genesis",
+        "short": "Gen",
+        "abbreviation": "Gen",
         "title": "Genesis, the first book of Moses",
         "description": ""
     },
     {
         "name": "Exodus",
+        "short": "Ex",
+        "abbreviation": "Ex",
         "title": "Exodus, the second book of Moses",
         "description": ""
     },
     {
         "name": "Leviticus",
+        "short": "Lev",
+        "abbreviation": "Lev",
         "title": "Leviticus, the third book of Moses",
         "description": ""
     },
     {
         "name": "Numbers",
+        "short": "Num",
+        "abbreviation": "Num",
         "title": "Numbers, the fourth book of Moses",
         "description": ""
     },
     {
         "name": "Deuteronomy",
+        "short": "Deut",
+        "abbreviation": "Deu",
         "title": "Deuteronomy, the fifth book of Moses",
         "description": ""
     },
     {
         "name": "Joshua",
+        "short": "Josh",
+        "abbreviation": "Jos",
         "title": "The Book of Joshua",
         "description": ""
     },
     {
         "name": "Judges",
+        "short": "Judg",
+        "abbreviation": "Jdg",
         "title": "The Book of the Judges",
         "description": ""
     },
     {
         "name": "Ruth",
+        "short": "Ruth",
+        "abbreviation": "Rth",
         "title": "Ruth",
         "description": "The Book of Ruth"
     },
     {
         "name": "1 Samuel",
+        "short": "1 Sam",
+        "abbreviation": "1Sa",
         "title": "The First Book of Samuel",
         "description": ""
     },
     {
         "name": "2 Samuel",
+        "short": "2 Sam",
+        "abbreviation": "2Sa",
         "title": "The Second Book of Samuel",
         "description": ""
     },
     {
         "name": "1 Kings",
+        "short": "1 Kgs",
+        "abbreviation": "1Ki",
         "title": "The First Book of the Kings",
         "description": ""
     },
     {
         "name": "2 Kings",
+        "short": "2 Kgs",
+        "abbreviation": "2Ki",
         "title": "The Second Book of the Kings",
         "description": ""
     },
     {
         "name": "1 Chronicles",
+        "short": "1 Chr",
+        "abbreviation": "1Ch",
         "title": "The First Book of Chronicles",
         "description": ""
     },
     {
         "name": "2 Chronicles",
+        "short": "2 Chr",
+        "abbreviation": "2Ch",
         "title": "The Second Book of Chronicles",
         "description": ""
     },
     {
         "name": "Ezra",
+        "short": "Ezra",
+        "abbreviation": "Ezr",
         "title": "The Book of Ezra",
         "description": ""
     },
     {
         "name": "Nehemiah",
+        "short": "Neh",
+        "abbreviation": "Neh",
         "title": "The Book of Nehemiah",
         "description": ""
     },
     {
         "name": "Esther",
+        "short": "Esther",
+        "abbreviation": "Est",
         "title": "The Book of Esther",
         "description": ""
     },
     {
         "name": "Job",
+        "short": "Job",
+        "abbreviation": "Job",
         "title": "The Book of Job",
         "description": ""
     },
     {
         "name": "Psalms",
+        "short": "Psalms",
+        "abbreviation": "Psa",
         "title": "The Book of the Psalms",
         "description": ""
     },
     {
         "name": "Proverbs",
+        "short": "Prov",
+        "abbreviation": "Prv",
         "title": "The Book of Proverbs",
         "description": ""
     },
     {
         "name": "Ecclesiastes",
+        "short": "Ecc",
+        "abbreviation": "Ecc",
         "title": "Ecclesiastes, or, The Preacher",
         "description": ""
     },
     {
         "name": "Song of Solomon",
+        "short": "Song",
+        "abbreviation": "Sos",
         "title": "The Song of Songs, which is Solomon's",
         "description": ""
     },
     {
         "name": "Isaiah",
+        "short": "Isaiah",
+        "abbreviation": "Isa",
         "title": "The Book of the Prophet Isaiah",
         "description": ""
     },
     {
         "name": "Jeremiah",
+        "short": "Jer",
+        "abbreviation": "Jer",
         "title": "The Book of the Prophet Jeremiah",
         "description": ""
     },
     {
         "name": "Lamentations",
+        "short": "Lam",
+        "abbreviation": "Lam",
         "title": "The Book of Lamentations",
         "description": ""
     },
     {
         "name": "Ezekiel",
+        "short": "Ezek",
+        "abbreviation": "Eze",
         "title": "The Book of the Prophet Ezekiel",
         "description": ""
     },
     {
         "name": "Daniel",
+        "short": "Daniel",
+        "abbreviation": "Dan",
         "title": "The Book of the Prophet Daniel",
         "description": ""
     },
     {
         "name": "Hosea",
+        "short": "Hosea",
+        "abbreviation": "Hos",
         "title": "The Book of the Prophet Hosea",
         "description": ""
     },
     {
         "name": "Joel",
+        "short": "Joel",
+        "abbreviation": "Joe",
         "title": "The Book of the Prophet Joel",
         "description": ""
     },
     {
         "name": "Amos",
+        "short": "Amos",
+        "abbreviation": "Amo",
         "title": "The Book of the Prophet Amos",
         "description": ""
     },
     {
         "name": "Obadiah",
+        "short": "Obad",
+        "abbreviation": "Obd",
         "title": "The Book of the Prophet Obadiah",
         "description": ""
     },
     {
         "name": "Jonah",
+        "short": "Jonah",
+        "abbreviation": "Jon",
         "title": "The Book of the Prophet Jonah",
         "description": ""
     },
     {
         "name": "Micah",
+        "short": "Micah",
+        "abbreviation": "Mic",
         "title": "The Book of the Prophet Micah",
         "description": ""
     },
     {
         "name": "Nahum",
+        "short": "Nahum",
+        "abbreviation": "Nah",
         "title": "The Book of the Prophet Nahum",
         "description": ""
     },
     {
         "name": "Habakkuk",
+        "short": "Hab",
+        "abbreviation": "Hab",
         "title": "The Book of the Prophet Habakkuk",
         "description": ""
     },
     {
         "name": "Zephaniah",
+        "short": "Zeph",
+        "abbreviation": "Zep",
         "title": "The Book of the Prophet Zephaniah",
         "description": ""
     },
     {
         "name": "Haggai",
+        "short": "Haggai",
+        "abbreviation": "Hag",
         "title": "The Book of the Prophet Haggai",
         "description": ""
     },
     {
         "name": "Zechariah",
+        "short": "Zech",
+        "abbreviation": "Zec",
         "title": "The Book of the Prophet Zechariah",
         "description": ""
     },
     {
         "name": "Malachi",
+        "short": "Mal",
+        "abbreviation": "Mal",
         "title": "The Book of the Prophet Malachi",
         "description": ""
     },
     {
         "name": "Matthew",
+        "short": "Matt",
+        "abbreviation": "Mat",
         "title": "The Gospel according to Matthew",
         "description": ""
     },
     {
         "name": "Mark",
+        "short": "Mark",
+        "abbreviation": "Mrk",
         "title": "The Gospel according to Mark",
         "description": ""
     },
     {
         "name": "Luke",
+        "short": "Luke",
+        "abbreviation": "Luk",
         "title": "The Gospel according to Luke",
         "description": ""
     },
     {
         "name": "John",
+        "short": "John",
+        "abbreviation": "Jn",
         "title": "The Gospel according to John",
         "description": ""
     },
     {
         "name": "Acts",
+        "short": "Acts",
+        "abbreviation": "Act",
         "title": "The Acts of the Apostles",
         "description": ""
     },
     {
         "name": "Romans",
+        "short": "Romans",
+        "abbreviation": "Rom",
         "title": "The Epistle of Paul to the Romans",
         "description": ""
     },
     {
         "name": "1 Corinthians",
+        "short": "1 Cor",
+        "abbreviation": "1Co",
         "title": "The First Epistle of Paul to the Corinthians",
         "description": ""
     },
     {
         "name": "2 Corinthians",
+        "short": "2 Cor",
+        "abbreviation": "2Co",
         "title": "The Second Epistle of Paul to the Corinthians",
         "description": ""
     },
     {
         "name": "Galatians",
+        "short": "Gal",
+        "abbreviation": "Gal",
         "title": "The Epistle of Paul to the Galatians",
         "description": ""
     },
     {
         "name": "Ephesians",
+        "short": "Eph",
+        "abbreviation": "Eph",
         "title": "The Epistle of Paul to the Ephesians",
         "description": ""
     },
     {
         "name": "Philippians",
+        "short": "Phil",
+        "abbreviation": "Php",
         "title": "The Epistle of Paul to the Philippians",
         "description": ""
     },
     {
         "name": "Colossians",
+        "short": "Col",
+        "abbreviation": "Col",
         "title": "The Epistle of Paul to the Colossians",
         "description": ""
     },
     {
         "name": "1 Thessalonians",
+        "short": "1 Thes",
+        "abbreviation": "1Th",
         "title": "The First Epistle of Paul to the Thessalonians",
         "description": ""
     },
     {
         "name": "2 Thessalonians",
+        "short": "2 Thes",
+        "abbreviation": "2Th",
         "title": "The Second Epistle of Paul to the Thessalonians",
         "description": ""
     },
     {
         "name": "1 Timothy",
+        "short": "1 Tim",
+        "abbreviation": "1Ti",
         "title": "The First Epistle of Paul to Timothy",
         "description": ""
     },
     {
         "name": "2 Timothy",
+        "short": "2 Tim",
+        "abbreviation": "2Ti",
         "title": "The Second Epistle of Paul to Timothy",
         "description": ""
     },
     {
         "name": "Titus",
+        "short": "Titus",
+        "abbreviation": "Tit",
         "title": "The Epistle of Paul to Titus",
         "description": ""
     },
     {
         "name": "Philemon",
+        "short": "Phlm",
+        "abbreviation": "Phm",
         "title": "The Epistle of Paul to Philemon",
         "description": ""
     },
     {
         "name": "Hebrews",
+        "short": "Heb",
+        "abbreviation": "Heb",
         "title": "The Epistle of Paul to the Hebrews",
         "description": ""
     },
     {
         "name": "James",
+        "short": "Jas",
+        "abbreviation": "Jam",
         "title": "The Epistle of James the Less",
         "description": ""
     },
     {
         "name": "1 Peter",
+        "short": "1 Pet",
+        "abbreviation": "1Pe",
         "title": "The First Epistle of Peter",
         "description": ""
     },
     {
         "name": "2 Peter",
+        "short": "2 Pet",
+        "abbreviation": "2Pe",
         "title": "The Second Epistle of Peter",
         "description": ""
     },
     {
         "name": "1 John",
+        "short": "1 Jn",
+        "abbreviation": "1Jn",
         "title": "The First Epistle of John",
         "description": ""
     },
     {
         "name": "2 John",
+        "short": "2 Jn",
+        "abbreviation": "2Jn",
         "title": "The Second Epistle of John",
         "description": ""
     },
     {
         "name": "3 John",
+        "short": "3 Jn",
+        "abbreviation": "3Jn",
         "title": "The Third Epistle of John",
         "description": ""
     },
     {
         "name": "Jude",
+        "short": "Jude",
+        "abbreviation": "Jud",
         "title": "The Epistle of Jude",
         "description": ""
     },
     {
         "name": "Revelation",
+        "short": "Rev",
+        "abbreviation": "Rev",
         "title": "The Revelation of Jesus Christ",
         "description": ""
     }

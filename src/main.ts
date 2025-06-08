@@ -167,7 +167,7 @@ export namespace GFF {
     export let gameLogging: boolean = false;
     export let chatty: boolean = false;
     export let impRepellant: boolean = false;
-    export let introInit: boolean = true;
+    export let introInit: boolean = false;
 
     export function sleep(ms: number) {
         const date: number = Date.now();

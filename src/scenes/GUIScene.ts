@@ -23,6 +23,7 @@ export abstract class GUIScene extends GBaseScene {
     protected expMeter: Phaser.GameObjects.Rectangle;
     protected uiButtons: GIconBarButton[] = [];
     protected buttonDefinitions: GActionableOption[];
+    protected preachButton: GIconBarButton;
 
     private updateUIBarInfo() {
         // Level indicator:
@@ -45,6 +46,8 @@ export abstract class GUIScene extends GBaseScene {
         this.seedText.text = `x ${PLAYER.getSeeds()}`;
         // Sermon count:
         this.sermonText.text = `x ${PLAYER.getSermons()}`;
+        // Enable or disable the preach button based on whether street preaching is allowed:
+        this.preachButton.setEnabled(GFF.AdventureContent.canStreetPreach());
     }
 
     public create(): void {
@@ -62,7 +65,7 @@ export abstract class GUIScene extends GBaseScene {
         GFF.setMouseVisible(true);
     }
 
-    protected createUIBar(excludeSaveAndExit: boolean = false) {
+    protected createUIBar(excludeNonSubscreens: boolean = false) {
         // Create UI bar:
         this.uiBar = this.add.image(GFF.LEFT_BOUND, GFF.BOTTOM_BOUND, 'icon_bar');
         this.uiBar.setOrigin(0, 0);
@@ -73,7 +76,7 @@ export abstract class GUIScene extends GBaseScene {
         const SPACING: number = 8;
         this.buttonDefinitions = [{
                 option: 'Exit',
-                hotkey: excludeSaveAndExit ? undefined : 'q',
+                hotkey: excludeNonSubscreens ? undefined : 'q',
                 action: () => {
                     this.getSound().playSound('icon_click');
                     GPopup.createChoicePopup('Are you sure you wish to leave the game?', 'Exit Game', [
@@ -83,7 +86,7 @@ export abstract class GUIScene extends GBaseScene {
                 }
             }, {
                 option: 'Save',
-                hotkey: excludeSaveAndExit ? undefined : 's',
+                hotkey: excludeNonSubscreens ? undefined : 's',
                 action: () => {
                     this.getSound().playSound('icon_click');
                     GPopup.createChoicePopup('Do you want to save the game?', 'Save Game', [
@@ -107,15 +110,6 @@ export abstract class GUIScene extends GBaseScene {
                     if (this.getContainingMode() !== GFF.GLOSSARY_MODE) {
                         this.getSound().playSound('icon_click');
                         GFF.GLOSSARY_MODE.switchTo(this.getContainingMode());
-                    }
-                }
-            }, {
-                option: 'Stats',
-                hotkey: 't',
-                action: () => {
-                    if (this.getContainingMode() !== GFF.STATS_MODE) {
-                        this.getSound().playSound('icon_click');
-                        GFF.STATS_MODE.switchTo(this.getContainingMode());
                     }
                 }
             }, {
@@ -155,6 +149,15 @@ export abstract class GUIScene extends GBaseScene {
                     }
                 }
             }, {
+                option: 'Preach',
+                hotkey: excludeNonSubscreens ? undefined : 'v',
+                action: () => {
+                    if (GFF.AdventureContent.canStreetPreach()) {
+                        this.getSound().playSound('icon_click');
+                        GFF.AdventureContent.streetPreach();
+                    }
+                }
+            }, {
                 option: 'Status',
                 hotkey: 'c',
                 action: () => {
@@ -169,7 +172,13 @@ export abstract class GUIScene extends GBaseScene {
             const imageName: string = b.option.toLowerCase();
             const x: number = GFF.RIGHT_BOUND - ((BLOCK + SPACING) * (i + 1)) + PADDING;
             const button: GIconBarButton = new GIconBarButton(this, x, GFF.BOTTOM_BOUND + 3, `${imageName}_off`, `${imageName}_on`, b.option, b.hotkey, b.action);
-            if (excludeSaveAndExit && (b.option === 'Save' || b.option === 'Exit')) {
+
+            // Store preach button separately, so that it can be easily updated later.
+            if (b.option === 'Preach') {
+                this.preachButton = button;
+            }
+            // Disable buttons that are not available in subscreens: no saving, exiting, or street preaching.
+            if (excludeNonSubscreens && (b.option === 'Save' || b.option === 'Exit' || b.option === 'Sermon')) {
                 button.setEnabled(false);
             }
             // Need to store these hotkeys somehow and call them from sendPotentialHotkey().

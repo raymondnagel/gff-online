@@ -114,9 +114,11 @@ export type GGlossaryEntry = {
 
 // Represents an entry from the Book Info
 export type GBookEntry = {
-    name: string;
-    title: string;
-    description: string;
+    name: string; // Name of the book: e.g. "Matthew"
+    short: string; // Short name, common abbreviation: e.g. "Matt"
+    abbreviation: string; // 3-letter abbreviation: e.g. "Mat"
+    title: string; // Full title of the book: e.g. "The Gospel according to Matthew"
+    description: string; // Description of the book: [paragraph]
 };
 
 // Pairs an item name with a function that is called when the item is obtained

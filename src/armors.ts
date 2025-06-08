@@ -7,6 +7,16 @@ type Six = 1|2|3|4|5|6;
 
 export namespace ARMORS {
 
+    /**
+     * Unlike the other collectibles, armors are not shuffled.
+     * Each armor is always found in the associated stronghold:
+     * - Tower of Deception  (Girdle of Truth)
+     * - Dungeon of Doubt    (Shield of Faith)
+     * - Keep of Wickedness  (Breastplate of Righteousness)
+     * - Fortress of Enmity  (Preparation of Peace)
+     * - Castle of Perdition (Helmet of Salvation)
+     */
+
     let armors: boolean[] = [
         false, false, false, false, false, false
     ];

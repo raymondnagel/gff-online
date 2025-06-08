@@ -15,6 +15,7 @@ export namespace PLAYER {
     let maxXp: number = 10;
     let faith: number = 50;
     let maxFaith: number = 0;
+    let grace: number = 10;
     let seeds: number = 0;
     let sermons: number = 0;
     let markedChestRoom: GRoom|null = null;
@@ -67,6 +68,19 @@ export namespace PLAYER {
         return Math.floor(Math.pow(10, 1 + (.1 * currentLevel)));
     }
 
+    export function getRequiredXp(): number {
+        return getXpNeededAtLevel(level) - xp;
+    }
+
+    export function getXpPct(): number {
+        return Math.floor((getXp() / getXpNeededAtLevel(level)) * 100)
+    }
+
+    export function getXpBonus(): number {
+        // The XP bonus is half of the required XP to level up.
+        return Math.floor(getRequiredXp() / 2);
+    }
+
     export function getFaith(): number {
         return faith;
     }
@@ -86,6 +100,25 @@ export namespace PLAYER {
         return maxFaith;
     }
 
+    export function getGrace(): number {
+        return grace;
+    }
+
+    export function setGrace(amount: number) {
+        grace = amount;
+    }
+
+    export function changeGrace(byAmount: number) {
+        grace += byAmount;
+        if (grace > getMaxGrace()) {
+            grace = getMaxGrace();
+        }
+    }
+
+    export function getMaxGrace(): number {
+        return getMaxFaith();
+    }
+
     export function calcMaxFaith(): void {
         maxFaith = START_FAITH +
             (level * 10) +
@@ -97,10 +130,14 @@ export namespace PLAYER {
 
     export function getSeeds(): number {
         return seeds;
+
     }
 
     export function changeSeeds(byAmount: number) {
         seeds += byAmount;
+        if (seeds > 99) {
+            seeds = 99; // Cap seeds at 99
+        }
     }
 
     export function getSermons(): number {
@@ -109,6 +146,9 @@ export namespace PLAYER {
 
     export function changeSermons(byAmount: number) {
         sermons += byAmount;
+        if (sermons > 99) {
+            sermons = 99; // Cap sermons at 99
+        }
     }
 
     export function getMarkedChestRoom(): GRoom|null {

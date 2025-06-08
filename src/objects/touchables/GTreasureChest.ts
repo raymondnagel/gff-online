@@ -63,6 +63,10 @@ export class GTreasureChest extends GTouchable {
                 weight: 20
             },
             {
+                element: { name: 'exp_bonus', type: 'item', onCollect: () => {PLAYER.addXp(PLAYER.getXpBonus())} },
+                weight: 10
+            },
+            {
                 element: { name: 'meat', type: 'item', onCollect: () => {PLAYER.changeFaith(200)} },
                 weight: 10
             },

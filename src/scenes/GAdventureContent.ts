@@ -166,9 +166,6 @@ export class GAdventureContent extends GContentScene {
                 case 'y':
                     GConversation.fromFile('cheat_conv');
                     break;
-                case 'v':
-                    this.streetPreach();
-                    break;
                 case 'l':
                     this.getCurrentRoom()?.logRoomInfo();
                     break;
@@ -966,7 +963,7 @@ export class GAdventureContent extends GContentScene {
             enemy.getSpirit().introduced = true;
             this.player.walkDirection(Dir9.NONE);
             this.getSound().stopMusic();
-            ENEMY.init(enemy, enemy.getSpirit(), 'devil_circle', 'battle_devil');
+            ENEMY.init(enemy, enemy.getSpirit(), 'spirit_circle', 'battle_spirit');
             GFF.AdventureUI.transitionToBattle(this.player.getCenter(), (this.getCurrentRoom() as GRoom).getEncounterBg());
         }
     }
@@ -1073,17 +1070,23 @@ export class GAdventureContent extends GContentScene {
         });
     }
 
-    private streetPreach() {
-        // Can only preach a sermon if the player has one,
-        // the current room is outside (without a church),
-        // and there are people nearby.
+    public canStreetPreach(): boolean {
         const room: GRoom = this.getCurrentRoom() as GRoom;
-        if (
+        return (
+            this.getInputMode() === INPUT_ADVENTURING &&
             room.getChurch() === null &&
             room.getArea() === AREA.WORLD_AREA &&
             this.getPersons().length > 0 &&
             PLAYER.getSermons() > 0
-        ) {
+        );
+    }
+
+    public streetPreach() {
+        // Can only preach a sermon if the player has one,
+        // the current room is outside (without a church),
+        // and there are people nearby.
+        const room: GRoom = this.getCurrentRoom() as GRoom;
+        if (this.canStreetPreach()) {
             this.stopChars(true, false, true);
             this.getPersons().forEach(person => {
                 person.faceChar(PLAYER.getSprite(), true);

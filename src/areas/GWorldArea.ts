@@ -464,11 +464,11 @@ export class GWorldArea extends GArea {
 
     private createStrongholds() {
         const strongholds: GStronghold[] = [
-            new GStronghold('Tower of Deception'),
-            new GStronghold('Dungeon of Doubt'),
-            new GStronghold('Fortress of Enmity'),
-            new GStronghold('Keep of Wickedness'),
-            new GStronghold('Castle of Perdition'),
+            new GStronghold('Tower of Deception'),  // Boss: Mammon     // Treasure: Girdle of Truth
+            new GStronghold('Dungeon of Doubt'),    // Boss: Apollyon   // Treasure: Shield of Faith
+            new GStronghold('Fortress of Enmity'),  // Boss: Legion     // Treausre: Preparation of Peace
+            new GStronghold('Keep of Wickedness'),  // Boss: Belial     // Treasure: Breastplate of Righteousness
+            new GStronghold('Castle of Perdition'), // Boss: Beelzebub  // Treasure: Helmet of Salvation
         ];
         RANDOM.shuffle(strongholds);
 
