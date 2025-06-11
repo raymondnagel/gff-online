@@ -48,6 +48,15 @@ export class GTextButton extends Phaser.GameObjects.Container {
         this.height = this.text.height;
     }
 
+    public setSize(width: number, height: number): this {
+        this.text.setSize(width, height);
+        this.text.setFixedSize(width, height);
+        this.border.setSize(width, height);
+        this.width = width;
+        this.height = height;
+        return this;
+    }
+
     public setText(text: string) {
         this.text.text = text;
         this.border.setSize(this.text.width, this.text.height);

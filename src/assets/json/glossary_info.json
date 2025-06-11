@@ -1,6 +1,7 @@
 [
     {
       "name": "adam",
+      "index": "Adam Cesar",
       "title": "Adam Cesar",
       "type": "concept",
       "text": "Adam is the main character of 'The Good Fight of Faith'. You will guide him on adventures throughout the Land of Allegoria, warring against the powers of darkness and liberating precious souls from their grasp.",
@@ -9,6 +10,7 @@
     },
     {
       "name": "armor_1",
+      "index": "Armour 6: Sword of the Spirit",
       "title": "Sword of the Spirit",
       "type": "item",
       "text": "\"For the word of God is quick, and powerful, and sharper than any twoedged sword, piercing even to the dividing asunder of soul and spirit, and of the joints and marrow, and is a discerner of the thoughts and intents of the heart.\" (Hebrews 4:12)",
@@ -17,6 +19,7 @@
     },
     {
       "name": "armor_2",
+      "index": "Armour 5: Helmet of Salvation",
       "title": "Helmet of Salvation",
       "type": "item",
       "text": "\"But let us, who are of the day, be sober, putting on the breastplate of faith and love; and for an helmet, the hope of salvation.\" (1 Thessalonians 5:8)",
@@ -25,6 +28,7 @@
     },
     {
       "name": "armor_3",
+      "index": "Armour 4: Shield of Faith",
       "title": "Shield of Faith",
       "type": "item",
       "text": "\"Above all, taking the shield of faith, wherewith ye shall be able to quench all the fiery darts of the wicked.\" (Ephesians 6:16)",
@@ -33,6 +37,7 @@
     },
     {
       "name": "armor_4",
+      "index": "Armour 2: Breastplate of Righteousness",
       "title": "Breastplate of Righteousness",
       "type": "item",
       "text": "\"Hearken unto me, ye that know righteousness, the people in whose heart is my law; fear ye not the reproach of men, neither be ye afraid of their revilings.\" (Isaiah 51:7)",
@@ -41,6 +46,7 @@
     },
     {
       "name": "armor_5",
+      "index": "Armour 3: Preparation of the Gospel of Peace",
       "title": "Preparation of the Gospel of Peace",
       "type": "item",
       "text": "\"How beautiful are the feet of them that preach the gospel of peace, and bring glad tidings of good things!\" (Romans 10:15b)",
@@ -49,6 +55,7 @@
     },
     {
       "name": "armor_6",
+      "index": "Armour 1: Girdle of Truth",
       "title": "Girdle of Truth",
       "type": "item",
       "text": "\"For I rejoiced greatly, when the brethren came and testified of the truth that is in thee, even as thou walkest in the truth.\" (3 John 1:3)",
@@ -57,6 +64,7 @@
     },
     {
       "name": "cmd_1",
+      "index": "Commandment 1: Thou shalt have no other gods",
       "title": "1st Commandment",
       "type": "item",
       "text": "\"I am the LORD thy God, which have brought thee out of the land of Egypt, out of the house of bondage. Thou shalt have no other gods before me.\" (Exodus 20:2-3)",
@@ -65,6 +73,7 @@
     },
     {
       "name": "cmd_2",
+      "index": "Commandment 2: Thou shalt not make graven images",
       "title": "2nd Commandment",
       "type": "item",
       "text": "\"Thou shalt not make unto thee any graven image... Thou shalt not bow down thyself to them, nor serve them...\" (Exodus 20:4-5)",
@@ -73,6 +82,7 @@
     },
     {
       "name": "cmd_3",
+      "index": "Commandment 3: Thou shalt not take God's name in vain",
       "title": "3rd Commandment",
       "type": "item",
       "text": "\"Thou shalt not take the name of the LORD thy God in vain; for the LORD will not hold him guiltless that taketh his name in vain.\" (Exodus 20:7)",
@@ -81,6 +91,7 @@
     },
     {
       "name": "cmd_4",
+      "index": "Commandment 4: Remember the sabbath",
       "title": "4th Commandment",
       "type": "item",
       "text": "\"Remember the sabbath day, to keep it holy. Six days shalt thou labour, and do all thy work: But the seventh day is the sabbath of the LORD thy God...\" (Exodus 20:8-10)",
@@ -89,6 +100,7 @@
     },
     {
       "name": "cmd_5",
+      "index": "Commandment 5: Honour thy father and mother",
       "title": "5th Commandment",
       "type": "item",
       "text": "\"Honour thy father and thy mother: that thy days may be long upon the land which the LORD thy God giveth thee.\" (Exodus 20:12)",
@@ -97,6 +109,7 @@
     },
     {
       "name": "cmd_6",
+      "index": "Commandment 6: Thou shalt not kill",
       "title": "6th Commandment",
       "type": "item",
       "text": "\"Thou shalt not kill.\" (Exodus 20:13)",
@@ -105,6 +118,7 @@
     },
     {
       "name": "cmd_7",
+      "index": "Commandment 7: Thou shalt not commit adultery",
       "title": "7th Commandment",
       "type": "item",
       "text": "\"Thou shalt not commit adultery.\" (Exodus 20:14)",
@@ -113,6 +127,7 @@
     },
     {
       "name": "cmd_8",
+      "index": "Commandment 8: Thou shalt not steal",
       "title": "8th Commandment",
       "type": "item",
       "text": "\"Thou shalt not steal.\" (Exodus 20:15)",
@@ -121,6 +136,7 @@
     },
     {
       "name": "cmd_9",
+      "index": "Commandment 9: Thou shalt not bear false witness",
       "title": "9th Commandment",
       "type": "item",
       "text": "\"Thou shalt not bear false witness against thy neighbour.\" (Exodus 20:16)",
@@ -129,6 +145,7 @@
     },
     {
       "name": "cmd_10",
+      "index": "Commandment 10: Thou shalt not covet",
       "title": "10th Commandment",
       "type": "item",
       "text": "\"Thou shalt not covet thy neighbour's house... nor any thing that is thy neighbour's.\" (Exodus 20:17)",
@@ -137,6 +154,7 @@
     },
     {
       "name": "exp_bonus",
+      "index": "Consumable: Experience Bonus",
       "title": "Experience",
       "type": "item",
       "text": "\"And not only so, but we glory in tribulations also: knowing that tribulation worketh patience; and patience, experience; and experience, hope:\" (Romans 5:3-4)",
@@ -145,6 +163,7 @@
     },
     {
       "name": "fruit_1",
+      "index": "Fruit 1: Love",
       "title": "Fruit of the Spirit: Love",
       "type": "item",
       "text": "\"By this shall all men know that ye are my disciples, if ye have love one to another.\" (John 13:35)",
@@ -153,6 +172,7 @@
     },
     {
       "name": "fruit_2",
+      "index": "Fruit 2: Joy",
       "title": "Fruit of the Spirit: Joy",
       "type": "item",
       "text": "\"Whom having not seen, ye love; in whom, though ye see him not, yet believing, ye rejoice with joy unspeakable and full of glory:\" (1 Peter 1:8)",
@@ -161,6 +181,7 @@
     },
     {
       "name": "fruit_3",
+      "index": "Fruit 3: Peace",
       "title": "Fruit of the Spirit: Peace",
       "type": "item",
       "text": "\"Peace I leave with you, my peace I give unto you: not as the world giveth, give I unto you. Let not your heart be troubled, neither let it be afraid.\" (John 14:27)",
@@ -169,6 +190,7 @@
     },
     {
       "name": "fruit_4",
+      "index": "Fruit 4: Longsuffering",
       "title": "Fruit of the Spirit: Longsuffering",
       "type": "item",
       "text": "\"Strengthened with all might, according to his glorious power, unto all patience and longsuffering with joyfulness;\" (Colossians 1:11)",
@@ -177,6 +199,7 @@
     },
     {
       "name": "fruit_5",
+      "index": "Fruit 5: Gentleness",
       "title": "Fruit of the Spirit: Gentleness",
       "type": "item",
       "text": "\"And the servant of the Lord must not strive; but be gentle unto all men, apt to teach, patient,\" (2 Timothy 2:24)",
@@ -185,6 +208,7 @@
     },
     {
       "name": "fruit_6",
+      "index": "Fruit 6: Goodness",
       "title": "Fruit of the Spirit: Goodness",
       "type": "item",
       "text": "\"And I myself also am persuaded of you, my brethren, that ye also are full of goodness, filled with all knowledge, able also to admonish one another.\" (Romans 15:14)",
@@ -193,6 +217,7 @@
     },
     {
       "name": "fruit_7",
+      "index": "Fruit 7: Faith",
       "title": "Fruit of the Spirit: Faith",
       "type": "item",
       "text": "\"But without faith it is impossible to please him: for he that cometh to God must believe that he is, and that he is a rewarder of them that diligently seek him.\" (Hebrews 11:6)",
@@ -201,6 +226,7 @@
     },
     {
       "name": "fruit_8",
+      "index": "Fruit 8: Meekness",
       "title": "Fruit of the Spirit: Meekness",
       "type": "item",
       "text": "\"Take my yoke upon you, and learn of me; for I am meek and lowly in heart: and ye shall find rest unto your souls.\" (Matthew 11:29)",
@@ -209,6 +235,7 @@
     },
     {
       "name": "fruit_9",
+      "index": "Fruit 9: Temperance",
       "title": "Fruit of the Spirit: Temperance",
       "type": "item",
       "text": "\"And every man that striveth for the mastery is temperate in all things. Now they do it to obtain a corruptible crown; but we an incorruptible.\" (1 Corinthians 9:25)",
@@ -217,6 +244,7 @@
     },
     {
         "name": "milk",
+        "index": "Consumable: Milk",
         "title": "Milk",
         "type": "item",
         "text": "\"As newborn babes, desire the sincere milk of the word, that ye may grow thereby:\" (1 Peter 2:2)",
@@ -225,6 +253,7 @@
     },
     {
         "name": "meat",
+        "index": "Consumable: Meat",
         "title": "Meat",
         "type": "item",
         "text": "\"Jesus saith unto them, My meat is to do the will of him that sent me, and to finish his work.\" (John 4:34)",
@@ -233,14 +262,16 @@
     },
     {
         "name": "seed",
+        "index": "Item: Seed",
         "title": "Seed",
         "type": "item",
         "text": "\"He that goeth forth and weepeth, bearing precious seed, shall doubtless come again with rejoicing, bringing his sheaves with him.\" (Psalm 126:6)",
         "image": "seed",
-        "inspiration": "The Bible often speaks of the word of God as a seed, some of the most notable passages being Isaiah 55:10-11, Luke 8:11, and 1 Peter 1:23."
+        "inspiration": "The Bible often speaks of the word of God as a seed; for example, in Isaiah 55:10-11, Luke 8:11, and 1 Peter 1:23. The seed of God's word must be sown into men's hearts to bring forth the new birth and its resultant fruit."
     },
     {
         "name": "sermon",
+        "index": "Item: Sermon",
         "title": "Sermon",
         "type": "item",
         "text": "\"Cry aloud, spare not, lift up thy voice like a trumpet, and shew my people their transgression, and the house of Jacob their sins.\" (Isaiah 58:1)",
@@ -249,6 +280,7 @@
     },
     {
         "name": "strong_meat",
+        "index": "Consumable: Strong Meat",
         "title": "Strong Meat",
         "type": "item",
         "text": "\"But strong meat belongeth to them that are of full age, even those who by reason of use have their senses exercised to discern both good and evil.\" (Hebrews 5:14)",

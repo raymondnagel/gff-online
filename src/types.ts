@@ -105,6 +105,7 @@ export type GScripture = {
 // Represents an entry from the Glossary
 export type GGlossaryEntry = {
     name: string;
+    index: string;
     title: string;
     type: 'concept'|'item';
     text: string;
