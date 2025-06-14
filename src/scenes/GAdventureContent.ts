@@ -210,8 +210,6 @@ export class GAdventureContent extends GContentScene {
                     GFF.AdventureUI.pauseAdventure();
                     this.setInputMode(INPUT_PAUSE);
                     break;
-                default:
-                    GFF.AdventureUI.sendPotentialHotkey(keyEvent);
             }
         });
         INPUT_CONVERSATION.onKeyUp((keyEvent: KeyboardEvent) => {
@@ -221,7 +219,6 @@ export class GAdventureContent extends GContentScene {
                     break;
             }
         });
-        INPUT_CONVERSATION.addAllowedEvent(MOUSE_UI_BUTTON);
 
         // INPUT_POPUP is active when a popup is visible:
         INPUT_POPUP.setScene(this);
@@ -249,7 +246,6 @@ export class GAdventureContent extends GContentScene {
                     break;
             }
         });
-        INPUT_PAUSE.addAllowedEvent(MOUSE_UI_BUTTON);
 
         // INPUT_DISABLED is active during transitions and cutscenes;
         // no additional initialization is needed, since it won't do anything.
@@ -1072,20 +1068,18 @@ export class GAdventureContent extends GContentScene {
 
     public canStreetPreach(): boolean {
         const room: GRoom = this.getCurrentRoom() as GRoom;
+        // Can only preach a sermon under the following conditions:
         return (
             this.getInputMode() === INPUT_ADVENTURING &&
             room.getChurch() === null &&
             room.getArea() === AREA.WORLD_AREA &&
             this.getPersons().length > 0 &&
+            PLAYER.getFaith() > 0 &&
             PLAYER.getSermons() > 0
         );
     }
 
     public streetPreach() {
-        // Can only preach a sermon if the player has one,
-        // the current room is outside (without a church),
-        // and there are people nearby.
-        const room: GRoom = this.getCurrentRoom() as GRoom;
         if (this.canStreetPreach()) {
             this.stopChars(true, false, true);
             this.getPersons().forEach(person => {

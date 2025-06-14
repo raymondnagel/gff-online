@@ -3,6 +3,7 @@ import { COLOR } from "../colors";
 import { GInputMode } from "../GInputMode";
 import { GFF } from "../main";
 import { GStatusAvatar } from "../objects/chars/GStatusAvatar";
+import { KEYS } from "../keys";
 import { PLAYER } from "../player";
 import { GPoint2D } from "../types";
 import { GUIScene } from "./GUIScene";
@@ -181,7 +182,7 @@ export class GStatusUI extends GUIScene {
             fontSize: textSize,
             color: COLOR.GREY_1.str()
         }).setOrigin(0, 0);
-        this.add.text(x + infoGap2, y, `0`, {
+        this.add.text(x + infoGap2, y, `${KEYS.getObtainedCount()}`, {
             fontFamily: 'dyonisius',
             fontSize: textSize,
             color: COLOR.GREY_1.str()

@@ -178,7 +178,7 @@ const CMD_FUNCTIONS: Record<string, (...args: any[]) => any> = {
         return failId;
     },
     seedCheck: (_player: GPlayerSprite, _someone: GCharSprite, passId: string, failId: string): string => {
-        return PLAYER.getSeeds() > 0 ? passId : failId;
+        return PLAYER.getFaith() > 0 && PLAYER.getSeeds() > 0 ? passId : failId;
     },
     canGiftSeed: (_player: GPlayerSprite, _someone: GCharSprite, passId: string, failId: string): string => {
         return GFF.canGiftSeed ? passId : failId;
@@ -296,6 +296,7 @@ export class GConversation {
     private faithPerSermonBlurb: number[] = [];
 
     constructor(blurbs: CBlurb[], participants?: CLabeledChar[], convType: ConversationType = 'default') {
+        GFF.AdventureUI.showPromptBacker();
         GFF.AdventureContent.setConversation(this);
         this.convType = convType;
         this.blurbs = blurbs;
@@ -628,6 +629,7 @@ export class GConversation {
         switch(key) {
             case 'Enter':
                 if (this.currentBubble.isComplete()) {
+                    GFF.AdventureUI.hidePrompt();
                     this.advance = true;
                 }
                 break;
@@ -656,6 +658,7 @@ export class GConversation {
     private end() {
         // Cleanup anything that might be left
         GFF.AdventureContent.getSound().setMusicVolume(this.previousMusicVolume);
+        GFF.AdventureUI.hidePromptBacker();
         GFF.AdventureContent.clearConversation();
         this.unpauseParticipants();
     }

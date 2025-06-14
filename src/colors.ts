@@ -11,6 +11,8 @@ export namespace COLOR {
     export const WHITE  = c(0xffffff);
 
     export const RED    = c(0xff0000);
+    export const GREEN  = c(0x00ff00);
+    export const BLUE   = c(0x0000ff);
 
     function c(hexColor: number): GColor {
         return new GColor(hexColor);

@@ -42,6 +42,7 @@ export class GThoughtBubble extends Phaser.GameObjects.Container implements GBub
 
     private startTime: number;
     private wordsThought: number = 0;
+    private complete: boolean = false;
 
     constructor(thinker: GCharSprite, text: string) {
         super(GFF.AdventureContent);
@@ -412,7 +413,19 @@ export class GThoughtBubble extends Phaser.GameObjects.Container implements GBub
     }
 
     public isComplete(): boolean {
-        return this.currentWordIndex >= this.words.length;
+        if (this.complete) {
+            return true;
+        } else {
+            this.complete = this.currentWordIndex >= this.words.length;
+            if (this.complete) {
+                this.onComplete();
+            }
+            return this.complete;
+        }
+    }
+
+    private onComplete() {
+        GFF.AdventureUI.showPrompt('Press Enter to continue...');
     }
 
     private thinkNextWord(): boolean {

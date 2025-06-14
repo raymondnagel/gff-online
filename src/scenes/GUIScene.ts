@@ -1,4 +1,5 @@
 import { COLOR } from "../colors";
+import { KEYS } from "../keys";
 import { GFF } from "../main";
 import { GIconBarButton } from "../objects/components/GIconBarButton";
 import { GPopup } from "../objects/components/GPopup";
@@ -6,9 +7,9 @@ import { PLAYER } from "../player";
 import { GActionableOption, GPoint2D } from "../types";
 import { GBaseScene } from "./GBaseScene";
 
-const METER_OFFSET = 31;
-const METER_WIDTH = 189;
-const FAITH_METER_HEIGHT = 17;
+const METER_OFFSET = 30;
+const METER_WIDTH = 150;
+const FAITH_METER_HEIGHT = 12;
 
 export abstract class GUIScene extends GBaseScene {
 
@@ -16,39 +17,19 @@ export abstract class GUIScene extends GBaseScene {
     protected levelText: Phaser.GameObjects.Text;
     protected seedText: Phaser.GameObjects.Text;
     protected sermonText: Phaser.GameObjects.Text;
+    protected keyText: Phaser.GameObjects.Text;
     protected faithMeterCenter: Phaser.GameObjects.Rectangle;
     protected faithMeterTop: Phaser.GameObjects.Line;
     protected faithMeterBottom: Phaser.GameObjects.Line;
     protected faithText: Phaser.GameObjects.Text;
+    protected graceMeterCenter: Phaser.GameObjects.Rectangle;
+    protected graceMeterTop: Phaser.GameObjects.Line;
+    protected graceMeterBottom: Phaser.GameObjects.Line;
+    protected graceText: Phaser.GameObjects.Text;
     protected expMeter: Phaser.GameObjects.Rectangle;
     protected uiButtons: GIconBarButton[] = [];
     protected buttonDefinitions: GActionableOption[];
     protected preachButton: GIconBarButton;
-
-    private updateUIBarInfo() {
-        // Level indicator:
-        this.levelText.text = `Adam: Level ${PLAYER.getLevel()}`;
-
-        // Faith meter:
-        const faithRatio: number = PLAYER.getFaith() / PLAYER.getMaxFaith();
-        const adjFaithMeterWidth: number = Math.min(METER_WIDTH, METER_WIDTH * faithRatio);
-        this.faithMeterTop.setTo(METER_OFFSET, GFF.BOTTOM_BOUND + 36, METER_OFFSET + adjFaithMeterWidth, GFF.BOTTOM_BOUND + 36);
-        this.faithMeterCenter.width = adjFaithMeterWidth;
-        this.faithMeterBottom.setTo(METER_OFFSET, GFF.BOTTOM_BOUND + 37 + FAITH_METER_HEIGHT, METER_OFFSET + adjFaithMeterWidth, GFF.BOTTOM_BOUND + 37 + FAITH_METER_HEIGHT);
-        this.faithText.text = `Faith: ${PLAYER.getFaith()}/${PLAYER.getMaxFaith()}`;
-
-        // Experience meter:
-        const xpRatio: number = PLAYER.getXp() / PLAYER.getMaxXp();
-        const adjXpMeterWidth: number = Math.min(METER_WIDTH, METER_WIDTH * xpRatio);
-        this.expMeter.width = adjXpMeterWidth;
-
-        // Seed count:
-        this.seedText.text = `x ${PLAYER.getSeeds()}`;
-        // Sermon count:
-        this.sermonText.text = `x ${PLAYER.getSermons()}`;
-        // Enable or disable the preach button based on whether street preaching is allowed:
-        this.preachButton.setEnabled(GFF.AdventureContent.canStreetPreach());
-    }
 
     public create(): void {
         this.handleGeneralKeyInput();
@@ -190,46 +171,104 @@ export abstract class GUIScene extends GBaseScene {
         });
 
         // Level text:
-        this.levelText = this.add.text(28 + (METER_WIDTH / 2), GFF.BOTTOM_BOUND + 10, 'Adam: Level 0', {
-            fontSize: '18px',
+        this.levelText = this.add.text(28 + (METER_WIDTH / 2), GFF.BOTTOM_BOUND + 7, 'Adam: Level 0', {
+            fontSize: '16px',
             color: COLOR.GREY_1.str(),
             fontFamily: 'dyonisius'
         });
         this.levelText.setOrigin(0.5, 0);
 
         // Seed count:
-        this.seedText = this.add.text(266, GFF.BOTTOM_BOUND + 15, 'x 00', {
+        this.seedText = this.add.text(212, GFF.BOTTOM_BOUND + 43, '00', {
             fontSize: '14px',
             color: COLOR.GREY_1.str(),
             fontFamily: 'dyonisius'
-        });
+        }).setOrigin(0.5, 0);
 
         // Sermon count:
-        this.sermonText = this.add.text(266, GFF.BOTTOM_BOUND + 43, 'x 00', {
+        this.sermonText = this.add.text(243, GFF.BOTTOM_BOUND + 43, '00', {
             fontSize: '14px',
             color: COLOR.GREY_1.str(),
             fontFamily: 'dyonisius'
-        });
+        }).setOrigin(0.5, 0);
+
+        // Key count:
+        this.keyText = this.add.text(275, GFF.BOTTOM_BOUND + 43, '00', {
+            fontSize: '14px',
+            color: COLOR.GREY_1.str(),
+            fontFamily: 'dyonisius'
+        }).setOrigin(0.5, 0);
 
         // Faith meter:
-        this.faithMeterTop = this.add.line(0, 0, METER_OFFSET, GFF.BOTTOM_BOUND + 36, METER_OFFSET + METER_WIDTH, GFF.BOTTOM_BOUND + 36, 0xffaaaa);
+        this.faithMeterTop = this.add.line(METER_OFFSET, GFF.BOTTOM_BOUND + 29, 0, 0, METER_WIDTH, 0, 0xffaaaa);
         this.faithMeterTop.setOrigin(0, 0);
-        this.faithMeterCenter = this.add.rectangle(METER_OFFSET, GFF.BOTTOM_BOUND + 37, METER_WIDTH, FAITH_METER_HEIGHT, 0xff0000);
+        this.faithMeterCenter = this.add.rectangle(METER_OFFSET, GFF.BOTTOM_BOUND + 30, METER_WIDTH, FAITH_METER_HEIGHT, 0xff0000);
         this.faithMeterCenter.setOrigin(0, 0);
-        this.faithMeterBottom = this.add.line(0, 0, METER_OFFSET, GFF.BOTTOM_BOUND + 37 + FAITH_METER_HEIGHT, METER_OFFSET + METER_WIDTH, GFF.BOTTOM_BOUND + 37 + FAITH_METER_HEIGHT, 0xff3333);
+        this.faithMeterBottom = this.add.line(METER_OFFSET, GFF.BOTTOM_BOUND + 30 + FAITH_METER_HEIGHT, 0, 0, METER_WIDTH, 0, 0xff3333);
         this.faithMeterBottom.setOrigin(0, 0);
 
         // Faith text:
-        this.faithText = this.add.text(METER_OFFSET + (METER_WIDTH / 2), GFF.BOTTOM_BOUND + 40, 'Faith: 50/50', {
-            fontSize: '14px',
+        this.faithText = this.add.text(METER_OFFSET + (METER_WIDTH / 2), GFF.BOTTOM_BOUND + 31, 'Faith: 50/50', {
+            fontSize: '13px',
+            color: '#ffffff',
+            fontFamily: 'dyonisius'
+        }).setOrigin(0.5, 0);
+
+        // Grace meter:
+        this.graceMeterTop = this.add.line(METER_OFFSET, GFF.BOTTOM_BOUND + 44, 0, 0, METER_WIDTH, 0, 0xaaaaff);
+        this.graceMeterTop.setOrigin(0, 0);
+        this.graceMeterCenter = this.add.rectangle(METER_OFFSET, GFF.BOTTOM_BOUND + 45, METER_WIDTH, FAITH_METER_HEIGHT, 0x0000ff);
+        this.graceMeterCenter.setOrigin(0, 0);
+        this.graceMeterBottom = this.add.line(METER_OFFSET, GFF.BOTTOM_BOUND + 45 + FAITH_METER_HEIGHT, 0, 0, METER_WIDTH, 0, 0x3333ff);
+        this.graceMeterBottom.setOrigin(0, 0);
+
+        // Grace text:
+        this.graceText = this.add.text(METER_OFFSET + (METER_WIDTH / 2), GFF.BOTTOM_BOUND + 46, 'Grace: 50/50', {
+            fontSize: '13px',
             color: '#ffffff',
             fontFamily: 'dyonisius'
         }).setOrigin(0.5, 0);
 
         // Experience meter:
-        this.expMeter = this.add.rectangle(31, GFF.BOTTOM_BOUND + 29, METER_WIDTH, 3, 0xffffff);
+        this.expMeter = this.add.rectangle(METER_OFFSET, GFF.BOTTOM_BOUND + 22, METER_WIDTH, 3, 0xffffff);
         this.expMeter.setOrigin(0, 0);
     }
+
+    private updateUIBarInfo() {
+        // Level indicator:
+        this.levelText.text = `Adam: Level ${PLAYER.getLevel()}`;
+
+        // Faith meter:
+        const faithRatio: number = PLAYER.getFaith() / PLAYER.getMaxFaith();
+        const adjFaithMeterWidth: number = Math.min(METER_WIDTH, METER_WIDTH * faithRatio);
+        this.faithMeterTop.setTo(0, 0, adjFaithMeterWidth, 0);
+        this.faithMeterCenter.width = adjFaithMeterWidth;
+        this.faithMeterBottom.setTo(0, 0, adjFaithMeterWidth, 0);
+        this.faithText.text = `Faith: ${PLAYER.getFaith()}/${PLAYER.getMaxFaith()}`;
+
+        // Grace meter:
+        const graceRatio: number = PLAYER.getGrace() / PLAYER.getMaxGrace();
+        const adjGraceMeterWidth: number = Math.min(METER_WIDTH, METER_WIDTH * graceRatio);
+        this.graceMeterTop.setTo(0, 0, adjGraceMeterWidth, 0);
+        this.graceMeterCenter.width = adjGraceMeterWidth;
+        this.graceMeterBottom.setTo(0, 0, adjGraceMeterWidth, 0);
+        this.graceText.text = `Grace: ${PLAYER.getGrace()}/${PLAYER.getMaxGrace()}`;
+
+        // Experience meter:
+        const xpRatio: number = PLAYER.getXp() / PLAYER.getMaxXp();
+        const adjXpMeterWidth: number = Math.min(METER_WIDTH, METER_WIDTH * xpRatio);
+        this.expMeter.width = adjXpMeterWidth;
+
+        // Seed count:
+        this.seedText.text = `${PLAYER.getSeeds()}`;
+        // Sermon count:
+        this.sermonText.text = `${PLAYER.getSermons()}`;
+        // Key count:
+        this.keyText.text = `${KEYS.getObtainedCount()}`;
+        // Enable or disable the preach button based on whether street preaching is allowed:
+        this.preachButton.setEnabled(GFF.AdventureContent.canStreetPreach());
+    }
+
 
     public sendPotentialHotkey(keyEvent: KeyboardEvent) {
         // console.log(`Send hotkey: ${keyEvent.key} (from ${this.getContainingMode().getName()})`);

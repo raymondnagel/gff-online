@@ -2,8 +2,9 @@ import { COLOR } from "../colors";
 import { GInputMode } from "../GInputMode";
 import { GLOSSARY } from "../glossary";
 import { GFF } from "../main";
+import { GOptionGroup } from "../objects/components/GOptionGroup";
 import { GScrollPane } from "../objects/components/GScrollPane";
-import { GTextButton } from "../objects/components/GTextButton";
+import { GTextOptionButton } from "../objects/components/GTextOptionButton";
 import { GGlossaryEntry } from "../types";
 import { GUIScene } from "./GUIScene";
 
@@ -14,6 +15,7 @@ export class GGlossaryUI extends GUIScene {
     private entryTitle: Phaser.GameObjects.Text;
     private entryImage: Phaser.GameObjects.Image;
     private entryText: Phaser.GameObjects.Text;
+    private entriesGroup: GOptionGroup;
 
     constructor() {
         super("GlossaryUI");
@@ -33,8 +35,8 @@ export class GGlossaryUI extends GUIScene {
             fontSize: '48px'
         }).setOrigin(.5, 0);
 
-        this.initEntries();
         this.initEntryView(GLOSSARY.lookupEntry('adam') as GGlossaryEntry);
+        this.initEntries();
 
         this.setSubscreen();
         this.initInputMode();
@@ -75,19 +77,34 @@ export class GGlossaryUI extends GUIScene {
     }
 
     private initEntries() {
+        this.entriesGroup = new GOptionGroup();
         const scrollPane: GScrollPane = new GScrollPane(this, 50, 90, 445, 581, 0);
         const entries: GGlossaryEntry[] = GLOSSARY.getAllEntries();
-        entries.forEach((entry, index) => {
-            const entryButton = new GTextButton(this, 20, index * 24, entry.index, () => {
+        for (let i = 0; i < entries.length; i++) {
+            const entry: GGlossaryEntry = entries[i];
+            const entryButton = new GTextOptionButton(this, 20, i * 24, entry.entry, () => {
                 this.setEntry(entry);
             });
             scrollPane.addContent(entryButton);
-        });
+            entryButton.setOptionGroup(this.entriesGroup);
+        }
+        // Select first entry button
+        this.entriesGroup.selectNext();
     }
 
     private initInputMode() {
-        INPUT_DEFAULT.onKeyDown((keyEvent) => {
-            this.sendPotentialHotkey(keyEvent);
+        INPUT_DEFAULT.allowRepeats(['ArrowUp', 'ArrowDown']);
+        INPUT_DEFAULT.onKeyDown((keyEvent: KeyboardEvent) => {
+            switch(keyEvent.key) {
+                case 'ArrowUp':
+                    this.entriesGroup.selectPrevious();
+                    break;
+                case 'ArrowDown':
+                    this.entriesGroup.selectNext();
+                    break;
+                default:
+                    this.sendPotentialHotkey(keyEvent);
+            }
         });
         INPUT_DEFAULT.addAllowedEvent('MOUSE_UI_BUTTON');
         this.setInputMode(INPUT_DEFAULT);

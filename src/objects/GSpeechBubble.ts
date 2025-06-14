@@ -31,6 +31,7 @@ export class GSpeechBubble extends Phaser.GameObjects.Container implements GBubb
 
     private startTime: number;
     private wordsSpoken: number = 0;
+    private complete: boolean = false;
 
     constructor(speaker: GCharSprite, text: string) {
         super(GFF.AdventureContent);
@@ -321,7 +322,19 @@ export class GSpeechBubble extends Phaser.GameObjects.Container implements GBubb
     }
 
     public isComplete(): boolean {
-        return this.currentWordIndex >= this.length;
+        if (this.complete) {
+            return true;
+        } else {
+            this.complete = this.currentWordIndex >= this.length;
+            if (this.complete) {
+                this.onComplete();
+            }
+            return this.complete;
+        }
+    }
+
+    private onComplete() {
+        GFF.AdventureUI.showPrompt('Press Enter to continue');
     }
 
     private sayNextWord(): boolean {

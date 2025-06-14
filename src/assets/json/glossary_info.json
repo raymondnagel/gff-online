@@ -1,43 +1,38 @@
 [
     {
+      "name": "gff",
+      "index": "1_concept_1",
+      "entry": "Concept: The Good Fight of Faith",
+      "title": "The Good Fight of Faith",
+      "type": "concept",
+      "text": "\"Fight the good fight of faith, lay hold on eternal life, whereunto thou art also called, and hast professed a good profession before many witnesses.\" (1 Timothy 6:12)",
+      "image": "gff_logo_128",
+      "inspiration": "\"The Good Fight of Faith\" (or GFF) is a Christian, Bible-based computer game where the player takes the role of a new believer, guiding him through an allegorical world to learn about the holy scriptures, the Christian life, and the reality of spiritual warfare. The game is designed to be fun and engaging, while also teaching important spiritual truths directly from the Bible."
+    },
+    {
       "name": "adam",
-      "index": "Adam Cesar",
+      "index": "1_concept_2",
+      "entry": "Concept: Adam Cesar",
       "title": "Adam Cesar",
       "type": "concept",
       "text": "Adam is the main character of 'The Good Fight of Faith'. You will guide him on adventures throughout the Land of Allegoria, warring against the powers of darkness and liberating precious souls from their grasp.",
-      "image": "battle_amc",
+      "image": "adam_head",
       "inspiration": "Adam Cesar has been my best friend and brother in Christ since 2007. When I began to work on the game, I needed a main character, and he was the first person I thought of. But I like that his name is Adam, because he represents the everyman - anyone from Adam's race who is redeemed to become a new creature in Jesus Christ."
     },
     {
-      "name": "armor_1",
-      "index": "Armour 6: Sword of the Spirit",
-      "title": "Sword of the Spirit",
+      "name": "armor_6",
+      "index": "2_armor_1",
+      "entry": "Armour 1: Girdle of Truth",
+      "title": "Girdle of Truth",
       "type": "item",
-      "text": "\"For the word of God is quick, and powerful, and sharper than any twoedged sword, piercing even to the dividing asunder of soul and spirit, and of the joints and marrow, and is a discerner of the thoughts and intents of the heart.\" (Hebrews 4:12)",
-      "image": "arm1",
-      "inspiration": "In Ephesians 6:10, Paul says, \"Put on the whole armour of God, that ye may be able to stand against the wiles of the devil.\" Each piece of this armour will help protect the Christian soldier against the attacks of the enemy."
-    },
-    {
-      "name": "armor_2",
-      "index": "Armour 5: Helmet of Salvation",
-      "title": "Helmet of Salvation",
-      "type": "item",
-      "text": "\"But let us, who are of the day, be sober, putting on the breastplate of faith and love; and for an helmet, the hope of salvation.\" (1 Thessalonians 5:8)",
-      "image": "arm2",
-      "inspiration": "In Ephesians 6:10, Paul says, \"Put on the whole armour of God, that ye may be able to stand against the wiles of the devil.\" Each piece of this armour will help protect the Christian soldier against the attacks of the enemy."
-    },
-    {
-      "name": "armor_3",
-      "index": "Armour 4: Shield of Faith",
-      "title": "Shield of Faith",
-      "type": "item",
-      "text": "\"Above all, taking the shield of faith, wherewith ye shall be able to quench all the fiery darts of the wicked.\" (Ephesians 6:16)",
-      "image": "arm3",
+      "text": "\"For I rejoiced greatly, when the brethren came and testified of the truth that is in thee, even as thou walkest in the truth.\" (3 John 1:3)",
+      "image": "arm6",
       "inspiration": "In Ephesians 6:10, Paul says, \"Put on the whole armour of God, that ye may be able to stand against the wiles of the devil.\" Each piece of this armour will help protect the Christian soldier against the attacks of the enemy."
     },
     {
       "name": "armor_4",
-      "index": "Armour 2: Breastplate of Righteousness",
+      "index": "2_armor_2",
+      "entry": "Armour 2: Breastplate of Righteousness",
       "title": "Breastplate of Righteousness",
       "type": "item",
       "text": "\"Hearken unto me, ye that know righteousness, the people in whose heart is my law; fear ye not the reproach of men, neither be ye afraid of their revilings.\" (Isaiah 51:7)",
@@ -46,7 +41,8 @@
     },
     {
       "name": "armor_5",
-      "index": "Armour 3: Preparation of the Gospel of Peace",
+      "index": "2_armor_3",
+      "entry": "Armour 3: Preparation of the Gospel of Peace",
       "title": "Preparation of the Gospel of Peace",
       "type": "item",
       "text": "\"How beautiful are the feet of them that preach the gospel of peace, and bring glad tidings of good things!\" (Romans 10:15b)",
@@ -54,17 +50,39 @@
       "inspiration": "In Ephesians 6:10, Paul says, \"Put on the whole armour of God, that ye may be able to stand against the wiles of the devil.\" Each piece of this armour will help protect the Christian soldier against the attacks of the enemy."
     },
     {
-      "name": "armor_6",
-      "index": "Armour 1: Girdle of Truth",
-      "title": "Girdle of Truth",
+      "name": "armor_3",
+      "index": "2_armor_4",
+      "entry": "Armour 4: Shield of Faith",
+      "title": "Shield of Faith",
       "type": "item",
-      "text": "\"For I rejoiced greatly, when the brethren came and testified of the truth that is in thee, even as thou walkest in the truth.\" (3 John 1:3)",
-      "image": "arm6",
+      "text": "\"Above all, taking the shield of faith, wherewith ye shall be able to quench all the fiery darts of the wicked.\" (Ephesians 6:16)",
+      "image": "arm3",
+      "inspiration": "In Ephesians 6:10, Paul says, \"Put on the whole armour of God, that ye may be able to stand against the wiles of the devil.\" Each piece of this armour will help protect the Christian soldier against the attacks of the enemy."
+    },
+    {
+      "name": "armor_2",
+      "index": "2_armor_5",
+      "entry": "Armour 5: Helmet of Salvation",
+      "title": "Helmet of Salvation",
+      "type": "item",
+      "text": "\"But let us, who are of the day, be sober, putting on the breastplate of faith and love; and for an helmet, the hope of salvation.\" (1 Thessalonians 5:8)",
+      "image": "arm2",
+      "inspiration": "In Ephesians 6:10, Paul says, \"Put on the whole armour of God, that ye may be able to stand against the wiles of the devil.\" Each piece of this armour will help protect the Christian soldier against the attacks of the enemy."
+    },
+    {
+      "name": "armor_1",
+      "index": "2_armor_6",
+      "entry": "Armour 6: Sword of the Spirit",
+      "title": "Sword of the Spirit",
+      "type": "item",
+      "text": "\"For the word of God is quick, and powerful, and sharper than any twoedged sword, piercing even to the dividing asunder of soul and spirit, and of the joints and marrow, and is a discerner of the thoughts and intents of the heart.\" (Hebrews 4:12)",
+      "image": "arm1",
       "inspiration": "In Ephesians 6:10, Paul says, \"Put on the whole armour of God, that ye may be able to stand against the wiles of the devil.\" Each piece of this armour will help protect the Christian soldier against the attacks of the enemy."
     },
     {
       "name": "cmd_1",
-      "index": "Commandment 1: Thou shalt have no other gods",
+      "index": "3_cmd_1",
+      "entry": "Commandment 1: Thou shalt have no other gods",
       "title": "1st Commandment",
       "type": "item",
       "text": "\"I am the LORD thy God, which have brought thee out of the land of Egypt, out of the house of bondage. Thou shalt have no other gods before me.\" (Exodus 20:2-3)",
@@ -73,7 +91,8 @@
     },
     {
       "name": "cmd_2",
-      "index": "Commandment 2: Thou shalt not make graven images",
+      "index": "3_cmd_2",
+      "entry": "Commandment 2: Thou shalt not make graven images",
       "title": "2nd Commandment",
       "type": "item",
       "text": "\"Thou shalt not make unto thee any graven image... Thou shalt not bow down thyself to them, nor serve them...\" (Exodus 20:4-5)",
@@ -82,7 +101,8 @@
     },
     {
       "name": "cmd_3",
-      "index": "Commandment 3: Thou shalt not take God's name in vain",
+      "index": "3_cmd_3",
+      "entry": "Commandment 3: Thou shalt not take God's name in vain",
       "title": "3rd Commandment",
       "type": "item",
       "text": "\"Thou shalt not take the name of the LORD thy God in vain; for the LORD will not hold him guiltless that taketh his name in vain.\" (Exodus 20:7)",
@@ -91,7 +111,8 @@
     },
     {
       "name": "cmd_4",
-      "index": "Commandment 4: Remember the sabbath",
+      "index": "3_cmd_4",
+      "entry": "Commandment 4: Remember the sabbath",
       "title": "4th Commandment",
       "type": "item",
       "text": "\"Remember the sabbath day, to keep it holy. Six days shalt thou labour, and do all thy work: But the seventh day is the sabbath of the LORD thy God...\" (Exodus 20:8-10)",
@@ -100,7 +121,8 @@
     },
     {
       "name": "cmd_5",
-      "index": "Commandment 5: Honour thy father and mother",
+      "index": "3_cmd_5",
+      "entry": "Commandment 5: Honour thy father and mother",
       "title": "5th Commandment",
       "type": "item",
       "text": "\"Honour thy father and thy mother: that thy days may be long upon the land which the LORD thy God giveth thee.\" (Exodus 20:12)",
@@ -109,7 +131,8 @@
     },
     {
       "name": "cmd_6",
-      "index": "Commandment 6: Thou shalt not kill",
+      "index": "3_cmd_6",
+      "entry": "Commandment 6: Thou shalt not kill",
       "title": "6th Commandment",
       "type": "item",
       "text": "\"Thou shalt not kill.\" (Exodus 20:13)",
@@ -118,7 +141,8 @@
     },
     {
       "name": "cmd_7",
-      "index": "Commandment 7: Thou shalt not commit adultery",
+      "index": "3_cmd_7",
+      "entry": "Commandment 7: Thou shalt not commit adultery",
       "title": "7th Commandment",
       "type": "item",
       "text": "\"Thou shalt not commit adultery.\" (Exodus 20:14)",
@@ -127,7 +151,8 @@
     },
     {
       "name": "cmd_8",
-      "index": "Commandment 8: Thou shalt not steal",
+      "index": "3_cmd_8",
+      "entry": "Commandment 8: Thou shalt not steal",
       "title": "8th Commandment",
       "type": "item",
       "text": "\"Thou shalt not steal.\" (Exodus 20:15)",
@@ -136,7 +161,8 @@
     },
     {
       "name": "cmd_9",
-      "index": "Commandment 9: Thou shalt not bear false witness",
+      "index": "3_cmd_9",
+      "entry": "Commandment 9: Thou shalt not bear false witness",
       "title": "9th Commandment",
       "type": "item",
       "text": "\"Thou shalt not bear false witness against thy neighbour.\" (Exodus 20:16)",
@@ -145,7 +171,8 @@
     },
     {
       "name": "cmd_10",
-      "index": "Commandment 10: Thou shalt not covet",
+      "index": "3_cmd_10",
+      "entry": "Commandment 10: Thou shalt not covet",
       "title": "10th Commandment",
       "type": "item",
       "text": "\"Thou shalt not covet thy neighbour's house... nor any thing that is thy neighbour's.\" (Exodus 20:17)",
@@ -153,17 +180,9 @@
       "inspiration": "Proverbs 6:23 says, \"For the commandment is a lamp; and the law is light; and reproofs of instruction are the way of life\". Each commandment found will brighten your path, allowing you to see farther in the wilderness of this world."
     },
     {
-      "name": "exp_bonus",
-      "index": "Consumable: Experience Bonus",
-      "title": "Experience",
-      "type": "item",
-      "text": "\"And not only so, but we glory in tribulations also: knowing that tribulation worketh patience; and patience, experience; and experience, hope:\" (Romans 5:3-4)",
-      "image": "xp_medal",
-      "inspiration": "Experience plays a critical role in the Christian's spiritual growth. As you gain experience, you will level up, increasing your faith and making you stronger in Christ."
-    },
-    {
       "name": "fruit_1",
-      "index": "Fruit 1: Love",
+      "index": "4_fruit_1",
+      "entry": "Fruit 1: Love",
       "title": "Fruit of the Spirit: Love",
       "type": "item",
       "text": "\"By this shall all men know that ye are my disciples, if ye have love one to another.\" (John 13:35)",
@@ -172,7 +191,8 @@
     },
     {
       "name": "fruit_2",
-      "index": "Fruit 2: Joy",
+      "index": "4_fruit_2",
+      "entry": "Fruit 2: Joy",
       "title": "Fruit of the Spirit: Joy",
       "type": "item",
       "text": "\"Whom having not seen, ye love; in whom, though ye see him not, yet believing, ye rejoice with joy unspeakable and full of glory:\" (1 Peter 1:8)",
@@ -181,7 +201,8 @@
     },
     {
       "name": "fruit_3",
-      "index": "Fruit 3: Peace",
+      "index": "4_fruit_3",
+      "entry": "Fruit 3: Peace",
       "title": "Fruit of the Spirit: Peace",
       "type": "item",
       "text": "\"Peace I leave with you, my peace I give unto you: not as the world giveth, give I unto you. Let not your heart be troubled, neither let it be afraid.\" (John 14:27)",
@@ -190,7 +211,8 @@
     },
     {
       "name": "fruit_4",
-      "index": "Fruit 4: Longsuffering",
+      "index": "4_fruit_4",
+      "entry": "Fruit 4: Longsuffering",
       "title": "Fruit of the Spirit: Longsuffering",
       "type": "item",
       "text": "\"Strengthened with all might, according to his glorious power, unto all patience and longsuffering with joyfulness;\" (Colossians 1:11)",
@@ -199,7 +221,8 @@
     },
     {
       "name": "fruit_5",
-      "index": "Fruit 5: Gentleness",
+      "index": "4_fruit_5",
+      "entry": "Fruit 5: Gentleness",
       "title": "Fruit of the Spirit: Gentleness",
       "type": "item",
       "text": "\"And the servant of the Lord must not strive; but be gentle unto all men, apt to teach, patient,\" (2 Timothy 2:24)",
@@ -208,7 +231,8 @@
     },
     {
       "name": "fruit_6",
-      "index": "Fruit 6: Goodness",
+      "index": "4_fruit_6",
+      "entry": "Fruit 6: Goodness",
       "title": "Fruit of the Spirit: Goodness",
       "type": "item",
       "text": "\"And I myself also am persuaded of you, my brethren, that ye also are full of goodness, filled with all knowledge, able also to admonish one another.\" (Romans 15:14)",
@@ -217,7 +241,8 @@
     },
     {
       "name": "fruit_7",
-      "index": "Fruit 7: Faith",
+      "index": "4_fruit_7",
+      "entry": "Fruit 7: Faith",
       "title": "Fruit of the Spirit: Faith",
       "type": "item",
       "text": "\"But without faith it is impossible to please him: for he that cometh to God must believe that he is, and that he is a rewarder of them that diligently seek him.\" (Hebrews 11:6)",
@@ -226,7 +251,8 @@
     },
     {
       "name": "fruit_8",
-      "index": "Fruit 8: Meekness",
+      "index": "4_fruit_8",
+      "entry": "Fruit 8: Meekness",
       "title": "Fruit of the Spirit: Meekness",
       "type": "item",
       "text": "\"Take my yoke upon you, and learn of me; for I am meek and lowly in heart: and ye shall find rest unto your souls.\" (Matthew 11:29)",
@@ -235,7 +261,8 @@
     },
     {
       "name": "fruit_9",
-      "index": "Fruit 9: Temperance",
+      "index": "4_fruit_9",
+      "entry": "Fruit 9: Temperance",
       "title": "Fruit of the Spirit: Temperance",
       "type": "item",
       "text": "\"And every man that striveth for the mastery is temperate in all things. Now they do it to obtain a corruptible crown; but we an incorruptible.\" (1 Corinthians 9:25)",
@@ -243,48 +270,73 @@
       "inspiration": "James 3:18 says, \"And the fruit of righteousness is sown in peace of them that make peace.\" Each fruit the Spirit has brought forth in you will make you a more effective minister of the gospel of peace, beseeching men to be reconciled to God."
     },
     {
-        "name": "milk",
-        "index": "Consumable: Milk",
-        "title": "Milk",
-        "type": "item",
-        "text": "\"As newborn babes, desire the sincere milk of the word, that ye may grow thereby:\" (1 Peter 2:2)",
-        "image": "milk",
-        "inspiration": "Hebrews 5:12 describes the \"first principles of the oracles of God\" as \"milk\". 1 Peter 2:2 tells us that this \"sincere milk of the word\" is important for the growth of newborn babes in Christ."
+      "name": "seed",
+      "index": "5_item_1",
+      "entry": "Item: Seed",
+      "title": "Seed",
+      "type": "item",
+      "text": "\"He that goeth forth and weepeth, bearing precious seed, shall doubtless come again with rejoicing, bringing his sheaves with him.\" (Psalm 126:6)",
+      "image": "seed",
+      "inspiration": "The Bible often speaks of the word of God as a seed; for example, in Isaiah 55:10-11, Luke 8:11, and 1 Peter 1:23. The seed of God's word must be sown into men's hearts to bring forth the new birth and its resultant fruit."
     },
     {
-        "name": "meat",
-        "index": "Consumable: Meat",
-        "title": "Meat",
-        "type": "item",
-        "text": "\"Jesus saith unto them, My meat is to do the will of him that sent me, and to finish his work.\" (John 4:34)",
-        "image": "meat",
-        "inspiration": "Moving beyond the \"first principles\" of milk, Jesus teaches us in John 4:34 that the real diet of a Christian consists in doing the Father's will."
+      "name": "sermon",
+      "index": "5_item_2",
+      "entry": "Item: Sermon",
+      "title": "Sermon",
+      "type": "item",
+      "text": "\"Cry aloud, spare not, lift up thy voice like a trumpet, and shew my people their transgression, and the house of Jacob their sins.\" (Isaiah 58:1)",
+      "image": "sermon",
+      "inspiration": "As preachers of the gospel, we sometimes cry aloud with our voice like a trumpet, proclaiming a message to many people at once. In modern times, a bullhorn is particularly effective."
     },
     {
-        "name": "seed",
-        "index": "Item: Seed",
-        "title": "Seed",
-        "type": "item",
-        "text": "\"He that goeth forth and weepeth, bearing precious seed, shall doubtless come again with rejoicing, bringing his sheaves with him.\" (Psalm 126:6)",
-        "image": "seed",
-        "inspiration": "The Bible often speaks of the word of God as a seed; for example, in Isaiah 55:10-11, Luke 8:11, and 1 Peter 1:23. The seed of God's word must be sown into men's hearts to bring forth the new birth and its resultant fruit."
+      "name": "key",
+      "index": "5_item_3",
+      "entry": "Item: Key Verse",
+      "title": "Key Verse",
+      "type": "item",
+      "text": "\"And I will give unto thee the keys of the kingdom of heaven: and whatsoever thou shalt bind on earth shall be bound in heaven: and whatsoever thou shalt loose on earth shall be loosed in heaven.\" (Matthew 16:19)",
+      "image": "key",
+      "inspiration": "Key Verses are well-known passages that are vital to our understanding of the scripture and the will of God. In GFF, they are used as literal keys to open locked doors and other locks. (The graphic contains the 'Star of David' to represent the Key of David, which Jesus possesses in Revelation 3:7.)"
     },
     {
-        "name": "sermon",
-        "index": "Item: Sermon",
-        "title": "Sermon",
-        "type": "item",
-        "text": "\"Cry aloud, spare not, lift up thy voice like a trumpet, and shew my people their transgression, and the house of Jacob their sins.\" (Isaiah 58:1)",
-        "image": "sermon",
-        "inspiration": "As preachers of the gospel, we sometimes cry aloud with our voice like a trumpet, proclaiming a message to many people at once. In modern times, a bullhorn is particularly effective."
+      "name": "milk",
+      "index": "6_consum_1",
+      "entry": "Consumable: Milk",
+      "title": "Milk",
+      "type": "item",
+      "text": "\"As newborn babes, desire the sincere milk of the word, that ye may grow thereby:\" (1 Peter 2:2)",
+      "image": "milk",
+      "inspiration": "Hebrews 5:12 describes the \"first principles of the oracles of God\" as \"milk\". 1 Peter 2:2 tells us that this \"sincere milk of the word\" is important for the growth of newborn babes in Christ."
     },
     {
-        "name": "strong_meat",
-        "index": "Consumable: Strong Meat",
-        "title": "Strong Meat",
-        "type": "item",
-        "text": "\"But strong meat belongeth to them that are of full age, even those who by reason of use have their senses exercised to discern both good and evil.\" (Hebrews 5:14)",
-        "image": "strong_meat",
-        "inspiration": "In Hebrews 5, Paul speaks of the perfection of Christ by the things which he suffered as \"strong meat\", reserved for those of \"full age\" who have grown to the measure of the stature of the fulness of Christ. (Ephesians 4:13)"
+      "name": "meat",
+      "index": "6_consum_2",
+      "entry": "Consumable: Meat",
+      "title": "Meat",
+      "type": "item",
+      "text": "\"Jesus saith unto them, My meat is to do the will of him that sent me, and to finish his work.\" (John 4:34)",
+      "image": "meat",
+      "inspiration": "Moving beyond the \"first principles\" of milk, Jesus teaches us in John 4:34 that the real diet of a Christian consists in doing the Father's will."
+    },
+    {
+      "name": "strong_meat",
+      "index": "6_consum_3",
+      "entry": "Consumable: Strong Meat",
+      "title": "Strong Meat",
+      "type": "item",
+      "text": "\"But strong meat belongeth to them that are of full age, even those who by reason of use have their senses exercised to discern both good and evil.\" (Hebrews 5:14)",
+      "image": "strong_meat",
+      "inspiration": "In Hebrews 5, Paul speaks of the perfection of Christ by the things which he suffered as \"strong meat\", reserved for those of \"full age\" who have grown to the measure of the stature of the fulness of Christ. (Ephesians 4:13)"
+    },
+    {
+      "name": "exp_bonus",
+      "index": "6_consum_4",
+      "entry": "Consumable: Experience Bonus",
+      "title": "Experience",
+      "type": "item",
+      "text": "\"And not only so, but we glory in tribulations also: knowing that tribulation worketh patience; and patience, experience; and experience, hope:\" (Romans 5:3-4)",
+      "image": "xp_medal",
+      "inspiration": "Experience plays a critical role in the Christian's spiritual growth. As you gain experience, you will level up, increasing your faith and making you stronger in Christ."
     }
 ]
