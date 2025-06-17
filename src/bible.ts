@@ -17,12 +17,43 @@ export namespace BIBLE {
         return verseNode ? verseNode.textContent : null;
     }
 
+    export function getAllBooks(): string[] {
+        // Access the loaded XML data
+        const kjvXml: XMLDocument = GFF.GAME.cache.xml.get('kjv') as XMLDocument;
+
+        // Select all book elements and extract their names
+        const bookElements: NodeListOf<Element> = kjvXml.querySelectorAll('testament > book');
+        return Array.from(bookElements).map(book => book.getAttribute('name') || '');
+    }
+
     export function getAllChaptersForBook(bookName: string): Element[] {
         // Access the loaded XML data
         const kjvXml: XMLDocument = GFF.GAME.cache.xml.get('kjv') as XMLDocument;
 
         // Select all chapters within the specified book
         return Array.from(kjvXml.querySelectorAll(`testament > book[name="${bookName}"] > chapter`) as NodeListOf<Element>);
+    }
+
+    export function getAllVersesForChapter(bookName: string, chapterNo: number): GScripture[] {
+        // Access the loaded XML data
+        const kjvXml: XMLDocument = GFF.GAME.cache.xml.get('kjv') as XMLDocument;
+
+        // Select all verses within the specified book and chapter
+        const verseElements: Element[] = Array.from(kjvXml.querySelectorAll(
+            `testament > book[name="${bookName}"] > chapter[no="${chapterNo}"] > verse`
+        ) as NodeListOf<Element>);
+
+        // Map the verse elements to GScripture objects
+        return verseElements.map((verseNode: Element) => {
+            const verseText = verseNode.textContent ?? '';
+            const verseNo = parseInt(verseNode.getAttribute('no') || '0');
+            return {
+                book: bookName,
+                chapter: chapterNo,
+                verse: verseNo,
+                verseText: verseText
+            };
+        });
     }
 
     export function getAllVersesForBook(bookName: string): Element[] {
@@ -52,6 +83,51 @@ export namespace BIBLE {
             verse: verseNo,
             verseText: verseText
         };
+    }
+
+    export function getBookRelativeTo(bookName: string, offset: number): string|null {
+        // Get all books from the XML
+        const kjvXml: XMLDocument = GFF.GAME.cache.xml.get('kjv') as XMLDocument;
+        const bookElements: NodeListOf<Element> = kjvXml.querySelectorAll('testament > book');
+
+        // Find the index of the specified book
+        const bookNames: string[] = Array.from(bookElements).map(book => book.getAttribute('name') || '');
+        const currentIndex: number = bookNames.indexOf(bookName);
+
+        // Calculate the new index with the offset
+        const newIndex: number = currentIndex + offset;
+
+        // Check if the new index is within bounds
+        if (newIndex >= 0 && newIndex < bookNames.length) {
+            return bookNames[newIndex];
+        }
+        return null; // Return null if out of bounds
+    }
+
+    export function getLastChapterForBook(bookName: string): number {
+        // Access the loaded XML data
+        const kjvXml: XMLDocument = GFF.GAME.cache.xml.get('kjv') as XMLDocument;
+
+        // Select the last chapter of the specified book
+        const lastChapterNode = kjvXml.querySelector(
+            `testament > book[name="${bookName}"] > chapter:last-of-type`
+        ) as Element;
+
+        // Return the last chapter as a number
+        return parseInt(lastChapterNode.getAttribute('no') as string);
+    }
+
+    export function getLastVerseForChapter(bookName: string, chapterNo: number): number {
+        // Access the loaded XML data
+        const kjvXml: XMLDocument = GFF.GAME.cache.xml.get('kjv') as XMLDocument;
+
+        // Select the last verse of the specified chapter
+        const lastVerseNode = kjvXml.querySelector(
+            `testament > book[name="${bookName}"] > chapter[no="${chapterNo}"] > verse:last-of-type`
+        ) as Element;
+
+        // Return the last verse as a number
+        return parseInt(lastVerseNode.getAttribute('no') as string);
     }
 
     export function getRandomVerseFromBooks(books: string[]): GScripture {

@@ -13,6 +13,10 @@ export class GOptionGroup {
         this.options.push(option);
     }
 
+    public removeAllOptions(): void {
+        this.options = [];
+    }
+
     /**
      * This will be called by the option button when it is selected.
      * It will deselect all other options in the group.
@@ -29,25 +33,25 @@ export class GOptionGroup {
         return this.options.find(opt => opt && opt.isSelected());
     }
 
-    public selectPrevious() {
+    public selectPrevious(callFunction: boolean = true) {
         const currentSelection = this.getSelection();
         if (currentSelection) {
             const currentIndex = this.options.indexOf(currentSelection);
             const previousIndex = (currentIndex - 1 + this.options.length) % this.options.length;
-            this.options[previousIndex].select();
+            this.options[previousIndex].select(callFunction);
         } else if (this.options.length > 0) {
-            this.options[0].select();
+            this.options[0].select(callFunction);
         }
     }
 
-    public selectNext() {
+    public selectNext(callFunction: boolean = true) {
         const currentSelection = this.getSelection();
         if (currentSelection) {
             const currentIndex = this.options.indexOf(currentSelection);
             const nextIndex = (currentIndex + 1) % this.options.length;
-            this.options[nextIndex].select();
+            this.options[nextIndex].select(callFunction);
         } else if (this.options.length > 0) {
-            this.options[0].select();
+            this.options[0].select(callFunction);
         }
     }
 }

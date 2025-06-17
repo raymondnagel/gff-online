@@ -49,10 +49,6 @@ export class GStatusUI extends GUIScene {
         this.initItemPanels();
         this.setSubscreen();
         this.initInputMode();
-
-        // For design:
-        // this.createTileGuidelines();
-        // this.initDesignMode();
     }
 
     private initAvatar() {
@@ -64,8 +60,8 @@ export class GStatusUI extends GUIScene {
     private initMainStats() {
         const textSize: string = '16px';
         const lineGap: number = 24;
-        const infoGap1: number = 54;
-        const infoGap2: number = 73;
+        const infoGap1: number = 50;
+        const infoGap2: number = 82;
         let x: number = 207;
         let y: number = 156;
 
@@ -134,16 +130,16 @@ export class GStatusUI extends GUIScene {
         }).setOrigin(0, 0);
 
         // Column 2
-
-        // Books
         y = 196;
-        x = 352;
-        this.add.text(x, y, 'Books:', {
+        x = 347;
+
+        // Seeds
+        this.add.text(x, y, 'Seeds:', {
             fontFamily: 'dyonisius',
             fontSize: textSize,
             color: COLOR.GREY_1.str()
         }).setOrigin(0, 0);
-        this.add.text(x + infoGap2, y, `${BOOKS.getObtainedCount()}`, {
+        this.add.text(x + infoGap2, y, `${PLAYER.getSeeds()}`, {
             fontFamily: 'dyonisius',
             fontSize: textSize,
             color: COLOR.GREY_1.str()
@@ -162,14 +158,14 @@ export class GStatusUI extends GUIScene {
             color: COLOR.GREY_1.str()
         }).setOrigin(0, 0);
 
-        // Seeds
+        // Standards
         y += lineGap;
-        this.add.text(x, y, 'Seeds:', {
+        this.add.text(x, y, 'Standards:', {
             fontFamily: 'dyonisius',
             fontSize: textSize,
             color: COLOR.GREY_1.str()
         }).setOrigin(0, 0);
-        this.add.text(x + infoGap2, y, `${PLAYER.getSeeds()}`, {
+        this.add.text(x + infoGap2, y, `${0}`, {
             fontFamily: 'dyonisius',
             fontSize: textSize,
             color: COLOR.GREY_1.str()
@@ -209,9 +205,9 @@ export class GStatusUI extends GUIScene {
         y += lineGap;
         this.addStatText(x, y, 'Services Attended', infoGap1, `${0}`);
         y += lineGap;
-        this.addStatText(x, y, 'People Met', infoGap1, `${0}`);
+        this.addStatText(x, y, 'Songs Played', infoGap1, `${0}`);
         y += lineGap;
-        this.addStatText(x, y, 'Conversations', infoGap1, `${0}`);
+        this.addStatText(x, y, 'People Met', infoGap1, `${0}`);
         y += lineGap;
         this.addStatText(x, y, 'Captives Rescued', infoGap1, `${0}`);
         y += lineGap;
@@ -221,18 +217,16 @@ export class GStatusUI extends GUIScene {
         y += lineGap;
         this.addStatText(x, y, 'Sermons Preached', infoGap1, `${0}`);
         y += lineGap;
-        this.addStatText(x, y, 'Chests Opened', infoGap1, `${0}`);
+        this.addStatText(x, y, 'Standards Raised', infoGap1, `${0}`);
         y += lineGap;
         this.addStatText(x, y, 'Key Verses Used', infoGap1, `${0}`);
         y += lineGap;
-        this.addStatText(x, y, 'Songs Played', infoGap1, `${0}`);
+        this.addStatText(x, y, 'Chests Opened', infoGap1, `${0}`);
 
         // Column 2 contains battle stats
         x = 256;
         y = 300 + lineGap;
         this.addStatText(x, y, 'Battles', infoGap2, `${0}`);
-        y += lineGap;
-        this.addStatText(x, y, 'Enemies Met', infoGap2, `${0}`);
         y += lineGap;
         this.addStatText(x, y, 'Hits', infoGap2, `${0}`);
         y += lineGap;
@@ -243,6 +237,8 @@ export class GStatusUI extends GUIScene {
         this.addStatText(x, y, 'Accuracy', infoGap2, `${0}`);
         y += lineGap;
         this.addStatText(x, y, 'Highest Score', infoGap2, `${0}`);
+        y += lineGap;
+        this.addStatText(x, y, 'Books Obtained', infoGap2, `${0}`);
         y += lineGap;
         this.addStatText(x, y, 'Favorite Book', infoGap2, `${'-'}`);
         y += lineGap;

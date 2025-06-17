@@ -5,7 +5,7 @@ const LIGHT_GREY: number = 0xaaaaaa;
 export class GTextButton extends Phaser.GameObjects.Container {
 
     private clickFunction: Function;
-    private clickSound: string = 'icon_click';
+    private clickSound: string|null = 'icon_click';
     private hotkey: string|undefined;
     private text: Phaser.GameObjects.Text;
     private border: Phaser.GameObjects.Rectangle;
@@ -70,7 +70,7 @@ export class GTextButton extends Phaser.GameObjects.Container {
         return this.hotkey;
     }
 
-    public setCustomClickSound(clickSound: string) {
+    public setCustomClickSound(clickSound: string|null) {
         this.clickSound = clickSound;
     }
 
@@ -86,7 +86,9 @@ export class GTextButton extends Phaser.GameObjects.Container {
 
     // Called when the button is clicked
     public onClick() {
-        (this.scene as GBaseScene).getSound().playSound(this.clickSound);
+        if (this.clickSound !== null) {
+            (this.scene as GBaseScene).getSound().playSound(this.clickSound);
+        }
         this.clickFunction();
     }
 

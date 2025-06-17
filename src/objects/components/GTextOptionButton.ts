@@ -27,6 +27,19 @@ const SELECTED_STATE: ButtonState = {
     borderColor: COLOR.WHITE
 };
 
+const DEFAULT_TEXT_STYLE: Phaser.Types.GameObjects.Text.TextStyle = {
+    color: '#ffffff',
+    backgroundColor: '#555555',
+    fontFamily: 'dyonisius',
+    fontSize: '16px',
+    padding: {
+        top: 6,
+        left: 6,
+        right: 6,
+        bottom: 6
+    }
+};
+
 export class GTextOptionButton extends Phaser.GameObjects.Container {
 
     private selectFunction: Function;
@@ -36,22 +49,11 @@ export class GTextOptionButton extends Phaser.GameObjects.Container {
     private selected: boolean = false;
     private optionGroup: GOptionGroup|undefined;
 
-    constructor(scene: Phaser.Scene, x: number, y: number, text: string, selectFunction: Function) {
+    constructor(scene: Phaser.Scene, x: number, y: number, text: string, selectFunction: Function, textStyle: Phaser.Types.GameObjects.Text.TextStyle = DEFAULT_TEXT_STYLE) {
         super(scene, x, y);
         this.scene.add.existing(this);
         this.selectFunction = selectFunction;
-        this.text = scene.add.text(0, 0, text, {
-            color: '#ffffff',
-            backgroundColor: '#555555',
-            fontFamily: 'dyonisius',
-            fontSize: '16px',
-            padding: {
-                top: 6,
-                left: 6,
-                right: 6,
-                bottom: 6
-            }
-        }).setOrigin(0, 0);
+        this.text = scene.add.text(0, 0, text, textStyle).setOrigin(0, 0);
         this.add(this.text);
 
         // Enable input
@@ -104,13 +106,15 @@ export class GTextOptionButton extends Phaser.GameObjects.Container {
         return this.selected;
     }
 
-    public select() {
+    public select(doFunction: boolean = true) {
         if (this.optionGroup !== undefined) {
             this.optionGroup.setSelection(this);
         }
         this.selected = true;
         this.updateButtonVisuals(SELECTED_STATE);
-        this.selectFunction();
+        if (doFunction) {
+            this.selectFunction();
+        }
     }
 
     public deselect() {

@@ -290,8 +290,18 @@
       "inspiration": "As preachers of the gospel, we sometimes cry aloud with our voice like a trumpet, proclaiming a message to many people at once. In modern times, a bullhorn is particularly effective."
     },
     {
-      "name": "key",
+      "name": "standard",
       "index": "5_item_3",
+      "entry": "Item: Standard",
+      "title": "Standard",
+      "type": "item",
+      "text": "\"So shall they fear the name of the LORD from the west, and his glory from the rising of the sun. When the enemy shall come in like a flood, the Spirit of the LORD shall lift up a standard against him.\" (Isaiah 59:19)",
+      "image": "standard_flag",
+      "inspiration": "We lift up the Lord Jesus and pray that the Father would draw all men unto him (John 6:44; 12:32). Adam can lift up a standard to proclaim the authority of Christ and victory over the enemy, effectively conquering ground for the kingdom of God. Enemies are permenantly banished from all areas where a standard is raised."
+    },
+    {
+      "name": "key",
+      "index": "5_item_4",
       "entry": "Item: Key Verse",
       "title": "Key Verse",
       "type": "item",

@@ -16,6 +16,7 @@ export class GGlossaryUI extends GUIScene {
     private entryImage: Phaser.GameObjects.Image;
     private entryText: Phaser.GameObjects.Text;
     private entriesGroup: GOptionGroup;
+    private entriesScrollPane: GScrollPane;
 
     constructor() {
         super("GlossaryUI");
@@ -78,14 +79,14 @@ export class GGlossaryUI extends GUIScene {
 
     private initEntries() {
         this.entriesGroup = new GOptionGroup();
-        const scrollPane: GScrollPane = new GScrollPane(this, 50, 90, 445, 581, 0);
+        this.entriesScrollPane = new GScrollPane(this, 50, 90, 445, 581, 0);
         const entries: GGlossaryEntry[] = GLOSSARY.getAllEntries();
         for (let i = 0; i < entries.length; i++) {
             const entry: GGlossaryEntry = entries[i];
             const entryButton = new GTextOptionButton(this, 20, i * 24, entry.entry, () => {
                 this.setEntry(entry);
             });
-            scrollPane.addContent(entryButton);
+            this.entriesScrollPane.addContent(entryButton);
             entryButton.setOptionGroup(this.entriesGroup);
         }
         // Select first entry button
@@ -98,9 +99,11 @@ export class GGlossaryUI extends GUIScene {
             switch(keyEvent.key) {
                 case 'ArrowUp':
                     this.entriesGroup.selectPrevious();
+                    this.entriesScrollPane.ensureIsVisible(this.entriesGroup.getSelection() as GTextOptionButton);
                     break;
                 case 'ArrowDown':
                     this.entriesGroup.selectNext();
+                    this.entriesScrollPane.ensureIsVisible(this.entriesGroup.getSelection() as GTextOptionButton);
                     break;
                 default:
                     this.sendPotentialHotkey(keyEvent);

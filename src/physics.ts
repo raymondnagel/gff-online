@@ -49,10 +49,14 @@ export namespace PHYSICS {
 
     export function isCenterWithin(object: BoundedGameObject, area: GRect) {
         const ctr: GPoint2D = getPhysicalCenter(object) as GPoint2D;
-        return ctr.x >= area.x
-            && ctr.x < area.x + area.width
-            && ctr.y >= area.y
-            && ctr.y < area.y + area.height;
+        return isPointWithin(ctr.x, ctr.y, area);
+    }
+
+    export function isPointWithin(x: number, y: number, rect: GRect) {
+        return x >= rect.x
+            && x < rect.x + rect.width
+            && y >= rect.y
+            && y < rect.y + rect.height;
     }
 
     export function getDistanceBetween(object1: BoundedGameObject, object2: BoundedGameObject) {
