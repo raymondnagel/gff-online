@@ -5,8 +5,13 @@ import { GFF } from "../main";
 import { GStatusAvatar } from "../objects/chars/GStatusAvatar";
 import { KEYS } from "../keys";
 import { PLAYER } from "../player";
-import { GPoint2D } from "../types";
+import { GPoint2D, NINE } from "../types";
 import { GUIScene } from "./GUIScene";
+import { ARMORS } from "../armors";
+import { FRUITS } from "../fruits";
+import { COMMANDMENTS } from "../commandments";
+import { STATS } from "../stats";
+import { TOWN } from "../town";
 
 const INPUT_DEFAULT: GInputMode = new GInputMode('status.default');
 
@@ -49,6 +54,17 @@ export class GStatusUI extends GUIScene {
         this.initItemPanels();
         this.setSubscreen();
         this.initInputMode();
+
+        // Create an event to update the elapsed time once per second:
+        this.time.addEvent({
+            delay: 100, // Check every 100ms
+            callback:  () => {
+                // Update the time elapsed text:
+                this.timeElapsedText.setText(STATS.getTimeElapsed());
+            },
+            callbackScope: this,
+            loop: true
+        });
     }
 
     private initAvatar() {
@@ -165,7 +181,7 @@ export class GStatusUI extends GUIScene {
             fontSize: textSize,
             color: COLOR.GREY_1.str()
         }).setOrigin(0, 0);
-        this.add.text(x + infoGap2, y, `${0}`, {
+        this.add.text(x + infoGap2, y, `${PLAYER.getStandards()}`, {
             fontFamily: 'dyonisius',
             fontSize: textSize,
             color: COLOR.GREY_1.str()
@@ -197,70 +213,70 @@ export class GStatusUI extends GUIScene {
 
         // Column 1 contains adventure stats
         y += lineGap;
-        this.addStatText(x, y, 'Rooms Explored', infoGap1, `${0}`);
+        this.addStatText(x, y, 'Rooms Explored', infoGap1, `${STATS.getIntegerStat('RoomsExplored')}`);
         y += lineGap;
-        this.addStatText(x, y, 'Towns Discovered', infoGap1, `${0}`);
+        this.addStatText(x, y, 'Towns Discovered', infoGap1, `${TOWN.getDiscoveredTowns().length}`);
         y += lineGap;
-        this.addStatText(x, y, 'Flights Taken', infoGap1, `${0}`);
+        this.addStatText(x, y, 'Flights Taken', infoGap1, `${STATS.getIntegerStat('FlightsTaken')}`);
         y += lineGap;
-        this.addStatText(x, y, 'Services Attended', infoGap1, `${0}`);
+        this.addStatText(x, y, 'Services Attended', infoGap1, `${STATS.getIntegerStat('ServicesAttended')}`);
         y += lineGap;
-        this.addStatText(x, y, 'Songs Played', infoGap1, `${0}`);
+        this.addStatText(x, y, 'Songs Played', infoGap1, `${STATS.getIntegerStat('SongsPlayed')}`);
         y += lineGap;
-        this.addStatText(x, y, 'People Met', infoGap1, `${0}`);
+        this.addStatText(x, y, 'People Met', infoGap1, `${STATS.getIntegerStat('PeopleMet')}`);
         y += lineGap;
-        this.addStatText(x, y, 'Captives Rescued', infoGap1, `${0}`);
+        this.addStatText(x, y, 'Captives Rescued', infoGap1, `${STATS.getIntegerStat('CaptivesRescued')}`);
         y += lineGap;
-        this.addStatText(x, y, 'Souls Converted', infoGap1, `${0}`);
+        this.addStatText(x, y, 'Souls Converted', infoGap1, `${STATS.getIntegerStat('SoulsConverted')}`);
         y += lineGap;
-        this.addStatText(x, y, 'Seeds Planted', infoGap1, `${0}`);
+        this.addStatText(x, y, 'Seeds Planted', infoGap1, `${STATS.getIntegerStat('SeedsPlanted')}`);
         y += lineGap;
-        this.addStatText(x, y, 'Sermons Preached', infoGap1, `${0}`);
+        this.addStatText(x, y, 'Sermons Preached', infoGap1, `${STATS.getIntegerStat('SermonsPreached')}`);
         y += lineGap;
-        this.addStatText(x, y, 'Standards Raised', infoGap1, `${0}`);
+        this.addStatText(x, y, 'Standards Raised', infoGap1, `${STATS.getIntegerStat('StandardsRaised')}`);
         y += lineGap;
-        this.addStatText(x, y, 'Key Verses Used', infoGap1, `${0}`);
+        this.addStatText(x, y, 'Key Verses Used', infoGap1, `${STATS.getIntegerStat('KeyVersesUsed')}`);
         y += lineGap;
-        this.addStatText(x, y, 'Chests Opened', infoGap1, `${0}`);
+        this.addStatText(x, y, 'Chests Opened', infoGap1, `${STATS.getIntegerStat('ChestsOpened')}`);
 
         // Column 2 contains battle stats
         x = 256;
         y = 300 + lineGap;
-        this.addStatText(x, y, 'Battles', infoGap2, `${0}`);
+        this.addStatText(x, y, 'Battles', infoGap2, `${STATS.getIntegerStat('Battles')}`);
         y += lineGap;
-        this.addStatText(x, y, 'Hits', infoGap2, `${0}`);
+        this.addStatText(x, y, 'Hits', infoGap2, `${STATS.getIntegerStat('Hits')}`);
         y += lineGap;
-        this.addStatText(x, y, 'Critical Hits', infoGap2, `${0}`);
+        this.addStatText(x, y, 'Critical Hits', infoGap2, `${STATS.getIntegerStat('CriticalHits')}`);
         y += lineGap;
-        this.addStatText(x, y, 'Misses', infoGap2, `${0}`);
+        this.addStatText(x, y, 'Misses', infoGap2, `${STATS.getIntegerStat('Misses')}`);
         y += lineGap;
-        this.addStatText(x, y, 'Accuracy', infoGap2, `${0}`);
+        this.addStatText(x, y, 'Accuracy', infoGap2, `${STATS.getAccuracyPct()}`);
         y += lineGap;
-        this.addStatText(x, y, 'Highest Score', infoGap2, `${0}`);
+        this.addStatText(x, y, 'Highest Score', infoGap2, `${STATS.getIntegerStat('HighestScore')}`);
         y += lineGap;
-        this.addStatText(x, y, 'Books Obtained', infoGap2, `${0}`);
+        this.addStatText(x, y, 'Books Obtained', infoGap2, `${BOOKS.getObtainedCount()}`);
         y += lineGap;
-        this.addStatText(x, y, 'Favorite Book', infoGap2, `${'-'}`);
+        this.addStatText(x, y, 'Favorite Book', infoGap2, `${STATS.getFavoriteBook()}`);
         y += lineGap;
-        this.addStatText(x, y, 'Best Book', infoGap2, `${'-'}`);
+        this.addStatText(x, y, 'Best Book', infoGap2, `${STATS.getBestBook()}`);
         y += lineGap;
-        this.addStatText(x, y, 'Worst Book', infoGap2, `${'-'}`);
+        this.addStatText(x, y, 'Worst Book', infoGap2, `${STATS.getWorstBook()}`);
         y += lineGap;
-        this.addStatText(x, y, 'Victories', infoGap2, `${0}`);
+        this.addStatText(x, y, 'Victories', infoGap2, `${STATS.getIntegerStat('Victories')}`);
         y += lineGap;
-        this.addStatText(x, y, 'Defeats', infoGap2, `${0}`);
+        this.addStatText(x, y, 'Defeats', infoGap2, `${STATS.getIntegerStat('Defeats')}`);
         y += lineGap;
-        this.addStatText(x, y, 'Time Elapsed', infoGap2, `${0}`);
+        this.timeElapsedText = this.addStatText(x, y, 'Time Elapsed', infoGap2, `${STATS.getTimeElapsed()}`);
     }
 
-    private addStatText(x: number, y: number, label: string, gap: number, value: string) {
+    private addStatText(x: number, y: number, label: string, gap: number, value: string): Phaser.GameObjects.Text {
         const textSize: string = '16px';
         this.add.text(x, y, `${label}:`, {
             fontFamily: 'dyonisius',
             fontSize: textSize,
             color: COLOR.GREY_1.str()
         }).setOrigin(0, 0);
-        this.add.text(x + gap, y, value, {
+        return this.add.text(x + gap, y, value, {
             fontFamily: 'dyonisius',
             fontSize: textSize,
             color: COLOR.GREY_1.str()
@@ -289,7 +305,9 @@ export class GStatusUI extends GUIScene {
         // Armour Items
         for (let i = 1; i <= 6; i++) {
             const itemPoint: GPoint2D = this.getPointForPanelItemNum(i, 2);
-            this.setItemAt(`arm${i}`, 572, 204, itemPoint.x, itemPoint.y);
+            if (ARMORS.hasArmor(i - 1)) {
+                this.setItemAt(`arm${i}`, 572, 204, itemPoint.x, itemPoint.y);
+            }
         }
     }
 
@@ -309,7 +327,11 @@ export class GStatusUI extends GUIScene {
         // Fruit Items
         for (let i = 1; i <= 9; i++) {
             const itemPoint: GPoint2D = this.getPointForPanelItemNum(i, 3);
-            this.setItemAt(`fruit${i}`, 773, 204, itemPoint.x, itemPoint.y);
+            if (FRUITS.hasFruit(i as NINE)) {
+                this.setItemAt(`fruit${i}`, 773, 204, itemPoint.x, itemPoint.y);
+            } else if (FRUITS.isFruitQueued(i as NINE)) {
+                this.setItemAt(`plant`, 773, 204, itemPoint.x, itemPoint.y);
+            }
         }
     }
 
@@ -329,7 +351,9 @@ export class GStatusUI extends GUIScene {
         // Commandments Items
         for (let i = 1; i <= 10; i++) {
             const itemPoint: GPoint2D = this.getPointForPanelItemNum(i, 5);
-            this.setItemAt(`cmd${i}`, 608, 518, itemPoint.x, itemPoint.y);
+            if (COMMANDMENTS.hasCommandment(i - 1)) {
+                this.setItemAt(`cmd${i}`, 608, 518, itemPoint.x, itemPoint.y);
+            }
         }
     }
 

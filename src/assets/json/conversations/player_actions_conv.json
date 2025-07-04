@@ -1,0 +1,36 @@
+[
+  {
+    "id": "playerActions",
+    "speaker": "player",
+    "choice": [
+      { "choiceText": "Pray", "condFunc": "canPray()", "resultId": "doPray"},
+      { "choiceText": "Preach a Sermon", "condFunc": "canPreachSermon()", "resultId": "doPreachSermon"},
+      { "choiceText": "Raise a Standard", "condFunc": "canRaiseStandard()", "resultId": "doRaiseStandard"},
+      { "choiceText": "[cancel]", "resultId": "cancel"}
+    ]
+  },
+  {
+    "id": "doPray",
+    "speaker": "player",
+    "postCmd": "doPray()"
+  },
+  {
+    "id": "doPreachSermon",
+    "speaker": "player",
+    "postCmd": "doPreachSermon()"
+  },
+  {
+    "id": "doRaiseStandard",
+    "speaker": "player",
+    "postCmd": "doRaiseStandard()"
+  },
+  {
+    "id": "doSaveGame",
+    "speaker": "player",
+    "postCmd": "doSaveGame()"
+  },
+  {
+    "id": "cancel",
+    "speaker": "player"
+  }
+]

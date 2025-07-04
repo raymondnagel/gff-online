@@ -1,0 +1,63 @@
+    {
+      "id": "objectivesMenu",
+      "speaker": "player",
+      "choice": [
+        { "choiceText": "Explore the world", "resultId": "obj_explore"},
+        { "choiceText": "Collect items", "resultId": "obj_collect"},
+        { "choiceText": "Talk to people", "resultId": "obj_talk"},
+        { "choiceText": "Visit churches", "resultId": "obj_church"},
+        { "choiceText": "Evangelize", "resultId": "obj_evangelize"},
+        { "choiceText": "Use special abilities", "resultId": "obj_abilities"},
+        { "choiceText": "Battle enemies", "resultId": "obj_battle"},
+        { "choiceText": "Quick travel", "resultId": "obj_quick"},
+        { "choiceText": "[back]", "resultId": "mainMenu"}
+      ]
+    },
+    {
+      "id": "obj_explore",
+      "speaker": "player",
+      "text": "You can explore the Land of Allegoria to find new locations, items, and people! In GFF, the world is procedurally-generated, which means that each time you play, the world will be different: no two playthroughs are the same! There are a total of 10 towns, each with its own citizens, church, and travel agency. Each region (forest, desert, plains, etc.) has at least one town.",
+      "next": "objectivesMenu"
+    },
+    {
+      "id": "obj_collect",
+      "speaker": "player",
+      "text": "A main part of your adventure is collecting items. Scattered throughout the land, you will find two types of treasure chests. Common chests are brown; these appear randomly in the world and contain minor bonuses or consumable items. Premium chests have gold trim, and are found on a pedestal surrounded by pillars; they contain more valuable items, such as books of the Bible (used in battle) or the Ten Commandments (increase vision range). Fruit of the Spirit (improve evangelism) can be obtained also; but they must be the work of the Spirit, and brought forth with patience! (Hint: talk to the saints!) Eventually, you will also be able to collect the Armour of God (protection from enemies); one piece of the armour will be found in each stronghold.",
+      "next": "objectivesMenu"
+    },
+    {
+      "id": "obj_talk",
+      "speaker": "player",
+      "text": "You can talk the people that you meet! Talk to any person standing in front of you by pressing [Space]. A prompt at the bottom of the screen will indicate how to proceed through the conversation. People tend to be in or near towns; if you find someone in the wilderness, their town is probably nearby.",
+      "next": "objectivesMenu"
+    },
+    {
+      "id": "obj_church",
+      "speaker": "player",
+      "text": "Visiting churches is important for your spiritual growth. The believers in each town spend their time together outside their church building, and they will gladly welcome you into their fellowship. They can tell you about themselves, share information about people and items, and even give you items. If you enter the church building, the other saints will follow you inside, and a church service will begin, where you'll get to hear some good preaching! After the service, you can interact with the piano using [Space], and choose a hymn to play. If you should fall in battle, visit a church immediately! The spiritual brethren will hold an impromptu prayer meeting to pray for you, that your faith fail not, and to restore you in the spirit of meekness.",
+      "next": "objectivesMenu"
+    },
+    {
+      "id": "obj_evangelize",
+      "speaker": "player",
+      "text": "Throughout your journey, you will collect 'Seed' and 'Sermon' items, both of which can be used to preach the gospel to any lost sinners you encounter. Seeds represent short scripture passages that are preached during a one-on-one conversation. Sermons are longer, themed messages that are preached to a crowd of people through a bullhorn. (Use these where a lot of people are gathered together!) Sermons are efficient for reaching large groups of people at once, but they won't finish the job; conversions in GFF are only triggered in one-on-one conversations, through sowing a seed item. Once a person has been converted, they will join the fellowship of the town's church, and you'll be able to find them there.",
+      "next": "objectivesMenu"
+    },
+    {
+      "id": "obj_abilities",
+      "speaker": "player",
+      "text": "Beside intereacting with people and pianos, there are a few special abilities that you can use while adventuring, available from the 'Actions' menu on the UI bar: 1) PRAY - You can pray to the Lord, going boldly before his throne of grace to obtain mercy, and find grace to help in time of need. This will use accumulated grace to restore your faith by an equal amount. 2) PREACH SERMON - If you have a Sermon item, you can use it to pull out your bullhorn and preach to a crowd of people. There must be a least 1 lost sinner present for this ability to be available. 3) RAISE STANDARD - If you have a Standard item, you can set it up in any non-safe area; this will create a permanent safe zone for the rest of the game, instantly banishing all enemies, preventing them from returning, and granting full visibility of the area.",
+      "next": "objectivesMenu"
+    },
+    {
+      "id": "obj_battle",
+      "speaker": "player",
+      "text": "As a good soldier of Jesus Christ, you will encounter many enemies. We wrestle not against flesh and blood, but against principalities, powers, rulers of darkness, and spiritual wickedness in high places: you will be attacked by spirits and devils! Like the Lord Jesus, you will wield the Sword of the Spirit, which is the word of God, in order to resist the devil and force him to flee. Combat takes the form of a turn-based scripture battle: in each round, you will be presented with a random scripture from your current collection of enabled Bible books, and you must try to guess the book, chapter #, and verse # of the reference. In order for your strike to hit, you must guess the book correctly; the closer your guess for the chapter and verse, the stronger your attack will be. At the end of each round, if your adversary hasn't been defeated yet, he will get a chance to attack you back!",
+      "next": "objectivesMenu"
+    },
+    {
+      "id": "obj_quick",
+      "speaker": "player",
+      "text": "Adam begins the game with an Unlimited Travel Pass for 'Spirit Travel', a travel agency with locations all over the Land of Allegoria. By talking to a travel agent, you can quickly board a flight to any available destination. Each town begins with only one route, but more will unlock as you progress through the game.",
+      "next": "objectivesMenu"
+    }

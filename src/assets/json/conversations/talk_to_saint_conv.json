@@ -57,7 +57,7 @@
       { "choiceText": "What's your favorite book of the Bible?", "resultId": "favoriteBook"},
       { "choiceText": "Is there a stronghold nearby?", "resultId": "locateStronghold"},
       { "choiceText": "I think we should part ways for now...", "resultId": "saintPartWays"},
-      { "choiceText": "Let's continue on!", "resultId": "endConversation"}
+      { "choiceText": "Let's continue on!", "resultId": "end"}
     ]
   },
   {
@@ -142,6 +142,19 @@
   },
   {
     "id": "endConversation",
+    "speaker": "player",
+    "hearer": "other",
+    "fork": "canGainFruit('thinkAboutFruit','seedCheck')"
+  },
+  {
+    "id": "thinkAboutFruit",
+    "speaker": "player",
+    "textFunc": "thinkAboutFruit()",
+    "postCmd": "queueFruit()",
+    "next": "end"
+  },
+  {
+    "id": "seedCheck",
     "speaker": "player",
     "hearer": "other",
     "fork": "canGiftSeed('giftSeed','end')"

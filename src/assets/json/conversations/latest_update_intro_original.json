@@ -1,0 +1,109 @@
+[
+    {
+      "id": "start",
+      "speaker": "player",
+      "text": "Hello! Thanks for trying out the current version of The Good Fight of Faith!\n\nFirst, let's have a chat! Press [Enter] to continue this conversation, and then use the [Up] and [Down] arrows to choose a dialog option.",
+      "next": "menu"
+    },
+    {
+      "id": "menu",
+      "speaker": "player",
+      "choice": [
+        { "choiceText": "Who are you, buddy?", "resultId": "adam_intro"},
+        { "choiceText": "What's this game about?", "resultId": "game1"},
+        { "choiceText": "What can I do in the game right now?", "resultId": "objectives_1"},
+        { "choiceText": "What are the basic controls?", "resultId": "controls_1"},
+        { "choiceText": "What's new in the latest update?", "resultId": "update"},
+        { "choiceText": "I'm ready to play!", "resultId": "ready"}
+      ]
+    },
+    {
+      "id": "adam_intro",
+      "speaker": "player",
+      "text": "Oh, where are my manners? My name is Adam! I'm a good friend of Brother Ray, the developer of this game. He thought it would be fun to put me in the game as the main character, so... here I am!",
+      "next": "menu"
+    },
+    {
+      "id": "game1",
+      "speaker": "player",
+      "text": "'The Good Fight of Faith' is a Christian, Bible-based computer game that helps the player learn the contents of the holy scriptures, the fundamental principles of Christianity, and the spiritual realities of the Christian life.",
+      "next": "game2"
+    },
+    {
+      "id": "game2",
+      "speaker": "player",
+      "text": "You take the role of a new believer (that's me!), guiding him through an allegorical world to learn the books of the Bible, evangelize the lost, and conquer spiritual strongholds, en route to a final showdown with Satan, the tempter of man and accuser of the brethren.",
+      "next": "menu"
+    },
+    {
+      "id": "objectives_1",
+      "speaker": "player",
+      "text": "Great question!\n\nAt this point, you can explore the Land of Allegoria to look for treasure chests, which may contain a book of the Bible, or even one of the 10 commandments. The commandments will lighten my path so I can see farther, while the books will strengthen me for battle!",
+      "next": "objectives_2"
+    },
+    {
+      "id": "objectives_2",
+      "speaker": "player",
+      "text": "Speaking of battle... As we journey, I will certainly meet enemies who will challenge me, seeking to destroy my precious faith! You'll have to defeat them in a 'scripture battle' by guessing the correct references. The closer your guess, the stronger my attacks will be! Resist the devil, and he will flee from you...",
+      "next": "objectives_3"
+    },
+    {
+      "id": "objectives_3",
+      "speaker": "player",
+      "text": "As you collect books of the Bible, open the Books subscreen to enable them. The verses you get in a scripture battle will always come from your current selection of books. Using more books will make guessing the references harder, but it will also multiply the strength of your attacks; so as you continue reading and studying the Bible on your own, you will get better at the game.",
+      "next": "objectives_4"
+    },
+    {
+      "id": "objectives_4",
+      "speaker": "player",
+      "text": "Should you suffer a defeat, don't despair! The Lord is gracious and able to keep you from falling! But you will need to visit some brethren at a church so they can help to restore your faith. Only by faith can we have victory in Christ to overcome the world.",
+      "next": "objectives_5"
+    },
+    {
+      "id": "objectives_5",
+      "speaker": "player",
+      "text": "As you approach towns, you will also encounter some people. If you've found any seeds, you can sow a seed when talking to them, and try to win them to the Lord. If you don't have a seed, you can only make smalltalk. Listen to their responses to see if they are receptive to the gospel or not.",
+      "next": "objectives_6"
+    },
+    {
+      "id": "objectives_6",
+      "speaker": "player",
+      "text": "If you find any sermons, you can press the V key to preach to everyone in the area. (This only works if you have at least one sermon, and if there is at least one unconverted person on the screen.)",
+      "next": "objectives_7"
+    },
+      {
+      "id": "objectives_7",
+      "speaker": "player",
+      "text": "You can enter any of the churches by approaching the door and walking inside. One of the men will preach a random sermon. Afterward, you can interact with the piano by pressing [Space], and choose a song to play.",
+      "next": "menu"
+    },
+    {
+      "id": "controls_1",
+      "speaker": "player",
+      "text": "ADVENTURE CONTROLS:\nHold down [Arrow] keys to walk. You can hold two directions (e.g. 'up' + 'right') to walk diagonally.\nHold [Shift] key at the same time to run instead.\nHold down [N] to view name tags for all characters. (Names will only be shown if you have met them already.)\nPress [P] to pause/unpause\nPress [Space] to talk to another person (if they are in front of me), or play the piano.\nPress [V] to preach a sermon (if I have one).",
+      "next": "controls_2"
+    },
+    {
+      "id": "controls_2",
+      "speaker": "player",
+      "text": "BATTLE CONTROLS:\nTo guess the book, use [Up/Down] arrows to change the selection, and then press [Enter].\nTo guess the chapter or verse, type in a number and press [Enter].\n(You can use [Backspace] or [Delete] if you make a mistake.)\nAfter taking your turn, a score summary is shown based on your guess. Press [Enter] to continue, and your adversary will take his turn, too!",
+      "next": "controls_3"
+    },
+    {
+      "id": "controls_3",
+      "speaker": "player",
+      "text": "OTHER CONTROLS:\nYou can click the icons on the interface panel to open subscreens, or press the associated key. (Most of them are still empty, but you can access the Books, Map, and Exit function.\nIf you forget some of the controls, you can press [H] in Adventure Mode to display this intro conversation again.\nYou can also open a cheat menu by pressing the [Y] key; this is temporary, only for testing purposes, and won't be available in the final game.",
+      "next": "menu"
+    },
+    {
+      "id": "update",
+      "speaker": "player",
+      "text": "MAY 2025 UPDATE\n\n Add church functions\n- add conversation options to church members\n- restore faith during sermon\n- restoration cutscene (approach church member when faith = 0)\n- church members occasionally gift seeds\n\nAdd additional features to conversions\n- kneel in prayer during conversion\n- rejoice animation after conversion\n- mention joining the local church\n\nAdd \"preach sermon\" function (V key)\n- use collected sermon item to preach to everyone on the screen\n- add bullhorn animations\n- add street sermon content\n\nAdd temporary cheat menu (Y key)",
+      "next": "menu"
+    },
+    {
+      "id": "ready",
+      "speaker": "player",
+      "text": "Right! Let's go!"
+    }
+]

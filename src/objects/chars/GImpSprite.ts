@@ -27,7 +27,8 @@ const person: GPerson = {
     homeTown: null,
     bio1: null,
     bio2: null,
-    favoriteBook: 'Genesis'
+    favoriteBook: 'Genesis',
+    conversations: 0
 };
 
 export class GImpSprite extends GCharSprite {

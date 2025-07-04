@@ -3,23 +3,38 @@ import { BOOKS } from "./books";
 import { COMMANDMENTS } from "./commandments";
 import { FRUITS } from "./fruits";
 import { GRoom } from "./GRoom";
+import { GFF } from "./main";
 import { GPlayerSprite } from "./objects/chars/GPlayerSprite";
 import { GPerson } from "./types";
 
 export namespace PLAYER {
     const START_FAITH: number = 40;
+    const MAX_LEVEL: number = 50;
     let sprite: GPlayerSprite;
-    let level: number = 0;
-    let maxLevel: number = 50;
-    let xp: number = 0;
-    let maxXp: number = 10;
+    let level: number;
+    let xp: number;
+    let maxXp: number;
     let faith: number = 50;
-    let maxFaith: number = 0;
-    let grace: number = 10;
-    let seeds: number = 0;
-    let sermons: number = 0;
-    let markedChestRoom: GRoom|null = null;
-    let companion: GPerson|null = null;
+    let maxFaith: number;
+    let grace: number;
+    let seeds: number;
+    let sermons: number;
+    let standards: number;
+    let markedChestRoom: GRoom|null;
+    let companion: GPerson|null;
+
+    export function init() {
+        level = 0;
+        xp = 0;
+        maxXp = getXpNeededAtLevel(level);
+        calcMaxFaith();
+        grace = 10; // Initial grace
+        seeds = 0; // Initial seeds
+        sermons = 0; // Initial sermons
+        standards = 0; // Initial standards
+        markedChestRoom = null; // No marked chest room initially
+        companion = null; // No companion initially
+    }
 
     export function getName(): string {
         return 'Adam';
@@ -42,7 +57,7 @@ export namespace PLAYER {
     }
 
     export function canLevelUp(): boolean {
-        return level < maxLevel && xp >= maxXp;
+        return level < MAX_LEVEL && xp >= maxXp;
     }
 
     export function levelUp() {
@@ -108,6 +123,14 @@ export namespace PLAYER {
         grace = amount;
     }
 
+    export function giveGrace(amount: 'minor'|'major') {
+        if (amount === 'minor') {
+            changeGrace(Math.ceil(GFF.Difficulty.minorGraceIncrease * getMaxGrace()));
+        } else if (amount === 'major') {
+            changeGrace(Math.ceil(GFF.Difficulty.majorGraceIncrease * getMaxGrace()));
+        }
+    }
+
     export function changeGrace(byAmount: number) {
         grace += byAmount;
         if (grace > getMaxGrace()) {
@@ -148,6 +171,17 @@ export namespace PLAYER {
         sermons += byAmount;
         if (sermons > 99) {
             sermons = 99; // Cap sermons at 99
+        }
+    }
+
+    export function getStandards(): number {
+        return standards;
+    }
+
+    export function changeStandards(byAmount: number) {
+        standards += byAmount;
+        if (standards > 99) {
+            standards = 99; // Cap standards at 99
         }
     }
 

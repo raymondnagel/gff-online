@@ -1,5 +1,7 @@
 export namespace DEPTH {
 
+    export const PLAYER_PRAY_BUBBLE = 100000;
+
     export const TRANSITION = 99999;
 
     export const CONV_BUBBLE = 9999;

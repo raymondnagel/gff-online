@@ -8,6 +8,13 @@ export class GOptionGroup {
         initialOptions.forEach(option => this.addOption(option));
     }
 
+    public getOptions(): GTextOptionButton[] {
+        return this.options;
+    }
+
+    /**
+     * Don't use this method directly, use GTextOptionButton.setOptionGroup() instead.
+     */
     public addOption(option: GTextOptionButton): void {
         option.deselect();
         this.options.push(option);

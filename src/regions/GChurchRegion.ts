@@ -1,4 +1,5 @@
 import { GRoom } from "../GRoom";
+import { RANDOM } from "../random";
 import { SCENERY } from "../scenery";
 import { Dir9, GSceneryDef } from "../types";
 import { GInsideRegion } from "./GInsideRegion";
@@ -28,6 +29,10 @@ export class GChurchRegion extends GInsideRegion{
 
     public getWalls(): Record<Dir9, GSceneryDef|null> {
         return WALLS;
+    }
+
+    public getTemperature(): number {
+        return 20; // Comfortable temperature for a church. It probably has AC on :)
     }
 
     protected _furnishRoom(room: GRoom) {

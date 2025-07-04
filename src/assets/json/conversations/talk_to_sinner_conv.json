@@ -150,7 +150,7 @@
     "hearer": "player",
     "preCmd": "changeFaith(1)",
     "dynamicLevel": "sinner_smalltalk_god_by_faith:faithLevel()",
-    "next": "endConversation"
+    "next": "finalIntroCheck"
   },
   {
     "id": "preachGospel",
@@ -181,13 +181,26 @@
     "hearer": "player",
     "dynamicLevel": "sinner_goodbye_by_faith:faithLevel()",
     "postCmd": "useSeed()",
-    "next": "endConversation"
+    "next": "finalIntroCheck"
   },
   {
     "id": "sinnerPoliteBye",
     "speaker": "other",
     "hearer": "player",
     "dynamic": "sinner_goodbye_polite",
+    "next": "finalIntroCheck"
+  },
+  {
+    "id": "finalIntroCheck",
+    "speaker": "other",
+    "hearer": "player",
+    "fork": "introCheckAgain('reintroduce','endConversation')"
+  },
+  {
+    "id": "reintroduce",
+    "speaker": "other",
+    "hearer": "player",
+    "textFunc": "reintroduce()",
     "next": "endConversation"
   },
   {

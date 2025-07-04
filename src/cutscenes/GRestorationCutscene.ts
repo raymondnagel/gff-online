@@ -67,7 +67,7 @@ export class GRestorationCutscene extends GCutscene {
         // The saints rally to the player:
         const rallyX: number = PLAYER.getSprite().getPhysicalCenter().x;
         const rallyY: number = PLAYER.getSprite().getPhysicalCenter().y;
-        console.log(`Rallying to ${rallyX}, ${rallyY}`);
+        // console.log(`Rallying to ${rallyX}, ${rallyY}`);
         const genericActors: number = this.getGenericActors().length;
         for (let a = 1; a <= genericActors; a++) {
             this.addCutsceneEvent({
@@ -131,8 +131,7 @@ export class GRestorationCutscene extends GCutscene {
                         }
                     });
                     GFF.AdventureContent.startAreaBgMusic();
-                    GFF.AdventureContent.fadeIn(500, COLOR.WHITE.num(), () => {
-                    });
+                    GFF.AdventureContent.fadeIn(500, COLOR.WHITE.num());
                 });
             },
             after: 'prayerDone',

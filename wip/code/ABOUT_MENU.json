@@ -1,0 +1,35 @@
+    {
+      "id": "aboutMenu",
+      "speaker": "player",
+      "choice": [
+        { "choiceText": "Theme", "resultId": "about_theme"},
+        { "choiceText": "Purpose", "resultId": "about_purpose"},
+        { "choiceText": "Aspects", "resultId": "about_aspects"},
+        { "choiceText": "Glossary", "resultId": "about_glossary"},
+        { "choiceText": "[back]", "resultId": "mainMenu"}
+      ]
+    },
+    {
+      "id": "about_theme",
+      "speaker": "player",
+      "text": "\"The Good Fight of Faith\" (or GFF) is a Christian, Bible-based computer game where the player takes the role of a new believer, guiding him through an allegorical world to learn about the holy scriptures, the Christian life, and the reality of spiritual warfare. Almost every aspect and feature of the game is based on scripture and/or biblical principles, either directly or allegorically. The theme is very similar to John Bunyan's classic work, \"The Pilgrim's Progress\", but as an open-world, interactive video game, with a focus on dynamic content and replayability.",
+      "next": "aboutMenu"
+    },
+    {
+      "id": "about_purpose",
+      "speaker": "player",
+      "text": "GFF is designed to declare and teach the Christian faith, to encourage players to read and study the Bible, and to inspire them to live a life that is pleasing to God. Different game modes, difficulty levels, and a unique \"build-the-Bible\" system allow the gameplay experience to be customized for each player, focusing on learning the Bible or testing one's knowledge of scripture. People of many appearances and backgrounds are represented in the game, helping the player to understand that all souls are precious to God, and that his gospel is for everyone. However, not everyone will receive the truth; and the evangelism aspect of the game helps to prepare the player for this reality.",
+      "next": "aboutMenu"
+    },
+    {
+      "id": "about_aspects",
+      "speaker": "player",
+      "text": "Gameplay in GFF has four main aspects: 1) EXPLORING a large, procedurally-generated world, discovering new locations, characters, and treasures. 2) COLLECTING special items, such as Books of the Bible, Fruit of the Spirit, the Ten Commandments, and the whole Armour of God, all of which strengthen the player and aid his journey. 3) Engaging in spiritual WARFARE, fighting against devils with the Sword of the Spirit through a turn-based scripture battle, inspired by Jesus' interaction with Satan in the wilderness. 4) Meeting and interacting with PEOPLE: whether saints who will help and encourage the player, or lost sinners who are in need of the gospel.",
+      "next": "aboutMenu"
+    },
+    {
+      "id": "about_glossary",
+      "speaker": "player",
+      "text": "While The Good Fight of Faith is designed to be fun and engaging, its primary focus is on teaching the truth of the gospel directly from the Bible. The game contains many items and concepts that are derived from scripture, either literally or allegorically; you will see many of these in popups when a new item is obtained. Additionally, GFF contains a Glossary where the player can scroll though entries to read more about them and how they were inspired by the Bible.",
+      "next": "aboutMenu"
+    }

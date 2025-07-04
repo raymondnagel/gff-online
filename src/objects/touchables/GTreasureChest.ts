@@ -6,9 +6,10 @@ import { GRoom } from "../../GRoom";
 import { GFF } from "../../main";
 import { PLAYER } from "../../player";
 import { SCENERY } from "../../scenery";
-import { GBookEntry, GGlossaryEntry, GItem } from "../../types";
+import { GBookEntry, GGlossaryEntry, GItem, TEN } from "../../types";
 import { GPopup } from "../components/GPopup";
 import { GTouchable } from "./GTouchable";
+import { STATS } from "../../stats";
 
 export class GTreasureChest extends GTouchable {
 
@@ -31,7 +32,7 @@ export class GTreasureChest extends GTouchable {
         if (this.premium && PLAYER.getMarkedChestRoom() === GFF.AdventureContent.getCurrentRoom()) {
             PLAYER.setMarkedChestRoom(null);
         }
-
+        STATS.changeInt('ChestsOpened', 1);
         GFF.AdventureContent.scene.pause();
         GFF.AdventureUI.getSound().playSound('open_chest').once('complete', () => {
             GFF.AdventureContent.getCurrentRoom()?.removePremiumChest();
@@ -42,7 +43,7 @@ export class GTreasureChest extends GTouchable {
                 case 'item':
                     GPopup.createItemPopup(item.name).onClose(() => {
                         if (item.name.startsWith('cmd')) {
-                            GFF.AdventureContent.setVision(false, COMMANDMENTS.getCount());
+                            GFF.AdventureContent.setVisionWithCheck();
                         }
                     });
                     break;
@@ -77,6 +78,10 @@ export class GTreasureChest extends GTouchable {
             {
                 element: { name: 'sermon', type: 'item', onCollect: () => {PLAYER.changeSermons(1)} },
                 weight: 5
+            },
+            {
+                element: { name: 'standard', type: 'item', onCollect: () => {PLAYER.changeStandards(1)} },
+                weight: 5
             }
         ]) as GItem;
 
@@ -93,17 +98,19 @@ export class GTreasureChest extends GTouchable {
             return {
                 name: itemName,
                 type: 'book',
-                onCollect: () => {BOOKS.obtainBook(itemName)}
+                onCollect: () => {
+                    BOOKS.obtainBook(itemName);
+                }
             };
         } else {
             // Otherwise, it's a commandment; look it up in the GLOSSARY:
             entry = GLOSSARY.lookupEntry(itemName);
-            const cmdNum = parseInt(itemName.split('_')[1]) as 1|2|3|4|5|6|7|8|9|10;
+            const cmdNum = parseInt(itemName.split('_')[1]) as TEN;
             return {
                 name: itemName,
                 type: 'item',
                 onCollect: () => {
-                    COMMANDMENTS.setCommandment(cmdNum, true);
+                    COMMANDMENTS.obtainCommandment(cmdNum);
                 }
             };
         }

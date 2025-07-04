@@ -81,5 +81,7 @@ export abstract class GRegion {
 
     public abstract isInterior(): boolean;
 
+    public abstract getTemperature(): number;
+
     public abstract getWalls(): Record<Dir9, GSceneryDef|null>;
 }

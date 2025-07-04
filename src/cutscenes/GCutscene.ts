@@ -1,6 +1,7 @@
 import { DIRECTION } from "../direction";
 import { GBullhornGoal } from "../goals/GBullhornGoal";
 import { GGoal } from "../goals/GGoal";
+import { GInteractGoal } from "../goals/GInteractGoal";
 import { GNoBullhornGoal } from "../goals/GNoBullhornGoal";
 import { GRejoiceGoal } from "../goals/GRejoiceGoal";
 import { GRestGoal } from "../goals/GRestGoal";
@@ -174,7 +175,7 @@ export abstract class GCutscene {
                 // Processing an actor event will execute it:
                 this.processActorEvent(e as GActorEvent);
             } else if ('eventCode' in e) {
-                // Processing a general event execute it:
+                // Processing a general event will execute it:
                 this.processGeneralEvent(e as GGeneralEvent);
             } else if ('condition' in e) {
                 // Processing a condition event will activate it for polling:
@@ -267,13 +268,15 @@ export abstract class GCutscene {
 
         // The first token is the command name; use it to determine the type of goal.
         // Some commands will return an event as a function, instead of a character-based goal.
-        switch(commandTokens[0] as 'spawnAt'|'bullhorn'|'nobullhorn'|'rejoice'|'kneel'|'stand'|'faceDir'|'walkDir'|'walkTo'|'tryWalkTo') {
+        switch(commandTokens[0] as 'spawnAt'|'interact'|'bullhorn'|'nobullhorn'|'rejoice'|'kneel'|'raiseHands'|'stand'|'faceDir'|'walkDir'|'walkTo'|'tryWalkTo') {
             case 'spawnAt':
                 return () => {
                     const spawnX: number = parseInt(commandTokens[1]);
                     const spawnY: number = parseInt(commandTokens[2]);
                     this.spawnActorAt(actorSprite, spawnX, spawnY);
                 };
+            case 'interact':
+                return new GInteractGoal();
             case 'bullhorn':
                 return new GBullhornGoal();
             case 'nobullhorn':
@@ -284,6 +287,10 @@ export abstract class GCutscene {
             case 'kneel':
                 return () => {
                     actorSprite.kneel();
+                };
+            case 'raiseHands':
+                return () => {
+                    actorSprite.raiseHands();
                 };
             case 'stand':
                 return new GRestGoal(1);

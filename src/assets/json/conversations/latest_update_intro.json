@@ -1,109 +1,393 @@
 [
-    {
-      "id": "start",
-      "speaker": "player",
-      "text": "Hello! Thanks for trying out the current version of The Good Fight of Faith!\n\nFirst, let's have a chat! Press [Enter] to continue this conversation, and then use the [Up] and [Down] arrows to choose a dialog option.",
-      "next": "menu"
-    },
-    {
-      "id": "menu",
-      "speaker": "player",
-      "choice": [
-        { "choiceText": "Who are you, buddy?", "resultId": "adam_intro"},
-        { "choiceText": "What's this game about?", "resultId": "game1"},
-        { "choiceText": "What can I do in the game right now?", "resultId": "objectives_1"},
-        { "choiceText": "What are the basic controls?", "resultId": "controls_1"},
-        { "choiceText": "What's new in the latest update?", "resultId": "update"},
-        { "choiceText": "I'm ready to play!", "resultId": "ready"}
-      ]
-    },
-    {
-      "id": "adam_intro",
-      "speaker": "player",
-      "text": "Oh, where are my manners? My name is Adam! I'm a good friend of Brother Ray, the developer of this game. He thought it would be fun to put me in the game as the main character, so... here I am!",
-      "next": "menu"
-    },
-    {
-      "id": "game1",
-      "speaker": "player",
-      "text": "'The Good Fight of Faith' is a Christian, Bible-based computer game that helps the player learn the contents of the holy scriptures, the fundamental principles of Christianity, and the spiritual realities of the Christian life.",
-      "next": "game2"
-    },
-    {
-      "id": "game2",
-      "speaker": "player",
-      "text": "You take the role of a new believer (that's me!), guiding him through an allegorical world to learn the books of the Bible, evangelize the lost, and conquer spiritual strongholds, en route to a final showdown with Satan, the tempter of man and accuser of the brethren.",
-      "next": "menu"
-    },
-    {
-      "id": "objectives_1",
-      "speaker": "player",
-      "text": "Great question!\n\nAt this point, you can explore the Land of Allegoria to look for treasure chests, which may contain a book of the Bible, or even one of the 10 commandments. The commandments will lighten my path so I can see farther, while the books will strengthen me for battle!",
-      "next": "objectives_2"
-    },
-    {
-      "id": "objectives_2",
-      "speaker": "player",
-      "text": "Speaking of battle... As we journey, I will certainly meet enemies who will challenge me, seeking to destroy my precious faith! You'll have to defeat them in a 'scripture battle' by guessing the correct references. The closer your guess, the stronger my attacks will be! Resist the devil, and he will flee from you...",
-      "next": "objectives_3"
-    },
-    {
-      "id": "objectives_3",
-      "speaker": "player",
-      "text": "As you collect books of the Bible, open the Books subscreen to enable them. The verses you get in a scripture battle will always come from your current selection of books. Using more books will make guessing the references harder, but it will also multiply the strength of your attacks; so as you continue reading and studying the Bible on your own, you will get better at the game.",
-      "next": "objectives_4"
-    },
-    {
-      "id": "objectives_4",
-      "speaker": "player",
-      "text": "Should you suffer a defeat, don't despair! The Lord is gracious and able to keep you from falling! But you will need to visit some brethren at a church so they can help to restore your faith. Only by faith can we have victory in Christ to overcome the world.",
-      "next": "objectives_5"
-    },
-    {
-      "id": "objectives_5",
-      "speaker": "player",
-      "text": "As you approach towns, you will also encounter some people. If you've found any seeds, you can sow a seed when talking to them, and try to win them to the Lord. If you don't have a seed, you can only make smalltalk. Listen to their responses to see if they are receptive to the gospel or not.",
-      "next": "objectives_6"
-    },
-    {
-      "id": "objectives_6",
-      "speaker": "player",
-      "text": "If you find any sermons, you can press the V key to preach to everyone in the area. (This only works if you have at least one sermon, and if there is at least one unconverted person on the screen.)",
-      "next": "objectives_7"
-    },
+  {
+    "id": "start",
+    "speaker": "player",
+    "text": "Hello! Thanks for trying out the current version of The Good Fight of Faith!\n\nFirst, let's have a chat! Press [Enter] to continue this conversation, and then use the [Up] and [Down] arrows to choose a dialog option.",
+    "next": "mainMenu"
+  },
+  {
+    "id": "mainMenu",
+    "speaker": "player",
+    "choice": [
       {
-      "id": "objectives_7",
-      "speaker": "player",
-      "text": "You can enter any of the churches by approaching the door and walking inside. One of the men will preach a random sermon. Afterward, you can interact with the piano by pressing [Space], and choose a song to play.",
-      "next": "menu"
-    },
-    {
-      "id": "controls_1",
-      "speaker": "player",
-      "text": "ADVENTURE CONTROLS:\nHold down [Arrow] keys to walk. You can hold two directions (e.g. 'up' + 'right') to walk diagonally.\nHold [Shift] key at the same time to run instead.\nHold down [N] to view name tags for all characters. (Names will only be shown if you have met them already.)\nPress [P] to pause/unpause\nPress [Space] to talk to another person (if they are in front of me), or play the piano.\nPress [V] to preach a sermon (if I have one).",
-      "next": "controls_2"
-    },
-    {
-      "id": "controls_2",
-      "speaker": "player",
-      "text": "BATTLE CONTROLS:\nTo guess the book, use [Up/Down] arrows to change the selection, and then press [Enter].\nTo guess the chapter or verse, type in a number and press [Enter].\n(You can use [Backspace] or [Delete] if you make a mistake.)\nAfter taking your turn, a score summary is shown based on your guess. Press [Enter] to continue, and your adversary will take his turn, too!",
-      "next": "controls_3"
-    },
-    {
-      "id": "controls_3",
-      "speaker": "player",
-      "text": "OTHER CONTROLS:\nYou can click the icons on the interface panel to open subscreens, or press the associated key. (Most of them are still empty, but you can access the Books, Map, and Exit function.\nIf you forget some of the controls, you can press [H] in Adventure Mode to display this intro conversation again.\nYou can also open a cheat menu by pressing the [Y] key; this is temporary, only for testing purposes, and won't be available in the final game.",
-      "next": "menu"
-    },
-    {
-      "id": "update",
-      "speaker": "player",
-      "text": "MAY 2025 UPDATE\n\n Add church functions\n- add conversation options to church members\n- restore faith during sermon\n- restoration cutscene (approach church member when faith = 0)\n- church members occasionally gift seeds\n\nAdd additional features to conversions\n- kneel in prayer during conversion\n- rejoice animation after conversion\n- mention joining the local church\n\nAdd \"preach sermon\" function (V key)\n- use collected sermon item to preach to everyone on the screen\n- add bullhorn animations\n- add street sermon content\n\nAdd temporary cheat menu (Y key)",
-      "next": "menu"
-    },
-    {
-      "id": "ready",
-      "speaker": "player",
-      "text": "Right! Let's go!"
-    }
+        "choiceText": "Who are you, buddy?",
+        "resultId": "whosAdam"
+      },
+      {
+        "choiceText": "What's this game about?",
+        "resultId": "aboutMenu"
+      },
+      {
+        "choiceText": "What can I do in the game right now?",
+        "resultId": "objectivesMenu"
+      },
+      {
+        "choiceText": "What are the basic controls?",
+        "resultId": "controlsMenu"
+      },
+      {
+        "choiceText": "What are all the subscreens for?",
+        "resultId": "screensMenu"
+      },
+      {
+        "choiceText": "What's new in the latest update?",
+        "resultId": "updateMenu"
+      },
+      {
+        "choiceText": "I'm ready to play!",
+        "resultId": "ready"
+      }
+    ]
+  },
+  {
+    "id": "whosAdam",
+    "speaker": "player",
+    "text": "Oh, where are my manners? My name is Adam! I'm a good friend of Brother Ray, the developer of this game. He thought it would be fun to put me in the game as the main character, so... here I am!",
+    "next": "mainMenu"
+  },
+  {
+    "id": "aboutMenu",
+    "speaker": "player",
+    "choice": [
+      {
+        "choiceText": "Theme",
+        "resultId": "about_theme"
+      },
+      {
+        "choiceText": "Purpose",
+        "resultId": "about_purpose"
+      },
+      {
+        "choiceText": "Aspects",
+        "resultId": "about_aspects"
+      },
+      {
+        "choiceText": "Glossary",
+        "resultId": "about_glossary"
+      },
+      {
+        "choiceText": "[back]",
+        "resultId": "mainMenu"
+      }
+    ]
+  },
+  {
+    "id": "about_theme",
+    "speaker": "player",
+    "text": "\"The Good Fight of Faith\" (or GFF) is a Christian, Bible-based computer game where the player takes the role of a new believer, guiding him through an allegorical world to learn about the holy scriptures, the Christian life, and the reality of spiritual warfare. Almost every aspect and feature of the game is based on scripture and/or biblical principles, either directly or allegorically. The theme is very similar to John Bunyan's classic work, \"The Pilgrim's Progress\", but as an open-world, interactive video game, with a focus on dynamic content and replayability.",
+    "next": "aboutMenu"
+  },
+  {
+    "id": "about_purpose",
+    "speaker": "player",
+    "text": "GFF is designed to declare and teach the Christian faith, to encourage players to read and study the Bible, and to inspire them to live a life that is pleasing to God. Different game modes, difficulty levels, and a unique \"build-the-Bible\" system allow the gameplay experience to be customized for each player, focusing on learning the Bible or testing one's knowledge of scripture. People of many appearances and backgrounds are represented in the game, helping the player to understand that all souls are precious to God, and that his gospel is for everyone. However, not everyone will receive the truth; and the evangelism aspect of the game helps to prepare the player for this reality.",
+    "next": "aboutMenu"
+  },
+  {
+    "id": "about_aspects",
+    "speaker": "player",
+    "text": "Gameplay in GFF has four main aspects: 1) EXPLORING a large, procedurally-generated world, discovering new locations, characters, and treasures. 2) COLLECTING special items, such as Books of the Bible, Fruit of the Spirit, the Ten Commandments, and the whole Armour of God, all of which strengthen the player and aid his journey. 3) Engaging in spiritual WARFARE, fighting against devils with the Sword of the Spirit through a turn-based scripture battle, inspired by Jesus' interaction with Satan in the wilderness. 4) Meeting and interacting with PEOPLE: whether saints who will help and encourage the player, or lost sinners who are in need of the gospel.",
+    "next": "aboutMenu"
+  },
+  {
+    "id": "about_glossary",
+    "speaker": "player",
+    "text": "While The Good Fight of Faith is designed to be fun and engaging, its primary focus is on teaching the truth of the gospel directly from the Bible. The game contains many items and concepts that are derived from scripture, either literally or allegorically; you will see many of these in popups when a new item is obtained. Additionally, GFF contains a Glossary where the player can scroll though entries to read more about them and how they were inspired by the Bible.",
+    "next": "aboutMenu"
+  },
+  {
+    "id": "objectivesMenu",
+    "speaker": "player",
+    "choice": [
+      {
+        "choiceText": "Explore the world",
+        "resultId": "obj_explore"
+      },
+      {
+        "choiceText": "Collect items",
+        "resultId": "obj_collect"
+      },
+      {
+        "choiceText": "Talk to people",
+        "resultId": "obj_talk"
+      },
+      {
+        "choiceText": "Visit churches",
+        "resultId": "obj_church"
+      },
+      {
+        "choiceText": "Evangelize",
+        "resultId": "obj_evangelize"
+      },
+      {
+        "choiceText": "Use special abilities",
+        "resultId": "obj_abilities"
+      },
+      {
+        "choiceText": "Battle enemies",
+        "resultId": "obj_battle"
+      },
+      {
+        "choiceText": "Quick travel",
+        "resultId": "obj_quick"
+      },
+      {
+        "choiceText": "[back]",
+        "resultId": "mainMenu"
+      }
+    ]
+  },
+  {
+    "id": "obj_explore",
+    "speaker": "player",
+    "text": "You can explore the Land of Allegoria to find new locations, items, and people! In GFF, the world is procedurally-generated, which means that each time you play, the world will be different: no two playthroughs are the same! There are a total of 10 towns, each with its own citizens, church, and travel agency. Each region (forest, desert, plains, etc.) has at least one town.",
+    "next": "objectivesMenu"
+  },
+  {
+    "id": "obj_collect",
+    "speaker": "player",
+    "text": "A main part of your adventure is collecting items. Scattered throughout the land, you will find two types of treasure chests. Common chests are brown; these appear randomly in the world and contain minor bonuses or consumable items. Premium chests have gold trim, and are found on a pedestal surrounded by pillars; they contain more valuable items, such as books of the Bible (used in battle) or the Ten Commandments (increase vision range). Fruit of the Spirit (improve evangelism) can be obtained also; but they must be the work of the Spirit, and brought forth with patience! (Hint: talk to the saints!) Eventually, you will also be able to collect the Armour of God (protection from enemies); one piece of the armour will be found in each stronghold.",
+    "next": "objectivesMenu"
+  },
+  {
+    "id": "obj_talk",
+    "speaker": "player",
+    "text": "You can talk the people that you meet! Talk to any person standing in front of you by pressing [Space]. A prompt at the bottom of the screen will indicate how to proceed through the conversation. People tend to be in or near towns; if you find someone in the wilderness, their town is probably nearby.",
+    "next": "objectivesMenu"
+  },
+  {
+    "id": "obj_church",
+    "speaker": "player",
+    "text": "Visiting churches is important for your spiritual growth. The believers in each town spend their time together outside their church building, and they will gladly welcome you into their fellowship. They can tell you about themselves, share information about people and items, and even give you items. If you enter the church building, the other saints will follow you inside, and a church service will begin, where you'll get to hear some good preaching! After the service, you can interact with the piano using [Space], and choose a hymn to play. If you should fall in battle, visit a church immediately! The spiritual brethren will hold an impromptu prayer meeting to pray for you, that your faith fail not, and to restore you in the spirit of meekness.",
+    "next": "objectivesMenu"
+  },
+  {
+    "id": "obj_evangelize",
+    "speaker": "player",
+    "text": "Throughout your journey, you will collect 'Seed' and 'Sermon' items, both of which can be used to preach the gospel to any lost sinners you encounter. Seeds represent short scripture passages that are preached during a one-on-one conversation. Sermons are longer, themed messages that are preached to a crowd of people through a bullhorn. (Use these where a lot of people are gathered together!) Sermons are efficient for reaching large groups of people at once, but they won't finish the job; conversions in GFF are only triggered in one-on-one conversations, through sowing a seed item. Once a person has been converted, they will join the fellowship of the town's church, and you'll be able to find them there.",
+    "next": "objectivesMenu"
+  },
+  {
+    "id": "obj_abilities",
+    "speaker": "player",
+    "text": "Beside interacting with people and pianos, there are a few special abilities that you can use while adventuring, available from the 'Actions' menu on the UI bar: 1) PRAY - You can pray to the Lord, going boldly before his throne of grace to obtain mercy, and find grace to help in time of need. This will use accumulated grace to restore your faith by an equal amount. 2) PREACH SERMON - If you have a Sermon item, you can use it to pull out your bullhorn and preach to a crowd of people. There must be a least 1 lost sinner present for this ability to be available. 3) RAISE STANDARD - If you have a Standard item, you can set it up in any non-safe area; this will create a permanent safe zone for the rest of the game, instantly banishing all enemies, preventing them from returning, and granting full visibility of the area.",
+    "next": "objectivesMenu"
+  },
+  {
+    "id": "obj_battle",
+    "speaker": "player",
+    "text": "As a good soldier of Jesus Christ, you will encounter many enemies. We wrestle not against flesh and blood, but against principalities, powers, rulers of darkness, and spiritual wickedness in high places: you will be attacked by spirits and devils! Like the Lord Jesus, you will wield the Sword of the Spirit, which is the word of God, in order to resist the devil and make him flee. Combat takes the form of a turn-based scripture battle: in each round, you will be presented with a random scripture from your current collection of enabled Bible books, and you must try to guess the book, chapter #, and verse # of the reference. In order for your strike to hit, you must guess the book correctly; the closer your guess for the chapter and verse, the stronger your attack will be. At the end of each round, if your adversary hasn't been defeated yet, he will get a chance to attack you back!",
+    "next": "objectivesMenu"
+  },
+  {
+    "id": "obj_quick",
+    "speaker": "player",
+    "text": "Adam begins the game with an Unlimited Travel Pass for 'Spirit Travel', a travel agency with locations all over the Land of Allegoria. By talking to a travel agent, you can quickly board a flight to any available destination. Each town begins with only one route, but more will unlock as you progress through the game.",
+    "next": "objectivesMenu"
+  },
+  {
+    "id": "controlsMenu",
+    "speaker": "player",
+    "choice": [
+      {
+        "choiceText": "Movement",
+        "resultId": "controls_movement"
+      },
+      {
+        "choiceText": "Talk/Interact",
+        "resultId": "controls_talk"
+      },
+      {
+        "choiceText": "UI Bar & Hotkeys",
+        "resultId": "controls_ui"
+      },
+      {
+        "choiceText": "Special Abilities",
+        "resultId": "controls_abilities"
+      },
+      {
+        "choiceText": "Other Controls",
+        "resultId": "controls_other"
+      },
+      {
+        "choiceText": "Battle Controls",
+        "resultId": "controls_battle"
+      },
+      {
+        "choiceText": "[back]",
+        "resultId": "mainMenu"
+      }
+    ]
+  },
+  {
+    "id": "controls_movement",
+    "speaker": "player",
+    "text": "You can walk north, south, east, or west using the arrow keys. Hold down two adjacent arrow keys together, such as [Up] + [Left], to move diagonally. You can also hold down [Shift] to run, which is useful when you need to escape from enemies or quickly traverse the map.",
+    "next": "controlsMenu"
+  },
+  {
+    "id": "controls_talk",
+    "speaker": "player",
+    "text": "To talk to characters (or interact with certain objects), press the [Space] key when they are in front of you. You must be facing the character or object you want to interact with, and they must be within a certain distance. If there are multiple people in front of you, you will begin a conversation with the one closest to you. Once a conversation (or cutscene) starts, you will be prompted to press [Enter] to continue, or to make a selection using the arrow keys.",
+    "next": "controlsMenu"
+  },
+  {
+    "id": "controls_ui",
+    "speaker": "player",
+    "text": "The UI bar at the bottom of the screen has icon buttons that can be clicked with the mouse or activated using hotkeys. Most of these will open subscreens, the exceptions being 'Actions' and 'Exit'. The 'Actions' button opens a menu where you can select various actions, such as 'Pray', 'Preach a Sermon', or 'Raise a Standard'. (Only options that are available will be shown; some will only be available under certain conditions, such as possessing a required item.) The 'Exit' button will quit the game, or exit the current subscreen if one is open. (You can also use [Esc] to exit a subscreen.)",
+    "next": "controlsMenu"
+  },
+  {
+    "id": "controls_abilities",
+    "speaker": "player",
+    "text": "Special abilities can also be activated directly using their own hotkeys, without needing to open the 'Actions' menu: [P] = Pray; [V] = Preach a Sermon; [T] = Raise a Standard.",
+    "next": "controlsMenu"
+  },
+  {
+    "id": "controls_other",
+    "speaker": "player",
+    "text": "Hold [N] to display nametags for all characters in the area. (Names will only be shown for characters who have already introduced themselves.) NOTE: The following controls are temporary, meant for testing only, and will be removed in a future update: [F1] = Enable logging; [F2] = View physical boundaries; [L] = Log room info; [Y] = Cheat menu; [H] = Re-show this introduction",
+    "next": "controlsMenu"
+  },
+  {
+    "id": "controls_battle",
+    "speaker": "player",
+    "text": "During a scripture battle, use the [Up] and [Down] arrow keys to select the book on the book wheel. Use the number keys, [0] through [9], to enter a guess for the chapter number; then press [Enter] to submit it. Do the same to enter a guess for the verse number. After your attack, the results will be shown below; press [Enter] to continue, and your adversary will take his turn. The battle will continue until either you or the enemy is defeated.",
+    "next": "controlsMenu"
+  },
+  {
+    "id": "screensMenu",
+    "speaker": "player",
+    "choice": [
+      {
+        "choiceText": "Status subscreen",
+        "resultId": "screens_status"
+      },
+      {
+        "choiceText": "Books subscreen",
+        "resultId": "screens_books"
+      },
+      {
+        "choiceText": "Bible subscreen",
+        "resultId": "screens_bible"
+      },
+      {
+        "choiceText": "People subscreen",
+        "resultId": "screens_people"
+      },
+      {
+        "choiceText": "Map subscreen",
+        "resultId": "screens_map"
+      },
+      {
+        "choiceText": "Glossary subscreen",
+        "resultId": "screens_glossary"
+      },
+      {
+        "choiceText": "Options subscreen",
+        "resultId": "screens_options"
+      },
+      {
+        "choiceText": "[back]",
+        "resultId": "mainMenu"
+      }
+    ]
+  },
+  {
+    "id": "screens_status",
+    "speaker": "player",
+    "text": "In the Status subscreen (hotkey: [C]), you can view Adam's current status: level, experience, faith, grace, and all items that he has obtained. You can also view a list of various statistics about Adam's adventures, such as the number of battles won or the number of seeds planted.",
+    "next": "screensMenu"
+  },
+  {
+    "id": "screens_books",
+    "speaker": "player",
+    "text": "In the Books subscreen (hotkey: [I]), you can view the books of the Bible that Adam has obtained, and select which ones to use in scripture battles. Random scriptures will be chosen from the selected books; the more you select, the stronger your attacks will be. However, using more books will also make it harder to guess the right book, so you are more likely to miss altogether!",
+    "next": "screensMenu"
+  },
+  {
+    "id": "screens_bible",
+    "speaker": "player",
+    "text": "In the Bible subscreen (hotkey: [B]), you have access to a full-text Bible simulation. You can select a book and chapter, and turn the pages to read as much as you like. We recommend having your own Bible on hand as you play; but if you don't have one, we hope this e-Bible will be a blessing to you!",
+    "next": "screensMenu"
+  },
+  {
+    "id": "screens_people",
+    "speaker": "player",
+    "text": "In the People subscreen (hotkey: [R]), you can view a list of people that Adam has met during his adventures. The people are listed in alphabetical order by last name, organized by their respective towns. (Their names will only show up if they have already introduced themselves.)",
+    "next": "screensMenu"
+  },
+  {
+    "id": "screens_map",
+    "speaker": "player",
+    "text": "In the Map subscreen (hotkey: [M]), you can view a map of the current area. The map shows terrain features, towns, and other important landmarks. Only explored areas will be shown on the map; so you can use it both to navigate and to plan future exploration. Sometimes people will also mark objectives on the map for you.",
+    "next": "screensMenu"
+  },
+  {
+    "id": "screens_glossary",
+    "speaker": "player",
+    "text": "In the Glossary subscreen (hotkey: [G]), you can view a list of entries for all the concepts and items in the game. Each entry contains a title, a graphic, a Bible verse that serves as its inspiration, and a description of how it was derived from the Bible, and/or how it applies in the game.",
+    "next": "screensMenu"
+  },
+  {
+    "id": "screens_options",
+    "speaker": "player",
+    "text": "In the Options subscreen (hotkey: [O]), you can adjust various game settings, such as audio volume, control bindings, and display options. (This subscreen will be added in a future update.)",
+    "next": "screensMenu"
+  },
+  {
+    "id": "updateMenu",
+    "speaker": "player",
+    "choice": [
+      {
+        "choiceText": "Subscreen work",
+        "resultId": "update_1"
+      },
+      {
+        "choiceText": "UI prompt",
+        "resultId": "update_2"
+      },
+      {
+        "choiceText": "UI bar additions",
+        "resultId": "update_3"
+      },
+      {
+        "choiceText": "Misc",
+        "resultId": "update_4"
+      },
+      {
+        "choiceText": "[back]",
+        "resultId": "mainMenu"
+      }
+    ]
+  },
+  {
+    "id": "update_1",
+    "speaker": "player",
+    "text": "1. Created ScrollPane and OptionGroup components for scrolling content\n2. Completed Status subscreen\n3. Completed Glossary subscreen\n4. Completed Bible subscreen\n5. Completed People subscreen",
+    "next": "updateMenu"
+  },
+  {
+    "id": "update_2",
+    "speaker": "player",
+    "text": "During conversations and cutscenes, a black panel now slides in from the right, covering all UI icon buttons (but leaving status/items visible). The panel displays a prompt whenever the player needs to press [Enter] or make a selection to continue.",
+    "next": "updateMenu"
+  },
+  {
+    "id": "update_3",
+    "speaker": "player",
+    "text": "1. Removed 'Stats' icon and subscreen (stats are now included in the 'Status' subscreen)\n2. Removed 'Save' icon (will be implemented somewhere else)\n3. Added 'Actions' icon, containing options for Pray, Preach a Sermon, and Raise a Standard\n4. Added Grace meter\n5. Reworked item counts to add standards and key verses",
+    "next": "updateMenu"
+  },
+  {
+    "id": "update_4",
+    "speaker": "player",
+    "text": "1. Added Quick Travel system (talk to travel agents)\n2. Added Fruit of the Spirit collection\n3. Added Grace (all mechanics except passive bonus)\n4. Added Experience Bonus item (medium chance from common chests)\n5. Added Standard item and usage (rare chance from common chests)\n6. Added 'Pray' action (find grace to help in time of need)\n7. Added Key Verse item entry\n8. Worked on art for new enemy types\n9. Fixed Adam's nose (it now looks more like the real Adam's nose)",
+    "next": "updateMenu"
+  },
+  {
+    "id": "ready",
+    "speaker": "player",
+    "text": "Right! Let's go!"
+  }
 ]

@@ -1,9 +1,7 @@
 import { GLOSSARY } from "./glossary";
 import { PLAYER } from "./player";
-import { RANDOM } from "./random";
-import { GGlossaryEntry } from "./types";
+import { GGlossaryEntry, SIX } from "./types";
 
-type Six = 1|2|3|4|5|6;
 
 export namespace ARMORS {
 
@@ -21,13 +19,14 @@ export namespace ARMORS {
         false, false, false, false, false, false
     ];
 
-    export function lookupEntry(num: Six): GGlossaryEntry {
+    export function lookupEntry(num: SIX): GGlossaryEntry {
         return GLOSSARY.lookupEntry(`armor_${num}`) as GGlossaryEntry;
     }
 
-    export function setArmor(num: Six, has: boolean) {
-        armors[num - 1] = has;
+    export function obtainArmor(num: SIX) {
+        armors[num - 1] = true;
         PLAYER.calcMaxFaith();
+        PLAYER.giveGrace('major');
     }
 
     export function hasArmor(index: number): boolean {

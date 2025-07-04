@@ -38,6 +38,42 @@ export namespace PHYSICS {
         return null;
     }
 
+    export function getPhysicalTop(object: BoundedGameObject): number|null {
+        // Calculate relative to position using body offset and size.
+        if (object.body) {
+            const body: Phaser.Physics.Arcade.Body = object.body as Phaser.Physics.Arcade.Body;
+            return object.y + body.offset.y;
+        }
+        return null;
+    }
+
+    export function getPhysicalBottom(object: BoundedGameObject): number|null {
+        // Calculate relative to position using body offset and size.
+        if (object.body) {
+            const body: Phaser.Physics.Arcade.Body = object.body as Phaser.Physics.Arcade.Body;
+            return object.y + body.offset.y + body.height;
+        }
+        return null;
+    }
+
+    export function getPhysicalLeft(object: BoundedGameObject): number|null {
+        // Calculate relative to position using body offset and size.
+        if (object.body) {
+            const body: Phaser.Physics.Arcade.Body = object.body as Phaser.Physics.Arcade.Body;
+            return object.x + body.offset.x;
+        }
+        return null;
+    }
+
+    export function getPhysicalRight(object: BoundedGameObject): number|null {
+        // Calculate relative to position using body offset and size.
+        if (object.body) {
+            const body: Phaser.Physics.Arcade.Body = object.body as Phaser.Physics.Arcade.Body;
+            return object.x + body.offset.x + body.width;
+        }
+        return null;
+    }
+
     export function centerPhysically(object: BoundedGameObject, point: GPoint2D) {
         if (object.body && 'setPosition' in object) {
             const body: Phaser.Physics.Arcade.Body = object.body as Phaser.Physics.Arcade.Body;

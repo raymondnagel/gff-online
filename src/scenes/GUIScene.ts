@@ -1,4 +1,5 @@
 import { COLOR } from "../colors";
+import { GConversation } from "../GConversation";
 import { KEYS } from "../keys";
 import { GFF } from "../main";
 import { GIconBarButton } from "../objects/components/GIconBarButton";
@@ -8,7 +9,7 @@ import { GActionableOption, GPoint2D } from "../types";
 import { GBaseScene } from "./GBaseScene";
 
 const METER_OFFSET = 28;
-const METER_WIDTH = 118;
+const METER_WIDTH = 175;
 const FAITH_METER_HEIGHT = 15;
 
 export abstract class GUIScene extends GBaseScene {
@@ -29,7 +30,6 @@ export abstract class GUIScene extends GBaseScene {
     protected expMeter: Phaser.GameObjects.Rectangle;
     protected uiButtons: GIconBarButton[] = [];
     protected buttonDefinitions: GActionableOption[];
-    protected preachButton: GIconBarButton;
 
     public create(): void {
         this.handleGeneralKeyInput();
@@ -57,23 +57,17 @@ export abstract class GUIScene extends GBaseScene {
         const SPACING: number = 8;
         this.buttonDefinitions = [{
                 option: 'Exit',
-                hotkey: excludeNonSubscreens ? undefined : 'q',
+                hotkey: 'q',
                 action: () => {
                     this.getSound().playSound('icon_click');
-                    GPopup.createChoicePopup('Are you sure you wish to leave the game?', 'Exit Game', [
-                        {option: 'Yes', hotkey: 'y', action: () => {GFF.AdventureContent.endGame()}},
-                        {option: 'No', hotkey: 'n', action: () => {}}
-                    ]);
-                }
-            }, {
-                option: 'Save',
-                hotkey: excludeNonSubscreens ? undefined : 's',
-                action: () => {
-                    this.getSound().playSound('icon_click');
-                    GPopup.createChoicePopup('Do you want to save the game?', 'Save Game', [
-                        {option: 'Yes', hotkey: 'y', action: () => {GFF.log('Yes, I want to save the game!')}},
-                        {option: 'No', hotkey: 'n', action: () => {GFF.log("No, I don't want to save the game!")}}
-                    ]);
+                    if (this.getContainingMode() === GFF.ADVENTURE_MODE) {
+                        GPopup.createChoicePopup('Are you sure you wish to leave the game?', 'Exit Game', [
+                            {option: 'Yes', hotkey: 'y', action: () => {GFF.AdventureContent.endGame()}},
+                            {option: 'No', hotkey: 'n', action: () => {}}
+                        ]);
+                    } else {
+                        this.escapeToAdventureMode();
+                    }
                 }
             }, {
                 option: 'Options',
@@ -84,7 +78,19 @@ export abstract class GUIScene extends GBaseScene {
                         GFF.OPTIONS_MODE.switchTo(this.getContainingMode());
                     }
                 }
-            }, {
+            },
+            // {
+            //     option: 'Save',
+            //     hotkey: excludeNonSubscreens ? undefined : 's',
+            //     action: () => {
+            //         this.getSound().playSound('icon_click');
+            //         GPopup.createChoicePopup('Do you want to save the game?', 'Save Game', [
+            //             {option: 'Yes', hotkey: 'y', action: () => {GFF.log('Yes, I want to save the game!')}},
+            //             {option: 'No', hotkey: 'n', action: () => {GFF.log("No, I don't want to save the game!")}}
+            //         ]);
+            //     }
+            // },
+            {
                 option: 'Glossary',
                 hotkey: 'g',
                 action: () => {
@@ -130,15 +136,6 @@ export abstract class GUIScene extends GBaseScene {
                     }
                 }
             }, {
-                option: 'Preach',
-                hotkey: excludeNonSubscreens ? undefined : 'v',
-                action: () => {
-                    if (GFF.AdventureContent.canStreetPreach()) {
-                        this.getSound().playSound('icon_click');
-                        GFF.AdventureContent.streetPreach();
-                    }
-                }
-            }, {
                 option: 'Status',
                 hotkey: 'c',
                 action: () => {
@@ -147,6 +144,13 @@ export abstract class GUIScene extends GBaseScene {
                         GFF.STATUS_MODE.switchTo(this.getContainingMode());
                     }
                 }
+            }, {
+                option: 'Actions',
+                hotkey: excludeNonSubscreens ? undefined : 'a',
+                action: () => {
+                    this.getSound().playSound('icon_click');
+                    GConversation.fromFile('player_actions_conv');
+                }
             }
         ];
         this.buttonDefinitions.forEach((b, i) => {
@@ -154,12 +158,8 @@ export abstract class GUIScene extends GBaseScene {
             const x: number = GFF.RIGHT_BOUND - ((BLOCK + SPACING) * (i + 1)) + PADDING;
             const button: GIconBarButton = new GIconBarButton(this, x, GFF.BOTTOM_BOUND + 3, `${imageName}_off`, `${imageName}_on`, b.option, b.hotkey, b.action);
 
-            // Store preach button separately, so that it can be easily updated later.
-            if (b.option === 'Preach') {
-                this.preachButton = button;
-            }
             // Disable buttons that are not available in subscreens: no saving, exiting, or street preaching.
-            if (excludeNonSubscreens && (b.option === 'Save' || b.option === 'Exit' || b.option === 'Sermon')) {
+            if (excludeNonSubscreens && (b.option === 'Actions')) {
                 button.setEnabled(false);
             }
             // Need to store these hotkeys somehow and call them from sendPotentialHotkey().
@@ -179,28 +179,28 @@ export abstract class GUIScene extends GBaseScene {
         this.levelText.setOrigin(0.5, 0);
 
         // Seed count:
-        this.seedText = this.add.text(181, GFF.BOTTOM_BOUND + 40, '00', {
+        this.seedText = this.add.text(245, GFF.BOTTOM_BOUND + 40, '00', {
             fontSize: '14px',
             color: COLOR.GREY_1.str(),
             fontFamily: 'dyonisius'
         }).setOrigin(0.5, 0);
 
         // Sermon count:
-        this.sermonText = this.add.text(212, GFF.BOTTOM_BOUND + 40, '00', {
+        this.sermonText = this.add.text(276, GFF.BOTTOM_BOUND + 40, '00', {
             fontSize: '14px',
             color: COLOR.GREY_1.str(),
             fontFamily: 'dyonisius'
         }).setOrigin(0.5, 0);
 
         // Standard count:
-        this.standardText = this.add.text(243, GFF.BOTTOM_BOUND + 40, '00', {
+        this.standardText = this.add.text(307, GFF.BOTTOM_BOUND + 40, '00', {
             fontSize: '14px',
             color: COLOR.GREY_1.str(),
             fontFamily: 'dyonisius'
         }).setOrigin(0.5, 0);
 
         // Key count:
-        this.keyText = this.add.text(274, GFF.BOTTOM_BOUND + 40, '00', {
+        this.keyText = this.add.text(338, GFF.BOTTOM_BOUND + 40, '00', {
             fontSize: '14px',
             color: COLOR.GREY_1.str(),
             fontFamily: 'dyonisius'
@@ -222,11 +222,11 @@ export abstract class GUIScene extends GBaseScene {
         }).setOrigin(0.5, 0);
 
         // Grace meter:
-        this.graceMeterTop = this.add.line(METER_OFFSET, GFF.BOTTOM_BOUND + 48, 0, 0, METER_WIDTH, 0, 0xfcf4b9);
+        this.graceMeterTop = this.add.line(METER_OFFSET, GFF.BOTTOM_BOUND + 48, 0, 0, METER_WIDTH, 0, 0xc4d5d7);
         this.graceMeterTop.setOrigin(0, 0);
-        this.graceMeterCenter = this.add.rectangle(METER_OFFSET, GFF.BOTTOM_BOUND + 49, METER_WIDTH, 6, 0xe5c900);
+        this.graceMeterCenter = this.add.rectangle(METER_OFFSET, GFF.BOTTOM_BOUND + 49, METER_WIDTH, 6, 0x48ccd7);
         this.graceMeterCenter.setOrigin(0, 0);
-        this.graceMeterBottom = this.add.line(METER_OFFSET, GFF.BOTTOM_BOUND + 55, 0, 0, METER_WIDTH, 0, 0x8e7e0a);
+        this.graceMeterBottom = this.add.line(METER_OFFSET, GFF.BOTTOM_BOUND + 55, 0, 0, METER_WIDTH, 0, 0x035157);
         this.graceMeterBottom.setOrigin(0, 0);
 
         // Experience meter:
@@ -263,11 +263,9 @@ export abstract class GUIScene extends GBaseScene {
         // Sermon count:
         this.sermonText.text = `${PLAYER.getSermons()}`;
         // Standard count:
-        this.standardText.text = `${0}`;
+        this.standardText.text = `${PLAYER.getStandards()}`;
         // Key count:
         this.keyText.text = `${KEYS.getObtainedCount()}`;
-        // Enable or disable the preach button based on whether street preaching is allowed:
-        this.preachButton.setEnabled(GFF.AdventureContent.canStreetPreach());
     }
 
 
@@ -277,9 +275,7 @@ export abstract class GUIScene extends GBaseScene {
             case 'Escape':
                 // If Esc is pressed on any UI that isn't part of AdventureMode,
                 // it's a subscreen: it should escape back to AdventureMode.
-                if (this.getContainingMode() !== GFF.ADVENTURE_MODE) {
-                    GFF.ADVENTURE_MODE.switchTo(this.getContainingMode());
-                }
+                this.escapeToAdventureMode();
                 return;
             default:
                 for (let b of this.buttonDefinitions) {
@@ -289,6 +285,12 @@ export abstract class GUIScene extends GBaseScene {
                         return;
                     }
                 }
+        }
+    }
+
+    private escapeToAdventureMode() {
+        if (this.getContainingMode() !== GFF.ADVENTURE_MODE) {
+            GFF.ADVENTURE_MODE.switchTo(this.getContainingMode());
         }
     }
 

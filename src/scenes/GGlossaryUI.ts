@@ -52,18 +52,18 @@ export class GGlossaryUI extends GUIScene {
     }
 
     private initEntryView(initialEntry: GGlossaryEntry) {
-        let contentY: number = 140;
+        let contentY: number = 100;
         this.entryTitle = this.add.text(768, contentY, initialEntry.title, {
             color: COLOR.GREY_1.str(),
             fontFamily: 'dyonisius',
             fontSize: '28px'
         }).setOrigin(.5, 0);
 
-        contentY += 48;
+        contentY += 50;
         this.entryImage = this.add.image(768, contentY, initialEntry.image).setOrigin(.5, 0);
 
-        contentY += 160;
-        this.entryText = this.add.text(768, contentY, `${initialEntry.text}\n\n\n${initialEntry.inspiration}`, {
+        contentY += 154;
+        this.entryText = this.add.text(768, contentY, `${initialEntry.text}\n\n${initialEntry.inspiration}`, {
             color: COLOR.GREY_1.str(),
             fontFamily: 'dyonisius',
             fontSize: '18px',

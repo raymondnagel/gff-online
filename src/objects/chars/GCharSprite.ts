@@ -298,6 +298,10 @@ export abstract class GCharSprite extends Phaser.Physics.Arcade.Sprite {
         this.playSingleAnimation('kneel_ne', true);
     }
 
+    public raiseHands() {
+        this.playSingleAnimation('carryidle_s', true);
+    }
+
     protected playSingleAnimation(animName: string, force: boolean = false) {
         this.play(`${this.spriteKeyPrefix}_${animName}`, !force);
     }
@@ -307,7 +311,7 @@ export abstract class GCharSprite extends Phaser.Physics.Arcade.Sprite {
         this.play(`${this.spriteKeyPrefix}_${animName}_${dirText}`, !force);
     }
 
-    protected createSingleAnimation(animName: string, times: number = -1) {
+    protected createSingleAnimation(animName: string, repeats: number = -1) {
         this.anims.create({
             key: `${this.spriteKeyPrefix}_${animName}`,
             frames: this.anims.generateFrameNumbers(
@@ -315,11 +319,11 @@ export abstract class GCharSprite extends Phaser.Physics.Arcade.Sprite {
                 { start: 0, end: 6 }
             ),
             frameRate: 10,
-            repeat: times
+            repeat: repeats
         });
     }
 
-    protected createDirectionalAnimations(animName: string) {
+    protected createDirectionalAnimations(animName: string, repeats: number = -1) {
         DIRECTION.dir8Texts().forEach(direction => {
             this.anims.create({
                 key: `${this.spriteKeyPrefix}_${animName}_${direction}`,
@@ -328,7 +332,7 @@ export abstract class GCharSprite extends Phaser.Physics.Arcade.Sprite {
                     { start: 0, end: 6 }
                 ),
                 frameRate: 10,
-                repeat: -1 // Infinite loop
+                repeat: repeats
             });
         });
     }

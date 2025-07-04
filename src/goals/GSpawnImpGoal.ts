@@ -2,6 +2,7 @@ import { GGoal } from "./GGoal";
 import { GImpSprite } from "../objects/chars/GImpSprite";
 import { GBaseScene } from "../scenes/GBaseScene";
 import { Dir9 } from "../types";
+import { GFF } from "../main";
 
 
 export class GSpawnImpGoal extends GGoal {
@@ -38,9 +39,15 @@ export class GSpawnImpGoal extends GGoal {
         // However, isAchieved() will always be checked before isTimedOut(),
         // so we can take this opportunity to set the imp's alpha once the
         // animation stops.
+        // Also check that the imp is still allowed to spawn! If there is now
+        // a standard present, banish the imp immediately!
         if (!this.char.anims.isPlaying) {
-            this.char.alpha = 0.35;
-            this.char.walkDirection(Dir9.NONE);
+            if (GFF.AdventureContent.canSpawnImp()) {
+                this.char.alpha = 0.35;
+                this.char.walkDirection(Dir9.NONE);
+            } else {
+                GFF.AdventureContent.banishImp(this.char as GImpSprite);
+            }
         }
         return false;
     }

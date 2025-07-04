@@ -2,7 +2,7 @@ import 'phaser';
 import { GCharSprite } from './GCharSprite';
 import { RANDOM } from '../../random';
 import { GFF } from '../../main';
-import { GGender, GInteractable, GPerson } from '../../types';
+import { FIVE, GGender, GInteractable, GPerson } from '../../types';
 import { GWalkToPointGoal } from '../../goals/GWalkToPointGoal';
 import { GRestGoal } from '../../goals/GRestGoal';
 import { PEOPLE } from '../../people';
@@ -16,6 +16,7 @@ import { GFollowPlayerGoal } from '../../goals/GFollowPlayerGoal';
 import { GRestorationCutscene } from '../../cutscenes/GRestorationCutscene';
 import { GChurch } from '../../GChurch';
 import { GRoom } from '../../GRoom';
+import { STATS } from '../../stats';
 
 const GENDER     = ['m', 'f'] as const;
 const SKIN_COLOR = ['w', 'y', 't', 'b'] as const;
@@ -189,7 +190,7 @@ export class GPersonSprite extends GCharSprite implements GInteractable {
             preferredName: null,
             spriteKeyPrefix: spriteKeyPrefix,
             gender: gender,
-            voice: RANDOM.randInt(1, 5) as 1|2|3|4|5,
+            voice: RANDOM.randInt(1, 5) as FIVE,
             faith: RANDOM.randInt(0, 99),
             familiarity: 0,
             nameLevel: 0,
@@ -197,7 +198,8 @@ export class GPersonSprite extends GCharSprite implements GInteractable {
             homeTown: null,
             bio1: null,
             bio2: null,
-            favoriteBook: BOOKS.getRandomBookName()
+            favoriteBook: BOOKS.getRandomBookName(),
+            conversations: 0
         });
     }
 
@@ -242,6 +244,14 @@ export class GPersonSprite extends GCharSprite implements GInteractable {
     }
 
     public interact(): void {
+        // If the person isn't known yet, increment the stat:
+        if (this.person.familiarity <= 0) {
+            STATS.changeInt('PeopleMet', 1);
+        }
+
+        // Increment the conversation count:
+        this.person.conversations++;
+
         if (this.person.faith >= 100) {
             // This person is a saint!
 

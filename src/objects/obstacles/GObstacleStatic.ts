@@ -37,6 +37,10 @@ export class GObstacleStatic extends Phaser.Physics.Arcade.Image {
         GFF.AdventureContent.addObstacle(this);
     }
 
+    public getBody(): Phaser.Physics.Arcade.Body {
+        return this.body as Phaser.Physics.Arcade.Body;
+    }
+
     public toString() {
         return this.sceneryDef.key;
     }

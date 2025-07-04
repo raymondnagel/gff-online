@@ -10,6 +10,7 @@ import { GTextEntryControl } from "../objects/components/GTextEntryControl";
 import { PLAYER } from "../player";
 import { GEnemyAttack, GScripture } from "../types";
 import { GContentScene } from "./GContentScene";
+import { STATS } from "../stats";
 
 const BAR_COLOR: number = 0xff0000;
 const GOLD_COLOR: string = '#d5ccb4';
@@ -1015,12 +1016,15 @@ export class GBattleContent extends GContentScene {
         this.actualReference.text = `${this.servedVerse.book} ${actualChapter}:${actualVerse}`;
 
         if (hit) {
+            STATS.changeInt('Hits', 1);
+            STATS.recordBookResult(this.servedVerse.book, true);
             if (perfect) {
                 // Perfect!
                 this.guessCaption.setText('Reference Correct: BONUS!');
                 this.guessCaption.setColor(ACTUAL_CAPTION_COLOR);
                 this.guessReference.setColor(ACTUAL_REF_COLOR);
                 this.getSound().playSound('success');
+                STATS.changeInt('CriticalHits', 1);
             } else {
                 // At least the book was right...
                 this.guessCaption.setColor(HIT_CAPTION_COLOR);
@@ -1031,9 +1035,15 @@ export class GBattleContent extends GContentScene {
             this.bonusScoreCalc.text = bonusScore + '';
             this.booksMultCalc.text = `${subTotal} x ${books}`;
             this.finalScoreCalc.text = finalScore + '';
+
+            // High score?
+            STATS.checkNewHighScore(finalScore);
+
             return finalScore;
         } else {
             // We totally missed the book!
+            STATS.changeInt('Misses', 1);
+            STATS.recordBookResult(this.servedVerse.book, false);
             this.guessCaption.setColor(MISS_CAPTION_COLOR);
             this.guessReference.setColor(MISS_REF_COLOR);
             this.chapterScoreCalc.text = '0';

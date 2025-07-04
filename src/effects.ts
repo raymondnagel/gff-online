@@ -33,6 +33,19 @@ export namespace EFFECTS {
                 },
                 soundKey: 'gentle_ding',
                 hideOnFinish: true
+            },
+            {
+                spriteConfig: {
+                    key: 'silent_flash',
+                    frames: GFF.GAME.anims.generateFrameNumbers(
+                        'flash',
+                        { start: 0, end: 9 }
+                    ),
+                    frameRate: 12,
+                    repeat: 0
+                },
+                soundKey: null, // No sound; since multiple flashes can occur at once, a single sound will be played independently
+                hideOnFinish: true
             }
 
         ].forEach(s => {
@@ -60,7 +73,9 @@ export namespace EFFECTS {
 
         // Play the animation and the sound simultaneously:
         sprite.play(animation);
-        scene.getSound().playSound(effect.soundKey);
+        if (effect.soundKey !== null) {
+            scene.getSound().playSound(effect.soundKey);
+        }
 
         // Return the sprite, in case we want to do something with it:
         return sprite;

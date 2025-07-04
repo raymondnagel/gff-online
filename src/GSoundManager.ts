@@ -41,6 +41,10 @@ export class GSoundManager {
         return this.music !== null && this.music.isPlaying;
     }
 
+    public getMusic(): Phaser.Sound.BaseSound|null {
+        return this.music;
+    }
+
     public playMusic(soundKey: string, volume?: number): Phaser.Sound.BaseSound {
         this.stopMusic();
         this.music = this.scene.sound.add(soundKey, { loop: true, volume: volume ?? this.musicVolume });
@@ -60,7 +64,13 @@ export class GSoundManager {
         this.music?.stop();
     }
 
-    public fadeInMusic(soundKey: string, overTime: number, onComplete?: Function) {
+    public fadeInMusic(overTime: number, soundKey?: string, onComplete?: Function) {
+        if (soundKey === undefined) {
+            if (this.music === null) {
+                return;
+            }
+            soundKey = this.music.key;
+        }
         this.stopMusic();
         this.playMusic(soundKey);
         this.scene.tweens.add({

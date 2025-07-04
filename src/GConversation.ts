@@ -5,7 +5,7 @@ import { GChoiceBubble } from "./objects/GChoiceBubble";
 import { GSpeechBubble } from "./objects/GSpeechBubble";
 import { GThoughtBubble } from "./objects/GThoughtBubble";
 import { PLAYER } from "./player";
-import { CBlurb, CLabeledChar, ConversationType, COption, Dir9, GBubble, GPerson, LeveledDynamicBlurb } from "./types";
+import { CBlurb, CLabeledChar, ConversationType, COption, Dir9, GBubble, GGlossaryEntry, GPerson, LeveledDynamicBlurb, NINE } from "./types";
 import { GPlayerSprite } from "./objects/chars/GPlayerSprite";
 import { GPersonSprite } from "./objects/chars/GPersonSprite";
 import { FRUITS } from "./fruits";
@@ -19,6 +19,10 @@ import { GPopup } from "./objects/components/GPopup";
 import { COLOR } from "./colors";
 import { EFFECTS } from "./effects";
 import { DEPTH } from "./depths";
+import { STATS } from "./stats";
+import { GChurch } from "./GChurch";
+import { CHURCH } from "./church";
+import { TOWN } from "./town";
 
 const CMD_FUNCTIONS: Record<string, (...args: any[]) => any> = {
     /**
@@ -33,6 +37,7 @@ const CMD_FUNCTIONS: Record<string, (...args: any[]) => any> = {
         GFF.AdventureContent.getSound().setMusicVolume(0.6);
         GFF.AdventureContent.getSound().playMusic(songName);
         PLAYER.getSprite().play('adam_piano_ne', false);
+        STATS.changeInt('SongsPlayed', 1);
     },
     stopPiano: (_player: GPlayerSprite, _someone: GCharSprite, ) => {
         GFF.AdventureContent.getSound().stopMusic();
@@ -72,6 +77,7 @@ const CMD_FUNCTIONS: Record<string, (...args: any[]) => any> = {
         }
     },
     conversionMiracle: (player: GPlayerSprite, someone: GCharSprite) => {
+        STATS.changeInt('SoulsConverted', 1);
         CMD_FUNCTIONS.useSeed(player, someone);
         const convert: GPerson = someone.getPerson();
         const town: GTown = (convert.homeTown as GTown);
@@ -90,6 +96,8 @@ const CMD_FUNCTIONS: Record<string, (...args: any[]) => any> = {
     useSeed: (player: GPlayerSprite, _someone: GCharSprite) => {
         player.showFloatingText('-1 seed');
         PLAYER.changeSeeds(-1);
+        PLAYER.giveGrace('minor');
+        STATS.changeInt('SeedsPlanted', 1);
     },
     giftSeed: (_player: GPlayerSprite, _someone: GCharSprite) => {
         GFF.canGiftSeed = false;
@@ -97,6 +105,13 @@ const CMD_FUNCTIONS: Record<string, (...args: any[]) => any> = {
         GPopup.createItemPopup('seed').onClose(() => {
             PLAYER.changeSeeds(1);
         });
+    },
+    queueFruit: (_player: GPlayerSprite, _someone: GCharSprite) => {
+        const room: GRoom = GFF.AdventureContent.getCurrentRoom() as GRoom;
+        const church: GChurch = room.getChurch() as GChurch;
+        const fruitNum: NINE = church.getFruitNum() as NINE
+        FRUITS.queueFruit(fruitNum);
+        CMD_FUNCTIONS.playSound(_player, _someone, 'success');
     },
     familiarize: (_player: GPlayerSprite, someone: GCharSprite) => {
         someone.getPerson().familiarity++;
@@ -124,11 +139,31 @@ const CMD_FUNCTIONS: Record<string, (...args: any[]) => any> = {
     cheatNoFaith: (_player: GPlayerSprite, _someone: GCharSprite) => {
         PLAYER.setFaith(1);
     },
+    cheatGrace: (_player: GPlayerSprite, _someone: GCharSprite) => {
+        PLAYER.setGrace(PLAYER.getMaxGrace());
+    },
+    cheatExp: (_player: GPlayerSprite, _someone: GCharSprite) => {
+        PLAYER.addXp(PLAYER.getRequiredXp() - 1);
+    },
+    cheatFruit: (_player: GPlayerSprite, _someone: GCharSprite) => {
+        for (const church of CHURCH.getChurches()) {
+            const fruitNum: NINE = church.getFruitNum() as NINE;
+            const fruitQueued: boolean = FRUITS.isFruitQueued(church.getFruitNum() as NINE);
+            const canGainFruit: boolean = ((!fruitQueued) && !FRUITS.hasFruitOfChurch(church));
+            if (canGainFruit) {
+                FRUITS.queueFruit(fruitNum);
+                return;
+            }
+        }
+    },
     cheatSeeds: (_player: GPlayerSprite, _someone: GCharSprite) => {
         PLAYER.changeSeeds(100);
     },
     cheatSermons: (_player: GPlayerSprite, _someone: GCharSprite) => {
         PLAYER.changeSermons(100);
+    },
+    cheatStandards: (_player: GPlayerSprite, _someone: GCharSprite) => {
+        PLAYER.changeStandards(100);
     },
     cheatChatty: (_player: GPlayerSprite, _someone: GCharSprite) => {
         GFF.chatty = true;
@@ -148,6 +183,24 @@ const CMD_FUNCTIONS: Record<string, (...args: any[]) => any> = {
     cheatDebug: (_player: GPlayerSprite, _someone: GCharSprite) => {
         GFF.debugMode = true;
     },
+    doPray: (_player: GPlayerSprite, _someone: GCharSprite) => {
+        GFF.AdventureContent.pray();
+    },
+    doPreachSermon: (_player: GPlayerSprite, _someone: GCharSprite) => {
+        GFF.AdventureContent.streetPreach();
+    },
+    doRaiseStandard: (_player: GPlayerSprite, _someone: GCharSprite) => {
+        GFF.AdventureContent.raiseStandard();
+    },
+    takeFlight: (_player: GPlayerSprite, _someone: GCharSprite, flightNum: number) => {
+        const room: GRoom = GFF.AdventureContent.getCurrentRoom() as GRoom;
+        const town: GTown = room.getTown() as GTown;
+        const destination: GTown = town.getFlights()[flightNum - 1];
+        GFF.AdventureContent.quickTravel(destination);
+    },
+    doSaveGame: (_player: GPlayerSprite, _someone: GCharSprite) => {
+        GFF.AdventureContent.saveGame();
+    },
 
 
     /**
@@ -161,6 +214,13 @@ const CMD_FUNCTIONS: Record<string, (...args: any[]) => any> = {
     introCheck: (_player: GPlayerSprite, someone: GCharSprite, passId: string, failId: string): string => {
         const chanceToIntro: number = someone.getPerson().faith + (someone.getPerson().familiarity * 10);
         if (chanceToIntro > RANDOM.randInt(0, 100)) {
+            return passId;
+        }
+        return failId;
+    },
+    introCheckAgain: (_player: GPlayerSprite, someone: GCharSprite, passId: string, failId: string): string => {
+        const chanceToIntro: number = someone.getPerson().faith + (someone.getPerson().familiarity * 10);
+        if (someone.getPerson().familiarity > 1 && someone.getPerson().nameLevel < 2 && chanceToIntro > RANDOM.randInt(0, 100)) {
             return passId;
         }
         return failId;
@@ -182,6 +242,13 @@ const CMD_FUNCTIONS: Record<string, (...args: any[]) => any> = {
     },
     canGiftSeed: (_player: GPlayerSprite, _someone: GCharSprite, passId: string, failId: string): string => {
         return GFF.canGiftSeed ? passId : failId;
+    },
+    canGainFruit: (_player: GPlayerSprite, _someone: GCharSprite, passId: string, failId: string): string => {
+        const room: GRoom = GFF.AdventureContent.getCurrentRoom() as GRoom;
+        const church: GChurch|null = room.getChurch() as GChurch;
+        const fruitQueued: boolean = FRUITS.isFruitQueued(church.getFruitNum() as NINE);
+        const canGainFruit: boolean = ((!fruitQueued) && !FRUITS.hasFruitOfChurch(church) && church.isEveryPersonMet());
+        return canGainFruit ? passId : failId;
     },
     coinFlip: (_player: GPlayerSprite, _someone: GCharSprite, headsId: string, tailsId: string): string => {
         return RANDOM.flipCoin() ? headsId : tailsId;
@@ -271,6 +338,47 @@ const CMD_FUNCTIONS: Record<string, (...args: any[]) => any> = {
             return `The nearest enemy stronghold is the ${strongholdName}. It lies ${distText}. The stronghold is a place of great evil and danger; but be of good courage: we are more than conquerors through him that loved us!`;
         }
         return `Hmm... there don't seem to be any strongholds. That's good, I suppose...?`;
+    },
+    reintroduce: (_player: GPlayerSprite, someone: GCharSprite): string => {
+        switch (someone.getPerson().nameLevel) {
+            case 0:
+                CMD_FUNCTIONS.prefFormalName(_player, someone);
+                return `By the way, I'm ${someone.getPerson().preferredName}. Maybe we'll meet again sometime.`;
+            case 1:
+                CMD_FUNCTIONS.prefInformalName(_player, someone);
+                return `Oh, by the way, call me ${someone.getPerson().preferredName}. See you later!`;
+            default:
+                return `It was nice seeing you again!`; // Should never happen!
+        }
+    },
+    thinkAboutFruit: (_player: GPlayerSprite, _someone: GCharSprite): string => {
+        const room: GRoom = GFF.AdventureContent.getCurrentRoom() as GRoom;
+        const church: GChurch = room.getChurch() as GChurch;
+        const townName: string = church.getTown().getName();
+        const fruitNum: NINE = church.getFruitNum() as NINE
+        const fruitEntry: GGlossaryEntry = FRUITS.lookupEntry(fruitNum);
+        const fruitName: string = fruitEntry.title.split(': ')[1].toLowerCase();
+        return `(T)While speaking to the saints in ${townName}, I realized that the Spirit of God is working in their hearts to bring forth ${fruitName}; and he's beginning to do the same in me...`;
+    },
+    arrivalWelcome: (_player: GPlayerSprite, _someone: GCharSprite): string => {
+        const arrivalRoom: GRoom = GFF.AdventureContent.getCurrentRoom() as GRoom;
+        const town: GTown = arrivalRoom.getTown() as GTown;
+        return `Welcome to ${town.getName()}! The local temperature is ${arrivalRoom.getRegion().getTemperature()}°C. Please enjoy your stay, and thank you for traveling with Spirit!`;
+    },
+
+    /**
+     * Conditional functions (return boolean): encoded in the
+     * JSON as 'condFunc', these check whether the condition is
+     * met for a choice option (COption) to be included.
+     */
+    canPray: (_player: GPlayerSprite, someone: GCharSprite): boolean => {
+        return GFF.AdventureContent.canPray();
+    },
+    canPreachSermon: (_player: GPlayerSprite, someone: GCharSprite): boolean => {
+        return GFF.AdventureContent.canStreetPreach();
+    },
+    canRaiseStandard: (_player: GPlayerSprite, someone: GCharSprite): boolean => {
+        return GFF.AdventureContent.canRaiseStandard();
     },
 
     // Example functions:
@@ -470,9 +578,18 @@ export class GConversation {
                 // Create speech bubble
                 this.currentBubble = new GSpeechBubble(this.currentSpeaker, preparedText);
             }
+        } else if (this.currentBlurb.id === 'flightMenu') {
+            // The flight menu is so dynamic that it's not even worth preparing a structure
+            // for the one time it is used. We'll just prepare it here.
+            this.currentBubble = new GChoiceBubble(this.currentSpeaker, this.createFlightMenu());
         } else {
-            const choice: COption[]|undefined = structuredClone(this.currentBlurb.choice);
+            let choice: COption[]|undefined = structuredClone(this.currentBlurb.choice);
             if (choice !== undefined) {
+                // Remove all choices that contain condFunc:
+                choice = choice.filter(c => {
+                    return c.condFunc === undefined || this.executeConditionFunction(c.condFunc);
+                });
+
                 // Create choice bubble
                 choice.forEach(c => {
                     c.choiceText = this.replaceLabels(c.choiceText);
@@ -482,6 +599,9 @@ export class GConversation {
                 // No text or choice; this blurb is empty.
                 this.finishBlurb(false);
             }
+        }
+        if (this.convType === 'playerpray') {
+            this.currentBubble.setDepth(DEPTH.PLAYER_PRAY_BUBBLE);
         }
     }
 
@@ -668,6 +788,31 @@ export class GConversation {
         return new GConversation(blurbs, chars, convType);
     }
 
+    private createFlightMenu(): COption[] {
+        const options: COption[] = [];
+        const room: GRoom = GFF.AdventureContent.getCurrentRoom() as GRoom;
+        const town: GTown = room.getTown() as GTown;
+        const flights: GTown[] = town.getFlights();
+
+        // Get the number of flights available:
+        const flightsCount: number = TOWN.getFlightsAvailable();
+
+        // Add an option for each available flight:
+        for (let i = 0; i < flightsCount; i++) {
+             options.push({
+                choiceText: `${i + 1}. ${flights[i].getName()}`,
+                resultId: `flight_${i + 1}`
+            });
+        }
+
+        // Add an option to cancel:
+        options.push({
+            choiceText: `I'll stay here in ${town.getName()} for now.`,
+            resultId: 'endConversation'
+        });
+        return options;
+    }
+
     /**
      * This parsing works, but it is not very robust.
      * It will not correctly handle commas inside string arguments, for example.
@@ -711,13 +856,39 @@ export class GConversation {
         }
 
         const someone: GCharSprite|undefined = this.currentSpeaker !== PLAYER.getSprite() ?
-        this.currentSpeaker :
-        this.currentHearer;
+            this.currentSpeaker :
+            this.currentHearer;
 
         // Add player and the other person as arguments,
         // along with those parsed from the command string:
         const newArgs: any[] = [PLAYER.getSprite(), someone, ...args];
-        func(...newArgs) as string;
+        func(...newArgs);
+    }
+
+    /**
+     * A 'condition' function will return a boolean value.
+     * This is used to check if a condition is met for a choice
+     * option (COption).
+     */
+    private executeConditionFunction(command: string): boolean {
+        // Parse the command to get the function name and arguments
+        const { functionName, args } = this.parseCommand(command);
+
+        // Retrieve the function from CMD_FUNCTIONS
+        const func = CMD_FUNCTIONS[functionName];
+
+        if (typeof func !== "function") {
+            throw new Error(`Function ${functionName} not found`);
+        }
+
+        const someone: GCharSprite|undefined = this.currentSpeaker !== PLAYER.getSprite() ?
+            this.currentSpeaker :
+            this.currentHearer;
+
+        // Add player and the other person as arguments,
+        // along with those parsed from the command string:
+        const newArgs: any[] = [PLAYER.getSprite(), someone, ...args];
+        return func(...newArgs) as boolean;
     }
 
     /**

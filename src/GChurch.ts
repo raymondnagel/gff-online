@@ -6,13 +6,15 @@ import { GPerson } from "./types";
 export class GChurch {
     private name: string;
     private town: GTown;
+    private fruitNum: number|null = null;
     private people: GPerson[] = [];
     private worldRoom: GRoom;
     private interiorArea: GChurchArea;
 
-    constructor(town: GTown) {
+    constructor(town: GTown, fruitNum: number|null) {
         this.name = `Church at ${town.getName()}`;
         this.town = town;
+        this.fruitNum = fruitNum;
     }
 
     public getName(): string {
@@ -21,6 +23,10 @@ export class GChurch {
 
     public getTown(): GTown {
         return this.town;
+    }
+
+    public getFruitNum(): number|null {
+        return this.fruitNum;
     }
 
     public setWorldRoom(room: GRoom) {
@@ -43,6 +49,10 @@ export class GChurch {
 
     public getPeople(): GPerson[] {
         return this.people;
+    }
+
+    public isEveryPersonMet(): boolean {
+        return this.people.every(person => person.familiarity > 0);
     }
 
     public addPerson(person: GPerson) {

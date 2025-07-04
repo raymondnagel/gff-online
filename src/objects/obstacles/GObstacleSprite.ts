@@ -44,6 +44,10 @@ export class GObstacleSprite extends Phaser.Physics.Arcade.Sprite {
         this.play(this.sceneryDef.key);
     }
 
+    public getBody(): Phaser.Physics.Arcade.Body {
+        return this.body as Phaser.Physics.Arcade.Body;
+    }
+
     protected createSingleAnimation(spriteKey: string, frames: number, frameRate: number) {
         this.anims.create({
             key: spriteKey,

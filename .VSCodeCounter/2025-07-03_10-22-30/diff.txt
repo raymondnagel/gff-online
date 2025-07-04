@@ -1,0 +1,266 @@
+Date : 2025-07-03 10:22:30
+Directory : d:\GFF Online\gff-online\src
+Total : 208 files,  9365 codes, 953 comments, 869 blanks, all 11187 lines
+
+Languages
++------------+------------+------------+------------+------------+------------+
+| language   | files      | code       | comment    | blank      | total      |
++------------+------------+------------+------------+------------+------------+
+| TypeScript |        107 |      6,047 |        953 |        855 |      7,855 |
+| JSON       |        100 |      3,310 |          0 |         12 |      3,322 |
+| GLSL       |          1 |          8 |          0 |          2 |         10 |
++------------+------------+------------+------------+------------+------------+
+
+Directories
++--------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| path                                                                                                   | files      | code       | comment    | blank      | total      |
++--------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| .                                                                                                      |        208 |      9,365 |        953 |        869 |     11,187 |
+| . (Files)                                                                                              |         29 |      2,217 |        243 |        245 |      2,705 |
+| areas                                                                                                  |          4 |        100 |          9 |         20 |        129 |
+| assets                                                                                                 |        101 |      3,318 |          0 |         14 |      3,332 |
+| assets (Files)                                                                                         |          4 |        272 |          0 |          0 |        272 |
+| assets\json                                                                                            |         96 |      3,038 |          0 |         12 |      3,050 |
+| assets\json (Files)                                                                                    |          2 |        354 |          0 |          0 |        354 |
+| assets\json\blurb_classes                                                                              |         62 |        347 |          0 |          0 |        347 |
+| assets\json\blurb_classes (Files)                                                                      |         48 |        263 |          0 |          0 |        263 |
+| assets\json\blurb_classes\blurb_bio                                                                    |         14 |         84 |          0 |          0 |         84 |
+| assets\json\blurb_special                                                                              |          7 |        503 |          0 |          0 |        503 |
+| assets\json\conversations                                                                              |         25 |      1,834 |          0 |         12 |      1,846 |
+| assets\json\conversations (Files)                                                                      |         17 |      1,232 |          0 |          4 |      1,236 |
+| assets\json\conversations\church_sermons                                                               |          3 |        234 |          0 |          3 |        237 |
+| assets\json\conversations\street_sermons                                                               |          5 |        368 |          0 |          5 |        373 |
+| assets\shaders                                                                                         |          1 |          8 |          0 |          2 |         10 |
+| cutscenes                                                                                              |          7 |      1,215 |        189 |        161 |      1,565 |
+| data                                                                                                   |          1 |         24 |          7 |          7 |         38 |
+| game_modes                                                                                             |          1 |         -6 |          0 |         -3 |         -9 |
+| goals                                                                                                  |         12 |        101 |         61 |         30 |        192 |
+| objects                                                                                                |         27 |        869 |        154 |        167 |      1,190 |
+| objects (Files)                                                                                        |          4 |        -58 |          1 |         -5 |        -62 |
+| objects\chars                                                                                          |          6 |        353 |         87 |         56 |        496 |
+| objects\components                                                                                     |          5 |        351 |         46 |         71 |        468 |
+| objects\interactables                                                                                  |          2 |        -19 |         -3 |         -6 |        -28 |
+| objects\obstacles                                                                                      |          6 |         62 |         12 |         18 |         92 |
+| objects\obstacles (Files)                                                                              |          4 |         28 |          1 |         10 |         39 |
+| objects\obstacles\walls                                                                                |          2 |         34 |         11 |          8 |         53 |
+| objects\touchables                                                                                     |          4 |        180 |         11 |         33 |        224 |
+| regions                                                                                                |         10 |         44 |          1 |         20 |         65 |
+| scenes                                                                                                 |         13 |      1,427 |        289 |        195 |      1,911 |
+| shaders                                                                                                |          1 |          2 |          0 |         -2 |          0 |
+| triggers                                                                                               |          2 |         54 |          0 |         15 |         69 |
++--------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+
+Files
++--------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| filename                                                                                               | language   | code       | comment    | blank      | total      |
++--------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| d:\GFF Online\gff-online\src\GChurch.ts                                                                | TypeScript |         21 |          1 |          4 |         26 |
+| d:\GFF Online\gff-online\src\GConversation.ts                                                          | TypeScript |        439 |         83 |         39 |        561 |
+| d:\GFF Online\gff-online\src\GDirection.ts                                                             | TypeScript |       -248 |        -14 |        -35 |       -297 |
+| d:\GFF Online\gff-online\src\GRandom.ts                                                                | TypeScript |        -47 |         -7 |        -11 |        -65 |
+| d:\GFF Online\gff-online\src\GRoom.ts                                                                  | TypeScript |        476 |         39 |         41 |        556 |
+| d:\GFF Online\gff-online\src\GSoundManager.ts                                                          | TypeScript |          9 |          0 |          1 |         10 |
+| d:\GFF Online\gff-online\src\GTown.ts                                                                  | TypeScript |         15 |          0 |          4 |         19 |
+| d:\GFF Online\gff-online\src\area.ts                                                                   | TypeScript |         28 |          1 |          2 |         31 |
+| d:\GFF Online\gff-online\src\areas\GArea.ts                                                            | TypeScript |         23 |          3 |          3 |         29 |
+| d:\GFF Online\gff-online\src\areas\GBuildingArea.ts                                                    | TypeScript |          3 |          0 |          2 |          5 |
+| d:\GFF Online\gff-online\src\areas\GChurchArea.ts                                                      | TypeScript |         23 |          0 |          6 |         29 |
+| d:\GFF Online\gff-online\src\areas\GWorldArea.ts                                                       | TypeScript |         51 |          6 |          9 |         66 |
+| d:\GFF Online\gff-online\src\armors.ts                                                                 | TypeScript |         22 |          9 |          8 |         39 |
+| d:\GFF Online\gff-online\src\array.ts                                                                  | TypeScript |          9 |          4 |          1 |         14 |
+| d:\GFF Online\gff-online\src\assets\audio-manifest.json                                                | JSON       |         11 |          0 |          0 |         11 |
+| d:\GFF Online\gff-online\src\assets\image-manifest.json                                                | JSON       |         95 |          0 |          0 |         95 |
+| d:\GFF Online\gff-online\src\assets\json-manifest.json                                                 | JSON       |         77 |          0 |          0 |         77 |
+| d:\GFF Online\gff-online\src\assets\json\blurb_classes\blurb_bio\saint_bio_bg_agnostic.json            | JSON       |          6 |          0 |          0 |          6 |
+| d:\GFF Online\gff-online\src\assets\json\blurb_classes\blurb_bio\saint_bio_bg_athiest.json             | JSON       |          6 |          0 |          0 |          6 |
+| d:\GFF Online\gff-online\src\assets\json\blurb_classes\blurb_bio\saint_bio_bg_christian.json           | JSON       |          6 |          0 |          0 |          6 |
+| d:\GFF Online\gff-online\src\assets\json\blurb_classes\blurb_bio\saint_bio_bg_religious.json           | JSON       |          6 |          0 |          0 |          6 |
+| d:\GFF Online\gff-online\src\assets\json\blurb_classes\blurb_bio\saint_bio_cv_agnostic.json            | JSON       |          6 |          0 |          0 |          6 |
+| d:\GFF Online\gff-online\src\assets\json\blurb_classes\blurb_bio\saint_bio_cv_athiest.json             | JSON       |          6 |          0 |          0 |          6 |
+| d:\GFF Online\gff-online\src\assets\json\blurb_classes\blurb_bio\saint_bio_cv_christian.json           | JSON       |          6 |          0 |          0 |          6 |
+| d:\GFF Online\gff-online\src\assets\json\blurb_classes\blurb_bio\saint_bio_cv_player.json              | JSON       |          6 |          0 |          0 |          6 |
+| d:\GFF Online\gff-online\src\assets\json\blurb_classes\blurb_bio\saint_bio_cv_religious.json           | JSON       |          6 |          0 |          0 |          6 |
+| d:\GFF Online\gff-online\src\assets\json\blurb_classes\blurb_bio\saint_bio_grace.json                  | JSON       |          6 |          0 |          0 |          6 |
+| d:\GFF Online\gff-online\src\assets\json\blurb_classes\blurb_bio\saint_bio_intro.json                  | JSON       |          6 |          0 |          0 |          6 |
+| d:\GFF Online\gff-online\src\assets\json\blurb_classes\blurb_bio\saint_bio_local.json                  | JSON       |          6 |          0 |          0 |          6 |
+| d:\GFF Online\gff-online\src\assets\json\blurb_classes\blurb_bio\saint_bio_migrant.json                | JSON       |          6 |          0 |          0 |          6 |
+| d:\GFF Online\gff-online\src\assets\json\blurb_classes\blurb_bio\saint_bio_today.json                  | JSON       |          6 |          0 |          0 |          6 |
+| d:\GFF Online\gff-online\src\assets\json\blurb_classes\congregation_amen.json                          | JSON       |          1 |          0 |          0 |          1 |
+| d:\GFF Online\gff-online\src\assets\json\blurb_classes\congregation_praise.json                        | JSON       |         13 |          0 |          0 |         13 |
+| d:\GFF Online\gff-online\src\assets\json\blurb_classes\congregation_question.json                      | JSON       |          6 |          0 |          0 |          6 |
+| d:\GFF Online\gff-online\src\assets\json\blurb_classes\congregation_thanks.json                        | JSON       |          9 |          0 |          0 |          9 |
+| d:\GFF Online\gff-online\src\assets\json\blurb_classes\convert_epilogue.json                           | JSON       |          5 |          0 |          0 |          5 |
+| d:\GFF Online\gff-online\src\assets\json\blurb_classes\convert_goodbye.json                            | JSON       |          9 |          0 |          0 |          9 |
+| d:\GFF Online\gff-online\src\assets\json\blurb_classes\convert_rejoice.json                            | JSON       |         13 |          0 |          0 |         13 |
+| d:\GFF Online\gff-online\src\assets\json\blurb_classes\player_encouraged.json                          | JSON       |          8 |          0 |          0 |          8 |
+| d:\GFF Online\gff-online\src\assets\json\blurb_classes\player_greet_again.json                         | JSON       |          6 |          0 |          0 |          6 |
+| d:\GFF Online\gff-online\src\assets\json\blurb_classes\player_greet_familiar.json                      | JSON       |          8 |          0 |          0 |          8 |
+| d:\GFF Online\gff-online\src\assets\json\blurb_classes\player_greet_unknown.json                       | JSON       |          9 |          0 |          0 |          9 |
+| d:\GFF Online\gff-online\src\assets\json\blurb_classes\player_initial_bye.json                         | JSON       |         -9 |          0 |          0 |         -9 |
+| d:\GFF Online\gff-online\src\assets\json\blurb_classes\player_initial_greeting.json                    | JSON       |         -9 |          0 |          0 |         -9 |
+| d:\GFF Online\gff-online\src\assets\json\blurb_classes\player_intro_saint.json                         | JSON       |          9 |          0 |          0 |          9 |
+| d:\GFF Online\gff-online\src\assets\json\blurb_classes\player_intro_sinner.json                        | JSON       |          9 |          0 |          0 |          9 |
+| d:\GFF Online\gff-online\src\assets\json\blurb_classes\player_introduction.json                        | JSON       |         -9 |          0 |          0 |         -9 |
+| d:\GFF Online\gff-online\src\assets\json\blurb_classes\player_prayer_body.json                         | JSON       |         10 |          0 |          0 |         10 |
+| d:\GFF Online\gff-online\src\assets\json\blurb_classes\player_prayer_end.json                          | JSON       |         10 |          0 |          0 |         10 |
+| d:\GFF Online\gff-online\src\assets\json\blurb_classes\player_prayer_start.json                        | JSON       |         10 |          0 |          0 |         10 |
+| d:\GFF Online\gff-online\src\assets\json\blurb_classes\player_smalltalk_compliment.json                | JSON       |          6 |          0 |          0 |          6 |
+| d:\GFF Online\gff-online\src\assets\json\blurb_classes\player_smalltalk_god.json                       | JSON       |          7 |          0 |          0 |          7 |
+| d:\GFF Online\gff-online\src\assets\json\blurb_classes\player_smalltalk_remark.json                    | JSON       |          6 |          0 |          0 |          6 |
+| d:\GFF Online\gff-online\src\assets\json\blurb_classes\saint_encourage_1.json                          | JSON       |          6 |          0 |          0 |          6 |
+| d:\GFF Online\gff-online\src\assets\json\blurb_classes\saint_encourage_2.json                          | JSON       |          7 |          0 |          0 |          7 |
+| d:\GFF Online\gff-online\src\assets\json\blurb_classes\saint_encourage_3.json                          | JSON       |          7 |          0 |          0 |          7 |
+| d:\GFF Online\gff-online\src\assets\json\blurb_classes\saint_goodbye.json                              | JSON       |          8 |          0 |          0 |          8 |
+| d:\GFF Online\gff-online\src\assets\json\blurb_classes\saint_greet_familiar.json                       | JSON       |          8 |          0 |          0 |          8 |
+| d:\GFF Online\gff-online\src\assets\json\blurb_classes\saint_inform_intro.json                         | JSON       |          6 |          0 |          0 |          6 |
+| d:\GFF Online\gff-online\src\assets\json\blurb_classes\saint_intro.json                                | JSON       |          6 |          0 |          0 |          6 |
+| d:\GFF Online\gff-online\src\assets\json\blurb_classes\saint_part_ways.json                            | JSON       |          8 |          0 |          0 |          8 |
+| d:\GFF Online\gff-online\src\assets\json\blurb_classes\saint_prayer_end.json                           | JSON       |         12 |          0 |          0 |         12 |
+| d:\GFF Online\gff-online\src\assets\json\blurb_classes\saint_prayer_pray_1.json                        | JSON       |          6 |          0 |          0 |          6 |
+| d:\GFF Online\gff-online\src\assets\json\blurb_classes\saint_prayer_pray_2.json                        | JSON       |          7 |          0 |          0 |          7 |
+| d:\GFF Online\gff-online\src\assets\json\blurb_classes\saint_prayer_pray_3.json                        | JSON       |          6 |          0 |          0 |          6 |
+| d:\GFF Online\gff-online\src\assets\json\blurb_classes\saint_prayer_start.json                         | JSON       |          6 |          0 |          0 |          6 |
+| d:\GFF Online\gff-online\src\assets\json\blurb_classes\sinner_convert.json                             | JSON       |          9 |          0 |          0 |          9 |
+| d:\GFF Online\gff-online\src\assets\json\blurb_classes\sinner_goodbye_polite.json                      | JSON       |          7 |          0 |          0 |          7 |
+| d:\GFF Online\gff-online\src\assets\json\blurb_classes\sinner_greet_familiar.json                      | JSON       |          8 |          0 |          0 |          8 |
+| d:\GFF Online\gff-online\src\assets\json\blurb_classes\sinner_greet_generic.json                       | JSON       |          8 |          0 |          0 |          8 |
+| d:\GFF Online\gff-online\src\assets\json\blurb_classes\sinner_greet_stranger.json                      | JSON       |          7 |          0 |          0 |          7 |
+| d:\GFF Online\gff-online\src\assets\json\blurb_classes\sinner_initial_bye.json                         | JSON       |         -9 |          0 |          0 |         -9 |
+| d:\GFF Online\gff-online\src\assets\json\blurb_classes\sinner_initial_greeting.json                    | JSON       |         -9 |          0 |          0 |         -9 |
+| d:\GFF Online\gff-online\src\assets\json\blurb_classes\sinner_intro_formal.json                        | JSON       |          5 |          0 |          0 |          5 |
+| d:\GFF Online\gff-online\src\assets\json\blurb_classes\sinner_intro_informal.json                      | JSON       |          5 |          0 |          0 |          5 |
+| d:\GFF Online\gff-online\src\assets\json\blurb_classes\sinner_introduction.json                        | JSON       |        -11 |          0 |          0 |        -11 |
+| d:\GFF Online\gff-online\src\assets\json\blurb_classes\sinner_notalk.json                              | JSON       |          7 |          0 |          0 |          7 |
+| d:\GFF Online\gff-online\src\assets\json\blurb_classes\sinner_smalltalk_compliment.json                | JSON       |          7 |          0 |          0 |          7 |
+| d:\GFF Online\gff-online\src\assets\json\blurb_classes\sinner_smalltalk_remark.json                    | JSON       |          9 |          0 |          0 |          9 |
+| d:\GFF Online\gff-online\src\assets\json\blurb_special\player_seed_by_faith.json                       | JSON       |         97 |          0 |          0 |         97 |
+| d:\GFF Online\gff-online\src\assets\json\blurb_special\saint_inform_tares.json                         | JSON       |         30 |          0 |          0 |         30 |
+| d:\GFF Online\gff-online\src\assets\json\blurb_special\saint_inform_wheat.json                         | JSON       |         30 |          0 |          0 |         30 |
+| d:\GFF Online\gff-online\src\assets\json\blurb_special\sinner_goodbye_by_faith.json                    | JSON       |        102 |          0 |          0 |        102 |
+| d:\GFF Online\gff-online\src\assets\json\blurb_special\sinner_hear_sermon_by_faith.json                | JSON       |         60 |          0 |          0 |         60 |
+| d:\GFF Online\gff-online\src\assets\json\blurb_special\sinner_respond_by_faith.json                    | JSON       |        112 |          0 |          0 |        112 |
+| d:\GFF Online\gff-online\src\assets\json\blurb_special\sinner_smalltalk_god_by_faith.json              | JSON       |         72 |          0 |          0 |         72 |
+| d:\GFF Online\gff-online\src\assets\json\books_info.json                                               | JSON       |        132 |          0 |          0 |        132 |
+| d:\GFF Online\gff-online\src\assets\json\conversations\_church_sermon_template.json                    | JSON       |        -73 |          0 |         -1 |        -74 |
+| d:\GFF Online\gff-online\src\assets\json\conversations\arrival_agent_conv.json                         | JSON       |          8 |          0 |          1 |          9 |
+| d:\GFF Online\gff-online\src\assets\json\conversations\cheat_conv.json                                 | JSON       |        102 |          0 |          0 |        102 |
+| d:\GFF Online\gff-online\src\assets\json\conversations\church_sermon_test.json                         | JSON       |        -73 |          0 |         -1 |        -74 |
+| d:\GFF Online\gff-online\src\assets\json\conversations\church_sermons\_church_sermon_template.json     | JSON       |         73 |          0 |          1 |         74 |
+| d:\GFF Online\gff-online\src\assets\json\conversations\church_sermons\church_sermon_love_of_god.json   | JSON       |         88 |          0 |          1 |         89 |
+| d:\GFF Online\gff-online\src\assets\json\conversations\church_sermons\church_sermon_patience.json      | JSON       |         73 |          0 |          1 |         74 |
+| d:\GFF Online\gff-online\src\assets\json\conversations\convert_conv.json                               | JSON       |         22 |          0 |          0 |         22 |
+| d:\GFF Online\gff-online\src\assets\json\conversations\encourage_conv.json                             | JSON       |         31 |          0 |          0 |         31 |
+| d:\GFF Online\gff-online\src\assets\json\conversations\latest_update_intro.json                        | JSON       |        393 |          0 |          0 |        393 |
+| d:\GFF Online\gff-online\src\assets\json\conversations\latest_update_intro_original.json               | JSON       |        109 |          0 |          1 |        110 |
+| d:\GFF Online\gff-online\src\assets\json\conversations\notalk_to_sinner_conv.json                      | JSON       |         28 |          0 |          1 |         29 |
+| d:\GFF Online\gff-online\src\assets\json\conversations\play_piano.json                                 | JSON       |         46 |          0 |          1 |         47 |
+| d:\GFF Online\gff-online\src\assets\json\conversations\player_actions_conv.json                        | JSON       |         36 |          0 |          0 |         36 |
+| d:\GFF Online\gff-online\src\assets\json\conversations\player_prayer_conv.json                         | JSON       |         20 |          0 |          0 |         20 |
+| d:\GFF Online\gff-online\src\assets\json\conversations\restoration_conv.json                           | JSON       |         41 |          0 |          0 |         41 |
+| d:\GFF Online\gff-online\src\assets\json\conversations\restoration_prayer.json                         | JSON       |         36 |          0 |          0 |         36 |
+| d:\GFF Online\gff-online\src\assets\json\conversations\street_sermons\_street_sermon_template.json     | JSON       |         21 |          0 |          1 |         22 |
+| d:\GFF Online\gff-online\src\assets\json\conversations\street_sermons\street_sermon_hear_him.json      | JSON       |         68 |          0 |          1 |         69 |
+| d:\GFF Online\gff-online\src\assets\json\conversations\street_sermons\street_sermon_messiah.json       | JSON       |         98 |          0 |          1 |         99 |
+| d:\GFF Online\gff-online\src\assets\json\conversations\street_sermons\street_sermon_person_christ.json | JSON       |         98 |          0 |          1 |         99 |
+| d:\GFF Online\gff-online\src\assets\json\conversations\street_sermons\street_sermon_what_fruit.json    | JSON       |         83 |          0 |          1 |         84 |
+| d:\GFF Online\gff-online\src\assets\json\conversations\talk_to_agent_conv.json                         | JSON       |        119 |          0 |          1 |        120 |
+| d:\GFF Online\gff-online\src\assets\json\conversations\talk_to_saint_conv.json                         | JSON       |        175 |          0 |          0 |        175 |
+| d:\GFF Online\gff-online\src\assets\json\conversations\talk_to_sinner_conv.json                        | JSON       |        212 |          0 |          1 |        213 |
+| d:\GFF Online\gff-online\src\assets\json\glossary_info.json                                            | JSON       |        222 |          0 |          0 |        222 |
+| d:\GFF Online\gff-online\src\assets\shaders\grayscale.frag                                             | GLSL       |          8 |          0 |          2 |         10 |
+| d:\GFF Online\gff-online\src\assets\sprite-manifest.json                                               | JSON       |         89 |          0 |          0 |         89 |
+| d:\GFF Online\gff-online\src\bible.ts                                                                  | TypeScript |         46 |         15 |         15 |         76 |
+| d:\GFF Online\gff-online\src\books.ts                                                                  | TypeScript |         14 |         19 |          4 |         37 |
+| d:\GFF Online\gff-online\src\colors.ts                                                                 | TypeScript |          3 |          0 |          2 |          5 |
+| d:\GFF Online\gff-online\src\commandments.ts                                                           | TypeScript |          2 |          0 |          0 |          2 |
+| d:\GFF Online\gff-online\src\cutscenes\GChurchServiceCutscene.ts                                       | TypeScript |        242 |         32 |         31 |        305 |
+| d:\GFF Online\gff-online\src\cutscenes\GCutscene.ts                                                    | TypeScript |        249 |         68 |         37 |        354 |
+| d:\GFF Online\gff-online\src\cutscenes\GPrayCutscene.ts                                                | TypeScript |        136 |         13 |          6 |        155 |
+| d:\GFF Online\gff-online\src\cutscenes\GQuickTravelCutscene.ts                                         | TypeScript |        256 |         36 |         36 |        328 |
+| d:\GFF Online\gff-online\src\cutscenes\GRaiseStandardCutscene.ts                                       | TypeScript |         80 |         19 |         12 |        111 |
+| d:\GFF Online\gff-online\src\cutscenes\GRestorationCutscene.ts                                         | TypeScript |        147 |         12 |         16 |        175 |
+| d:\GFF Online\gff-online\src\cutscenes\GStreetPreachCutscene.ts                                        | TypeScript |        105 |          9 |         23 |        137 |
+| d:\GFF Online\gff-online\src\data\GQueue.ts                                                            | TypeScript |         24 |          7 |          7 |         38 |
+| d:\GFF Online\gff-online\src\depths.ts                                                                 | TypeScript |          2 |          0 |          2 |          4 |
+| d:\GFF Online\gff-online\src\direction.ts                                                              | TypeScript |        286 |         14 |         41 |        341 |
+| d:\GFF Online\gff-online\src\effects.ts                                                                | TypeScript |         69 |          5 |          9 |         83 |
+| d:\GFF Online\gff-online\src\fruits.ts                                                                 | TypeScript |         43 |          0 |         11 |         54 |
+| d:\GFF Online\gff-online\src\game_modes\GStatsMode.ts                                                  | TypeScript |         -6 |          0 |         -3 |         -9 |
+| d:\GFF Online\gff-online\src\glossary.ts                                                               | TypeScript |         13 |          0 |          2 |         15 |
+| d:\GFF Online\gff-online\src\goals\GBullhornGoal.ts                                                    | TypeScript |         17 |          8 |          5 |         30 |
+| d:\GFF Online\gff-online\src\goals\GChasePlayerGoal.ts                                                 | TypeScript |          2 |          0 |          1 |          3 |
+| d:\GFF Online\gff-online\src\goals\GFollowPlayerGoal.ts                                                | TypeScript |         19 |          2 |          5 |         26 |
+| d:\GFF Online\gff-online\src\goals\GGoal.ts                                                            | TypeScript |        -24 |         28 |          2 |          6 |
+| d:\GFF Online\gff-online\src\goals\GInteractGoal.ts                                                    | TypeScript |         15 |          6 |          5 |         26 |
+| d:\GFF Online\gff-online\src\goals\GNoBullhornGoal.ts                                                  | TypeScript |         17 |          6 |          5 |         28 |
+| d:\GFF Online\gff-online\src\goals\GRejoiceGoal.ts                                                     | TypeScript |          0 |          0 |         -1 |         -1 |
+| d:\GFF Online\gff-online\src\goals\GRestGoal.ts                                                        | TypeScript |          6 |          5 |          2 |         13 |
+| d:\GFF Online\gff-online\src\goals\GSearchForPlayerGoal.ts                                             | TypeScript |          4 |          0 |          0 |          4 |
+| d:\GFF Online\gff-online\src\goals\GSpawnImpGoal.ts                                                    | TypeScript |          8 |          2 |          0 |         10 |
+| d:\GFF Online\gff-online\src\goals\GWalkDirGoal.ts                                                     | TypeScript |         36 |          4 |          6 |         46 |
+| d:\GFF Online\gff-online\src\goals\GWalkToPointGoal.ts                                                 | TypeScript |          1 |          0 |          0 |          1 |
+| d:\GFF Online\gff-online\src\keys.ts                                                                   | TypeScript |         52 |          5 |          9 |         66 |
+| d:\GFF Online\gff-online\src\main.ts                                                                   | TypeScript |        -25 |          1 |          0 |        -24 |
+| d:\GFF Online\gff-online\src\objects\GChoiceBubble.ts                                                  | TypeScript |          3 |          1 |          1 |          5 |
+| d:\GFF Online\gff-online\src\objects\GSpeechBubble.ts                                                  | TypeScript |         17 |          2 |          2 |         21 |
+| d:\GFF Online\gff-online\src\objects\GThoughtBubble.ts                                                 | TypeScript |         12 |          0 |          1 |         13 |
+| d:\GFF Online\gff-online\src\objects\GTreasureChest.ts                                                 | TypeScript |        -90 |         -2 |         -9 |       -101 |
+| d:\GFF Online\gff-online\src\objects\chars\GCharSprite.ts                                              | TypeScript |         34 |         42 |         14 |         90 |
+| d:\GFF Online\gff-online\src\objects\chars\GImpSprite.ts                                               | TypeScript |         25 |          6 |          2 |         33 |
+| d:\GFF Online\gff-online\src\objects\chars\GPersonSprite.ts                                            | TypeScript |        125 |         19 |         18 |        162 |
+| d:\GFF Online\gff-online\src\objects\chars\GPlayerSprite.ts                                            | TypeScript |         38 |          4 |          3 |         45 |
+| d:\GFF Online\gff-online\src\objects\chars\GStatusAvatar.ts                                            | TypeScript |         90 |         10 |         14 |        114 |
+| d:\GFF Online\gff-online\src\objects\chars\GTravelAgentSprite.ts                                       | TypeScript |         41 |          6 |          5 |         52 |
+| d:\GFF Online\gff-online\src\objects\components\GOptionGroup.ts                                        | TypeScript |         47 |          7 |         10 |         64 |
+| d:\GFF Online\gff-online\src\objects\components\GPersonFile.ts                                         | TypeScript |         54 |          6 |         14 |         74 |
+| d:\GFF Online\gff-online\src\objects\components\GScrollPane.ts                                         | TypeScript |        114 |         27 |         22 |        163 |
+| d:\GFF Online\gff-online\src\objects\components\GTextButton.ts                                         | TypeScript |         10 |          0 |          1 |         11 |
+| d:\GFF Online\gff-online\src\objects\components\GTextOptionButton.ts                                   | TypeScript |        126 |          6 |         24 |        156 |
+| d:\GFF Online\gff-online\src\objects\interactables\GInteractable.ts                                    | TypeScript |        -32 |         -3 |        -10 |        -45 |
+| d:\GFF Online\gff-online\src\objects\interactables\GPiano.ts                                           | TypeScript |         13 |          0 |          4 |         17 |
+| d:\GFF Online\gff-online\src\objects\obstacles\GChurchHouse.ts                                         | TypeScript |          8 |          0 |          3 |         11 |
+| d:\GFF Online\gff-online\src\objects\obstacles\GObstacleSprite.ts                                      | TypeScript |          3 |          0 |          1 |          4 |
+| d:\GFF Online\gff-online\src\objects\obstacles\GObstacleStatic.ts                                      | TypeScript |          3 |          0 |          1 |          4 |
+| d:\GFF Online\gff-online\src\objects\obstacles\GTravelAgency.ts                                        | TypeScript |         14 |          1 |          5 |         20 |
+| d:\GFF Online\gff-online\src\objects\obstacles\walls\GWallSouthInside.ts                               | TypeScript |         14 |          4 |          2 |         20 |
+| d:\GFF Online\gff-online\src\objects\obstacles\walls\GWallSouthWithDoor.ts                             | TypeScript |         20 |          7 |          6 |         33 |
+| d:\GFF Online\gff-online\src\objects\touchables\GBuildingEntrance.ts                                   | TypeScript |         18 |          1 |          6 |         25 |
+| d:\GFF Online\gff-online\src\objects\touchables\GBuildingExit.ts                                       | TypeScript |         17 |          1 |          6 |         24 |
+| d:\GFF Online\gff-online\src\objects\touchables\GTouchable.ts                                          | TypeScript |         32 |          3 |         10 |         45 |
+| d:\GFF Online\gff-online\src\objects\touchables\GTreasureChest.ts                                      | TypeScript |        113 |          6 |         11 |        130 |
+| d:\GFF Online\gff-online\src\people.ts                                                                 | TypeScript |        139 |          1 |          5 |        145 |
+| d:\GFF Online\gff-online\src\physics.ts                                                                | TypeScript |         58 |         13 |          9 |         80 |
+| d:\GFF Online\gff-online\src\player.ts                                                                 | TypeScript |         94 |          1 |         15 |        110 |
+| d:\GFF Online\gff-online\src\random.ts                                                                 | TypeScript |         62 |          9 |         16 |         87 |
+| d:\GFF Online\gff-online\src\regions\GChurchRegion.ts                                                  | TypeScript |         35 |          1 |          7 |         43 |
+| d:\GFF Online\gff-online\src\regions\GDesertRegion.ts                                                  | TypeScript |          3 |          0 |          1 |          4 |
+| d:\GFF Online\gff-online\src\regions\GForestRegion.ts                                                  | TypeScript |          3 |          0 |          1 |          4 |
+| d:\GFF Online\gff-online\src\regions\GInsideRegion.ts                                                  | TypeScript |          6 |          0 |          4 |         10 |
+| d:\GFF Online\gff-online\src\regions\GMountRegion.ts                                                   | TypeScript |          4 |          0 |          1 |          5 |
+| d:\GFF Online\gff-online\src\regions\GOutsideRegion.ts                                                 | TypeScript |        -14 |          0 |          1 |        -13 |
+| d:\GFF Online\gff-online\src\regions\GPlainRegion.ts                                                   | TypeScript |          3 |          0 |          1 |          4 |
+| d:\GFF Online\gff-online\src\regions\GRegion.ts                                                        | TypeScript |         -2 |          0 |          2 |          0 |
+| d:\GFF Online\gff-online\src\regions\GSwampRegion.ts                                                   | TypeScript |          3 |          0 |          1 |          4 |
+| d:\GFF Online\gff-online\src\regions\GTundraRegion.ts                                                  | TypeScript |          3 |          0 |          1 |          4 |
+| d:\GFF Online\gff-online\src\scenery.ts                                                                | TypeScript |         73 |          3 |          2 |         78 |
+| d:\GFF Online\gff-online\src\scenes\GAdventureContent.ts                                               | TypeScript |        412 |         82 |         54 |        548 |
+| d:\GFF Online\gff-online\src\scenes\GAdventureUI.ts                                                    | TypeScript |         56 |         27 |          8 |         91 |
+| d:\GFF Online\gff-online\src\scenes\GBattleContent.ts                                                  | TypeScript |          7 |          1 |          2 |         10 |
+| d:\GFF Online\gff-online\src\scenes\GBibleUI.ts                                                        | TypeScript |        387 |        116 |         68 |        571 |
+| d:\GFF Online\gff-online\src\scenes\GGlossaryUI.ts                                                     | TypeScript |         71 |          3 |          9 |         83 |
+| d:\GFF Online\gff-online\src\scenes\GLoadingScene.ts                                                   | TypeScript |          9 |          4 |          4 |         17 |
+| d:\GFF Online\gff-online\src\scenes\GMapUI.ts                                                          | TypeScript |         24 |          2 |         -1 |         25 |
+| d:\GFF Online\gff-online\src\scenes\GOptionsUI.ts                                                      | TypeScript |          8 |          0 |          0 |          8 |
+| d:\GFF Online\gff-online\src\scenes\GPeopleUI.ts                                                       | TypeScript |        146 |          8 |         21 |        175 |
+| d:\GFF Online\gff-online\src\scenes\GStatsUI.ts                                                        | TypeScript |        -31 |         -1 |         -8 |        -40 |
+| d:\GFF Online\gff-online\src\scenes\GStatusUI.ts                                                       | TypeScript |        295 |         27 |         29 |        351 |
+| d:\GFF Online\gff-online\src\scenes\GUIScene.ts                                                        | TypeScript |         26 |         18 |          7 |         51 |
+| d:\GFF Online\gff-online\src\scenes\GWorldBuildContent.ts                                              | TypeScript |         17 |          2 |          2 |         21 |
+| d:\GFF Online\gff-online\src\shaders\GrayscalePostFxPipeline.ts                                        | TypeScript |          2 |          0 |         -2 |          0 |
+| d:\GFF Online\gff-online\src\stats.ts                                                                  | TypeScript |        399 |         19 |         27 |        445 |
+| d:\GFF Online\gff-online\src\town.ts                                                                   | TypeScript |         30 |          4 |         10 |         44 |
+| d:\GFF Online\gff-online\src\triggers\GChurchDoorTrigger.ts                                            | TypeScript |         27 |          0 |          6 |         33 |
+| d:\GFF Online\gff-online\src\triggers\GEventTrigger.ts                                                 | TypeScript |         27 |          0 |          9 |         36 |
+| d:\GFF Online\gff-online\src\types.ts                                                                  | TypeScript |        133 |         18 |         12 |        163 |
+| Total                                                                                                  |            |      9,365 |        953 |        869 |     11,187 |
++--------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+

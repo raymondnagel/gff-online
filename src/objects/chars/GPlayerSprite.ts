@@ -24,7 +24,8 @@ const person: GPerson = {
     homeTown: null,
     bio1: null,
     bio2: null,
-    favoriteBook: 'Psalms'
+    favoriteBook: 'Psalms',
+    conversations: 0
 };
 
 export class GPlayerSprite extends GCharSprite {
@@ -40,6 +41,7 @@ export class GPlayerSprite extends GCharSprite {
         this.createSingleAnimation('bullhorn_sw', 0);
         this.createSingleAnimation('nobullhorn_sw', 0);
         this.createSingleAnimation('preach_sw');
+        this.createDirectionalAnimations('interact', 0);
         this.createDirectionalAnimations('run');
         this.createDirectionalAnimations('sit');
 
@@ -89,6 +91,14 @@ export class GPlayerSprite extends GCharSprite {
         }
     }
 
+    /**
+     * This method must not be called 'interact' because it can cause the player
+     * to be mistaken for a GInteractable.
+     */
+    public handAction() {
+        this.playDirectionalAnimation('interact', undefined, true);
+    }
+
     protected getSpeed(): number {
         return parseFloat(GFF.GAME.registry.get('walkSpeed'));
     }
@@ -107,7 +117,7 @@ export class GPlayerSprite extends GCharSprite {
 
     public getInteractionArea(): GRect {
         let faceDir: Dir9 = this.getDirection();
-        let bodyCtr: Phaser.Math.Vector2 = this.body?.center as Phaser.Math.Vector2;
+        let bodyCtr: Phaser.Math.Vector2 = this.getPhysicalCenter() as Phaser.Math.Vector2;
         let distance: number = DIRECTION.getDistanceFactor(faceDir) * INTERACTION_RANGE;
         let intCtrX: number = bodyCtr.x + (DIRECTION.getHorzInc(faceDir) * distance);
         let intCtrY: number = bodyCtr.y + (DIRECTION.getVertInc(faceDir) * distance);

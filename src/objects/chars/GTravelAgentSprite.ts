@@ -22,7 +22,8 @@ export class GTravelAgentSprite extends GPersonSprite {
         homeTown: null, // The same agent will appear in every town
         bio1: null,
         bio2: null,
-        favoriteBook: 'Job'
+        favoriteBook: 'Job',
+        conversations: 0
     };
 
     constructor(x: number, y: number) {

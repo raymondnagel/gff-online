@@ -44,6 +44,10 @@ export namespace BOOKS {
         });
     }
 
+    export function getAllBookEntries(): GBookEntry[] {
+        return entries;
+    }
+
     export function lookupEntry(name: string): GBookEntry|undefined {
         return entries.find(entry => entry.name === name);
     }
@@ -59,6 +63,7 @@ export namespace BOOKS {
     export function obtainBook(name: string) {
         books.set(name, 'acquired');
         PLAYER.calcMaxFaith();
+        PLAYER.giveGrace('major');
     }
 
     export function setBookEnabled(name: string, enabled: boolean) {

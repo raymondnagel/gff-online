@@ -1,7 +1,7 @@
 import 'phaser';
 import { GArea } from '../areas/GArea';
 import { DIRECTION } from '../direction';
-import { GRect, GPerson, GSpirit, GKeyList, BoundedGameObject, GPoint2D, CardDir, Dir9, GInteractable } from '../types';
+import { GRect, GPerson, GSpirit, GKeyList, BoundedGameObject, GPoint2D, CardDir, Dir9, GInteractable, GGlossaryEntry, GItem, NINE } from '../types';
 import { RANDOM } from '../random';
 import { GPlayerSprite } from '../objects/chars/GPlayerSprite';
 import { GPersonSprite } from '../objects/chars/GPersonSprite';
@@ -35,6 +35,12 @@ import { GRestGoal } from '../goals/GRestGoal';
 import { GCutscene } from '../cutscenes/GCutscene';
 import { GStreetPreachCutscene } from '../cutscenes/GStreetPreachCutscene';
 import { GTravelAgentSprite } from '../objects/chars/GTravelAgentSprite';
+import { GRaiseStandardCutscene } from '../cutscenes/GRaiseStandardCutscene';
+import { EFFECTS } from '../effects';
+import { GPrayCutscene } from '../cutscenes/GPrayCutscene';
+import { STATS } from '../stats';
+import { FRUITS } from '../fruits';
+import { GQuickTravelCutscene } from '../cutscenes/GQuickTravelCutscene';
 
 const MOUSE_UI_BUTTON: string = 'MOUSE_UI_BUTTON';
 
@@ -120,7 +126,7 @@ export class GAdventureContent extends GContentScene {
         this.setInputMode(INPUT_ADVENTURING);
 
         // Set vision:
-        this.setVision(true);
+        this.setVisionWithCheck();
 
         // Intro:
         if (GFF.introInit) {
@@ -170,8 +176,19 @@ export class GAdventureContent extends GContentScene {
                     this.getCurrentRoom()?.logRoomInfo();
                     break;
                 case 'p':
-                    GFF.AdventureUI.pauseAdventure();
-                    this.setInputMode(INPUT_PAUSE);
+                    if (this.canPray()) {
+                        this.pray();
+                    }
+                    break;
+                case 't':
+                    if (this.canRaiseStandard()) {
+                        this.raiseStandard();
+                    }
+                    break;
+                case 'v':
+                    if (this.canStreetPreach()) {
+                        this.streetPreach();
+                    }
                     break;
                 // These will be polled; just ignore:
                 case 'ArrowUp':
@@ -497,6 +514,15 @@ export class GAdventureContent extends GContentScene {
         (this.bottomBound.body as Phaser.Physics.Arcade.Body).setEnable(enabled);
     }
 
+    public setVisionWithCheck() {
+        const room: GRoom = this.getCurrentRoom() as GRoom;
+        if (room.isSafe()) {
+            this.setVision(true);
+        } else {
+            this.setVision(false, COMMANDMENTS.getCount());
+        }
+    }
+
     public setVision(full: boolean, commandments: number = 10) {
         full = full || commandments === 10 || GFF.debugMode;
         this.visionRadiusImage.setVisible(!full);
@@ -559,7 +585,7 @@ export class GAdventureContent extends GContentScene {
     }
 
     public startAreaBgMusic() {
-        this.getSound().fadeInMusic(this.currentArea.getBgMusic(), 500);
+        this.getSound().fadeInMusic(500, this.currentArea.getBgMusic());
     }
 
     public setCurrentRoom(roomX: number, roomY: number, area?: GArea) {
@@ -606,46 +632,81 @@ export class GAdventureContent extends GContentScene {
         GFF.showNametags = false;
         this.setInputMode(INPUT_DISABLED);
         this.stopChars();
-        // Remove the imp spawn event if there is one:
         this.impSpawnTimeEvent?.remove();
         this.fadeOut(500, undefined, () => {
             this.setCurrentRoom(roomX, roomY, area);
             this.spawnPeopleForRoom();
+            this.setVisionWithCheck();
 
             if (this.getCurrentRoom()?.isSafe()) {
                 // Safe rooms:
-                this.setVision(true);
 
             } else {
                 // Non-safe rooms:
-                this.setVision(false, COMMANDMENTS.getCount());
+                this.doImpSpawns();
 
                 // 33% chance to spawn a common chest:
                 if (RANDOM.randPct() <= .33) {
                     this.spawnCommonChest();
-                }
-
-                if (!GFF.impRepellant) {
-                    // Spawn an imp in 1-5 seconds, with 50% chance for up to 2 more:
-                    this.impSpawnTimeEvent = this.time.delayedCall(RANDOM.randInt(1000, 5000), () => {
-                        this.addRandomImp();
-                        if (RANDOM.flipCoin()) {
-                            this.impSpawnTimeEvent = this.time.delayedCall(RANDOM.randInt(1000, 5000), () => {
-                                this.addRandomImp();
-                                if (RANDOM.flipCoin()) {
-                                    this.impSpawnTimeEvent = this.time.delayedCall(RANDOM.randInt(1000, 5000), () => {
-                                        this.addRandomImp();
-                                    });
-                                }
-                            });
-                        }
-                    });
                 }
             }
             this.fadeIn(500, undefined, meanwhile, () => {
                 this.revertInputMode();
             });
         });
+    }
+
+    /**
+     * A simpler transition, without fading or input mode change, to be called during cutscenes.
+     * The cutscene will handle any fading or input mode changes.
+     */
+    public transitionRoomDuringCutscene(room: GRoom) {
+        GFF.showNametags = false;
+        this.impSpawnTimeEvent?.remove();
+        this.setCurrentRoom(room.getX(), room.getY(), room.getArea());
+        this.spawnPeopleForRoom();
+        this.setVisionWithCheck();
+
+        if (this.getCurrentRoom()?.isSafe()) {
+            // Safe rooms:
+        } else {
+            // Non-safe rooms:
+            this.doImpSpawns();
+
+            // 33% chance to spawn a common chest:
+            if (RANDOM.randPct() <= .33) {
+                this.spawnCommonChest();
+            }
+        }
+    }
+
+    public doImpSpawns() {
+        // Check whether we can spawn an imp EACH time one can spawn, before AND after the time event is created;
+        // we don't want any imps to spawn after repellant was used, or after the room was made safe (i.e. standard raised).
+        if (this.canSpawnImp()) {
+            // Spawn an imp in 1-5 seconds, with 50% chance for up to 2 more:
+            this.impSpawnTimeEvent = this.time.delayedCall(RANDOM.randInt(1000, 5000), () => {
+                if (this.canSpawnImp()) {
+                    this.addRandomImp();
+                    if (RANDOM.flipCoin()) {
+                        this.impSpawnTimeEvent = this.time.delayedCall(RANDOM.randInt(1000, 5000), () => {
+                            if (this.canSpawnImp()) {
+                                this.addRandomImp();
+                                if (RANDOM.flipCoin()) {
+                                    this.impSpawnTimeEvent = this.time.delayedCall(RANDOM.randInt(1000, 5000), () => {
+                                        this.addRandomImp();
+                                    });
+                                }
+                            }
+                        });
+                    }
+                }
+            });
+        }
+    }
+
+    public canSpawnImp(): boolean {
+        return !GFF.impRepellant && !this.getCurrentRoom()?.isSafe();
     }
 
     private resetUniqueRoomsFlags() {
@@ -940,6 +1001,11 @@ export class GAdventureContent extends GContentScene {
         }
     }
 
+    public getTravelAgent(): GPersonSprite|null {
+        const persons: GPersonSprite[] = this.personsGroup.getChildren() as GPersonSprite[];
+        return persons.find(p => p instanceof GTravelAgentSprite) ?? null;
+    }
+
     public addImp(impSprite: GImpSprite) {
         this.impsGroup.add(impSprite);
     }
@@ -952,6 +1018,31 @@ export class GAdventureContent extends GContentScene {
         this.touchablesGroup.add(touchable);
     }
 
+    public getOccupiedPhysicalSpaces(): GRect[] {
+        const occupiedSpaces: GRect[] = [];
+        this.obstaclesGroup.getChildren().forEach((obstacle: Phaser.GameObjects.GameObject) => {
+            if (obstacle instanceof GObstacleStatic || obstacle instanceof GObstacleSprite) {
+                occupiedSpaces.push(obstacle.getBody());
+            }
+        });
+        this.personsGroup.getChildren().forEach((person: Phaser.GameObjects.GameObject) => {
+            if (person instanceof GPersonSprite) {
+                occupiedSpaces.push(person.getBody());
+            }
+        });
+        this.impsGroup.getChildren().forEach((imp: Phaser.GameObjects.GameObject) => {
+            if (imp instanceof GImpSprite) {
+                occupiedSpaces.push(imp.getBody());
+            }
+        });
+        this.touchablesGroup.getChildren().forEach((touchable: Phaser.GameObjects.GameObject) => {
+            if (touchable instanceof GTouchable) {
+                occupiedSpaces.push(touchable.getBody());
+            }
+        });
+        return occupiedSpaces;
+    }
+
     public encounterEnemy(enemy: GImpSprite) {
         if (PLAYER.getFaith() > 0 && !enemy.isImmobile()) {
             this.stopChars();
@@ -960,8 +1051,20 @@ export class GAdventureContent extends GContentScene {
             this.player.walkDirection(Dir9.NONE);
             this.getSound().stopMusic();
             ENEMY.init(enemy, enemy.getSpirit(), 'spirit_circle', 'battle_spirit');
+            STATS.changeInt('Battles', 1);
             GFF.AdventureUI.transitionToBattle(this.player.getCenter(), (this.getCurrentRoom() as GRoom).getEncounterBg());
         }
+    }
+
+    public destroyImp(imp: GImpSprite) {
+        this.impsGroup.remove(imp);
+        imp.destroy();
+    }
+
+    public banishImp(imp: GImpSprite) {
+        const effectSprite: Phaser.Physics.Arcade.Sprite = EFFECTS.doEffect('silent_flash', GFF.AdventureContent, imp.x, imp.y);
+        effectSprite.setDepth(DEPTH.SPECIAL_EFFECT);
+        this.destroyImp(imp);
     }
 
     public resumeAfterBattlePreFadeIn(victory: boolean) {
@@ -969,10 +1072,11 @@ export class GAdventureContent extends GContentScene {
         GFF.showNametags = false;
         ENEMY.levelUp();
         if (victory) {
-            this.impsGroup.remove(ENEMY.getSprite());
-            ENEMY.getSprite().destroy();
+            STATS.changeInt('Victories', 1);
+            this.destroyImp(ENEMY.getSprite());
         } else {
             // It wasn't a victory... faith is probably at 0
+            STATS.changeInt('Defeats', 1);
             this.updateFidelityMode();
         }
     }
@@ -981,6 +1085,7 @@ export class GAdventureContent extends GContentScene {
         this.time.delayedCall(500, () => {
             if (victory) {
                 PLAYER.addXp(ENEMY.getXpValue());
+                PLAYER.changeGrace(ENEMY.getSpirit().level);
                 if (PLAYER.canLevelUp()) {
                     this.levelUp();
                 } else {
@@ -989,6 +1094,7 @@ export class GAdventureContent extends GContentScene {
                     this.startChars();
                 }
             } else {
+                PLAYER.setGrace(0);
                 GPopup.createSimplePopup('While you have no faith, enemies will not attack you; however, you cannot open treasure chests or obtain new items.\n\nYou must seek out other believers who can restore you in the spirit of meekness.\n\nBe not faithless, but believing!', 'Where is your faith?').onClose(() => {
                     this.setInputMode(INPUT_ADVENTURING);
                     this.startChars();
@@ -998,21 +1104,50 @@ export class GAdventureContent extends GContentScene {
     }
 
     public levelUp() {
-        this.getSound().playSound('hallelujah').once('complete', () => {this.getSound().playSound('hallelujah')});
+        this.stopChars();
+        this.getSound().playSound('hallelujah');
         this.fadeOut(1000, 0xffffff, () => {
             PLAYER.levelUp();
             this.fadeIn(1000, 0xffffff, undefined, () => {
                 GPopup.createSimplePopup(`You are now Level ${PLAYER.getLevel()}!`, 'Level Up!').onClose(() => {
+                    // Continue to level up if possible; this is unlikely, but possible if a huge amount of XP was gained:
                     if (PLAYER.canLevelUp()) {
                         this.levelUp();
                     } else {
                         this.startAreaBgMusic();
                         this.setInputMode(INPUT_ADVENTURING);
                         this.startChars();
+                        // If the player has queued fruit, gain it now:
+                        this.gainQueuedFruit();
                     }
                 });
             });
         });
+    }
+
+    private gainQueuedFruit() {
+        // If the player has queued fruit, gain it now:
+        const queuedFruit: NINE|undefined = FRUITS.dequeueFruit();
+        if (queuedFruit !== undefined) {
+            this.stopChars();
+            const fruitEntry: GGlossaryEntry = FRUITS.lookupEntry(queuedFruit);
+            const fruitName: string = fruitEntry.name;
+            GFF.AdventureContent.getSound().playSound('ahh');
+            GFF.AdventureContent.fadeOut(800, COLOR.WHITE.num(), () => {
+                GFF.AdventureContent.fadeIn(800, COLOR.WHITE.num(), undefined, () => {
+                    GFF.AdventureContent.obtainItemWithoutChest({
+                        name: fruitName,
+                        type: 'item',
+                        onCollect: () => {
+                            FRUITS.obtainFruit(queuedFruit);
+                            PLAYER.giveGrace('major');
+                        }
+                    }, () => {
+                        this.startChars();
+                    });
+                });
+            });
+        }
     }
 
     public getInteractionTarget(): GInteractable|null {
@@ -1058,7 +1193,7 @@ export class GAdventureContent extends GContentScene {
         this.fadeOut(500, COLOR.BLACK.num(), () => {
             PHYSICS.setPositionRelativeTo(this.player, this.player, 0, 24);
             this.player.walkDirection(Dir9.S);
-            this.getSound().fadeInMusic(this.currentArea.getBgMusic(), 500);
+            this.getSound().fadeInMusic(500, this.currentArea.getBgMusic());
             this.fadeIn(500, COLOR.BLACK.num(), () => {
                 this.startChars();
                 this.setInputMode(INPUT_ADVENTURING);
@@ -1066,11 +1201,24 @@ export class GAdventureContent extends GContentScene {
         });
     }
 
+    public canPray(): boolean {
+        // Can only pray under the following conditions:
+         return (
+            PLAYER.getFaith() > 0 &&
+            PLAYER.getGrace() > 0
+        );
+    }
+
+    public pray() {
+        if (this.canPray()) {
+            new GPrayCutscene().play();
+        }
+    }
+
     public canStreetPreach(): boolean {
         const room: GRoom = this.getCurrentRoom() as GRoom;
         // Can only preach a sermon under the following conditions:
         return (
-            this.getInputMode() === INPUT_ADVENTURING &&
             room.getChurch() === null &&
             room.getArea() === AREA.WORLD_AREA &&
             this.getPersons().length > 0 &&
@@ -1087,6 +1235,47 @@ export class GAdventureContent extends GContentScene {
             });
             new GStreetPreachCutscene().play();
         }
+    }
+
+    public canRaiseStandard(): boolean {
+        const room: GRoom = this.getCurrentRoom() as GRoom;
+        // Can only raise a standard under the following conditions:
+        return (
+            (!room.isSafe()) &&
+            room.getArea() === AREA.WORLD_AREA &&
+            PLAYER.getFaith() > 0 &&
+            PLAYER.getStandards() > 0
+        );
+    }
+
+    public raiseStandard() {
+        if (this.canRaiseStandard()) {
+            new GRaiseStandardCutscene().play();
+        }
+    }
+
+    public quickTravel(destination: GTown) {
+        new GQuickTravelCutscene(destination).play();
+    }
+
+    public obtainItemWithoutChest(item: GItem, postFunction: Function = () => {}) {
+        item.onCollect();
+        GPopup.createItemPopup(item.name).onClose(postFunction);
+    }
+
+    public saveGame() {
+        /**
+         * TODO: Implement game saving.
+         * This is going to take a LOT of work. We'll need to save:
+         * - the entire world, since it is procedurally generated
+         * - all the procedurally generated people
+         * - player state (level, experience, faith, grace, items, etc.)
+         * - any special event flags
+         * - all recorded statistics
+         * I'll delay this for now, since most parts of the game are still
+         * subject to change, and I don't want to have to rework the save
+         * system every time I change something.
+         */
     }
 
     /**

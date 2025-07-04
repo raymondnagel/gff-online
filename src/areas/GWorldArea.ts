@@ -253,7 +253,8 @@ export class GWorldArea extends GArea {
         for (let t: number = 0; t < TOWN.TOWN_COUNT; t++) {
             const town: GTown = new GTown();
             TOWN.addTown(town);
-            const church: GChurch = new GChurch(town);
+            const fruitNum: number|null = t === 0 ? null : t;
+            const church: GChurch = new GChurch(town, fruitNum);
             const interior: GChurchArea = AREA.CHURCH_AREAS[t];
             church.setInteriorArea(interior);
             CHURCH.addChurch(church);
@@ -337,9 +338,13 @@ export class GWorldArea extends GArea {
 
             // Pick a random room for the travel agency:
             const agencyRoom: GRoom = RANDOM.randElement(otherRooms);
+            towns[t].setTravelAgencyLocation(agencyRoom);
             agencyRoom.setTravelLocation();
             GFF.genLog(`Created travel agency in: ${towns[t].getName()}`);
         }
+
+        // Schedule flights between towns:
+        TOWN.scheduleFlights(TOWN.getTowns());
 
         // Plan streets for each town room:
         this.createTownStructures();

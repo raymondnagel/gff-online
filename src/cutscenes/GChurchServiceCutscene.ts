@@ -5,6 +5,7 @@ import { GCharSprite } from "../objects/chars/GCharSprite";
 import { GBuildingExit } from "../objects/touchables/GBuildingExit";
 import { PLAYER } from "../player";
 import { RANDOM } from "../random";
+import { STATS } from "../stats";
 import { CLabeledChar, Dir9, GPoint2D } from "../types";
 import { GCutscene } from "./GCutscene";
 
@@ -31,7 +32,7 @@ export class GChurchServiceCutscene extends GCutscene {
     private pews: PewSeat[][] = [];
 
     constructor(church: GChurch) {
-        super('church service cutscene');
+        super('church-service cutscene');
         this.church = church;
         this.createPewSeats();
     }
@@ -290,6 +291,7 @@ export class GChurchServiceCutscene extends GCutscene {
     }
 
     protected finalize(): void {
+        STATS.changeInt('ServicesAttended', 1);
         GFF.AdventureContent.reloadCurrentRoom(() => {
             // Renable the exit and bottom bound:
             this.getExit().getBody().setEnable(true);
@@ -297,6 +299,7 @@ export class GChurchServiceCutscene extends GCutscene {
             // Position the player at the center of the church:
             PLAYER.getSprite().centerPhysically({x: CENTER_X, y: CENTER_Y});
             PLAYER.getSprite().faceDirection(Dir9.S);
+            PLAYER.giveGrace('minor');
         });
     }
 }

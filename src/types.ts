@@ -2,6 +2,17 @@ import { GRoom } from "./GRoom";
 import { GTown } from "./GTown";
 import { GCharSprite } from "./objects/chars/GCharSprite";
 
+export type ONE = 1;
+export type TWO = ONE|2;
+export type THREE = TWO|3;
+export type FOUR = THREE|4;
+export type FIVE = FOUR|5;
+export type SIX = FIVE|6;
+export type SEVEN = SIX|7;
+export type EIGHT = SEVEN|8;
+export type NINE = EIGHT|9;
+export type TEN = NINE|10;
+
 export type GActorEvent = {
     eventId: string,
     actor: string,
@@ -30,7 +41,7 @@ export type GCutsceneEvent = GActorEvent | GConditionEvent | GGeneralEvent;
 // Packages a sprite animation together with a sound, to be executed once simultaneously:
 export type SpriteEffect = {
     spriteConfig: Phaser.Types.Animations.Animation,
-    soundKey: string,
+    soundKey: string|null,
     hideOnFinish: boolean
 }
 
@@ -61,6 +72,8 @@ export type GDifficulty = {
     enemyBaseResist: number;
     enemyResistPerLevel: number;
     enemySpeed: number;
+    minorGraceIncrease: number;
+    majorGraceIncrease: number;
 };
 
 // Represents an attack that the enemy can perform:
@@ -140,7 +153,7 @@ export interface GPerson {
     preferredName: string|null; // Name used in conversations
     spriteKeyPrefix: string; // Determines appearance independently of name
     gender: GGender; // Male and female created he them
-    voice: 1|2|3|4|5; // Random voice tone
+    voice: FIVE; // Random voice tone
     faith: number; // Converted = 100+
     familiarity: number; // +1 for each conversation; +1 for each small-talk
     nameLevel: 0|1|2; // 0 = unknown; 1 = formal name; 2 = informal name
@@ -149,6 +162,7 @@ export interface GPerson {
     bio1: string|null; // Bio part 1: intro, town, background
     bio2: string|null; // Bio part 2: grace, conversion, current
     favoriteBook: string; // Favorite book
+    conversations: number; // Number of conversations with this person
 }
 
 // Represents a unique enemy displayed as a GImpSprite
@@ -237,7 +251,7 @@ export type GCityBlock = {
  */
 
 // Defines the common contract for Speech, Thought, and Choice bubbles
-export interface GBubble {
+export interface GBubble extends Phaser.GameObjects.Container {
     update(): void;
     isComplete(): boolean;
     destroy(): void;
@@ -246,6 +260,7 @@ export interface GBubble {
 // Defines an option for 'choice':
 export type COption = {
     choiceText: string;
+    condFunc?: string;
     resultId: string;
 };
 
@@ -354,4 +369,10 @@ export type LeveledDynamicBlurb = {
     variants: string[];
 };
 
-export type ConversationType = 'sermon'|'streetpreach'|'default';
+/**
+ * For a 'sermon', faith is restored for every blurb spoken by the preacher.
+ * For a 'streetpreach', a preach-sonic effect is shown for every blurb spoken by the player.
+ * For a 'playerpray', blurbs are shown on top of everything else, since the screen will be faded out (as though his eyes are closed).
+ * For a 'default' conversation, there are no special effects.
+ */
+export type ConversationType = 'sermon'|'streetpreach'|'playerpray'|'default';

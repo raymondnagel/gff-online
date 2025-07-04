@@ -26,6 +26,8 @@ export namespace PEOPLE {
     export function getFormalName(person: GPerson): string {
         if (person.spriteKeyPrefix.includes('_cop_')) {
             return 'Officer ' + person.lastName;
+        } else if (person.spriteKeyPrefix.includes('_soldier_')) {
+            return RANDOM.randElement(['Private ', 'Corporal ', 'Sergeant ', 'Lieutenant ', 'Captain ', 'Major ']) + person.lastName;
         }
         return (
             person.gender === 'm'
@@ -45,6 +47,13 @@ export namespace PEOPLE {
             person.gender === 'm'
             ? 'man'
             : 'woman'
+        );
+    }
+    export function getSexFull(person: GPerson): string {
+        return (
+            person.gender === 'm'
+            ? 'male'
+            : 'female'
         );
     }
     export function getPoliteType(person: GPerson): string {
@@ -84,6 +93,11 @@ export namespace PEOPLE {
     }
     export function getPreferredName(person: GPerson): string {
             return person.preferredName ?? person.firstName + ' ' + person.lastName;
+    }
+    export function getNameForProfile(person: GPerson): string {
+        return person.nameLevel > 0 && person.familiarity > 0
+            ? `${person.lastName}, ${person.firstName}`
+            : '???';
     }
 
     // Returns what "speaker" would say to "hearer" about "other"

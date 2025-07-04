@@ -329,4 +329,13 @@ export namespace DIRECTION {
 
         return Dir9.NONE; // Default case, shouldn't normally hit here
     }
+
+    export function getPointDistanceFrom(origin: GPoint2D, dir: Dir9, distance: number): GPoint2D {
+        const xInc: number = getHorzInc(dir) * distance;
+        const yInc: number = getVertInc(dir) * distance;
+        return {
+            x: origin.x + xInc,
+            y: origin.y + yInc
+        };
+    }
 }

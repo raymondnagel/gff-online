@@ -14,6 +14,10 @@ export namespace RANDOM {
         return Math.floor(Math.random() * (maxFloored - minCeiled + 1) + minCeiled);
     }
 
+    export function randFloat(min: number, max: number) {
+        return Math.random() * (max - min) + min;
+    }
+
     export function randElement(array: any[]): any {
         const index = Math.floor(Math.random() * array.length);
         return array[index];

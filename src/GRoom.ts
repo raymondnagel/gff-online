@@ -23,6 +23,7 @@ import { GChurchRegion } from "./regions/GChurchRegion";
 import { GWallSouthWithDoor } from "./objects/obstacles/walls/GWallSouthWithDoor";
 import { GWallSouth } from "./objects/obstacles/walls/GWallSouth";
 import { GInsideRegion } from "./regions/GInsideRegion";
+import { STATS } from "./stats";
 
 const WALL_GUARD_THICK: number = 10;
 const WALL_CTRS: number[] = [
@@ -154,10 +155,16 @@ export class GRoom {
     }
 
     public discover() {
+        if (!this.discovered) {
+            STATS.changeInt('RoomsExplored', 1);
+        }
         this.discovered = true;
     }
 
     public conceal() {
+        if (this.discovered) {
+            STATS.changeInt('RoomsExplored', -1);
+        }
         this.discovered = false;
     }
 
@@ -319,7 +326,7 @@ export class GRoom {
     }
 
     public isSafe(): boolean {
-        if (this.church || this.area.isSafe()) {
+        if (this.church || this.area.isSafe() || this.hasPlanKey('standard')) {
             return true;
         } else {
             return false;
@@ -556,8 +563,10 @@ export class GRoom {
         GFF.AdventureContent.addObstacle(guard);
     }
 
-    public addSceneryPlan(key: string, x: number, y: number) {
-        this.plans.push({key, x, y});
+    public addSceneryPlan(key: string, x: number, y: number): GSceneryPlan {
+        const plan: GSceneryPlan = { key, x, y };
+        this.plans.push(plan);
+        return plan;
     }
 
     public planPartialWallScenery(sceneryDefs: GSceneryDef[]) {
@@ -759,11 +768,35 @@ export class GRoom {
         return RANDOM.randElement(results);
     }
 
+    public planSceneryDuringGameplay(sceneryDef: GSceneryDef, x: number, y: number, originX: number = 0, originY: number = 0): GSceneryPlan|null {
+        // If the scenery can be placed at the given location, add it and return the plan.
+        // Unlike normal planning, we don't have a list of zones other planned objects;
+        // we'll need to check against real, physical objects in the scene.
+        const objects: GRect[] = GFF.AdventureContent.getOccupiedPhysicalSpaces();
+        const object: GRect = {x: sceneryDef.body.x + x, y: sceneryDef.body.y + y, width: sceneryDef.body.width, height: sceneryDef.body.height};
+        for (let otherObject of objects) {
+            if (!(
+                    object.x + object.width <= otherObject.x ||
+                    object.x >= otherObject.x + otherObject.width ||
+                    object.y + object.height <= otherObject.y ||
+                    object.y >= otherObject.y + otherObject.height
+            )) {
+                console.log(`Scenery ${sceneryDef.key} at ${x},${y} intersects with object: ${otherObject.x},${otherObject.y} ${otherObject.width}x${otherObject.height}`);
+                return null;
+            }
+        }
+        // if (this.intersectsAny(sceneryDef.body, objects)) {
+        //     return null;
+        // }
+        // Now that we know the space is clear, we can plan it:
+        return this.planPositionedScenery(sceneryDef, x, y, originX, originY);
+    }
+
     // Explicitly plan an object at a specific position, regardless of any zones or objects
-    public planPositionedScenery(sceneryDef: GSceneryDef, x: number, y: number, originX: number = 0, originY: number = 0) {
+    public planPositionedScenery(sceneryDef: GSceneryDef, x: number, y: number, originX: number = 0, originY: number = 0): GSceneryPlan {
         const pX: number = x - (sceneryDef.body.width * originX) - sceneryDef.body.x;
         const pY: number = y - (sceneryDef.body.height * originY) - sceneryDef.body.y;
-        this.addSceneryPlan(sceneryDef.key, pX, pY);
+        return this.addSceneryPlan(sceneryDef.key, pX, pY);
     }
 
     // If chance is met, add min-max of scenery type

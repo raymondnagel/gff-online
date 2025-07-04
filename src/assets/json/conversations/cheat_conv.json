@@ -5,9 +5,13 @@
     "choice": [
       { "choiceText": "Restore my faith!", "resultId": "restoreFaith"},
       { "choiceText": "Destroy my faith!", "resultId": "destroyFaith"},
+      { "choiceText": "I need grace!", "resultId": "restoreGrace"},
+      { "choiceText": "I need experience!", "resultId": "giveExp"},
       { "choiceText": "Give me seeds!", "resultId": "giveSeeds"},
       { "choiceText": "Give me sermons!", "resultId": "giveSermons"},
+      { "choiceText": "Give me standards!", "resultId": "giveStandards"},
       { "choiceText": "Make everyone chatty!", "resultId": "chatty"},
+      { "choiceText": "Make me an husbandman!", "resultId": "queueFruit"},
       { "choiceText": "Spray on some Imp Repellant®! ", "resultId": "impRepellant"},
       { "choiceText": "Separate the wheat from the chaff!", "resultId": "divide"},
       { "choiceText": "Show me everything!", "resultId": "debugMode"},
@@ -27,6 +31,18 @@
     "next": "grant"
   },
   {
+    "id": "restoreGrace",
+    "speaker": "player",
+    "preCmd": "cheatGrace()",
+    "next": "grant"
+  },
+  {
+    "id": "giveExp",
+    "speaker": "player",
+    "preCmd": "cheatExp()",
+    "next": "grant"
+  },
+  {
     "id": "giveSeeds",
     "speaker": "player",
     "preCmd": "cheatSeeds()",
@@ -39,9 +55,21 @@
     "next": "grant"
   },
   {
+    "id": "giveStandards",
+    "speaker": "player",
+    "preCmd": "cheatStandards()",
+    "next": "grant"
+  },
+  {
     "id": "chatty",
     "speaker": "player",
     "preCmd": "cheatChatty()",
+    "next": "grant"
+  },
+  {
+    "id": "queueFruit",
+    "speaker": "player",
+    "preCmd": "cheatFruit()",
     "next": "grant"
   },
   {

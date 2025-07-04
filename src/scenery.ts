@@ -135,6 +135,7 @@ export namespace SCENERY {
             { key: 'snowy_pit', type: 'static', body: {x: 0, y: 0, width: 154, height: 116} },
             { key: 'snowy_tree_stump', type: 'static', body: {x: 0, y: 39, width: 90, height: 31} },
             { key: 'spines_rocks', type: 'static', body: {x: 0, y: 38, width: 70, height: 14} },
+            { key: 'standard', type: 'static', body: {x: 27, y: 110, width: 8, height: 10} },
             { key: 'tall_cactus', type: 'static', body: {x: 46, y: 195, width: 32, height: 24} },
             { key: 'tree_stump', type: 'static', body: {x: 0, y: 20, width: 115, height: 36} },
             { key: 'willow_tree', type: 'static', body: {x: 44, y: 209, width: 131, height: 21} },
@@ -209,11 +210,11 @@ export namespace SCENERY {
         return SCENERY_DEFS.get(key) as GSceneryDef;
     }
 
-    export function create(plan: GSceneryPlan, decorRenderer: Phaser.GameObjects.RenderTexture) {
+    export function create(plan: GSceneryPlan, decorRenderer?: Phaser.GameObjects.RenderTexture) {
         const sceneryDef: GSceneryDef = def(plan.key);
         switch (sceneryDef.type) {
             case 'bg_decor':
-                new GBackgroundDecoration(plan.key, plan.x, plan.y, decorRenderer);
+                new GBackgroundDecoration(plan.key, plan.x, plan.y, decorRenderer as Phaser.GameObjects.RenderTexture);
                 break;
             case 'fg_decor':
                 new GForegroundDecoration(sceneryDef, plan.x, plan.y);

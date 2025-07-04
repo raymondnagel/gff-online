@@ -1,48 +1,54 @@
+import { GQueue } from "./data/GQueue";
+import { GChurch } from "./GChurch";
 import { GLOSSARY } from "./glossary";
 import { PLAYER } from "./player";
-import { RANDOM } from "./random";
-import { GGlossaryEntry } from "./types";
-
-type Nine = 1|2|3|4|5|6|7|8|9;
+import { GGlossaryEntry, NINE } from "./types";
 
 export namespace FRUITS {
 
-    // List of fruits left to find. Next fruit is popped off the list.
-    let fruitsToFind: Nine[] = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+    const fruitsQueue: GQueue<NINE> = new GQueue<NINE>();
 
     let fruits: boolean[] = [
         false, false, false, false, false, false, false, false, false, false
     ];
 
-    export function initFruits() {
-        shuffleFruitsToFind();
-    }
-
-    export function lookupEntry(num: Nine): GGlossaryEntry {
+    export function lookupEntry(num: NINE): GGlossaryEntry {
         return GLOSSARY.lookupEntry(`fruit_${num}`) as GGlossaryEntry;
     }
 
-    export function setFruit(num: Nine, has: boolean) {
-        fruits[num - 1] = has;
+    export function obtainFruit(num: NINE) {
+        fruits[num - 1] = true;
         PLAYER.calcMaxFaith();
+        PLAYER.giveGrace('major');
     }
 
-    export function hasFruit(index: number): boolean {
-        return fruits[index];
+    export function hasFruit(num: NINE): boolean {
+        return fruits[num - 1];
     }
 
     export function getCount(): number {
         return fruits.reduce((count, value) => count + (value ? 1 : 0), 0);
     }
 
-    export function shuffleFruitsToFind() {
-        RANDOM.shuffle(fruitsToFind);
+    export function hasFruitOfChurch(town: GChurch): boolean {
+        const fruitNum = town.getFruitNum();
+        if (fruitNum === null) {
+            return true;
+        }
+        return hasFruit(fruitNum as NINE);
     }
 
-    export function getNextFruitToFind(): string|undefined {
-        const fruitNum: Nine|undefined = fruitsToFind.pop();
-        return fruitNum === undefined
-            ? undefined
-            : `fruit_${fruitNum}`;
+    export function isFruitQueued(num: NINE): boolean {
+        return fruitsQueue.contains(num)
+    }
+
+    export function queueFruit(num: NINE): void {
+        if (!isFruitQueued(num)) {
+            fruitsQueue.enqueue(num);
+        }
+    }
+
+    export function dequeueFruit(): NINE|undefined {
+        return fruitsQueue.dequeue();
     }
 }

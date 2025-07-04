@@ -1,0 +1,8 @@
+[
+  {
+    "id": "welcome",
+    "speaker": "other",
+    "hearer": "player",
+    "textFunc": "arrivalWelcome()"
+  }
+]

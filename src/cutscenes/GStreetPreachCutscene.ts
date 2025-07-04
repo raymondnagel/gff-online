@@ -6,6 +6,7 @@ import { GFF } from "../main";
 import { GPersonSprite } from "../objects/chars/GPersonSprite";
 import { PLAYER } from "../player";
 import { RANDOM } from "../random";
+import { STATS } from "../stats";
 import { CLabeledChar, Dir9, GPerson } from "../types";
 import { GCutscene } from "./GCutscene";
 
@@ -36,6 +37,9 @@ export class GStreetPreachCutscene extends GCutscene {
     }
 
     protected initialize(): void {
+        // Stop characters, or the player might slide while trying to pull out the bullhorn:
+        GFF.AdventureContent.stopChars();
+
         const sinners: GPersonSprite[] = GFF.AdventureContent.getPersons();
 
         // Add all sinners as generic actors:
@@ -126,6 +130,8 @@ export class GStreetPreachCutscene extends GCutscene {
 
         PLAYER.getSprite().showFloatingText('-1 sermon');
         PLAYER.changeSermons(-1);
+        PLAYER.giveGrace('major');
+        STATS.changeInt('SermonsPreached', 1);
         GFF.AdventureContent.startChars();
     }
 }

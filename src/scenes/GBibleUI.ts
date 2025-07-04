@@ -94,7 +94,7 @@ export class GBibleUI extends GUIScene {
     public create(): void {
         super.create();
         this.backgroundImage = this.add.image(0, 0, 'rock_bg').setOrigin(0, 0);
-        this.add.text(512, 20, 'Bible', {
+        this.add.text(512, 20, 'The Holy Bible', {
             color: COLOR.GREY_1.str(),
             fontFamily: 'dyonisius',
             fontSize: '48px'

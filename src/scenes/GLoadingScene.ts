@@ -8,6 +8,8 @@ import { BOOKS } from '../books';
 import { COMMANDMENTS } from '../commandments';
 import { ARMORS } from '../armors';
 import { EFFECTS } from '../effects';
+import { PLAYER } from '../player';
+import { STATS } from '../stats';
 
 const LOAD_COLOR: number     = 0xffffff;
 const PROGRESS_COLOR: number = 0x00c220;
@@ -114,16 +116,22 @@ export class GLoadingScene extends GBaseScene {
                 BOOKS.shuffleBooksToFind();
 
                 // Grant Sword of the Spirit:
-                ARMORS.setArmor(1, true);
+                ARMORS.obtainArmor(1);
 
                 // Init Commandments:
                 COMMANDMENTS.initCommandments();
+
+                // Initialize player:
+                PLAYER.init();
 
                 // Init scenery definitions:
                 SCENERY.initSceneryDefs();
 
                 // Create the special effects:
                 EFFECTS.initSpriteEffects();
+
+                // Start the game time:
+                STATS.startTime();
 
                 // Create the people:
                 GPersonSprite.createAllPeople();

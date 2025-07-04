@@ -24,7 +24,7 @@
     "id": "agentInitialIntro",
     "speaker": "other",
     "hearer": "player",
-    "text": "I see that you have an unlimited travel pass with us. Currently we have only one flight available; but there will be more in the future, so check back later.",
+    "text": "Ah... I see that you have an unlimited travel pass with us. We'll have more available later, but here's a list of our current flights.",
     "next": "flightMenu"
   },
   {
@@ -46,19 +46,70 @@
     "id": "flightMenu",
     "speaker": "player",
     "hearer": "other",
-    "choice": [
-      { "choiceText": "[flight option 1]", "resultId": "notAvailableYet"},
-      { "choiceText": "[flight option 2]", "resultId": "notAvailableYet"},
-      { "choiceText": "[flight option 3]", "resultId": "notAvailableYet"},
-      { "choiceText": "I'll stay here for now.", "resultId": "endConversation"}
-    ]
+    "choice": []
   },
   {
-    "id": "notAvailableYet",
+    "id": "flight_1",
     "speaker": "other",
     "hearer": "player",
-    "text": "Sorry, my mistake! No flights are available yet. Please check back in another update!",
-    "next": "endConversation"
+    "text": "Enjoy your trip, HEARER_FORMAL. Thank you for choosing Spirit Travel.",
+    "postCmd": "takeFlight(1)"
+  },
+  {
+    "id": "flight_2",
+    "speaker": "other",
+    "hearer": "player",
+    "text": "Enjoy your trip, HEARER_FORMAL. Thank you for choosing Spirit Travel.",
+    "postCmd": "takeFlight(2)"
+  },
+  {
+    "id": "flight_3",
+    "speaker": "other",
+    "hearer": "player",
+    "text": "Enjoy your trip, HEARER_FORMAL. Thank you for choosing Spirit Travel.",
+    "postCmd": "takeFlight(3)"
+  },
+  {
+    "id": "flight_4",
+    "speaker": "other",
+    "hearer": "player",
+    "text": "Enjoy your trip, HEARER_FORMAL. Thank you for choosing Spirit Travel.",
+    "postCmd": "takeFlight(4)"
+  },
+  {
+    "id": "flight_5",
+    "speaker": "other",
+    "hearer": "player",
+    "text": "Enjoy your trip, HEARER_FORMAL. Thank you for choosing Spirit Travel.",
+    "postCmd": "takeFlight(5)"
+  },
+  {
+    "id": "flight_6",
+    "speaker": "other",
+    "hearer": "player",
+    "text": "Enjoy your trip, HEARER_FORMAL. Thank you for choosing Spirit Travel.",
+    "postCmd": "takeFlight(6)"
+  },
+  {
+    "id": "flight_7",
+    "speaker": "other",
+    "hearer": "player",
+    "text": "Enjoy your trip, HEARER_FORMAL. Thank you for choosing Spirit Travel.",
+    "postCmd": "takeFlight(7)"
+  },
+  {
+    "id": "flight_8",
+    "speaker": "other",
+    "hearer": "player",
+    "text": "Enjoy your trip, HEARER_FORMAL. Thank you for choosing Spirit Travel.",
+    "postCmd": "takeFlight(8)"
+  },
+  {
+    "id": "flight_9",
+    "speaker": "other",
+    "hearer": "player",
+    "text": "Enjoy your trip, HEARER_FORMAL. Thank you for choosing Spirit Travel.",
+    "postCmd": "takeFlight(9)"
   },
   {
     "id": "endConversation",

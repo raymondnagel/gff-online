@@ -31,7 +31,16 @@ export class GDesertRegion extends GOutsideRegion{
         return WALLS;
     }
 
+    public getTemperature(): number {
+        return RANDOM.randInt(30, 40); // Deserts are hot!
+    }
+
     protected _furnishRoom(room: GRoom) {
+        // If room contains a stronghold, we don't want to add random scenery
+        if (room.getStronghold() !== null) {
+            return;
+        }
+
         // Essential objects, like shrines and entrances, should be placed first.
 
         // Get a zone to use:

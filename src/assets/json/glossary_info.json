@@ -17,11 +17,61 @@
       "type": "concept",
       "text": "Adam is the main character of 'The Good Fight of Faith'. You will guide him on adventures throughout the Land of Allegoria, warring against the powers of darkness and liberating precious souls from their grasp.",
       "image": "adam_head",
-      "inspiration": "Adam Cesar has been my best friend and brother in Christ since 2007. When I began to work on the game, I needed a main character, and he was the first person I thought of. But I like that his name is Adam, because he represents the everyman - anyone from Adam's race who is redeemed to become a new creature in Jesus Christ."
+      "inspiration": "Adam Cesar has been my best friend and brother in Christ since 2007. When I began to work on the game, I needed a main character, and he was the first person I thought of. But I like that his name is Adam, because he represents the everyman - anyone from Adam's race who is redeemed to become a new creature in Jesus Christ. Adam is not only a good friend to me, but a faithful servant and minister of Jesus Christ."
+    },
+    {
+      "name": "faith",
+      "index": "1_concept_3",
+      "entry": "Concept: Faith",
+      "title": "Faith",
+      "type": "concept",
+      "text": "Now faith is the substance of things hoped for, the evidence of things not seen. (...) By faith, Noah, being warned of God of things not seen as yet, moved with fear, prepared an ark to the saving of his house; by the which he condemned the world, and became heir of the righteousness which is by faith.\" (Hebrews 11:1, 7)",
+      "image": "cross",
+      "inspiration": "Faith is one of the central themes of Christianity. Faith is believing in what is not seen, on the basis what is revealed; it is the only way for us to have a relationship with the invisible God, who reveals himself by his Word. (1 Sam. 3:21; Col. 1:15; John 1:1-18) It is through faith that Christ dwells in our hearts (Eph. 3:17); it is the way of God's righteousness (Rom. 1:17; 10:10; Phil. 3:9); and it is the means by which we have access into God's grace (Rom. 5:1-2), the only thing that can save us (Eph. 2:8)."
+    },
+    {
+      "name": "grace",
+      "index": "1_concept_4",
+      "entry": "Concept: Grace",
+      "title": "Grace",
+      "type": "concept",
+      "text": "\"And he said unto me, My grace is sufficient for thee: for my strength is made perfect in weakness. Most gladly therefore will I rather glory in my infirmities, that the power of Christ may rest upon me.\" (2 Corinthians 12:9)",
+      "image": "grace",
+      "inspiration": "God's grace is his favor, kindness, and goodwill toward man, and specially toward those who are righteous before him (Gen. 6:8-9; 7:1). It is God being \"for us\" (Rom. 8:31), shewing himself strong on our behalf (2 Chron. 16:9). The scripture says that God's grace is accessed by faith (Rom. 5:2); that we must grow in it (2 Pet. 3:18); and that he gives grace to those who walk in humility and uprightness (Mic. 6:8; Jas. 4:6; Ps. 84:11). There is no greater power, or more precious gift, than the true grace of God in Jesus Christ."
+    },
+    {
+      "name": "church",
+      "index": "1_concept_5",
+      "entry": "Concept: Church",
+      "title": "Church",
+      "type": "concept",
+      "text": "\"And they, continuing daily with one accord in the temple, and breaking bread from house to house, did eat their meat with gladness and singleness of heart, praising God, and having favour with all the people. And the Lord added to the church daily such as should be saved.\" (Acts 2:46-47)",
+      "image": "true_church",
+      "inspiration": "The church of God is his greatest work upon this earth: men redeemed from sin and the powers of darkness (Isa. 44:22; Acts 26:18), renewed in Christ by the power of the Holy Ghost (Col. 3:10; Tit. 3:5-7), and builded together into an holy temple for God to dwell in (Eph. 2:19-22; 4:1-16). With Christ as the head (Eph. 1:22; 5:23; Col. 1:18), the church is called to be his body, carrying on the ministry of reconciliation upon the earth in his stead (2 Cor. 5:18-20)."
+    },
+    {
+      "name": "spirit_travel",
+      "index": "1_concept_6",
+      "entry": "Concept: Spirit Travel",
+      "title": "Spirit Travel",
+      "type": "concept",
+      "text": "\"And when they were come up out of the water, the Spirit of the Lord caught away Philip, that the eunuch saw him no more: and he went on his way rejoicing. But Philip was found at Azotus: and passing through he preached in all the cities, till he came to Caesarea.\" (Acts 8:39-40)",
+      "image": "spirit_travel",
+      "inspiration": "'Spirit Travel' is a fictional organization that doubles as both a travel agency and an airline. Inspired by 1 Kings 18:12 and Acts 8:39, in which the Spirit of the Lord carries Elijah and Philip to distant places, Spirit Travel allows Adam to quickly travel between towns using an unlimited travel pass item. (NOTE: Spirit Travel is not affiliated with or representative of Spirit Airlines®, a real-world airline company.)"
+    },
+    {
+      "name": "pray",
+      "index": "2_ability_1",
+      "entry": "Ability: Pray",
+      "title": "Pray",
+      "type": "concept",
+      "text": "\"Be careful for nothing; but in every thing by prayer and supplication with thanksgiving let your requests be made known unto God.\" (Philippians 4:6)",
+      "image": "pray",
+      "inspiration": "Praying is a vital aspect of our two-way relationship with God. It is through prayer that we talk to our Father, expressing our worship, needs, desires, concerns, and thanks; and we have confidence that he hears us, cares for us, and answers for our good according to his will. (1 John 5:14-15.) In GFF, Adam can use the 'Pray' ability to find grace in time of need, building up his most holy faith as he prays in the Holy Ghost (Heb. 4:16; Jude 1:20)."
     },
     {
       "name": "armor_6",
-      "index": "2_armor_1",
+      "index": "3_armor_1",
       "entry": "Armour 1: Girdle of Truth",
       "title": "Girdle of Truth",
       "type": "item",
@@ -31,7 +81,7 @@
     },
     {
       "name": "armor_4",
-      "index": "2_armor_2",
+      "index": "3_armor_2",
       "entry": "Armour 2: Breastplate of Righteousness",
       "title": "Breastplate of Righteousness",
       "type": "item",
@@ -41,7 +91,7 @@
     },
     {
       "name": "armor_5",
-      "index": "2_armor_3",
+      "index": "3_armor_3",
       "entry": "Armour 3: Preparation of the Gospel of Peace",
       "title": "Preparation of the Gospel of Peace",
       "type": "item",
@@ -51,7 +101,7 @@
     },
     {
       "name": "armor_3",
-      "index": "2_armor_4",
+      "index": "3_armor_4",
       "entry": "Armour 4: Shield of Faith",
       "title": "Shield of Faith",
       "type": "item",
@@ -61,7 +111,7 @@
     },
     {
       "name": "armor_2",
-      "index": "2_armor_5",
+      "index": "3_armor_5",
       "entry": "Armour 5: Helmet of Salvation",
       "title": "Helmet of Salvation",
       "type": "item",
@@ -71,7 +121,7 @@
     },
     {
       "name": "armor_1",
-      "index": "2_armor_6",
+      "index": "3_armor_6",
       "entry": "Armour 6: Sword of the Spirit",
       "title": "Sword of the Spirit",
       "type": "item",
@@ -81,7 +131,7 @@
     },
     {
       "name": "cmd_1",
-      "index": "3_cmd_1",
+      "index": "4_cmd_1",
       "entry": "Commandment 1: Thou shalt have no other gods",
       "title": "1st Commandment",
       "type": "item",
@@ -91,7 +141,7 @@
     },
     {
       "name": "cmd_2",
-      "index": "3_cmd_2",
+      "index": "4_cmd_2",
       "entry": "Commandment 2: Thou shalt not make graven images",
       "title": "2nd Commandment",
       "type": "item",
@@ -101,7 +151,7 @@
     },
     {
       "name": "cmd_3",
-      "index": "3_cmd_3",
+      "index": "4_cmd_3",
       "entry": "Commandment 3: Thou shalt not take God's name in vain",
       "title": "3rd Commandment",
       "type": "item",
@@ -111,7 +161,7 @@
     },
     {
       "name": "cmd_4",
-      "index": "3_cmd_4",
+      "index": "4_cmd_4",
       "entry": "Commandment 4: Remember the sabbath",
       "title": "4th Commandment",
       "type": "item",
@@ -121,7 +171,7 @@
     },
     {
       "name": "cmd_5",
-      "index": "3_cmd_5",
+      "index": "4_cmd_5",
       "entry": "Commandment 5: Honour thy father and mother",
       "title": "5th Commandment",
       "type": "item",
@@ -131,7 +181,7 @@
     },
     {
       "name": "cmd_6",
-      "index": "3_cmd_6",
+      "index": "4_cmd_6",
       "entry": "Commandment 6: Thou shalt not kill",
       "title": "6th Commandment",
       "type": "item",
@@ -141,7 +191,7 @@
     },
     {
       "name": "cmd_7",
-      "index": "3_cmd_7",
+      "index": "4_cmd_7",
       "entry": "Commandment 7: Thou shalt not commit adultery",
       "title": "7th Commandment",
       "type": "item",
@@ -151,7 +201,7 @@
     },
     {
       "name": "cmd_8",
-      "index": "3_cmd_8",
+      "index": "4_cmd_8",
       "entry": "Commandment 8: Thou shalt not steal",
       "title": "8th Commandment",
       "type": "item",
@@ -161,7 +211,7 @@
     },
     {
       "name": "cmd_9",
-      "index": "3_cmd_9",
+      "index": "4_cmd_9",
       "entry": "Commandment 9: Thou shalt not bear false witness",
       "title": "9th Commandment",
       "type": "item",
@@ -171,7 +221,7 @@
     },
     {
       "name": "cmd_10",
-      "index": "3_cmd_10",
+      "index": "4_cmd_10",
       "entry": "Commandment 10: Thou shalt not covet",
       "title": "10th Commandment",
       "type": "item",
@@ -181,7 +231,7 @@
     },
     {
       "name": "fruit_1",
-      "index": "4_fruit_1",
+      "index": "5_fruit_1",
       "entry": "Fruit 1: Love",
       "title": "Fruit of the Spirit: Love",
       "type": "item",
@@ -191,7 +241,7 @@
     },
     {
       "name": "fruit_2",
-      "index": "4_fruit_2",
+      "index": "5_fruit_2",
       "entry": "Fruit 2: Joy",
       "title": "Fruit of the Spirit: Joy",
       "type": "item",
@@ -201,7 +251,7 @@
     },
     {
       "name": "fruit_3",
-      "index": "4_fruit_3",
+      "index": "5_fruit_3",
       "entry": "Fruit 3: Peace",
       "title": "Fruit of the Spirit: Peace",
       "type": "item",
@@ -211,7 +261,7 @@
     },
     {
       "name": "fruit_4",
-      "index": "4_fruit_4",
+      "index": "5_fruit_4",
       "entry": "Fruit 4: Longsuffering",
       "title": "Fruit of the Spirit: Longsuffering",
       "type": "item",
@@ -221,7 +271,7 @@
     },
     {
       "name": "fruit_5",
-      "index": "4_fruit_5",
+      "index": "5_fruit_5",
       "entry": "Fruit 5: Gentleness",
       "title": "Fruit of the Spirit: Gentleness",
       "type": "item",
@@ -231,7 +281,7 @@
     },
     {
       "name": "fruit_6",
-      "index": "4_fruit_6",
+      "index": "5_fruit_6",
       "entry": "Fruit 6: Goodness",
       "title": "Fruit of the Spirit: Goodness",
       "type": "item",
@@ -241,7 +291,7 @@
     },
     {
       "name": "fruit_7",
-      "index": "4_fruit_7",
+      "index": "5_fruit_7",
       "entry": "Fruit 7: Faith",
       "title": "Fruit of the Spirit: Faith",
       "type": "item",
@@ -251,7 +301,7 @@
     },
     {
       "name": "fruit_8",
-      "index": "4_fruit_8",
+      "index": "5_fruit_8",
       "entry": "Fruit 8: Meekness",
       "title": "Fruit of the Spirit: Meekness",
       "type": "item",
@@ -261,7 +311,7 @@
     },
     {
       "name": "fruit_9",
-      "index": "4_fruit_9",
+      "index": "5_fruit_9",
       "entry": "Fruit 9: Temperance",
       "title": "Fruit of the Spirit: Temperance",
       "type": "item",
@@ -270,8 +320,18 @@
       "inspiration": "James 3:18 says, \"And the fruit of righteousness is sown in peace of them that make peace.\" Each fruit the Spirit has brought forth in you will make you a more effective minister of the gospel of peace, beseeching men to be reconciled to God."
     },
     {
+      "name": "travel_pass",
+      "index": "6_item_1",
+      "entry": "Item: Travel Pass",
+      "title": "Travel Pass",
+      "type": "item",
+      "text": "\"And pray ye that your flight be not in the winter.\" (Mark 13:18)",
+      "image": "travel_pass",
+      "inspiration": "In GFF, the Travel Pass is a special item that allows Adam to travel quickly between different areas of the game. This is one of the few things in the game that is not derived from scripture; but in our modern world, flying by plane is an efficient way to travel long distances, so that we can go into all the world and preach the gospel to every creature (Mark 16:15)."
+    },
+    {
       "name": "seed",
-      "index": "5_item_1",
+      "index": "6_item_2",
       "entry": "Item: Seed",
       "title": "Seed",
       "type": "item",
@@ -281,7 +341,7 @@
     },
     {
       "name": "sermon",
-      "index": "5_item_2",
+      "index": "6_item_3",
       "entry": "Item: Sermon",
       "title": "Sermon",
       "type": "item",
@@ -291,7 +351,7 @@
     },
     {
       "name": "standard",
-      "index": "5_item_3",
+      "index": "6_item_4",
       "entry": "Item: Standard",
       "title": "Standard",
       "type": "item",
@@ -301,7 +361,7 @@
     },
     {
       "name": "key",
-      "index": "5_item_4",
+      "index": "6_item_5",
       "entry": "Item: Key Verse",
       "title": "Key Verse",
       "type": "item",
@@ -311,7 +371,7 @@
     },
     {
       "name": "milk",
-      "index": "6_consum_1",
+      "index": "7_consum_1",
       "entry": "Consumable: Milk",
       "title": "Milk",
       "type": "item",
@@ -321,7 +381,7 @@
     },
     {
       "name": "meat",
-      "index": "6_consum_2",
+      "index": "7_consum_2",
       "entry": "Consumable: Meat",
       "title": "Meat",
       "type": "item",
@@ -331,7 +391,7 @@
     },
     {
       "name": "strong_meat",
-      "index": "6_consum_3",
+      "index": "7_consum_3",
       "entry": "Consumable: Strong Meat",
       "title": "Strong Meat",
       "type": "item",
@@ -341,7 +401,7 @@
     },
     {
       "name": "exp_bonus",
-      "index": "6_consum_4",
+      "index": "7_consum_4",
       "entry": "Consumable: Experience Bonus",
       "title": "Experience",
       "type": "item",

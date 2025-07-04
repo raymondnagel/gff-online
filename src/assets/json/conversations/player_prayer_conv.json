@@ -1,0 +1,20 @@
+[
+  {
+    "id": "prayerStart",
+    "speaker": "player",
+    "dynamic": "player_prayer_start",
+    "next": "prayerBody"
+  },
+  {
+    "id": "prayerBody",
+    "speaker": "player",
+    "dynamic": "player_prayer_body",
+    "next": "prayerEnd"
+  },
+  {
+    "id": "prayerEnd",
+    "speaker": "player",
+    "dynamic": "player_prayer_end",
+    "postCmd": "playSound('amen')"
+  }
+]

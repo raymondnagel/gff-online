@@ -29,6 +29,8 @@ export class GTown {
     private name: string;
     private rooms: GRoom[] = [];
     private church: GChurch;
+    private travelAgencyLocation: GRoom;
+    private flights: GTown[] = [];
     private people: GPerson[] = [];
 
     static {
@@ -49,6 +51,22 @@ export class GTown {
 
     public getChurch(): GChurch {
         return this.church;
+    }
+
+    public setTravelAgencyLocation(room: GRoom) {
+        this.travelAgencyLocation = room;
+    }
+
+    public getTravelAgencyLocation(): GRoom {
+        return this.travelAgencyLocation;
+    }
+
+    public addFlight(destinationTown: GTown) {
+        this.flights.push(destinationTown);
+    }
+
+    public getFlights(): GTown[] {
+        return this.flights;
     }
 
     public addRoom(room: GRoom) {

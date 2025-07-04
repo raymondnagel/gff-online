@@ -1,14 +1,13 @@
 import { GLOSSARY } from "./glossary";
 import { PLAYER } from "./player";
 import { RANDOM } from "./random";
-import { GGlossaryEntry } from "./types";
+import { GGlossaryEntry, TEN } from "./types";
 
-type Ten = 1|2|3|4|5|6|7|8|9|10;
 
 export namespace COMMANDMENTS {
 
     // List of commandments left to find. Next commandment is popped off the list.
-    let commandmentsToFind: Ten[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+    let commandmentsToFind: TEN[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
     let commandments: boolean[] = [
         false, false, false, false, false, false, false, false, false, false
@@ -18,13 +17,14 @@ export namespace COMMANDMENTS {
         shuffleCommandmentsToFind();
     }
 
-    export function lookupEntry(num: Ten): GGlossaryEntry {
+    export function lookupEntry(num: TEN): GGlossaryEntry {
         return GLOSSARY.lookupEntry(`cmd_${num}`) as GGlossaryEntry;
     }
 
-    export function setCommandment(num: Ten, has: boolean) {
-        commandments[num - 1] = has;
+    export function obtainCommandment(num: TEN) {
+        commandments[num - 1] = true;
         PLAYER.calcMaxFaith();
+        PLAYER.giveGrace('major');
     }
 
     export function hasCommandment(index: number): boolean {
@@ -40,7 +40,7 @@ export namespace COMMANDMENTS {
     }
 
     export function getNextCommandmentToFind(): string|undefined {
-        const cmdNum: Ten|undefined = commandmentsToFind.pop();
+        const cmdNum: TEN|undefined = commandmentsToFind.pop();
         return cmdNum === undefined
             ? undefined
             : `cmd_${cmdNum}`;

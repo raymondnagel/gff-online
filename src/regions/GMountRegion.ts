@@ -1,4 +1,5 @@
 import { GRoom } from "../GRoom";
+import { RANDOM } from "../random";
 import { SCENERY } from "../scenery";
 import { Dir9, GRect, GSceneryDef } from "../types";
 import { GOutsideRegion } from "./GOutsideRegion";
@@ -30,7 +31,16 @@ export class GMountRegion extends GOutsideRegion{
         return WALLS;
     }
 
+    public getTemperature(): number {
+        return RANDOM.randInt(-10, 10); // Mountains are cold, especially at higher elevations.
+    }
+
     protected _furnishRoom(room: GRoom) {
+        // If room contains a stronghold, we don't want to add random scenery
+        if (room.getStronghold() !== null) {
+            return;
+        }
+
         // Essential objects, like shrines and entrances, should be placed first.
 
         // Get a zone to use:

@@ -13,7 +13,6 @@ import { GBooksMode } from './game_modes/GBooksMode';
 import { GBibleMode } from './game_modes/GBibleMode';
 import { GPeopleMode } from './game_modes/GPeopleMode';
 import { GMapMode } from './game_modes/GMapMode';
-import { GStatsMode } from './game_modes/GStatsMode';
 import { GGlossaryMode } from './game_modes/GGlossaryMode';
 import { GOptionsMode } from './game_modes/GOptionsMode';
 import { GBattleContent } from './scenes/GBattleContent';
@@ -22,7 +21,6 @@ import { GBooksUI } from './scenes/GBooksUI';
 import { GBibleUI } from './scenes/GBibleUI';
 import { GPeopleUI } from './scenes/GPeopleUI';
 import { GMapUI } from './scenes/GMapUI';
-import { GStatsUI } from './scenes/GStatsUI';
 import { GGlossaryUI } from './scenes/GGlossaryUI';
 import { GOptionsUI } from './scenes/GOptionsUI';
 import { GMainMenuContent } from './scenes/GMainMenuContent';
@@ -58,7 +56,6 @@ let configObject: Phaser.Types.Core.GameConfig = {
         GBibleUI,
         GPeopleUI,
         GMapUI,
-        GStatsUI,
         GGlossaryUI,
         GOptionsUI
     ]
@@ -119,7 +116,6 @@ export namespace GFF {
     export const BIBLE_MODE: GBibleMode = new GBibleMode();
     export const PEOPLE_MODE: GPeopleMode = new GPeopleMode();
     export const MAP_MODE: GMapMode = new GMapMode();
-    export const STATS_MODE: GStatsMode = new GStatsMode();
     export const GLOSSARY_MODE: GGlossaryMode = new GGlossaryMode();
     export const OPTIONS_MODE: GOptionsMode = new GOptionsMode();
 
@@ -129,7 +125,9 @@ export namespace GFF {
         enemyAttackPerLevel: 2,
         enemyBaseResist: 10,
         enemyResistPerLevel: 10,
-        enemySpeed: .9
+        enemySpeed: .9,
+        minorGraceIncrease: .06,
+        majorGraceIncrease: .12
     };
     export const DIFFICULTY_DISCIPLE: GDifficulty = {
         levelName: 'Disciple',
@@ -137,7 +135,9 @@ export namespace GFF {
         enemyAttackPerLevel: 3,
         enemyBaseResist: 20,
         enemyResistPerLevel: 20,
-        enemySpeed: 1.0
+        enemySpeed: 1.0,
+        minorGraceIncrease: .04,
+        majorGraceIncrease: .08
     };
     export const DIFFICULTY_SOLDIER: GDifficulty = {
         levelName: 'Soldier',
@@ -145,7 +145,9 @@ export namespace GFF {
         enemyAttackPerLevel: 4,
         enemyBaseResist: 30,
         enemyResistPerLevel: 30,
-        enemySpeed: 1.1
+        enemySpeed: 1.1,
+        minorGraceIncrease: .02,
+        majorGraceIncrease: .04
     };
 
     export let Difficulty: GDifficulty = DIFFICULTY_DISCIPLE;
@@ -167,7 +169,7 @@ export namespace GFF {
     export let gameLogging: boolean = false;
     export let chatty: boolean = false;
     export let impRepellant: boolean = false;
-    export let introInit: boolean = false;
+    export let introInit: boolean = true;
 
     export function sleep(ms: number) {
         const date: number = Date.now();
