@@ -71,7 +71,7 @@ export class GTitleContent extends GContentScene {
                 thisScene.input.keyboard?.once('keydown-ENTER', () => {
                     this.getSound().fadeOutMusic(1000);
                     this.fadeOut(1000, undefined, () => {
-                        GFF.WORLDBUILD_MODE.switchTo(GFF.TITLE_MODE);
+                        GFF.MAINMENU_MODE.switchTo(GFF.TITLE_MODE);
                     });
                 });
             });

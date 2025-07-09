@@ -54,7 +54,7 @@ export namespace ENEMY {
     }
 
     export function getBaseDamage() {
-        return GFF.Difficulty.enemyBaseAttack + (GFF.Difficulty.enemyAttackPerLevel * spirit.level);
+        return GFF.getDifficulty().enemyBaseAttack + (GFF.getDifficulty().enemyAttackPerLevel * spirit.level);
     }
 
     export function getSpirit(): GSpirit {
@@ -78,7 +78,7 @@ export namespace ENEMY {
         spirit = enemySpirit;
         portrait = enemyPortrait;
         avatar = enemyAvatar;
-        setMaxResistance(GFF.Difficulty.enemyBaseResist + (GFF.Difficulty.enemyResistPerLevel * enemySpirit.level));
+        setMaxResistance(GFF.getDifficulty().enemyBaseResist + (GFF.getDifficulty().enemyResistPerLevel * enemySpirit.level));
         setResistance(getMaxResistance());
     }
 

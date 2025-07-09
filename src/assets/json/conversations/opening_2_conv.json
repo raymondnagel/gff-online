@@ -1,0 +1,17 @@
+[
+    {
+      "id": "1",
+      "speaker": "player",
+      "hearer": "preacher",
+      "text": "I believe! I really do believe!",
+      "postCmd": "playerConversionMiracle()",
+      "next": "2"
+    },
+    {
+      "id": "2",
+      "speaker": "player",
+      "hearer": "preacher",
+      "preCmd": "playMusic('amazing')",
+      "text": "I believe that Jesus Christ truly is the Son of God! I believe that he died for my sins, according to the scriptures! I believe that God was able to raise him up, even from the dead! I confess that Jesus Christ is Lord of heaven and earth; Lord of dead and living; and I want him to be my Lord, too!"
+    }
+]

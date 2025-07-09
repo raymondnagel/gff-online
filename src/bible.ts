@@ -2,6 +2,11 @@ import { RANDOM } from "./random";
 import { GFF } from "./main";
 import { GScripture } from "./types";
 
+export type FocusVerses = {
+    book: string;
+    refs: string[];
+};
+
 export namespace BIBLE {
 
     export function getVerseText(bookName: string, chapterNo: number, verseNo: number): string | null {
@@ -65,7 +70,7 @@ export namespace BIBLE {
     }
 
     export function getRandomVerseFromBook(bookName: string): GScripture {
-        // Get all verses from from the book:
+        // Get all verses from the book:
         const verses: Element[] = getAllVersesForBook(bookName);
 
         // Pick a random verse
@@ -132,6 +137,32 @@ export namespace BIBLE {
 
     export function getRandomVerseFromBooks(books: string[]): GScripture {
         return getRandomVerseFromBook(RANDOM.randElement(books) as string);
+    }
+
+    export function getFocusedVerseFromBooks(books: string[]): GScripture {
+        return getFocusedVerseFromBook(RANDOM.randElement(books) as string);
+    }
+
+    export function getFocusedVerseFromBook(bookName: string): GScripture {
+        // Get all focus verses for the book:
+        const focusVersesByBook: FocusVerses[] = GFF.GAME.cache.json.get('focus_scripture');
+        const focusVerses: FocusVerses = focusVersesByBook.find(b => b.book === bookName) as FocusVerses;
+
+        // Pick a random verse
+        const ref: string = RANDOM.randElement(focusVerses.refs) as string;
+
+        // Extract the chapter number and verse number
+        const [chapterNo, verseNo] = ref.split(':').map(Number);
+
+        // Get the verse text
+        const verseText: string = getVerseText(bookName, chapterNo, verseNo) as string;
+
+        return {
+            book: bookName,
+            chapter: chapterNo,
+            verse: verseNo,
+            verseText: verseText
+        };
     }
 
 }

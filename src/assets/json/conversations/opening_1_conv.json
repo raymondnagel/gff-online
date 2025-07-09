@@ -1,0 +1,143 @@
+[
+    {
+      "id": "1",
+      "speaker": "preacher",
+      "hearer": "other",
+      "text": "Moreover, brethren, I declare unto you the gospel which I preached unto you, which also ye have received, and wherein ye stand; By which also ye are saved...",
+      "next": "2"
+    },
+    {
+      "id": "2",
+      "speaker": "player",
+      "hearer": "preacher",
+      "text": "(T)Who... me?",
+      "next": "3"
+    },
+    {
+      "id": "3",
+      "speaker": "preacher",
+      "hearer": "other",
+      "text": "In the beginning was the Word, and the Word was with God, and the Word was God. All things were made by him... and in him was life...",
+      "next": "4"
+    },
+    {
+      "id": "4",
+      "speaker": "player",
+      "hearer": "preacher",
+      "text": "(T)Huh? What's he talking about?",
+      "next": "5"
+    },
+    {
+      "id": "5",
+      "speaker": "preacher",
+      "hearer": "other",
+      "text": "And the Word became flesh, and dwelt among us: God was manifest in the flesh. For unto us a child is born, unto us a son is given; his name shall be called... The mighty God, The everlasting Father...",
+      "next": "6"
+    },
+    {
+      "id": "6",
+      "speaker": "player",
+      "hearer": "preacher",
+      "text": "(T)Wow! The God who made all things... he became a man like me? Why would he do that?",
+      "next": "7"
+    },
+    {
+      "id": "7",
+      "speaker": "preacher",
+      "hearer": "other",
+      "text": "Christ Jesus came into the world to save sinners. For all have sinned, and come short of the glory of God; and the wages of sin is death...",
+      "next": "8"
+    },
+    {
+      "id": "8",
+      "chance": 0.8,
+      "speaker": "player",
+      "hearer": "preacher",
+      "text": "(T)Ok, I get it: God became a man so he could come down and save everybody from death. But how did he do that?",
+      "next": "9"
+    },
+    {
+      "id": "9",
+      "speaker": "preacher",
+      "hearer": "other",
+      "text": "But God commendeth his love toward us, in that, while we were yet sinners, Christ died for us. Christ died for our sins...",
+      "next": "10"
+    },
+    {
+      "id": "10",
+      "speaker": "player",
+      "hearer": "preacher",
+      "text": "(T)He gave up his life... to save mine! That's... amazing!",
+      "next": "11"
+    },
+    {
+      "id": "11",
+      "speaker": "player",
+      "hearer": "preacher",
+      "text": "(T)But wait!! If God is dead now, who is in control? Who is running the universe??",
+      "next": "12"
+    },
+    {
+      "id": "12",
+      "speaker": "preacher",
+      "hearer": "other",
+      "text": "Whom God hath raised up, having loosed the pains of death: because it was not possible that he should be holden of it. For to this end Christ both died, and rose, and revived, that he might be Lord both of the dead and living.",
+      "next": "13"
+    },
+    {
+      "id": "13",
+      "speaker": "player",
+      "hearer": "preacher",
+      "text": "(T)Christ died for my sins... and then rose from the dead!? Well, if anyone could do that, I suppose it would be God. After all, he made all living things; and in him was life. Of course God could not be held by death - he is immortal!",
+      "next": "14"
+    },
+    {
+      "id": "14",
+      "speaker": "preacher",
+      "hearer": "other",
+      "text": "The gift of God is eternal life through Jesus Christ our Lord. For God so loved the world, that he gave his only begotten Son, that whosoever believeth in him should not perish, but have everlasting life.",
+      "next": "15"
+    },
+    {
+      "id": "15",
+      "speaker": "player",
+      "hearer": "preacher",
+      "text": "(T)God did all that... to save me from death... so he could give me eternal life! He loves me that much!",
+      "next": "16"
+    },
+    {
+      "id": "16",
+      "speaker": "preacher",
+      "hearer": "other",
+      "text": "If thou shalt confess with thy mouth the Lord Jesus, and shalt believe in thine heart that God hath raised him from the dead, thou shalt be saved.",
+      "next": "17"
+    },
+    {
+      "id": "17",
+      "speaker": "preacher",
+      "hearer": "other",
+      "text": "Jesus said, He that heareth my word, and believeth on him that sent me, hath everlasting life, and shall not come into condemnation; but is passed from death unto life.",
+      "next": "18"
+    },
+    {
+      "id": "18",
+      "speaker": "player",
+      "hearer": "preacher",
+      "text": "(T)Believe that God raised up Jesus from the dead, and confess him as Lord... and I will pass from death to eternal life? That's... the greatest news I've ever heard!",
+      "next": "19"
+    },
+    {
+      "id": "19",
+      "speaker": "preacher",
+      "hearer": "player",
+      "text": "Believe on the Lord Jesus Christ, and thou shalt be saved.",
+      "next": "20"
+    },
+    {
+      "id": "20",
+      "speaker": "player",
+      "hearer": "preacher",
+      "preCmd": "stopMusic()",
+      "text": "HEY!!"
+    }
+]

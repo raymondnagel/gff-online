@@ -7,6 +7,7 @@ import { GSearchForPlayerGoal } from '../../goals/GSearchForPlayerGoal';
 import { GSpawnImpGoal } from '../../goals/GSpawnImpGoal';
 import { ENEMY } from '../../enemy';
 import { GGoal } from '../../goals/GGoal';
+import { REGISTRY } from '../../registry';
 
 /**
  * Imps use GSpirit rather than GPerson, but we'll have to create a fake GPerson
@@ -75,7 +76,7 @@ export class GImpSprite extends GCharSprite {
     }
 
     protected getSpeed(): number {
-        let baseSpeed: number = parseFloat(GFF.GAME.registry.get('walkSpeed')) * GFF.Difficulty.enemySpeed;
+        let baseSpeed: number = REGISTRY.getNumber('walkSpeed') * GFF.getDifficulty().enemySpeed;
         if (this.chasing) {
             baseSpeed = 1.5 * baseSpeed;
         }

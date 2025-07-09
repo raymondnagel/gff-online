@@ -1,7 +1,7 @@
 import { BOOKS } from "./books";
 import { GBookEntry } from "./types";
 
-type IntegerStatName =
+export type IntegerStatName =
 | 'RoomsExplored'
 | 'FlightsTaken'
 | 'ServicesAttended'

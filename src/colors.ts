@@ -16,6 +16,10 @@ export namespace COLOR {
 
     export const SKY_BLUE       = c(0xbbccff);
 
+    export const GOLD_1         = c(0xb87b3d);
+    export const GOLD_2         = c(0xd7b375);
+    export const GOLD_3         = c(0xd7c97f);
+
 
     function c(hexColor: number): GColor {
         return new GColor(hexColor);

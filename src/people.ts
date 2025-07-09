@@ -1,7 +1,27 @@
+import { AREA } from "./area";
+import { GChurch } from "./GChurch";
 import { GFF } from "./main";
 import { PLAYER } from "./player";
 import { RANDOM } from "./random";
 import { GPerson, LeveledDynamicBlurb } from "./types";
+
+const PREACHER_PERSON: GPerson = {
+    firstName: 'John',
+    lastName: 'Doe',
+    preferredName: 'Brother John',
+    spriteKeyPrefix: 'preacher',
+    gender: 'm',
+    voice: 2,
+    faith: 100,
+    familiarity: 0,
+    nameLevel: 2,
+    reprobate: false,
+    homeTown: null,
+    bio1: null,
+    bio2: null,
+    favoriteBook: 'Job',
+    conversations: 0
+};
 
 export namespace PEOPLE {
     let people: GPerson[] = [];
@@ -21,6 +41,14 @@ export namespace PEOPLE {
 
     export function getCapturedPersons() {
         return capturedPeople;
+    }
+
+    export function createPreacher(church: GChurch) {
+        PREACHER_PERSON.homeTown = church.getTown();
+        PREACHER_PERSON.bio1 = `My name is Brother John Doe, a faithful minister and fellowservant in the Lord. It is my charge to watch for your soul, as one that must give account to Christ.`;
+        PREACHER_PERSON.bio2 = `I will be praying for you, Brother Adam, that you might walk worthy of the Lord unto all pleasing, being fruitful in every good work, and increasing in the knowledge of God.`;
+        church.addPerson(PREACHER_PERSON);
+        people.push(PREACHER_PERSON);
     }
 
     export function getFormalName(person: GPerson): string {

@@ -1,7 +1,7 @@
 import { GArea } from "./GArea";
 import { GRegion } from "../regions/GRegion";
 import { GRoom } from "../GRoom";
-import { CardDir, Dir9, GCityBlock, GPerson, GPoint2D, GPoint3D, GSceneryDef, ProgressCallback } from "../types";
+import { CardDir, Dir9, GCityBlock, GPerson, GSceneryDef } from "../types";
 import { GPlainRegion } from "../regions/GPlainRegion";
 import { GForestRegion } from "../regions/GForestRegion";
 import { GDesertRegion } from "../regions/GDesertRegion";
@@ -22,6 +22,7 @@ import { COMMANDMENTS } from "../commandments";
 import { SCENERY } from "../scenery";
 import { AREA } from "../area";
 import { GChurchArea } from "./GChurchArea";
+import { REGISTRY } from "../registry";
 
 type BorderWall = {
     room: GRoom,
@@ -520,7 +521,10 @@ export class GWorldArea extends GArea {
             while (!room || !room.canHavePremiumChest()) {
                 room = RANDOM.randElement(allRooms);
             }
-            const book: string|undefined = BOOKS.getNextBookToFind();
+            const book: string|undefined = REGISTRY.get('booksOrder') === 'canonical' ?
+                'NEXT_BOOK' :
+                BOOKS.getNextBookToFind();
+
             if (book !== undefined) {
                 room.planPremiumChestShrine(book, 'blue');
             }

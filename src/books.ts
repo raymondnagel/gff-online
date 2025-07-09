@@ -105,6 +105,10 @@ export namespace BOOKS {
         RANDOM.shuffle(booksToFind);
     }
 
+    export function reverseBooksToFind() {
+        booksToFind.reverse();
+    }
+
     export function getNextBookToFind(): string|undefined {
         return booksToFind.pop();
     }

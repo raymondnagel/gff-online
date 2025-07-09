@@ -24,6 +24,7 @@ import { GWallSouthWithDoor } from "./objects/obstacles/walls/GWallSouthWithDoor
 import { GWallSouth } from "./objects/obstacles/walls/GWallSouth";
 import { GInsideRegion } from "./regions/GInsideRegion";
 import { STATS } from "./stats";
+import { PEOPLE } from "./people";
 
 const WALL_GUARD_THICK: number = 10;
 const WALL_CTRS: number[] = [
@@ -77,6 +78,7 @@ export class GRoom {
 
     public setStart() {
         this.startRoom = true;
+        PEOPLE.createPreacher(this.church as GChurch);
     }
 
     public isStart(): boolean {

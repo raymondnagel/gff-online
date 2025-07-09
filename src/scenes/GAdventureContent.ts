@@ -41,6 +41,8 @@ import { GPrayCutscene } from '../cutscenes/GPrayCutscene';
 import { STATS } from '../stats';
 import { FRUITS } from '../fruits';
 import { GQuickTravelCutscene } from '../cutscenes/GQuickTravelCutscene';
+import { REGISTRY } from '../registry';
+import { GOpeningCutscene } from '../cutscenes/GOpeningCutscene';
 
 const MOUSE_UI_BUTTON: string = 'MOUSE_UI_BUTTON';
 
@@ -48,6 +50,7 @@ const INPUT_ADVENTURING: GInputMode = new GInputMode('adv.adventuring');
 const INPUT_CONVERSATION: GInputMode = new GInputMode('adv.conversation');
 const INPUT_POPUP: GInputMode = new GInputMode('adv.popup');
 const INPUT_PAUSE: GInputMode = new GInputMode('adv.paused');
+const INPUT_CONSOLE: GInputMode = new GInputMode('adv.console');
 const INPUT_DISABLED: GInputMode = new GInputMode('adv.disabled');
 
 const NON_ESS_TRANS_SPAWN_TRIES: number = 20;
@@ -102,8 +105,18 @@ export class GAdventureContent extends GContentScene {
     }
 
     public create(): void {
-        const startRoom = AREA.WORLD_AREA.getStartRoom();
-        this.setCurrentRoom(startRoom.getX(), startRoom.getY(), AREA.WORLD_AREA);
+        // Whenever we create the adventure content, we are beginning the game,
+        // and we'll always start in the start room...
+        const startRoom: GRoom = AREA.WORLD_AREA.getStartRoom();
+
+        // Well... sort of. If a new game was just started, we need to play the opening cutscene,
+        // which takes place in the start room's church.
+        if (REGISTRY.getBoolean('doIntro')) {
+            const portalRoom: GRoom = startRoom.getPortalRoom() as GRoom;
+            this.setCurrentRoom(portalRoom.getX(), portalRoom.getY(), portalRoom.getArea());
+        } else {
+            this.setCurrentRoom(startRoom.getX(), startRoom.getY(), startRoom.getArea());
+        }
 
         // Create the player:
         this.player = new GPlayerSprite(512-(GFF.CHAR_W/2), 460);
@@ -128,13 +141,20 @@ export class GAdventureContent extends GContentScene {
         // Set vision:
         this.setVisionWithCheck();
 
-        // Intro:
-        if (GFF.introInit) {
-            GFF.introInit = false;
-            this.time.delayedCall(1000, () => {
-                GConversation.fromFile('latest_update_intro');
-            });
+
+        // Check whether we need to play the intro cutscene:
+        if (REGISTRY.getBoolean('doIntro')) {
+            REGISTRY.set('doIntro', false);
+            const church: GChurch = startRoom.getChurch() as GChurch;
+            new GOpeningCutscene(church).play();
         }
+
+        // if (REGISTRY.getBoolean('doIntro')) {
+        //     REGISTRY.set('doIntro', false);
+        //     this.time.delayedCall(1000, () => {
+        //         GConversation.fromFile('latest_update_intro');
+        //     });
+        // }
     }
 
     private initVision() {
@@ -158,22 +178,18 @@ export class GAdventureContent extends GContentScene {
         INPUT_ADVENTURING.onKeyDown((keyEvent: KeyboardEvent) => {
             switch(keyEvent.key) {
                 case '`':
-                    this.reportPlayerPosition();
+                    if (keyEvent.ctrlKey) {
+                        this.showTestConsole();
+                    }
                     break;
                 case ' ':
                     this.playerTalkOrInteract();
                     break;
                 case 'n':
-                    GFF.showNametags = true;
+                    REGISTRY.set('isNametags', true);
                     break;
                 case 'h':
                     GConversation.fromFile('latest_update_intro');
-                    break;
-                case 'y':
-                    GConversation.fromFile('cheat_conv');
-                    break;
-                case 'l':
-                    this.getCurrentRoom()?.logRoomInfo();
                     break;
                 case 'p':
                     if (this.canPray()) {
@@ -190,6 +206,10 @@ export class GAdventureContent extends GContentScene {
                         this.streetPreach();
                     }
                     break;
+                case 'Backspace':
+                    GFF.AdventureUI.pauseAdventure();
+                    this.setInputMode(INPUT_PAUSE);
+                    break;
                 // These will be polled; just ignore:
                 case 'ArrowUp':
                 case 'ArrowLeft':
@@ -204,7 +224,7 @@ export class GAdventureContent extends GContentScene {
         INPUT_ADVENTURING.onKeyUp((keyEvent: KeyboardEvent) => {
             switch(keyEvent.key) {
                 case 'n':
-                    GFF.showNametags = false;
+                    REGISTRY.set('isNametags', false);
                     break;
             }
         });
@@ -221,18 +241,14 @@ export class GAdventureContent extends GContentScene {
                     this.conversation?.sendKey(keyEvent.key);
                     break;
                 case 'n':
-                    GFF.showNametags = true;
-                    break;
-                case 'p':
-                    GFF.AdventureUI.pauseAdventure();
-                    this.setInputMode(INPUT_PAUSE);
+                    REGISTRY.set('isNametags', true);
                     break;
             }
         });
         INPUT_CONVERSATION.onKeyUp((keyEvent: KeyboardEvent) => {
             switch(keyEvent.key) {
                 case 'n':
-                    GFF.showNametags = false;
+                    REGISTRY.set('isNametags', false);
                     break;
             }
         });
@@ -248,9 +264,9 @@ export class GAdventureContent extends GContentScene {
         INPUT_PAUSE.onKeyDown((keyEvent: KeyboardEvent) => {
             switch(keyEvent.key) {
                 case 'n':
-                    GFF.showNametags = true;
+                    REGISTRY.set('isNametags', true);
                     break;
-                case 'p':
+                case 'Backspace':
                     GFF.AdventureUI.unpauseAdventure();
                     this.revertInputMode();
                     break;
@@ -259,19 +275,20 @@ export class GAdventureContent extends GContentScene {
         INPUT_PAUSE.onKeyUp((keyEvent: KeyboardEvent) => {
             switch(keyEvent.key) {
                 case 'n':
-                    GFF.showNametags = false;
+                    REGISTRY.set('isNametags', false);
                     break;
             }
+        });
+
+        // INPUT_CONSOLE is active when the test console is shown:
+        INPUT_CONSOLE.setScene(this);
+        INPUT_CONSOLE.onKeyDown((keyEvent: KeyboardEvent) => {
+            GFF.AdventureUI.sendKeypressToConsole(keyEvent);
         });
 
         // INPUT_DISABLED is active during transitions and cutscenes;
         // no additional initialization is needed, since it won't do anything.
         INPUT_DISABLED.setScene(this);
-    }
-
-    public reportPlayerPosition() {
-        const playerCtr: GPoint2D = this.player.getPhysicalCenter();
-        console.log(`Player physical center: ${playerCtr.x},${playerCtr.y}`);
     }
 
     public playerEnterBuilding() {
@@ -484,12 +501,6 @@ export class GAdventureContent extends GContentScene {
     }
 
     private initDebugs() {
-        // Enable log toggle:
-        this.input.keyboard?.on('keydown-F1', (_event: KeyboardEvent) => {
-            GFF.gameLogging = !GFF.gameLogging;
-            GFF.log('Logging: ' + GFF.gameLogging);
-        });
-
         // Enable physics debug:
         this.input.keyboard?.on('keydown-F2', (_event: KeyboardEvent) => {
             this.physics.world.drawDebug = !this.physics.world.drawDebug;
@@ -524,7 +535,7 @@ export class GAdventureContent extends GContentScene {
     }
 
     public setVision(full: boolean, commandments: number = 10) {
-        full = full || commandments === 10 || GFF.debugMode;
+        full = full || commandments === 10 || REGISTRY.getBoolean('isDebug');
         this.visionRadiusImage.setVisible(!full);
         for (let r: number = 0; r < 4; r++) {
             this.visionBlackRects[r].setVisible(!full);
@@ -629,7 +640,7 @@ export class GAdventureContent extends GContentScene {
     }
 
     public transitionToRoom(roomX: number, roomY: number, area: GArea, meanwhile: Function) {
-        GFF.showNametags = false;
+        REGISTRY.set('isNametags', false);
         this.setInputMode(INPUT_DISABLED);
         this.stopChars();
         this.impSpawnTimeEvent?.remove();
@@ -661,7 +672,7 @@ export class GAdventureContent extends GContentScene {
      * The cutscene will handle any fading or input mode changes.
      */
     public transitionRoomDuringCutscene(room: GRoom) {
-        GFF.showNametags = false;
+        REGISTRY.set('isNametags', false);
         this.impSpawnTimeEvent?.remove();
         this.setCurrentRoom(room.getX(), room.getY(), room.getArea());
         this.spawnPeopleForRoom();
@@ -706,11 +717,11 @@ export class GAdventureContent extends GContentScene {
     }
 
     public canSpawnImp(): boolean {
-        return !GFF.impRepellant && !this.getCurrentRoom()?.isSafe();
+        return !REGISTRY.getBoolean('isNoImps') && !this.getCurrentRoom()?.isSafe();
     }
 
     private resetUniqueRoomsFlags() {
-        GFF.canGiftSeed = true;
+        REGISTRY.set('canGiftSeed', true);
     }
 
     public getSpawnPointForTransient(transient: BoundedGameObject, body: GRect, essential: boolean): GPoint2D|null {
@@ -1069,7 +1080,7 @@ export class GAdventureContent extends GContentScene {
 
     public resumeAfterBattlePreFadeIn(victory: boolean) {
         this.stopChars();
-        GFF.showNametags = false;
+        REGISTRY.set('isNametags', false);
         ENEMY.levelUp();
         if (victory) {
             STATS.changeInt('Victories', 1);
@@ -1450,6 +1461,20 @@ export class GAdventureContent extends GContentScene {
                 color: '#ffffff'
             }).setDepth(DEPTH.TRANSITION).setOrigin(0.5, 0.5);
         });
+    }
+
+    public showTestConsole() {
+        this.getSound().playSound('success');
+        this.setInputMode(INPUT_CONSOLE);
+        this.scene.pause();
+        GFF.AdventureUI.showConsole('Welcome to the GFF Test Console!', 'Type a command. [Enter] to execute, [Esc] to close.');
+    }
+
+    public hideTestConsole() {
+        this.getSound().playSound('icon_click');
+        GFF.AdventureUI.hideConsole();
+        this.scene.resume();
+        this.setInputMode(INPUT_ADVENTURING);
     }
 
     public deactivate(): void {

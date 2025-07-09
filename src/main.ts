@@ -27,6 +27,7 @@ import { GMainMenuContent } from './scenes/GMainMenuContent';
 import { GDifficulty } from './types';
 import { GWorldBuildMode } from './game_modes/GWorldBuildMode';
 import { GWorldBuildContent } from './scenes/GWorldBuildContent';
+import { REGISTRY } from './registry';
 
 const gameWidth: number = 1024;
 const gameHeight: number = 768;
@@ -150,8 +151,6 @@ export namespace GFF {
         majorGraceIncrease: .04
     };
 
-    export let Difficulty: GDifficulty = DIFFICULTY_DISCIPLE;
-
     /**
      * For convenience, when we need to reference a particular Scene
      * that is used ALL the time, just assign it here and use GFF.TheScene
@@ -160,16 +159,13 @@ export namespace GFF {
     export let AdventureUI: GAdventureUI;
     export let BattleContent: GBattleContent;
 
-    export let showNametags: boolean = false;
-    export let canGiftSeed: boolean = true;
+    /**
+     * Don't put flags here; set them in the REGISTRY.
+     */
 
-    // Debuging flags:
-    export let debugMode: boolean = false;
-    export let genLogging: boolean = false;
-    export let gameLogging: boolean = false;
-    export let chatty: boolean = false;
-    export let impRepellant: boolean = false;
-    export let introInit: boolean = true;
+    export function getDifficulty(): GDifficulty {
+        return REGISTRY.get('difficulty') as GDifficulty;
+    }
 
     export function sleep(ms: number) {
         const date: number = Date.now();
@@ -180,13 +176,13 @@ export namespace GFF {
     }
 
     export function log(something: any) {
-        if (gameLogging) {
+        if (REGISTRY.getBoolean('isGameLog')) {
             console.log(something);
         }
     }
 
     export function genLog(something: any) {
-        if (genLogging) {
+        if (REGISTRY.getBoolean('isGenLog')) {
             console.log(something);
         }
     }

@@ -6,6 +6,7 @@ import { Dir9, GGender, GPerson, GRect } from '../../types';
 import { PLAYER } from '../../player';
 import { GGoal } from '../../goals/GGoal';
 import { BOOKS } from '../../books';
+import { REGISTRY } from '../../registry';
 
 const INTERACTION_RANGE: number = 50;
 const INTERACTION_AREA_SIDE: number = 100;
@@ -100,7 +101,7 @@ export class GPlayerSprite extends GCharSprite {
     }
 
     protected getSpeed(): number {
-        return parseFloat(GFF.GAME.registry.get('walkSpeed'));
+        return REGISTRY.getNumber('walkSpeed');
     }
 
     public getGender(): GGender {

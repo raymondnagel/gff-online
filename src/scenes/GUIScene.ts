@@ -12,6 +12,19 @@ const METER_OFFSET = 28;
 const METER_WIDTH = 175;
 const FAITH_METER_HEIGHT = 15;
 
+/**
+ * Base class for all GUI scenes in the game.
+ * This class provides a common interface and functionality for scenes that display
+ * the UI bar: the Adventure mode, and all of the subscreens.
+ *
+ * Adventure mode contains both a content scene and a UI scene, so the player has
+ * access to the UI bar during gameplay.
+ * Subscreens only have a UI scene, which extends this class.
+ *
+ * Other parts of the game, such as the Title and Main Menu, do not have a UI scene,
+ * since they do not have a UI bar.
+ */
+
 export abstract class GUIScene extends GBaseScene {
 
     protected uiBar: Phaser.GameObjects.Image;

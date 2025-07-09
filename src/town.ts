@@ -25,7 +25,7 @@ export namespace TOWN {
     export function getFlightsAvailable(): number {
         // We'll unlock one flight from the start, plus an additional one for every 25 rooms explored:
         const discoveredRooms: number = STATS.getIntegerStat('RoomsExplored');
-        return Math.floor(discoveredRooms / 25) + 1;
+        return Math.min(Math.floor(discoveredRooms / 25) + 1, TOWN_COUNT - 1);
     }
 
     export function scheduleFlights(towns: GTown[]) {

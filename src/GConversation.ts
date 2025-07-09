@@ -23,6 +23,7 @@ import { STATS } from "./stats";
 import { GChurch } from "./GChurch";
 import { CHURCH } from "./church";
 import { TOWN } from "./town";
+import { REGISTRY } from "./registry";
 
 const CMD_FUNCTIONS: Record<string, (...args: any[]) => any> = {
     /**
@@ -30,6 +31,12 @@ const CMD_FUNCTIONS: Record<string, (...args: any[]) => any> = {
      * 'preCmd' or 'postCmd', depending on whether they should be
      * executed before the blurb appears, or after it disappears.
      */
+    stopMusic: (_player: GPlayerSprite, _someone: GCharSprite) => {
+        GFF.AdventureContent.getSound().stopMusic();
+    },
+    playMusic: (_player: GPlayerSprite, _someone: GCharSprite, songName: string) => {
+        GFF.AdventureContent.getSound().playMusic(songName);
+    },
     playSound: (_player: GPlayerSprite, _someone: GCharSprite, soundName: string) => {
         GFF.AdventureContent.getSound().playSound(soundName);
     },
@@ -93,6 +100,32 @@ const CMD_FUNCTIONS: Record<string, (...args: any[]) => any> = {
             });
         });
     },
+    playerConversionMiracle: (_player: GPlayerSprite, _someone: GCharSprite) => {
+        PLAYER.calcMaxFaith(false);
+        const faithWrapper: {value: number} = {value: 0};
+        GFF.AdventureContent.tweens.add({
+            targets: [faithWrapper],
+            duration: 1000,
+            value: PLAYER.getMaxFaith(),
+            onUpdate: () => {
+                PLAYER.setFaith(Math.floor(faithWrapper.value));
+            }
+        });
+        const graceWrapper: {value: number} = {value: 0};
+        GFF.AdventureContent.tweens.add({
+            targets: [graceWrapper],
+            duration: 1000,
+            value: 10,
+            onUpdate: () => {
+                PLAYER.setGrace(Math.floor(graceWrapper.value));
+            }
+        });
+        GFF.AdventureContent.fadeOut(500, COLOR.WHITE.num(), () => {
+            GFF.AdventureContent.fadeIn(500, COLOR.WHITE.num(), () => {
+                GFF.AdventureContent.updateFidelityMode();
+            });
+        });
+    },
     useSeed: (player: GPlayerSprite, _someone: GCharSprite) => {
         player.showFloatingText('-1 seed');
         PLAYER.changeSeeds(-1);
@@ -100,7 +133,7 @@ const CMD_FUNCTIONS: Record<string, (...args: any[]) => any> = {
         STATS.changeInt('SeedsPlanted', 1);
     },
     giftSeed: (_player: GPlayerSprite, _someone: GCharSprite) => {
-        GFF.canGiftSeed = false;
+        REGISTRY.set('canGiftSeed', false);
         GFF.AdventureContent.forceAdventureInputMode();
         GPopup.createItemPopup('seed').onClose(() => {
             PLAYER.changeSeeds(1);
@@ -132,56 +165,6 @@ const CMD_FUNCTIONS: Record<string, (...args: any[]) => any> = {
         const sY: number = player.y + 42;
         EFFECTS.doEffect('preach_sonic', GFF.AdventureContent, sX, sY, 0.5, 0.5)
             .setDepth(DEPTH.SPECIAL_EFFECT);
-    },
-    cheatFaith: (_player: GPlayerSprite, _someone: GCharSprite) => {
-        PLAYER.setFaith(PLAYER.getMaxFaith());
-    },
-    cheatNoFaith: (_player: GPlayerSprite, _someone: GCharSprite) => {
-        PLAYER.setFaith(1);
-    },
-    cheatGrace: (_player: GPlayerSprite, _someone: GCharSprite) => {
-        PLAYER.setGrace(PLAYER.getMaxGrace());
-    },
-    cheatExp: (_player: GPlayerSprite, _someone: GCharSprite) => {
-        PLAYER.addXp(PLAYER.getRequiredXp() - 1);
-    },
-    cheatFruit: (_player: GPlayerSprite, _someone: GCharSprite) => {
-        for (const church of CHURCH.getChurches()) {
-            const fruitNum: NINE = church.getFruitNum() as NINE;
-            const fruitQueued: boolean = FRUITS.isFruitQueued(church.getFruitNum() as NINE);
-            const canGainFruit: boolean = ((!fruitQueued) && !FRUITS.hasFruitOfChurch(church));
-            if (canGainFruit) {
-                FRUITS.queueFruit(fruitNum);
-                return;
-            }
-        }
-    },
-    cheatSeeds: (_player: GPlayerSprite, _someone: GCharSprite) => {
-        PLAYER.changeSeeds(100);
-    },
-    cheatSermons: (_player: GPlayerSprite, _someone: GCharSprite) => {
-        PLAYER.changeSermons(100);
-    },
-    cheatStandards: (_player: GPlayerSprite, _someone: GCharSprite) => {
-        PLAYER.changeStandards(100);
-    },
-    cheatChatty: (_player: GPlayerSprite, _someone: GCharSprite) => {
-        GFF.chatty = true;
-    },
-    cheatNoImps: (_player: GPlayerSprite, _someone: GCharSprite) => {
-        GFF.impRepellant = true;
-    },
-    cheatDivide: (_player: GPlayerSprite, _someone: GCharSprite) => {
-        PEOPLE.getPersons().forEach(person => {
-            if (person.reprobate) {
-                person.faith = 0;
-            } else if (person.faith < 100) {
-                person.faith = 99;
-            }
-        });
-    },
-    cheatDebug: (_player: GPlayerSprite, _someone: GCharSprite) => {
-        GFF.debugMode = true;
     },
     doPray: (_player: GPlayerSprite, _someone: GCharSprite) => {
         GFF.AdventureContent.pray();
@@ -241,7 +224,7 @@ const CMD_FUNCTIONS: Record<string, (...args: any[]) => any> = {
         return PLAYER.getFaith() > 0 && PLAYER.getSeeds() > 0 ? passId : failId;
     },
     canGiftSeed: (_player: GPlayerSprite, _someone: GCharSprite, passId: string, failId: string): string => {
-        return GFF.canGiftSeed ? passId : failId;
+        return REGISTRY.getBoolean('canGiftSeed') ? passId : failId;
     },
     canGainFruit: (_player: GPlayerSprite, _someone: GCharSprite, passId: string, failId: string): string => {
         const room: GRoom = GFF.AdventureContent.getCurrentRoom() as GRoom;
@@ -419,7 +402,7 @@ export class GConversation {
         GFF.AdventureContent.getSound().setMusicVolume(.2);
 
         // Turn off nametags so they don't get in the way of bubbles:
-        GFF.showNametags = false;
+        REGISTRY.set('isNametags', false);
 
         // Pause all participants so they will pay attention!
         this.pauseParticipants();

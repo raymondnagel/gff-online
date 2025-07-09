@@ -1,0 +1,13 @@
+[
+    {
+      "id": "1",
+      "speaker": "player",
+      "text": "Oh, God! Please be merciful to me, a sinner! I'm sorry for my sins; I know I should be dead and in hell because of them. I'm sorry that my sins cost you your life, dear Jesus... but I thank you so much for taking them. It was the only way I could be saved; and you did it... for me.",
+      "next": "2"
+    },
+    {
+      "id": "2",
+      "speaker": "player",
+      "text": "Lord Jesus... I owe you EVERYTHING! I owe you my life... Please accept me, Lord, as a living sacrifice to do thy will. It's the most I could do - and the least I could do - for my Saviour. Take my life, and let it be consecrated, Lord, to thee. Amen."
+    }
+]

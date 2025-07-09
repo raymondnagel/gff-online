@@ -11,6 +11,7 @@ import { PLAYER } from "../player";
 import { GEnemyAttack, GScripture } from "../types";
 import { GContentScene } from "./GContentScene";
 import { STATS } from "../stats";
+import { REGISTRY } from "../registry";
 
 const BAR_COLOR: number = 0xff0000;
 const GOLD_COLOR: string = '#d5ccb4';
@@ -773,7 +774,12 @@ export class GBattleContent extends GContentScene {
     }
 
     public showRandomVerse() {
-        this.servedVerse = BIBLE.getRandomVerseFromBooks(this.playerBooks);
+        // Get a random verse from the player's books, based on the game type:
+        if (REGISTRY.getString('gameType') === 'focused') {
+            this.servedVerse = BIBLE.getFocusedVerseFromBooks(this.playerBooks);
+        } else {
+            this.servedVerse = BIBLE.getRandomVerseFromBooks(this.playerBooks);
+        }
         GFF.log(`Served verse: ${this.servedVerse.book} ${this.servedVerse.chapter}:${this.servedVerse.verse}`);
         this.scriptureText.setVisible(true);
         this.scriptureText.text = this.servedVerse.verseText;

@@ -48,7 +48,7 @@ export class GGlossaryUI extends GUIScene {
         this.entryTitle.setText(entry.title);
         this.entryImage.setTexture(entry.image);
         this.scaleEntryImage(this.entryImage, 128, 128);
-        this.entryText.setText(`${entry.text}\n\n\n${entry.inspiration}`);
+        this.entryText.setText(`${entry.text}\n\n${entry.inspiration}`);
     }
 
     private initEntryView(initialEntry: GGlossaryEntry) {

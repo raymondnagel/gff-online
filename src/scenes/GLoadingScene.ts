@@ -45,6 +45,7 @@ export class GLoadingScene extends GBaseScene {
         this.load.font('olde', 'assets/fonts/olde.ttf', 'truetype');
         this.load.font('oxygen', 'assets/fonts/oxygen.ttf', 'truetype');
         this.load.font('vanilla', 'assets/fonts/vanilla_extract.ttf', 'truetype');
+        this.load.font('mono', 'assets/fonts/nat_mono.ttf', 'truetype');
     }
 
     private createObjects() {
@@ -110,19 +111,14 @@ export class GLoadingScene extends GBaseScene {
                     'initial_play'
                 ).setInteractive();
 
-                // Init Bible books:
-                BOOKS.initBooks();
-                BOOKS.startWithBook('John');
-                BOOKS.shuffleBooksToFind();
-
-                // Grant Sword of the Spirit:
-                ARMORS.obtainArmor(1);
+                /**
+                 * Don't put anything here related to the player,
+                 * books, or difficulty, as those may depend on the
+                 * selected game options (difficulty, game type, books order).
+                 */
 
                 // Init Commandments:
                 COMMANDMENTS.initCommandments();
-
-                // Initialize player:
-                PLAYER.init();
 
                 // Init scenery definitions:
                 SCENERY.initSceneryDefs();

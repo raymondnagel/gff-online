@@ -17,6 +17,7 @@ import { GRestorationCutscene } from '../../cutscenes/GRestorationCutscene';
 import { GChurch } from '../../GChurch';
 import { GRoom } from '../../GRoom';
 import { STATS } from '../../stats';
+import { REGISTRY } from '../../registry';
 
 const GENDER     = ['m', 'f'] as const;
 const SKIN_COLOR = ['w', 'y', 't', 'b'] as const;
@@ -83,7 +84,7 @@ export class GPersonSprite extends GCharSprite implements GInteractable {
     }
 
     public setReadyToTalk(ready: boolean) {
-        if (GFF.chatty) {
+        if (REGISTRY.getBoolean('isChatty')) {
             this.readyToTalk = true;
             return;
         }
@@ -95,7 +96,7 @@ export class GPersonSprite extends GCharSprite implements GInteractable {
     }
 
     protected getSpeed(): number {
-        return parseFloat(GFF.GAME.registry.get('walkSpeed'));
+        return REGISTRY.getNumber('walkSpeed');
     }
 
     public getVoiceKey(): string {

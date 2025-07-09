@@ -10,6 +10,7 @@ import { GBookEntry, GGlossaryEntry, GItem, TEN } from "../../types";
 import { GPopup } from "../components/GPopup";
 import { GTouchable } from "./GTouchable";
 import { STATS } from "../../stats";
+import { REGISTRY } from "../../registry";
 
 export class GTreasureChest extends GTouchable {
 
@@ -91,6 +92,26 @@ export class GTreasureChest extends GTouchable {
     private getPremiumItem(): GItem {
         const room: GRoom = GFF.AdventureContent.getCurrentRoom() as GRoom;
         const itemName: string = room.getChestItem() as string;
+
+        // If using the canonical books order, we'll get the next book dynamically:
+        if (REGISTRY.get('booksOrder') === 'canonical' && itemName === 'NEXT_BOOK') {
+            // Get the next book to find:
+            const nextBook: string|undefined = BOOKS.getNextBookToFind();
+            if (nextBook === undefined) {
+                // This should never happen, since we create chests according to the number of books
+                throw new Error("No more books to find in the canonical order.");
+            }
+            // Otherwise, use the next book:
+            return {
+                name: nextBook,
+                type: 'book',
+                onCollect: () => {
+                    BOOKS.obtainBook(nextBook);
+                }
+            };
+        }
+
+        // Otherwise, proceed with the default logic: check for book or commandment
         let entry: GBookEntry|GGlossaryEntry|undefined = BOOKS.lookupEntry(itemName);
 
         // If entry was found in BOOKS, return a book item:

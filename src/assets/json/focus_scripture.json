@@ -1,0 +1,335 @@
+[
+    {
+        "book": "Genesis",
+        "refs": [
+            "1:1",
+            "1:2",
+            "1:3"
+        ]
+    },
+    {
+        "book": "Exodus",
+        "refs": [
+        ]
+    },
+    {
+        "book": "Leviticus",
+        "refs": [
+        ]
+    },
+    {
+        "book": "Numbers",
+        "refs": [
+        ]
+    },
+    {
+        "book": "Deuteronomy",
+        "refs": [
+        ]
+    },
+    {
+        "book": "Joshua",
+        "refs": [
+        ]
+    },
+    {
+        "book": "Judges",
+        "refs": [
+        ]
+    },
+    {
+        "book": "Ruth",
+        "refs": [
+        ]
+    },
+    {
+        "book": "1 Samuel",
+        "refs": [
+        ]
+    },
+    {
+        "book": "2 Samuel",
+        "refs": [
+        ]
+    },
+    {
+        "book": "1 Kings",
+        "refs": [
+        ]
+    },
+    {
+        "book": "2 Kings",
+        "refs": [
+        ]
+    },
+    {
+        "book": "1 Chronicles",
+        "refs": [
+        ]
+    },
+    {
+        "book": "2 Chronicles",
+        "refs": [
+        ]
+    },
+    {
+        "book": "Ezra",
+        "refs": [
+        ]
+    },
+    {
+        "book": "Nehemiah",
+        "refs": [
+        ]
+    },
+    {
+        "book": "Esther",
+        "refs": [
+        ]
+    },
+    {
+        "book": "Job",
+        "refs": [
+        ]
+    },
+    {
+        "book": "Psalms",
+        "refs": [
+        ]
+    },
+    {
+        "book": "Proverbs",
+        "refs": [
+        ]
+    },
+    {
+        "book": "Ecclesiastes",
+        "refs": [
+        ]
+    },
+    {
+        "book": "Song of Solomon",
+        "refs": [
+        ]
+    },
+    {
+        "book": "Isaiah",
+        "refs": [
+        ]
+    },
+    {
+        "book": "Jeremiah",
+        "refs": [
+        ]
+    },
+    {
+        "book": "Lamentations",
+        "refs": [
+        ]
+    },
+    {
+        "book": "Ezekiel",
+        "refs": [
+        ]
+    },
+    {
+        "book": "Daniel",
+        "refs": [
+        ]
+    },
+    {
+        "book": "Hosea",
+        "refs": [
+        ]
+    },
+    {
+        "book": "Joel",
+        "refs": [
+        ]
+    },
+    {
+        "book": "Amos",
+        "refs": [
+        ]
+    },
+    {
+        "book": "Obadiah",
+        "refs": [
+        ]
+    },
+    {
+        "book": "Jonah",
+        "refs": [
+        ]
+    },
+    {
+        "book": "Micah",
+        "refs": [
+        ]
+    },
+    {
+        "book": "Nahum",
+        "refs": [
+        ]
+    },
+    {
+        "book": "Habakkuk",
+        "refs": [
+        ]
+    },
+    {
+        "book": "Zephaniah",
+        "refs": [
+        ]
+    },
+    {
+        "book": "Haggai",
+        "refs": [
+        ]
+    },
+    {
+        "book": "Zechariah",
+        "refs": [
+        ]
+    },
+    {
+        "book": "Malachi",
+        "refs": [
+        ]
+    },
+    {
+        "book": "Matthew",
+        "refs": [
+        ]
+    },
+    {
+        "book": "Mark",
+        "refs": [
+        ]
+    },
+    {
+        "book": "Luke",
+        "refs": [
+        ]
+    },
+    {
+        "book": "John",
+        "refs": [
+        ]
+    },
+    {
+        "book": "Acts",
+        "refs": [
+        ]
+    },
+    {
+        "book": "Romans",
+        "refs": [
+        ]
+    },
+    {
+        "book": "1 Corinthians",
+        "refs": [
+        ]
+    },
+    {
+        "book": "2 Corinthians",
+        "refs": [
+        ]
+    },
+    {
+        "book": "Galatians",
+        "refs": [
+        ]
+    },
+    {
+        "book": "Ephesians",
+        "refs": [
+        ]
+    },
+    {
+        "book": "Philippians",
+        "refs": [
+        ]
+    },
+    {
+        "book": "Colossians",
+        "refs": [
+        ]
+    },
+    {
+        "book": "1 Thessalonians",
+        "refs": [
+        ]
+    },
+    {
+        "book": "2 Thessalonians",
+        "refs": [
+        ]
+    },
+    {
+        "book": "1 Timothy",
+        "refs": [
+        ]
+    },
+    {
+        "book": "2 Timothy",
+        "refs": [
+        ]
+    },
+    {
+        "book": "Titus",
+        "refs": [
+        ]
+    },
+    {
+        "book": "Philemon",
+        "refs": [
+        ]
+    },
+    {
+        "book": "Hebrews",
+        "refs": [
+        ]
+    },
+    {
+        "book": "James",
+        "refs": [
+        ]
+    },
+    {
+        "book": "1 Peter",
+        "refs": [
+        ]
+    },
+    {
+        "book": "2 Peter",
+        "refs": [
+        ]
+    },
+    {
+        "book": "1 John",
+        "refs": [
+        ]
+    },
+    {
+        "book": "2 John",
+        "refs": [
+        ]
+    },
+    {
+        "book": "3 John",
+        "refs": [
+        ]
+    },
+    {
+        "book": "Jude",
+        "refs": [
+        ]
+    },
+    {
+        "book": "Revelation",
+        "refs": [
+        ]
+    }
+]

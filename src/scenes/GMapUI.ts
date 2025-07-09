@@ -4,6 +4,7 @@ import { GInputMode } from "../GInputMode";
 import { GRoom } from "../GRoom";
 import { GFF } from "../main";
 import { PLAYER } from "../player";
+import { REGISTRY } from "../registry";
 import { Dir9, GPoint2D } from "../types";
 import { GUIScene } from "./GUIScene";
 
@@ -94,7 +95,7 @@ export class GMapUI extends GUIScene {
                     const feature = room.getMapFeature();
 
                     // Draw terrain base:
-                    if (room.isDiscovered() || GFF.debugMode) {
+                    if (room.isDiscovered() || REGISTRY.getBoolean('isDebug')) {
                         this.lowerTexture.draw(terrain, cellX, cellY);
                     }
 
@@ -110,7 +111,7 @@ export class GMapUI extends GUIScene {
                                 break;
                             default:
                                 // Other features are shown only if the room is discovered:
-                                if (room.isDiscovered() || GFF.debugMode) {
+                                if (room.isDiscovered() || REGISTRY.getBoolean('isDebug')) {
                                     this.lowerTexture.draw(feature, cellX, cellY);
                                 }
                                 break;
@@ -118,7 +119,7 @@ export class GMapUI extends GUIScene {
                     }
 
                     // Draw the rest only if the room is discovered:
-                    if (room.isDiscovered() || GFF.debugMode) {
+                    if (room.isDiscovered() || REGISTRY.getBoolean('isDebug')) {
                         // Draw terrain overlap:
                         this.lowerTexture.draw(terrain + '_overlap', cellX, cellY + CELL_Y_OFFSET);
 
@@ -203,25 +204,25 @@ export class GMapUI extends GUIScene {
     private drawMapEdgesForRoom(room: GRoom, cellX: number, cellY: number, mapTexture: Phaser.GameObjects.RenderTexture) {
         if (
             !room.hasNeighbor(Dir9.N) ||
-            (!(room.getNeighbor(Dir9.N) as GRoom).isDiscovered() && !GFF.debugMode)
+            (!(room.getNeighbor(Dir9.N) as GRoom).isDiscovered() && !REGISTRY.getBoolean('isDebug'))
         ) {
             mapTexture.draw('map_edge_n', cellX, cellY);
         }
         if (
             !room.hasNeighbor(Dir9.W) ||
-            (!(room.getNeighbor(Dir9.W) as GRoom).isDiscovered() && !GFF.debugMode)
+            (!(room.getNeighbor(Dir9.W) as GRoom).isDiscovered() && !REGISTRY.getBoolean('isDebug'))
         ) {
             mapTexture.draw('map_edge_w', cellX, cellY);
         }
         if (
             !room.hasNeighbor(Dir9.E) ||
-            (!(room.getNeighbor(Dir9.E) as GRoom).isDiscovered() && !GFF.debugMode)
+            (!(room.getNeighbor(Dir9.E) as GRoom).isDiscovered() && !REGISTRY.getBoolean('isDebug'))
         ) {
             mapTexture.draw('map_edge_e', cellX, cellY);
         }
         if (
             !room.hasNeighbor(Dir9.S) ||
-            (!(room.getNeighbor(Dir9.S) as GRoom).isDiscovered() && !GFF.debugMode)
+            (!(room.getNeighbor(Dir9.S) as GRoom).isDiscovered() && !REGISTRY.getBoolean('isDebug'))
         ) {
             mapTexture.draw('map_edge_s', cellX, cellY);
         }

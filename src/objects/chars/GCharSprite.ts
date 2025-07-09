@@ -5,6 +5,7 @@ import { Dir9, GGender, GPerson, GPoint2D } from '../../types';
 import { GGoal } from '../../goals/GGoal';
 import { PHYSICS } from '../../physics';
 import { DEPTH } from '../../depths';
+import { REGISTRY } from '../../registry';
 
 const NAMETAG_SPACE: number = 10;
 const FLOAT_TEXT_SPACE: number = 10;
@@ -407,7 +408,8 @@ export abstract class GCharSprite extends Phaser.Physics.Arcade.Sprite {
     }
 
     private updateNametag() {
-        if (GFF.showNametags) {
+        const showNametags: boolean = REGISTRY.get('isNametags');
+        if (showNametags) {
             const topCenter: GPoint2D = this.getTopCenter();
             if (this.nametag === undefined) {
                 this.nametag = this.createNametag();
@@ -415,7 +417,7 @@ export abstract class GCharSprite extends Phaser.Physics.Arcade.Sprite {
             this.nametag.setPosition(topCenter.x, topCenter.y - NAMETAG_SPACE);
             this.nametag.text = this.getNametagText();
         }
-        this.nametag?.setVisible(GFF.showNametags);
+        this.nametag?.setVisible(showNametags);
     }
 
     protected createNametag(): Phaser.GameObjects.Text {

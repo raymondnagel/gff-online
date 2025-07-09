@@ -10,6 +10,7 @@ import { GScrollPane } from "../objects/components/GScrollPane";
 import { GTextOptionButton } from "../objects/components/GTextOptionButton";
 import { PEOPLE } from "../people";
 import { PLAYER } from "../player";
+import { REGISTRY } from "../registry";
 import { TOWN } from "../town";
 import { GPerson } from "../types";
 import { GUIScene } from "./GUIScene";
@@ -144,7 +145,7 @@ export class GPeopleUI extends GUIScene {
                 const terrain: string = `mini_${room.getMapTerrain()}`;
 
                 // Draw terrain base:
-                if (room.isDiscovered() || GFF.debugMode) {
+                if (room.isDiscovered() || REGISTRY.getBoolean('isDebug')) {
                     this.miniMap.draw(terrain, cellX, cellY);
                 }
             }

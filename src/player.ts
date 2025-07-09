@@ -14,7 +14,7 @@ export namespace PLAYER {
     let level: number;
     let xp: number;
     let maxXp: number;
-    let faith: number = 50;
+    let faith: number = 0;
     let maxFaith: number;
     let grace: number;
     let seeds: number;
@@ -27,8 +27,8 @@ export namespace PLAYER {
         level = 0;
         xp = 0;
         maxXp = getXpNeededAtLevel(level);
-        calcMaxFaith();
-        grace = 10; // Initial grace
+        maxFaith = 0;
+        grace = 0; // Initial grace
         seeds = 0; // Initial seeds
         sermons = 0; // Initial sermons
         standards = 0; // Initial standards
@@ -125,9 +125,9 @@ export namespace PLAYER {
 
     export function giveGrace(amount: 'minor'|'major') {
         if (amount === 'minor') {
-            changeGrace(Math.ceil(GFF.Difficulty.minorGraceIncrease * getMaxGrace()));
+            changeGrace(Math.ceil(GFF.getDifficulty().minorGraceIncrease * getMaxGrace()));
         } else if (amount === 'major') {
-            changeGrace(Math.ceil(GFF.Difficulty.majorGraceIncrease * getMaxGrace()));
+            changeGrace(Math.ceil(GFF.getDifficulty().majorGraceIncrease * getMaxGrace()));
         }
     }
 
@@ -142,13 +142,20 @@ export namespace PLAYER {
         return getMaxFaith();
     }
 
-    export function calcMaxFaith(): void {
+    export function calcMaxFaith(giveBonus: boolean = true): void {
+        const oldMaxFaith: number = maxFaith;
         maxFaith = START_FAITH +
             (level * 10) +
             (COMMANDMENTS.getCount() * 5) +
             (BOOKS.getObtainedCount() * 5) +
             (FRUITS.getCount() * 5) +
             (ARMORS.getCount() * 5); // Add companion bonus (5)
+
+        // If the max faith has increased, give the increase as a bonus:
+        const bonus: number = maxFaith - oldMaxFaith;
+        if (bonus > 0 && giveBonus) {
+            changeFaith(bonus);
+        }
     }
 
     export function getSeeds(): number {

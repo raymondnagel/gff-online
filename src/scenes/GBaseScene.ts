@@ -1,7 +1,9 @@
 import { GInputMode } from '../GInputMode';
 import { GSoundManager } from '../GSoundManager';
+import { COLOR } from '../colors';
 import { DEPTH } from '../depths';
 import { GBaseGameMode } from '../game_modes/GBaseGameMode';
+import { GColor } from '../types';
 
 export abstract class GBaseScene extends Phaser.Scene {
 
@@ -71,6 +73,18 @@ export abstract class GBaseScene extends Phaser.Scene {
 
     public getFadeOverlay(): Phaser.GameObjects.Rectangle {
         return this.fadeOverlay;
+    }
+
+    public shroud(color: GColor = COLOR.BLACK) {
+        this.createFadeOverlay(color.num());
+        this.fadeOverlay.setAlpha(1);
+        this.fadeOverlay.setVisible(true);
+    }
+    public unshroud() {
+        if (this.fadeOverlay) {
+            this.fadeOverlay.setAlpha(0);
+            this.fadeOverlay.setVisible(false);
+        }
     }
 
     public fadeIn(overTime: number, color?: number, preLoad?: Function, onComplete?: Function) {

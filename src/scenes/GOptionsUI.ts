@@ -32,14 +32,6 @@ export class GOptionsUI extends GUIScene {
 
     private initInputMode() {
         INPUT_DEFAULT.onKeyDown((keyEvent) => {
-            if (keyEvent.key === 'd') {
-                if (GFF.debugMode) {
-                    this.getSound().playSound('debug_off');
-                } else {
-                    this.getSound().playSound('debug_on');
-                }
-                GFF.debugMode = !GFF.debugMode;
-            }
             this.sendPotentialHotkey(keyEvent);
         });
         INPUT_DEFAULT.addAllowedEvent('MOUSE_UI_BUTTON');

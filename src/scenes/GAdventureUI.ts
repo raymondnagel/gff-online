@@ -1,11 +1,10 @@
 import 'phaser';
 import { GUIScene } from './GUIScene';
-import { GAdventureContent } from './GAdventureContent';
 import { GFF } from '../main';
 import { GPoint2D } from '../types';
-import { RANDOM } from '../random';
 import { DEPTH } from '../depths';
 import { COLOR } from '../colors';
+import { GTestConsole } from '../objects/components/GTestConsole';
 
 const MOUSE_INACTIVE_INTERVAL: number = 2000;
 
@@ -13,7 +12,7 @@ export class GAdventureUI extends GUIScene {
 
     private promptBacker: Phaser.GameObjects.Image;
     private promptText: Phaser.GameObjects.Text;
-    private nametagKey: Phaser.Input.Keyboard.Key;
+    private testConsole: GTestConsole;
     private lastActivityTime: number;
 
     constructor() {
@@ -29,6 +28,7 @@ export class GAdventureUI extends GUIScene {
         super.create();
         this.createUIBar();
         this.createPrompt();
+        this.createConsole();
         this.setMouseInactiveTimer();
 
         // this.createTileGuidelines();
@@ -120,7 +120,23 @@ export class GAdventureUI extends GUIScene {
         this.tweens.killTweensOf(this.promptText); // Stop any ongoing animations
     }
 
+    private createConsole() {
+        this.testConsole = new GTestConsole(this, 0, 0);
+        this.testConsole.setVisible(false);
+    }
 
+    public showConsole(line1?: string, line2?: string, initCommand?: string): void {
+        this.testConsole.setVisible(true);
+        this.testConsole.setTexts(line1, line2, initCommand);
+    }
+
+    public hideConsole(): void {
+        this.testConsole.setVisible(false);
+    }
+
+    public sendKeypressToConsole(keyEvent: KeyboardEvent): void {
+        this.testConsole.sendKeyPress(keyEvent);
+    }
 
     public sendPotentialHotkey(keyEvent: KeyboardEvent) {
         // AdventureUI must handle popup hotkeys as well as UI bar hotkeys;
