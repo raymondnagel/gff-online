@@ -26,6 +26,8 @@ type BookState = 'missing'|'acquired'|'enabled';
  */
 
 export namespace BOOKS {
+    // The first book obtained, which will be gifted to him by the Preacher in the opening cutscene.
+    let firstBook: string;
 
     // List of books left to find. Next book is popped off the list.
     let booksToFind: string[] = [];
@@ -97,8 +99,16 @@ export namespace BOOKS {
     export function startWithBook(bookName: string) {
         const index = booksToFind.findIndex(obj => obj === bookName);
         booksToFind.splice(index, 1);
-        obtainBook(bookName);
-        setBookEnabled(bookName, true);
+        firstBook = bookName;
+    }
+
+    export function getFirstBook(): string {
+        return firstBook;
+    }
+
+    export function obtainFirstBook() {
+        obtainBook(firstBook);
+        setBookEnabled(firstBook, true);
     }
 
     export function shuffleBooksToFind() {

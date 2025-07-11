@@ -1,6 +1,8 @@
 [
   "images/adam_head.png",
+  "images/baptism_end.png",
   "images/battle_amc.png",
+  "images/bg/baptism_scene_bg.png",
   "images/bg/bible_subscreen_bg.png",
   "images/bg/cave_enc_bg.png",
   "images/bg/church_bg.png",
@@ -177,6 +179,7 @@
   "images/radii/radius_9.png",
   "images/roll_left.png",
   "images/roll_right.png",
+  "images/scenery/baptism_underwater.png",
   "images/scenery/barrel_cactus.png",
   "images/scenery/big_flower.png",
   "images/scenery/blue_chest.png",

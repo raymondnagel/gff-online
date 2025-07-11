@@ -1,0 +1,85 @@
+[
+    {
+      "id": "1",
+      "speaker": "player",
+      "hearer": "preacher",
+      "text": "Thanks!",
+      "next": "2"
+    },
+    {
+      "id": "2",
+      "speaker": "preacher",
+      "hearer": "player",
+      "text": "As you discover and study more books of the Holy Bible, you will become stronger and better prepared to fight the Lord's battles.",
+      "next": "3"
+    },
+    {
+      "id": "3",
+      "speaker": "player",
+      "hearer": "preacher",
+      "text": "What if my enemies attack me? Is there anything to protect me from the wicked spirits?",
+      "next": "4"
+    },
+    {
+      "id": "4",
+      "speaker": "preacher",
+      "hearer": "player",
+      "text": "You will surely be attacked. Wherefore take unto you the whole armour of God, that ye may be able to withstand in the evil day, and having done all, to stand. However, like David, you cannot equip armour unless you have proved it. The pieces of armour are sealed within five formidable strongholds, each a location of great personal trial to be overcome by the determined Christian.",
+      "next": "5"
+    },
+    {
+      "id": "5",
+      "speaker": "player",
+      "hearer": "preacher",
+      "text": "I guess I should be careful when I go there...",
+      "next": "6"
+    },
+    {
+      "id": "6",
+      "speaker": "preacher",
+      "hearer": "player",
+      "text": "Be careful for nothing; but in every thing by prayer and supplication with thanksgiving let your requests be made known unto God. Be strong and of a good courage; be not afraid, neither be thou dismayed: for the LORD thy God is with thee whithersoever thou goest.",
+      "next": "7"
+    },
+    {
+      "id": "7",
+      "speaker": "player",
+      "hearer": "preacher",
+      "text": "Great! Anything else I should know about?",
+      "next": "8"
+    },
+    {
+      "id": "8",
+      "speaker": "preacher",
+      "hearer": "player",
+      "text": "Remember that the world is full of sinners, lost, as you once were; and the Lord is not willing that any should perish, but that all should come to repentance. For whosoever shall call upon the name of the Lord shall be saved. How then shall they call on him in whom they have not believed? and how shall they believe in him of whom they have not heard? and how shall they hear without a preacher?",
+      "next": "9"
+    },
+    {
+      "id": "9",
+      "speaker": "player",
+      "hearer": "preacher",
+      "text": "I have the Spirit of God and the word of God... Could I be a preacher?",
+      "next": "10"
+    },
+    {
+      "id": "10",
+      "speaker": "preacher",
+      "hearer": "player",
+      "text": "Of course! God hath committed to us the ministry of reconciliation, making us able ministers of the new testament. The Lord Jesus has given us a great commission to preach the gospel to every creature, that we should be for salvation unto the ends of the earth! Freely ye have received, freely give.",
+      "next": "11"
+    },
+    {
+      "id": "11",
+      "speaker": "preacher",
+      "hearer": "player",
+      "text": "That's all for now. Be sure to talk to the other saints outside: they can offer additional information and advice to help you on your adventure. The grace of our Lord Jesus Christ be with you, Brother Adam.",
+      "next": "12"
+    },
+    {
+      "id": "12",
+      "speaker": "player",
+      "hearer": "preacher",
+      "text": "Good bye, preacher. Thanks for everything!"
+    }
+]

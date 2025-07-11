@@ -10,6 +10,7 @@ import { ARMORS } from '../armors';
 import { EFFECTS } from '../effects';
 import { PLAYER } from '../player';
 import { STATS } from '../stats';
+import { REGISTRY } from '../registry';
 
 const LOAD_COLOR: number     = 0xffffff;
 const PROGRESS_COLOR: number = 0x00c220;
@@ -116,6 +117,7 @@ export class GLoadingScene extends GBaseScene {
                  * books, or difficulty, as those may depend on the
                  * selected game options (difficulty, game type, books order).
                  */
+                REGISTRY.init();
 
                 // Init Commandments:
                 COMMANDMENTS.initCommandments();

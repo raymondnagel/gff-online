@@ -6,6 +6,14 @@ import { GFF } from "./main";
  */
 export namespace REGISTRY {
 
+    /**
+     * Initializes the registry with some default values.
+     * Don't put anything in here that will be set by new game options.
+     */
+    export function init(): void {
+        REGISTRY.set('skipIntro', 0);
+    }
+
     export function get(key: string): any {
         return GFF.GAME.registry.get(key);
     }
@@ -28,7 +36,7 @@ export namespace REGISTRY {
     }
 
     export function getBoolean(key: string): boolean {
-        return GFF.GAME.registry.get(key) as boolean;
+        return GFF.GAME.registry.get(key) ?? false as boolean;
     }
 
     export function has(key: string): boolean {

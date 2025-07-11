@@ -336,9 +336,11 @@ export abstract class GCutscene {
     }
 
     /**
-     * Get an actor sprite by label and spawn him at the given point.
+     * Spawn an actor sprite at the given point.
      * This does not check surroundings, so care must be taken to only
      * spawn in a safe area that is guaranteed to be unobstructed.
+     *
+     * This can also be used to reposition an actor sprite that is already spawned.
      */
     private spawnActorAt(actorSprite: GCharSprite, x: number, y: number): void {
         actorSprite.setVisible(true);

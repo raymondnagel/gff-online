@@ -46,7 +46,20 @@ export namespace EFFECTS {
                 },
                 soundKey: null, // No sound; since multiple flashes can occur at once, a single sound will be played independently
                 hideOnFinish: true
-            }
+            },
+            {
+                spriteConfig: {
+                    key: 'baptism',
+                    frames: GFF.GAME.anims.generateFrameNumbers(
+                        'baptism',
+                        { start: 0, end: 13 }
+                    ),
+                    frameRate: 12,
+                    repeat: 0
+                },
+                soundKey: 'baptism_splash',
+                hideOnFinish: false
+            },
 
         ].forEach(s => {
             SPRITE_EFFECTS.set(s.spriteConfig.key, s as SpriteEffect);

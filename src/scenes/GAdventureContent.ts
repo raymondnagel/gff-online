@@ -1271,7 +1271,11 @@ export class GAdventureContent extends GContentScene {
 
     public obtainItemWithoutChest(item: GItem, postFunction: Function = () => {}) {
         item.onCollect();
-        GPopup.createItemPopup(item.name).onClose(postFunction);
+        if (item.type === 'item') {
+            GPopup.createItemPopup(item.name).onClose(postFunction);
+        } else if (item.type === 'book') {
+            GPopup.createBookPopup(item.name).onClose(postFunction);
+        }
     }
 
     public saveGame() {

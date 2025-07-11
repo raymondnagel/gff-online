@@ -1,0 +1,71 @@
+[
+    {
+      "id": "1",
+      "speaker": "preacher",
+      "hearer": "player",
+      "text": "Brother Adam, there is joy in heaven over the repentance of a sinner. But not everyone is happy; in fact, someone is most displeased about your salvation.",
+      "next": "2"
+    },
+    {
+      "id": "2",
+      "speaker": "player",
+      "hearer": "preacher",
+      "text": "Who is this wretched creature?",
+      "next": "3"
+    },
+    {
+      "id": "3",
+      "speaker": "preacher",
+      "hearer": "player",
+      "text": "None other than that old serpent, called the Devil, and Satan. He was once an angel of light: Lucifer, the covering cherub. But lifting up his heart with pride, he led a rebellion of angels against the Lord, and was cast out of heaven.",
+      "next": "4"
+    },
+    {
+      "id": "4",
+      "speaker": "preacher",
+      "hearer": "player",
+      "text": "Satan hates mankind - especially those who are part of God's kingdom. Be sober, be vigilant; because your adversary the devil, as a roaring lion, walketh about, seeking whom he may devour.",
+      "next": "5"
+    },
+    {
+      "id": "5",
+      "speaker": "player",
+      "hearer": "preacher",
+      "text": "He sounds like a powerful enemy!",
+      "next": "6"
+    },
+    {
+      "id": "6",
+      "speaker": "preacher",
+      "hearer": "player",
+      "text": "He is powerful indeed. And someday you will have to confront him, as Jesus did. But God is faithful, who will not suffer you to be tempted above that ye are able. In time, God will see that you are properly equipped to face the devil and his minions.",
+      "next": "7"
+    },
+    {
+      "id": "7",
+      "speaker": "player",
+      "hearer": "preacher",
+      "text": "Is there anything I should do to prepare?",
+      "next": "8"
+    },
+    {
+      "id": "8",
+      "speaker": "preacher",
+      "hearer": "player",
+      "text": "Yes, I'm glad you asked. As a new Christian - a newborn babe - desire the sincere milk of the word, that ye may grow thereby. You must give attention to reading the word, and meditate therein. Faith cometh by hearing, and hearing by the word of God; and this is the victory that overcometh the world, even our faith. Putting our faith in Christ, we can be strong in the Lord, and in the power of his might.",
+      "next": "9"
+    },
+    {
+      "id": "9",
+      "speaker": "player",
+      "hearer": "preacher",
+      "text": "Amen!",
+      "next": "10"
+    },
+    {
+      "id": "10",
+      "speaker": "preacher",
+      "hearer": "player",
+      "text": "The scripture is also our weapon: for we wrestle not against flesh and blood, but against principalities, against powers, against the rulers of the darkness of this world, against spiritual wickedness in high places. We therefore take up the sword of the Spirit, which is the word of God."
+    }
+]

@@ -67,6 +67,7 @@
     "preCmd": "familiarize()",
     "choice": [
       { "choiceText": "Please tell me about yourself!", "resultId": "bio1"},
+      { "choiceText": "Could you explain something to me?", "resultId": "explainMenu"},
       { "choiceText": "Do you know anyone from this town?", "resultId": "inform"},
       { "choiceText": "Can you help me find a treasure?", "resultId": "markChest"},
       { "choiceText": "What's your favorite book of the Bible?", "resultId": "favoriteBook"},
@@ -87,6 +88,101 @@
     "speaker": "other",
     "hearer": "player",
     "textFunc": "bio(2)",
+    "next": "playerMenu"
+  },
+  {
+    "id": "explainMenu",
+    "speaker": "player",
+    "hearer": "other",
+    "choice": [
+      { "choiceText": "About Battle...", "resultId": "aboutBattle"},
+      { "choiceText": "About Books of the Bible...", "resultId": "aboutBooks"},
+      { "choiceText": "About Fruit of the Spirit...", "resultId": "aboutFruit"},
+      { "choiceText": "About the Ten Commandments...", "resultId": "aboutCommandments"},
+      { "choiceText": "About the Armour of God...", "resultId": "aboutArmour"},
+      { "choiceText": "About Seeds...", "resultId": "aboutSeeds"},
+      { "choiceText": "About Sermons...", "resultId": "aboutSermons"},
+      { "choiceText": "About Standards...", "resultId": "aboutStandards"},
+      { "choiceText": "About Key Verses...", "resultId": "aboutKeyVerses"},
+      { "choiceText": "About other items...", "resultId": "aboutOtherItems"},
+      { "choiceText": "Never mind, actually...", "resultId": "glossaryReminder"}
+    ]
+  },
+  {
+    "id": "aboutBattle",
+    "speaker": "other",
+    "hearer": "player",
+    "text": "We wrestle not against flesh and blood, but against spiritual wickedness; therefore the weapons of our warfare are not carnal. We fight with the sword of the Spirit, which is the word of God. During battle, a scripture will appear from one of your enabled books, and you must guess its reference in order to wield it. The closer your guess, the stronger your attack will be. If you guess the wrong book, however, the attack will miss.",
+    "next": "explainMenu"
+  },
+  {
+    "id": "aboutBooks",
+    "speaker": "other",
+    "hearer": "player",
+    "text": "You'll find books of the Bible throughout the Land of Allegoria, usually in treasure chests. Each book found will increase your faith, and you can also enable specific books to use in battle (Books subscreen). Using more books will make you stronger, but be careful! If you use too many books that you're not familiar with, you are likely to be confused, and miss altogether!",
+    "next": "explainMenu"
+  },
+  {
+    "id": "aboutFruit",
+    "speaker": "other",
+    "hearer": "player",
+    "text": "The Fruit of the Spirit are qualities that God wants to develop in us. His order since the beginning is that fruit trees yield fruit after their kind; so the first step is to fellowship with other believers, and witness the working of the Spirit in their lives. Be patient: the husbandman waiteth for the precious fruit of the earth, and hath long patience for it; so must we bring forth fruit with patience, as Jesus said.",
+    "next": "explainMenu"
+  },
+  {
+    "id": "aboutCommandments",
+    "speaker": "other",
+    "hearer": "player",
+    "text": "The commandments of the LORD are for our good always, that he might preserve us alive. He knoweth the way of the righteous, and leadeth us in the way we should go. As you learn and obey the Ten Commandments, their purity will enlighten your eyes, and you will be able to see the way of righteousness more clearly. For the commandment is a lamp; and the law is light; and reproofs of instruction are the way of life.",
+    "next": "explainMenu"
+  },
+  {
+    "id": "aboutArmour",
+    "speaker": "other",
+    "hearer": "player",
+    "text": "The Devil and his angels are powerful enemies, brother! Only by putting on the whole armour of God can we withstand in the evil day, and overcome the wicked one. In order to equip each piece of armour, you must prove it by overcoming fiery trials. Be strong in the Lord, and in the power of his might: yea, mighty through God to the pulling down of strong holds; and God will be thy shield, and thy exceeding great reward!",
+    "next": "explainMenu"
+  },
+  {
+    "id": "aboutSeeds",
+    "speaker": "other",
+    "hearer": "player",
+    "text": "Freely ye have received, freely give. As we are the planting of the LORD, so has he also committed to us the ministry of reconciliation. Each seed you collect is a word that God gives you to speak to others. Some will fall among thorns, on stony ground, or by the wayside; but it is worth it for the ones that fall on good ground, in an honest and good heart. In due season we shall reap, if we faint not!",
+    "next": "explainMenu"
+  },
+  {
+    "id": "aboutSermons",
+    "speaker": "other",
+    "hearer": "player",
+    "text": "Sometimes God gives us a comprehensive message to proclaim to many people at once. We call them \"sermons\"; for example, the Sermon on the Mount that Jesus preached to multitudes. This may seem strange and laughable to the world; but it pleased God by the foolishness of preaching to save them that believe. Cry aloud, spare not, lift up thy voice like a trumpet! (And don't forget your bullhorn!)",
+    "next": "explainMenu"
+  },
+  {
+    "id": "aboutStandards",
+    "speaker": "other",
+    "hearer": "player",
+    "text": "The LORD's right hand, and his holy arm, hath gotten him the victory! Hallelujah! Now thanks be unto God, which always causeth us to triumph in Christ, and maketh manifest the savour of his knowledge by us in every place. Let us therefore lift up a standard by the Spirit of the Lord to proclaim victory through our Lord Jesus Christ, in whom we are more than conquerors!",
+    "next": "explainMenu"
+  },
+  {
+    "id": "aboutKeyVerses",
+    "speaker": "other",
+    "hearer": "player",
+    "text": "Key Verses are scriptures that are important for every Christian to know and bear in mind. In the strongholds of Allegoria (and throughout life), we will sometimes come across obstacles or challenges that can only be solved by the truth of God that he has revealed to us in the holy scriptures. Key Verses are like keys that unlock the way forward, so that we can continue the journey of faith that God has set before us.",
+    "next": "explainMenu"
+  },
+  {
+    "id": "aboutOtherItems",
+    "speaker": "other",
+    "hearer": "player",
+    "text": "You'll sometimes find other, non-collectible items in the common, brown chests that litter the land. Milk, meat, and strong meat are items that will restore your faith. You may also find experience bonus items, which will help you to level up and grow in your faith. Remember: faith is the victory, and we can never have too much faith!",
+    "next": "explainMenu"
+  },
+  {
+    "id": "glossaryReminder",
+    "speaker": "other",
+    "hearer": "player",
+    "text": "Remember that you can also check the Glossary for more information about game concepts and items.",
     "next": "playerMenu"
   },
   {

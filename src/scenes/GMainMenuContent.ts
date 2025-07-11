@@ -298,7 +298,6 @@ export class GMainMenuContent extends GContentScene {
         GFF.log(`Books Order: ${REGISTRY.get('booksOrder')}`);
 
         // Init some registry values:
-        REGISTRY.set('doIntro', true);
         REGISTRY.set('canGiftSeed', true);
 
         // Init Bible books:
@@ -311,11 +310,24 @@ export class GMainMenuContent extends GContentScene {
             BOOKS.reverseBooksToFind();
         }
 
-        // Grant Sword of the Spirit:
-        ARMORS.obtainArmor(1);
-
         // Initialize player:
         PLAYER.init();
+
+        // Determine whether to skip the intro:
+        switch (REGISTRY.getNumber('skipIntro')) {
+            case 1:
+                // Skip entire intro and start the game immediately;
+                // We have to give Adam everything that he would normally get in the intro.
+                REGISTRY.set('doIntro', false);
+                PLAYER.beBornAgain();
+                BOOKS.obtainFirstBook();
+                ARMORS.obtainArmor(1);
+                break;
+            default:
+                // For any other value, show the intro.
+                // Other values will be used in the opening cutscene to skip certain parts.
+                REGISTRY.set('doIntro', true);
+        }
 
         // Transition to the world build mode
         this.getSound().fadeOutMusic(1000);

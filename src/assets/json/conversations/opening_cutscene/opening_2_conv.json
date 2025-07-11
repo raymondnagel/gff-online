@@ -4,7 +4,6 @@
       "speaker": "player",
       "hearer": "preacher",
       "text": "I believe! I really do believe!",
-      "postCmd": "playerConversionMiracle()",
       "next": "2"
     },
     {

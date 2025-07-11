@@ -1,6 +1,7 @@
 import 'phaser';
 import { GFF } from '../main';
 import { GContentScene } from './GContentScene';
+import { REGISTRY } from '../registry';
 
 export class GTitleContent extends GContentScene {
 
@@ -69,12 +70,30 @@ export class GTitleContent extends GContentScene {
 
                 // Add event listener for pressing Enter to start the game
                 thisScene.input.keyboard?.once('keydown-ENTER', () => {
-                    this.getSound().fadeOutMusic(1000);
-                    this.fadeOut(1000, undefined, () => {
-                        GFF.MAINMENU_MODE.switchTo(GFF.TITLE_MODE);
-                    });
+                    thisScene.startGame();
+                });
+
+                // Also secretly listen for some other keys, which will skip the intro
+                thisScene.input.keyboard?.once('keydown-ONE', () => {
+                    REGISTRY.set('skipIntro', 1);
+                    thisScene.startGame();
+                });
+                thisScene.input.keyboard?.once('keydown-TWO', () => {
+                    REGISTRY.set('skipIntro', 2);
+                    thisScene.startGame();
+                });
+                thisScene.input.keyboard?.once('keydown-THREE', () => {
+                    REGISTRY.set('skipIntro', 3);
+                    thisScene.startGame();
                 });
             });
+        });
+    }
+
+    private startGame() {
+        this.getSound().fadeOutMusic(1000);
+        this.fadeOut(1000, undefined, () => {
+            GFF.MAINMENU_MODE.switchTo(GFF.TITLE_MODE);
         });
     }
 

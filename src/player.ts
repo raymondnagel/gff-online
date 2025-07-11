@@ -36,6 +36,16 @@ export namespace PLAYER {
         companion = null; // No companion initially
     }
 
+    /**
+     * This happens with a 'miracle' animation during the service of the opening cutscene.
+     * If the service was skipped, this has to be before gameplay begins.
+     * It should be called in the opening cutscene if only part of the cutsene is skipped.
+     */
+    export function beBornAgain() {
+        PLAYER.calcMaxFaith(false);
+        PLAYER.setFaith(PLAYER.getMaxFaith());
+    }
+
     export function getName(): string {
         return 'Adam';
     }
