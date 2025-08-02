@@ -140,6 +140,7 @@ export namespace SCENERY {
             { key: 'tree_stump', type: 'static', body: {x: 0, y: 20, width: 115, height: 36} },
             { key: 'willow_tree', type: 'static', body: {x: 44, y: 209, width: 131, height: 21} },
             { key: 'wonky_tree', type: 'static', body: {x: 54, y: 130, width: 64, height: 30} },
+            { key: 'help_sign', type: 'static', body: {x: 52, y: 72, width: 12, height: 8} },
             // Buildings:
             { key: 'church_house', type: 'custom', body: {x: 25, y: 260, width: 251, height: 103} },
             { key: 'duplex', type: 'static', body: {x: 20, y: 280, width: 312, height: 110} },

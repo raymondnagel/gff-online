@@ -2,7 +2,7 @@
   {
     "id": "start",
     "speaker": "player",
-    "text": "Hello! Thanks for trying out the current version of The Good Fight of Faith!\n\nFirst, let's have a chat! Press [Enter] to continue this conversation, and then use the [Up] and [Down] arrows to choose a dialog option.",
+    "text": "Hello! Thanks for trying out the current version of The Good Fight of Faith!\n\nLet's have a chat! Press [Enter] to continue this conversation, and then use the [Up] and [Down] arrows to choose a dialog option.",
     "next": "mainMenu"
   },
   {
@@ -340,19 +340,19 @@
     "speaker": "player",
     "choice": [
       {
-        "choiceText": "Subscreen work",
+        "choiceText": "Main Menu & Game Options",
         "resultId": "update_1"
       },
       {
-        "choiceText": "UI prompt",
+        "choiceText": "Intro Cutscene",
         "resultId": "update_2"
       },
       {
-        "choiceText": "UI bar additions",
+        "choiceText": "Cutscene Skipping",
         "resultId": "update_3"
       },
       {
-        "choiceText": "Misc",
+        "choiceText": "Removed Cheat Menu",
         "resultId": "update_4"
       },
       {
@@ -364,25 +364,25 @@
   {
     "id": "update_1",
     "speaker": "player",
-    "text": "1. Created ScrollPane and OptionGroup components for scrolling content\n2. Completed Status subscreen\n3. Completed Glossary subscreen\n4. Completed Bible subscreen\n5. Completed People subscreen",
+    "text": "The main menu has been added after the title screen. Not all options are available yet; but you can start a new game, and then choose a difficulty level and books order. (There are also options for Game Type; but only Classic mode is available for now.)",
     "next": "updateMenu"
   },
   {
     "id": "update_2",
     "speaker": "player",
-    "text": "During conversations and cutscenes, a black panel now slides in from the right, covering all UI icon buttons (but leaving status/items visible). The panel displays a prompt whenever the player needs to press [Enter] or make a selection to continue.",
+    "text": "The game now begins with a cutscene that gives some context for the game, introduces the main character, gives him a few items, and provides some basic instructions for getting started.",
     "next": "updateMenu"
   },
   {
     "id": "update_3",
     "speaker": "player",
-    "text": "1. Removed 'Stats' icon and subscreen (stats are now included in the 'Status' subscreen)\n2. Removed 'Save' icon (will be implemented somewhere else)\n3. Added 'Actions' icon, containing options for Pray, Preach a Sermon, and Raise a Standard\n4. Added Grace meter\n5. Reworked item counts to add standards and key verses",
+    "text": "Since the intro cutscene is quite lengthy, I've made some shortcuts for skipping all or part of it. At the title screen, when it says 'Press [Enter] to start', you can instead press [1] to skip the intro cutscene entirely, [2] to skip to the baptism scene (part 2), or [3] to skip to the preacher's exhortation (part 3).",
     "next": "updateMenu"
   },
   {
     "id": "update_4",
     "speaker": "player",
-    "text": "1. Added Quick Travel system (talk to travel agents)\n2. Added Fruit of the Spirit collection\n3. Added Grace (all mechanics except passive bonus)\n4. Added Experience Bonus item (medium chance from common chests)\n5. Added Standard item and usage (rare chance from common chests)\n6. Added 'Pray' action (find grace to help in time of need)\n7. Added Key Verse item entry\n8. Worked on art for new enemy types\n9. Fixed Adam's nose (it now looks more like the real Adam's nose)",
+    "text": "The cheat menu, which was previously accessible by pressing [Y], has been removed. It was always meant to be temporary, for testing only, and I don't want players to get in the habit of cheating. The menu has been replaced by a hidden test console, which is more useful to me for debugging purposes.",
     "next": "updateMenu"
   },
   {

@@ -80,6 +80,13 @@
       "id": "12",
       "speaker": "player",
       "hearer": "preacher",
-      "text": "Good bye, preacher. Thanks for everything!"
+      "text": "Good bye, preacher. Thanks for everything!",
+      "next": "13"
+    },
+    {
+      "id": "13",
+      "speaker": "preacher",
+      "hearer": "player",
+      "textFunc": "travelPassFromChurch()"
     }
 ]

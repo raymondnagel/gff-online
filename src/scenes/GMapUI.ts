@@ -5,7 +5,7 @@ import { GRoom } from "../GRoom";
 import { GFF } from "../main";
 import { PLAYER } from "../player";
 import { REGISTRY } from "../registry";
-import { Dir9, GPoint2D } from "../types";
+import { CardDir, Dir9, GPoint2D } from "../types";
 import { GUIScene } from "./GUIScene";
 
 const INPUT_DEFAULT: GInputMode = new GInputMode('map.default');
@@ -160,7 +160,7 @@ export class GMapUI extends GUIScene {
         wallGraphics.lineStyle(1, 0x493726, .7);
 
         // Draw north wall:
-        if (room.hasAnyWall(Dir9.N)) {
+        if (room.hasAnyWall(Dir9.N) || !room.hasTownAndTownNeighbor(Dir9.N)) {
             sections = room.getWallSections(Dir9.N);
             for (let s: number = 0; s < sections.length; s++) {
                 if (sections[s]) {
@@ -169,7 +169,7 @@ export class GMapUI extends GUIScene {
             }
         }
         // Draw west wall:
-        if (room.hasAnyWall(Dir9.W)) {
+        if (room.hasAnyWall(Dir9.W) || !room.hasTownAndTownNeighbor(Dir9.W)) {
             wX = cellX + 1;
             sections = room.getWallSections(Dir9.W);
             for (let s: number = 0; s < sections.length; s++) {
@@ -179,7 +179,7 @@ export class GMapUI extends GUIScene {
             }
         }
         // Draw east wall:
-        if (room.hasAnyWall(Dir9.E)) {
+        if (room.hasAnyWall(Dir9.E) || !room.hasTownAndTownNeighbor(Dir9.E)) {
             wX = cellX + CELL_WIDTH;
             sections = room.getWallSections(Dir9.E);
             for (let s: number = 0; s < sections.length; s++) {
@@ -189,7 +189,7 @@ export class GMapUI extends GUIScene {
             }
         }
         // Draw south wall:
-        if (room.hasAnyWall(Dir9.S)) {
+        if (room.hasAnyWall(Dir9.S) || !room.hasTownAndTownNeighbor(Dir9.S)) {
             wX = cellX;
             wY = cellY + CELL_HEIGHT - 1;
             sections = room.getWallSections(Dir9.S);

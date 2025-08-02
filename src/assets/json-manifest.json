@@ -75,6 +75,7 @@
   "json/conversations/encourage_conv.json",
   "json/conversations/latest_update_intro.json",
   "json/conversations/latest_update_intro_original.json",
+  "json/conversations/latest_update_menu_intro.json",
   "json/conversations/notalk_to_sinner_conv.json",
   "json/conversations/opening_cutscene/opening_1_conv.json",
   "json/conversations/opening_cutscene/opening_2_conv.json",

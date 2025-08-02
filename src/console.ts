@@ -105,6 +105,17 @@ export namespace CONSOLE {
                 return `Stat "${key}" does not exist!`;
             }
         },
+        tourist() {
+            // This command enables a bunch of cheats for testing purposes,
+            // allowing the tester to explore leisurely and check things out.
+            PLAYER.changeSeeds(20);
+            PLAYER.changeSermons(20);
+            PLAYER.changeStandards(20);
+            REGISTRY.set('isNoImps', true);
+            REGISTRY.set('isDebug', true);
+            GFF.AdventureContent.getSound().playSound('success');
+            return 'Ok';
+        }
     };
 
     /**

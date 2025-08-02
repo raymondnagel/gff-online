@@ -317,10 +317,15 @@ export class GWorldArea extends GArea {
     }
 
     private finalizeTowns() {
-        // Add rooms to all towns:
+        // Add rooms to all towns;
+        // also create road passage sections for town rooms
         const rooms: GRoom[] = this.getRoomsByFloor(0);
         for (let room of rooms) {
             room.getTown()?.addRoom(room);
+            if (room.getTown()) {
+                // This is done here to ensure that all rooms have their towns assigned
+                room.setRoadPassageSections();
+            }
         }
 
         // Create a church and travel agency in each town:

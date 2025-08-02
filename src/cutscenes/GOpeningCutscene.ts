@@ -296,7 +296,7 @@ export class GOpeningCutscene extends GCutscene {
                 actor: `player`,
                 command: `spawnAt(${SPAWN_PT.x},${SPAWN_PT.y})`,
                 after: `fadeIn`,
-                since: 2000
+                since: 3000
             });
             this.addCutsceneEvent({
                 eventId: `playerWalkToRow`,
@@ -678,11 +678,33 @@ export class GOpeningCutscene extends GCutscene {
             since: 10
         });
 
+        // The preacher gives Adam the travel pass:
+        this.addCutsceneEvent({
+            eventId: 'giftTravelPass',
+            eventCode: () => {
+                GFF.AdventureContent.obtainItemWithoutChest({
+                    name: 'travel_pass',
+                    type: 'item',
+                    onCollect: () => {/* No actual effect */}
+                });
+            },
+            after: `benedictionSpeech3Done`,
+            since: 10
+        });
+
+        // Gift is over when popup is clear:
+        this.addCutsceneEvent({
+            eventId: 'giftTravelPassDone',
+            condition: () => GFF.AdventureContent.getPopup() === null,
+            after: 'giftTravelPass',
+            since: 10
+        });
+
         // End the service:
         this.addCutsceneEvent({
             eventId: 'end',
             eventCode: () => this.end(),
-            after: 'benedictionSpeech3Done',
+            after: 'giftTravelPassDone',
             since: 2000
         });
     }

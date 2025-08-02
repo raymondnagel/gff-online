@@ -293,7 +293,12 @@ export class GPopup extends Phaser.GameObjects.Image {
         popup.createMiniTitle('God hath been gracious unto thee, for thou hast obtained:');
         popup.createItemImage(entry.image);
         popup.createItemTitle(entry.title);
-        popup.createItemBody(entry.text);
+
+        if (itemName === 'travel_pass') {
+            popup.createItemBody('An Unlimited Travel Pass from Spirit Travel! Simply present this pass to a travel agent, and you will be able to take any available flights. Where will the Spirit take you next?');
+        } else {
+            popup.createItemBody(entry.text);
+        }
         popup.createAmenButton();
         popup.sizeAndCenter(popup.minWidth, popup.minHeight);
         popup.createBorder();

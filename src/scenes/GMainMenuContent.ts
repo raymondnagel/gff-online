@@ -289,6 +289,8 @@ export class GMainMenuContent extends GContentScene {
     }
 
     private beginNewGame(): void {
+        GFF.AdventureContent.getSound().playSound('amen');
+
         /**
          * Initialize the new game with selected options
          */

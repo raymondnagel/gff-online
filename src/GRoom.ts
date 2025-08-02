@@ -30,6 +30,12 @@ const WALL_GUARD_THICK: number = 10;
 const WALL_CTRS: number[] = [
     32, 96, 160, 224, 288, 352, 416, 480, 544, 608, 672, 736, 800, 864, 928, 992
 ];
+const HORZ_ROAD_PASSAGE_SECTION: boolean[] = [
+    true, true, true, true, true, true, false, false, false, false, true, true, true, true, true, true
+];
+const VERT_ROAD_PASSAGE_SECTION: boolean[] = [
+    true, true, true, true, false, false, false, true, true, true, true
+];
 const HORZ_WALL_SECTIONS: number = 16;
 const VERT_WALL_SECTIONS: number = 11;
 const TERRAIN_FADE_ALPHA: number = .5;
@@ -565,6 +571,11 @@ export class GRoom {
         GFF.AdventureContent.addObstacle(guard);
     }
 
+    public hasTownAndTownNeighbor(dir: CardDir, onlyIfPartialWall: boolean = true): boolean {
+        const wallCheck: boolean = onlyIfPartialWall ? !this.hasFullWall(dir) : true;
+        return (this.town !== null && wallCheck && this.hasNeighbor(dir) && (this.getNeighbor(dir) as GRoom).getTown() !== null);
+    }
+
     public addSceneryPlan(key: string, x: number, y: number): GSceneryPlan {
         const plan: GSceneryPlan = { key, x, y };
         this.plans.push(plan);
@@ -572,7 +583,7 @@ export class GRoom {
     }
 
     public planPartialWallScenery(sceneryDefs: GSceneryDef[]) {
-        this.ROOM_LOG.push(`Planning scenery...`);
+        this.ROOM_LOG.push(`Planning partial-wall scenery...`);
 
         // Omit first/last section of N/S walls IF there is a full wall next to it:
         const omitFirstNorthSouth: boolean = this.hasFullWall(Dir9.W);
@@ -581,16 +592,16 @@ export class GRoom {
         const omitFirstWestEast: boolean = this.hasFullWall(Dir9.N);
         const omitLastWestEast: boolean = this.hasFullWall(Dir9.S);
 
-        if (this.hasAnyWall(Dir9.N) && !this.hasFullWall(Dir9.N)) {
+        if (this.hasAnyWall(Dir9.N) && !this.hasFullWall(Dir9.N) && !this.hasTownAndTownNeighbor(Dir9.N)) {
             this.planWallSections(Dir9.N, sceneryDefs, omitFirstNorthSouth, omitLastNorthSouth);
         }
-        if (this.hasAnyWall(Dir9.W) && !this.hasFullWall(Dir9.W)) {
+        if (this.hasAnyWall(Dir9.W) && !this.hasFullWall(Dir9.W) && !this.hasTownAndTownNeighbor(Dir9.W)) {
             this.planWallSections(Dir9.W, sceneryDefs, omitFirstWestEast, omitLastWestEast);
         }
-        if (this.hasAnyWall(Dir9.E) && !this.hasFullWall(Dir9.E)) {
+        if (this.hasAnyWall(Dir9.E) && !this.hasFullWall(Dir9.E) && !this.hasTownAndTownNeighbor(Dir9.E)) {
             this.planWallSections(Dir9.E, sceneryDefs, omitFirstWestEast, omitLastWestEast);
         }
-        if (this.hasAnyWall(Dir9.S) && !this.hasFullWall(Dir9.S)) {
+        if (this.hasAnyWall(Dir9.S) && !this.hasFullWall(Dir9.S) && !this.hasTownAndTownNeighbor(Dir9.S)) {
             this.planWallSections(Dir9.S, sceneryDefs, omitFirstNorthSouth, omitLastNorthSouth);
         }
     }
@@ -661,6 +672,21 @@ export class GRoom {
                 );
                 beginWall = null;
                 endWall = null;
+            }
+        }
+    }
+
+    public setRoadPassageSections() {
+        // Between town rooms, we need need "walls" with a hole in the middle,
+        // allowing the roads to connect seamlessly while forcing the player
+        // to only travel through the town via the roads.
+        for (let d = 0; d < 4; d++) {
+            const dir: CardDir = DIRECTION.cardDirFrom4(d as 0|1|2|3);
+            if (this.hasTownAndTownNeighbor(dir, false)) {
+                const sections: boolean[] = dir === Dir9.N || dir === Dir9.S
+                    ? HORZ_ROAD_PASSAGE_SECTION
+                    : VERT_ROAD_PASSAGE_SECTION;
+                this.setWallSections(dir, sections);
             }
         }
     }
@@ -1327,6 +1353,9 @@ export class GRoom {
 
         // A church is an important feature that shouldn't be covered up by random scenery
         this.noSceneryZones.push({x: 362, y: 128, width: 300, height: 576});
+
+        // If this is the starting church, we'll put a help sign outside:
+        this.planPositionedScenery(SCENERY.def('help_sign'), churchX + 40, churchY + 100, 0, 0);
     }
 
     public planChurchInterior() {

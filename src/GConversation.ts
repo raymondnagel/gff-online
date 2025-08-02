@@ -332,6 +332,11 @@ const CMD_FUNCTIONS: Record<string, (...args: any[]) => any> = {
         const town: GTown = arrivalRoom.getTown() as GTown;
         return `Welcome to ${town.getName()}! The local temperature is ${arrivalRoom.getRegion().getTemperature()}°C. Please enjoy your stay, and thank you for traveling with Spirit!`;
     },
+    travelPassFromChurch: (_player: GPlayerSprite, _someone: GCharSprite): string => {
+        const churchRoom: GRoom = GFF.AdventureContent.getCurrentRoom() as GRoom;
+        const churchName: string = ((churchRoom.getPortalRoom() as GRoom).getTown() as GTown).getName();
+        return `...wait! One more thing!\n\nYour travels will take you throughout the land of Allegoria, and the saints of ${churchName} would like to assist you with this gift.`;
+    },
 
     /**
      * Conditional functions (return boolean): encoded in the
