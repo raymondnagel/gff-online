@@ -23,7 +23,7 @@ export class GChurchDoorTrigger extends GEventTrigger {
     }
 
     protected action(): void {
-        const sprite: Phaser.Physics.Arcade.Sprite = EFFECTS.doEffect('church_door', GFF.AdventureContent, this.doorOpenLocation.x, this.doorOpenLocation.y);
+        const sprite: Phaser.Physics.Arcade.Sprite = EFFECTS.doEffect('new_church_door', GFF.AdventureContent, this.doorOpenLocation.x, this.doorOpenLocation.y);
         sprite.setDepth(this.doorSpriteDepth);
         sprite.once('animationcomplete', () => {
             PLAYER.getSprite().setVisible(true);

@@ -12,6 +12,7 @@ import { GChurchHouse } from './objects/obstacles/GChurchHouse';
 import { GBuildingEntrance } from './objects/touchables/GBuildingEntrance';
 import { GBuildingExit } from './objects/touchables/GBuildingExit';
 import { GTravelAgency } from './objects/obstacles/GTravelAgency';
+import { GSpiritTravelAgency } from './objects/obstacles/GSpiritTravelAgency';
 
 export namespace SCENERY {
     const WALL_N_BODY: GRect = {x: 0, y: 0, width: 1024, height: 64};
@@ -141,7 +142,7 @@ export namespace SCENERY {
             { key: 'willow_tree', type: 'static', body: {x: 44, y: 209, width: 131, height: 21} },
             { key: 'wonky_tree', type: 'static', body: {x: 54, y: 130, width: 64, height: 30} },
             { key: 'help_sign', type: 'static', body: {x: 52, y: 72, width: 12, height: 8} },
-            // Buildings:
+            // Old Buildings (to be replaced):
             { key: 'church_house', type: 'custom', body: {x: 25, y: 260, width: 251, height: 103} },
             { key: 'duplex', type: 'static', body: {x: 20, y: 280, width: 312, height: 110} },
             { key: 'factory', type: 'static', body: {x: 0, y: 300, width: 350, height: 133} },
@@ -154,6 +155,87 @@ export namespace SCENERY {
             { key: 'house_6', type: 'static', body: {x: 0, y: 258, width: 332, height: 100} },
             { key: 'shop', type: 'static', body: {x: 0, y: 125, width: 240, height: 100} },
             { key: 'travel_agency', type: 'custom', body: {x: 5, y: 253, width: 346, height: 136} },
+            // New Town Objects:
+            { key: 'apartments_front', type: 'static', body: {x: 0, y: 250, width: 330, height: 214} },
+            { key: 'bench', type: 'static', body: {x: 0, y: 41, width: 100, height: 22} },
+            { key: 'camp_tent', type: 'static', body: {x: 0, y: 61, width: 174, height: 70} },
+            { key: 'church_front', type: 'custom', body: {x: 20, y: 233, width: 356, height: 176} },
+            { key: 'classic_1_front', type: 'static', body: {x: 0, y: 177, width: 344, height: 170} },
+            { key: 'classic_2_front', type: 'static', body: {x: 0, y: 179, width: 346, height: 170} },
+            { key: 'convertible_1', type: 'static', body: {x: 0, y: 49, width: 214, height: 32} },
+            { key: 'convertible_2', type: 'static', body: {x: 0, y: 49, width: 214, height: 32} },
+            { key: 'convertible_3', type: 'static', body: {x: 0, y: 49, width: 214, height: 32} },
+            { key: 'cottage_front', type: 'static', body: {x: 5, y: 127, width: 233, height: 120} },
+            { key: 'dead_end_sign', type: 'static', body: {x: 0, y: 124, width: 79, height: 16} },
+            { key: 'factory_front', type: 'static', body: {x: 0, y: 157, width: 309, height: 196} },
+            { key: 'fence_link_h', type: 'static', body: {x: 0, y: 84, width: 14, height: 16} },
+            { key: 'fence_link_h_left', type: 'static', body: {x: 0, y: 84, width: 15, height: 16} },
+            { key: 'fence_link_h_right', type: 'static', body: {x: 0, y: 84, width: 15, height: 16} },
+            { key: 'fence_link_v_left', type: 'static', body: {x: 0, y: 92, width: 15, height: 16} },
+            { key: 'fence_link_v_right', type: 'static', body: {x: 0, y: 92, width: 15, height: 16} },
+            { key: 'fence_link_vend_left', type: 'static', body: {x: 0, y: 92, width: 15, height: 16} },
+            { key: 'fence_link_vend_right', type: 'static', body: {x: 0, y: 92, width: 15, height: 16} },
+            { key: 'fence_picket_h', type: 'static', body: {x: 0, y: 84, width: 19, height: 16} },
+            { key: 'fence_picket_h_left', type: 'static', body: {x: 0, y: 84, width: 17, height: 16} },
+            { key: 'fence_picket_h_right', type: 'static', body: {x: 0, y: 84, width: 17, height: 16} },
+            { key: 'fence_picket_h_back', type: 'static', body: {x: 0, y: 84, width: 19, height: 16} },
+            { key: 'fence_picket_h_back_left', type: 'static', body: {x: 0, y: 84, width: 17, height: 16} },
+            { key: 'fence_picket_h_back_right', type: 'static', body: {x: 0, y: 84, width: 17, height: 16} },
+            { key: 'fence_picket_v_left', type: 'static', body: {x: 0, y: 84, width: 16, height: 16} },
+            { key: 'fence_picket_v_right', type: 'static', body: {x: 0, y: 84, width: 16, height: 16} },
+            { key: 'fence_picket_vend_left', type: 'static', body: {x: 0, y: 84, width: 16, height: 16} },
+            { key: 'fence_picket_vend_right', type: 'static', body: {x: 0, y: 84, width: 16, height: 16} },
+            { key: 'fence_stockade_h', type: 'static', body: {x: 0, y: 85, width: 16, height: 16} },
+            { key: 'fence_stockade_h_left', type: 'static', body: {x: 0, y: 85, width: 16, height: 16} },
+            { key: 'fence_stockade_h_right', type: 'static', body: {x: 0, y: 85, width: 16, height: 16} },
+            { key: 'fence_stockade_v_left', type: 'static', body: {x: 0, y: 85, width: 16, height: 16} },
+            { key: 'fence_stockade_v_right', type: 'static', body: {x: 0, y: 85, width: 16, height: 16} },
+            { key: 'fence_stockade_vend_left', type: 'static', body: {x: 0, y: 85, width: 16, height: 16} },
+            { key: 'fence_stockade_vend_right', type: 'static', body: {x: 0, y: 85, width: 16, height: 16} },
+            { key: 'fire_hydrant', type: 'static', body: {x: 0, y: 42, width: 32, height: 16} },
+            { key: 'garage_1_front', type: 'static', body: {x: 5, y: 99, width: 236, height: 126} },
+            { key: 'garage_2_front', type: 'static', body: {x: 6, y: 94, width: 206, height: 130} },
+            { key: 'garage_3_front', type: 'static', body: {x: 5, y: 116, width: 201, height: 118} },
+            { key: 'garage_4_front', type: 'static', body: {x: 7, y: 87, width: 205, height: 126} },
+            { key: 'generic_1_back', type: 'static', body: {x: 0, y: 37, width: 229, height: 180} },
+            { key: 'generic_2_back', type: 'static', body: {x: 0, y: 65, width: 233, height: 167} },
+            { key: 'generic_3_back', type: 'static', body: {x: 0, y: 38, width: 247, height: 175} },
+            { key: 'generic_4_back', type: 'static', body: {x: 2, y: 20, width: 325, height: 163} },
+            { key: 'house_1_back', type: 'static', body: {x: 3, y: 120, width: 215, height: 114} },
+            { key: 'house_1_front', type: 'static', body: {x: 5, y: 115, width: 209, height: 124} },
+            { key: 'house_1_side_tall', type: 'static', body: {x: 5, y: 168, width: 270, height: 136} },
+            { key: 'house_1_side', type: 'static', body: {x: 7, y: 98, width: 288, height: 156} },
+            { key: 'house_2_back', type: 'static', body: {x: 0, y: 122, width: 228, height: 112} },
+            { key: 'house_2_front', type: 'static', body: {x: 2, y: 123, width: 228, height: 116} },
+            { key: 'house_2_side', type: 'static', body: {x: 5, y: 86, width: 261, height: 146} },
+            { key: 'house_3_back', type: 'static', body: {x: 4, y: 129, width: 226, height: 122} },
+            { key: 'house_3_front', type: 'static', body: {x: 0, y: 123, width: 230, height: 128} },
+            { key: 'house_3_side_tall', type: 'static', body: {x: 7, y: 113, width: 272, height: 178} },
+            { key: 'house_3_side', type: 'static', body: {x: 8, y: 89, width: 260, height: 144} },
+            { key: 'house_4_front', type: 'static', body: {x: 6, y: 87, width: 282, height: 156} },
+            { key: 'house_5_front', type: 'static', body: {x: 0, y: 120, width: 224, height: 119} },
+            { key: 'lamp_post', type: 'static', body: {x: 0, y: 111, width: 36, height: 16} },
+            { key: 'mailbox_in', type: 'static', body: {x: 0, y: 44, width: 40, height: 16} },
+            { key: 'mailbox_out', type: 'static', body: {x: 0, y: 46, width: 55, height: 24} },
+            { key: 'mansion_front', type: 'static', body: {x: 10, y: 213, width: 444, height: 178} },
+            { key: 'monument', type: 'static', body: {x: 0, y: 152, width: 92, height: 48} },
+            { key: 'pickup_1', type: 'static', body: {x: 0, y: 66, width: 256, height: 32} },
+            { key: 'pickup_2', type: 'static', body: {x: 0, y: 66, width: 256, height: 32} },
+            { key: 'pickup_3', type: 'static', body: {x: 0, y: 66, width: 256, height: 32} },
+            { key: 'picnic_table', type: 'static', body: {x: 0, y: 42, width: 127, height: 38} },
+            { key: 'police_station_front', type: 'static', body: {x: 5, y: 164, width: 368, height: 166} },
+            { key: 'school_front', type: 'static', body: {x: 0, y: 162, width: 278, height: 160} },
+            { key: 'sedan_1', type: 'static', body: {x: 0, y: 54, width: 250, height: 32} },
+            { key: 'sedan_2', type: 'static', body: {x: 0, y: 52, width: 250, height: 34} },
+            { key: 'sedan_3', type: 'static', body: {x: 0, y: 52, width: 250, height: 34} },
+            { key: 'shop_front', type: 'static', body: {x: 9, y: 72, width: 193, height: 135} },
+            { key: 'skyscraper_front', type: 'static', body: {x: 0, y: 509, width: 281, height: 177} },
+            { key: 'stop_sign', type: 'static', body: {x: 0, y: 120, width: 74, height: 16} },
+            { key: 'supermarket_front', type: 'static', body: {x: 0, y: 77, width: 412, height: 148} },
+            { key: 'swingset', type: 'static', body: {x: 0, y: 123, width: 194, height: 32} },
+            { key: 'trash', type: 'static', body: {x: 0, y: 53, width: 75, height: 20} },
+            { key: 'travel_agency_front', type: 'custom', body: {x: 0, y: 175, width: 328, height: 144} },
+            { key: 'warehouse_front', type: 'static', body: {x: 0, y: 194, width: 325, height: 157} },
             // Foreground Decorations:
             { key: 'big_flower', type: 'fg_decor', body: {x: 0, y: 0, width: 20, height: 44} },
             { key: 'cattails', type: 'fg_decor', body: {x: 0, y: 0, width: 66, height: 48} },
@@ -235,12 +317,15 @@ export namespace SCENERY {
                     case 'red_chest':
                         new GTreasureChest(plan.x, plan.y, plan.key);
                         break;
-                    case 'church_house':
+                    case 'church_front':
                         new GChurchHouse(plan.x, plan.y);
-                        new GBuildingEntrance(plan.x + 118, plan.y + 363);
+                        new GBuildingEntrance(plan.x + 162, plan.y + 409);
                         break;
                     case 'travel_agency':
                         new GTravelAgency(plan.x, plan.y);
+                        break;
+                    case 'travel_agency_front':
+                        new GSpiritTravelAgency(plan.x, plan.y);
                         break;
                     case 'church_piano':
                         new GPiano(plan.x, plan.y);

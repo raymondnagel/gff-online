@@ -23,6 +23,14 @@ import { SCENERY } from "../scenery";
 import { AREA } from "../area";
 import { GChurchArea } from "./GChurchArea";
 import { REGISTRY } from "../registry";
+import { GTownDistrict } from "../districts/GTownDistrict";
+import { GCityResMonoDistrict } from "../districts/GCityResMonoDistrict";
+import { GCityResDiverseDistrict } from "../districts/GCityResDiverseDistrict";
+import { GSuburbResMonoDistrict } from "../districts/GSuburbResMonoDistrict";
+import { GSuburbResDiverseDistrict } from "../districts/GSuburbResDiverseDistrict";
+import { GBusinessDistrict } from "../districts/GBusinessDistrict";
+import { GMixedDistrict } from "../districts/GMixedDistrict";
+import { ARRAY } from "../array";
 
 type BorderWall = {
     room: GRoom,
@@ -45,6 +53,13 @@ const REGION_SWAMP: GRegion = new GSwampRegion();
 const REGION_TUNDRA: GRegion = new GTundraRegion();
 const REGION_MOUNT: GRegion = new GMountRegion();
 const PlainRegions: GRegion[] = [];
+
+const DISTRICT_CITY_RES_MONO: GTownDistrict = new GCityResMonoDistrict();
+const DISTRICT_CITY_RES_DIVERSE: GTownDistrict = new GCityResDiverseDistrict();
+const DISTRICT_SUBURB_RES_MONO: GTownDistrict = new GSuburbResMonoDistrict();
+const DISTRICT_SUBURB_RES_DIVERSE: GTownDistrict = new GSuburbResDiverseDistrict();
+const DISTRICT_BUSINESS: GTownDistrict = new GBusinessDistrict();
+const DISTRICT_MIXED: GTownDistrict = new GMixedDistrict();
 
 export class GWorldArea extends GArea {
 
@@ -328,32 +343,31 @@ export class GWorldArea extends GArea {
             }
         }
 
-        // Create a church and travel agency in each town:
+        // (Travel agencies were already placed during town creation, since they have the
+        // possibility of failure. Churches can be placed anywhere.)
+
+
         const towns: GTown[] = TOWN.getTowns();
         for (let t: number = 0; t < towns.length; t++) {
+            // Create the town's travel agency in its chosen room:
+            const travelAgencyRoom: GRoom = towns[t].getTravelAgencyLocation();
+            travelAgencyRoom.setTravelLocation();
+            GFF.genLog(`Created travel agency in: ${towns[t].getName()}`);
 
-            // Pick a random room for the church:
-            const churchRoom: GRoom = RANDOM.randElement(towns[t].getRooms());
+            // Create the town's church in a random room that isn't the travel agency location:
+            const otherRooms: GRoom[] = towns[t].getRooms().filter(room => room !== travelAgencyRoom);
+            const churchRoom: GRoom = RANDOM.randElement(otherRooms);
             const church: GChurch = CHURCH.getChurches()[t];
             towns[t].setChurch(church);
             churchRoom.setChurch(church);
             GFF.genLog(`Created church: ${church.getName()}`);
-
-            // Create a copy of the town rooms, without the church room:
-            const otherRooms: GRoom[] = towns[t].getRooms().filter(room => room !== churchRoom);
-
-            // Pick a random room for the travel agency:
-            const agencyRoom: GRoom = RANDOM.randElement(otherRooms);
-            towns[t].setTravelAgencyLocation(agencyRoom);
-            agencyRoom.setTravelLocation();
-            GFF.genLog(`Created travel agency in: ${towns[t].getName()}`);
         }
 
         // Schedule flights between towns:
         TOWN.scheduleFlights(TOWN.getTowns());
 
         // Plan streets for each town room:
-        this.createTownStructures();
+        this.createTownDistricts();
     }
 
     private createTowns(numTowns: number): boolean {
@@ -402,13 +416,34 @@ export class GWorldArea extends GArea {
     }
 
     private createTown(townCenter: GRoom, town: GTown): boolean {
+        // Expand the town from the center to a random target size:
         const targetSize: number = RANDOM.randInt(TOWN_MIN, TOWN_MAX);
-
         GFF.genLog(`Creating town: ${town.getName()}, targetSize: ${targetSize}`);
         if (this.expandTown(townCenter, town, targetSize) > 0) {
             return false;
         }
-        return true;
+
+        // Choose a travel agency location. It can be any room that has a town neighbor to the
+        // east or west, allowing a horizontal road on which a south-facing travel_agency_front can be placed.
+        // If no such room exists, we must return false and retry the entire town creation process.
+        const townRooms: GRoom[] = this.getRoomsByFloor(0).filter(r => r.getTown() === town);
+        const travelRooms: GRoom[] = townRooms.filter(r => {
+            const eastNeighbor: GRoom|null = r.getNeighbor(Dir9.E);
+            const westNeighbor: GRoom|null = r.getNeighbor(Dir9.W);
+            return (
+                (eastNeighbor?.getTown() === town)
+                || (westNeighbor?.getTown() === town)
+            );
+        });
+        if (travelRooms.length === 0) {
+            GFF.genLog(`Couldn't find suitable travel agency location!`);
+            return false;
+        } else {
+            const travelRoom: GRoom = RANDOM.randElement(travelRooms);
+            town.setTravelAgencyLocation(travelRoom);
+            GFF.genLog(`Travel agency location: ${travelRoom.getX()}, ${travelRoom.getY()}`);
+            return true;
+        }
     }
 
     private expandTown(startRoom: GRoom, town: GTown, total: number): number {
@@ -466,6 +501,7 @@ export class GWorldArea extends GArea {
         return room.getNeighbors(neighborCondition).length > 0;
     }
 
+    // Used when town creation fails and we need to retry
     private clearTowns() {
         const rooms: GRoom[] = this.getRoomsByFloor(0);
         for (let room of rooms) {
@@ -477,7 +513,7 @@ export class GWorldArea extends GArea {
         const strongholds: GStronghold[] = [
             new GStronghold('Tower of Deception'),  // Boss: Mammon     // Treasure: Girdle of Truth
             new GStronghold('Dungeon of Doubt'),    // Boss: Apollyon   // Treasure: Shield of Faith
-            new GStronghold('Fortress of Enmity'),  // Boss: Legion     // Treausre: Preparation of Peace
+            new GStronghold('Fortress of Enmity'),  // Boss: Legion     // Treasure: Preparation of Peace
             new GStronghold('Keep of Wickedness'),  // Boss: Belial     // Treasure: Breastplate of Righteousness
             new GStronghold('Castle of Perdition'), // Boss: Beelzebub  // Treasure: Helmet of Salvation
         ];
@@ -548,10 +584,27 @@ export class GWorldArea extends GArea {
         }
     }
 
-    private createTownStructures(): void {
+    private createTownDistricts(): void {
         // Get list of pre-created towns:
         const towns: GTown[] = TOWN.getTowns();
         for (let town of towns) {
+
+            // For each town, reset districts:
+            const availableDistricts: GTownDistrict[] = [
+                DISTRICT_CITY_RES_MONO,
+                DISTRICT_CITY_RES_DIVERSE,
+                DISTRICT_SUBURB_RES_MONO,
+                DISTRICT_SUBURB_RES_DIVERSE,
+                DISTRICT_BUSINESS,
+                DISTRICT_MIXED
+            ];
+
+            // Choose now whether to use the business or mixed district for the town's travel location:
+            const travelDistrict: GTownDistrict = RANDOM.randElement([DISTRICT_BUSINESS, DISTRICT_MIXED]);
+            // Remove the chosen district from the available districts:
+            ARRAY.removeIfExistsIn(travelDistrict, availableDistricts);
+            // Remaining districts can be used for non-travel locations
+
             const rooms: GRoom[] = town.getRooms();
             for (let room of rooms) {
                 let neighbor: GRoom|null = room.getNeighbor(Dir9.N);
@@ -565,26 +618,36 @@ export class GWorldArea extends GArea {
 
                 const cityBlocks: GCityBlock[] = room.planTownStreets(roadNorth, roadEast, roadSouth, roadWest);
 
-                if (room.getChurch() === null) {
-                    const buildingPool: GSceneryDef[] = [
-                        SCENERY.def('house_1'),
-                        SCENERY.def('house_2'),
-                        SCENERY.def('house_3'),
-                        SCENERY.def('house_4'),
-                        SCENERY.def('house_5'),
-                        SCENERY.def('house_6'),
-                        SCENERY.def('duplex'),
-                        SCENERY.def('garage'),
-                        SCENERY.def('factory'),
-                        SCENERY.def('shop'),
-                    ];
-                    RANDOM.shuffle(buildingPool);
-                    if (room.isTravelLocation()) {
-                        buildingPool.push(SCENERY.def('travel_agency'));
-                    }
+                /**
+                 * New town logic:
+                 * 1. We have a list of the blocks; this will be used regardless of the district type.
+                 * 2. Determine the type of district to use for this room. At this point, at least one of the
+                 *    town rooms will have been determined to be eligible for the travel agency; so if
+                 *    room.isTravelLocation() is true, we must use either the business district or the mixed
+                 *    district.
+                 * 3. For each town, we can have a business district and a mixed district, but we don't want
+                 *    to allow more than one of each. Remaining rooms can be assigned any residential district.
+                 * 4. Once we determine the district type for the room, we can use the district to plan the
+                 *    blocks using its unique building lists.
+                 */
 
-                    for (let block of cityBlocks) {
-                        room.planCityBlock(block, buildingPool);
+                // Only use district logic if the room doesn't contain the town's church;
+                // churches are independent and not part of a district, so they'll have their own layout logic.
+                if (room.getChurch() === null) {
+
+                    // If the room is a travel location, we'll use the travel district chosen earlier
+                    if (room.isTravelLocation()) {
+                        travelDistrict.initForRoom(room, true);
+                        travelDistrict.planCityBlocks(room, cityBlocks);
+                    } else {
+                        // Otherwise, we'll pick a random available district
+                        const district = RANDOM.randElement(availableDistricts);
+                        // If the chosen district is business or mixed, we'll remove it from the list so it isn't used again
+                        if (district instanceof GBusinessDistrict || district instanceof GMixedDistrict) {
+                            ARRAY.removeIfExistsIn(district, availableDistricts);
+                        }
+                        district.initForRoom(room, false);
+                        district.planCityBlocks(room, cityBlocks);
                     }
                 }
             }

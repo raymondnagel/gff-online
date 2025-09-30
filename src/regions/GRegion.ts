@@ -74,7 +74,10 @@ export abstract class GRegion {
             room.planChurch();
         }
 
-        this._furnishRoom(room);
+        // Temporarily disable scenery planning for town rooms
+        if (room.getTown() === null) {
+            this._furnishRoom(room);
+        }
     }
 
     protected abstract _furnishRoom(room: GRoom): void;

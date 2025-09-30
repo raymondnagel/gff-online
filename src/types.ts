@@ -234,8 +234,11 @@ export interface GActionableOption {
     action: Function;
 }
 
-// An orientation for positioning and aligning buildings in a city block
-export type GBuildingOrientation = 'top'|'bottom'|'left'|'right';
+// Determines which side of a block's buildings are aligned
+export type GAnchorSide = 'bottom'|'top'|'left'|'right';
+
+// Determines how a building is oriented within a city block
+export type GBuildingOrientation = 'front'|'back'|'side';
 
 // Determines a block where buildings may be arranged within a town room
 export type GCityBlock = {
@@ -243,7 +246,9 @@ export type GCityBlock = {
     base: number;
     start: number;
     end: number;
+    anchor: GAnchorSide;
     orientation: GBuildingOrientation;
+    dimension: GRect;
 }
 
 /**

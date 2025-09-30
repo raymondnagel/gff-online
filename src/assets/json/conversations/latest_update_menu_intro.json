@@ -246,7 +246,7 @@
   {
     "id": "controls_other",
     "speaker": "player",
-    "text": "Hold [N] to display nametags for all characters in the area. (Names will only be shown for characters who have already introduced themselves.) NOTE: The following controls are temporary, meant for testing only, and will be removed in a future update: [F1] = Enable logging; [F2] = View physical boundaries; [L] = Log room info; [Y] = Cheat menu; [H] = Re-show this introduction",
+    "text": "Hold [N] to display nametags for all characters in the area. (Names will only be shown for characters who have already introduced themselves.) NOTE: The following controls are temporary, meant for testing only, and will be removed in a future update: [F1] = Enable logging; [F2] = View physical boundaries; [L] = Log room info; [U] = 'Unstuck' player; [H] = Re-show this introduction",
     "next": "controlsMenu"
   },
   {
@@ -340,49 +340,25 @@
     "speaker": "player",
     "choice": [
       {
-        "choiceText": "Subscreen work",
+        "choiceText": "Town Rework",
         "resultId": "update_1"
       },
       {
-        "choiceText": "UI prompt",
+        "choiceText": "'Unstuck' Player Key [U]",
         "resultId": "update_2"
-      },
-      {
-        "choiceText": "UI bar additions",
-        "resultId": "update_3"
-      },
-      {
-        "choiceText": "Misc",
-        "resultId": "update_4"
-      },
-      {
-        "choiceText": "[back]",
-        "resultId": "mainMenu"
       }
     ]
   },
   {
     "id": "update_1",
     "speaker": "player",
-    "text": "1. Created ScrollPane and OptionGroup components for scrolling content\n2. Completed Status subscreen\n3. Completed Glossary subscreen\n4. Completed Bible subscreen\n5. Completed People subscreen",
+    "text": "Over the last few months, I've been working on a major rework of towns. A lot of this is cosmetic, replacing building graphics and adding building orientations for different blocks. The composition of the towns is now much more complex, with districts, blocks, and different types of lots. Towns are still a work in progress, so check back each month to see how they develop!",
     "next": "updateMenu"
   },
   {
     "id": "update_2",
     "speaker": "player",
-    "text": "During conversations and cutscenes, a black panel now slides in from the right, covering all UI icon buttons (but leaving status/items visible). The panel displays a prompt whenever the player needs to press [Enter] or make a selection to continue.",
-    "next": "updateMenu"
-  },
-  {
-    "id": "update_3",
-    "speaker": "player",
-    "text": "1. Removed 'Stats' icon and subscreen (stats are now included in the 'Status' subscreen)\n2. Removed 'Save' icon (will be implemented somewhere else)\n3. Added 'Actions' icon, containing options for Pray, Preach a Sermon, and Raise a Standard\n4. Added Grace meter\n5. Reworked item counts to add standards and key verses",
-    "next": "updateMenu"
-  },
-  {
-    "id": "update_4",
-    "speaker": "player",
-    "text": "1. Added Quick Travel system (talk to travel agents)\n2. Added Fruit of the Spirit collection\n3. Added Grace (all mechanics except passive bonus)\n4. Added Experience Bonus item (medium chance from common chests)\n5. Added Standard item and usage (rare chance from common chests)\n6. Added 'Pray' action (find grace to help in time of need)\n7. Added Key Verse item entry\n8. Worked on art for new enemy types\n9. Fixed Adam's nose (it now looks more like the real Adam's nose)",
+    "text": "Since towns aren't quite finished yet, there are still some places where you can get stuck. To help with this, I've added a temporary 'unstuck' feature: just press the [U] key, and Adam will be teleported to a random location. (This feature will be removed in a future update, when town work is completed.)",
     "next": "updateMenu"
   },
   {

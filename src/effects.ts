@@ -23,6 +23,19 @@ export namespace EFFECTS {
             },
             {
                 spriteConfig: {
+                    key: 'new_church_door',
+                    frames: GFF.GAME.anims.generateFrameNumbers(
+                        'new_church_door',
+                        { start: 0, end: 6 }
+                    ),
+                    frameRate: 15,
+                    repeat: 0
+                },
+                soundKey: 'open_chest',
+                hideOnFinish: false
+            },
+            {
+                spriteConfig: {
                     key: 'preach_sonic',
                     frames: GFF.GAME.anims.generateFrameNumbers(
                         'preach_sonic',

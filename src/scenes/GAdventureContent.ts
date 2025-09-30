@@ -1,4 +1,5 @@
 import 'phaser';
+import JSZip from "jszip";
 import { GArea } from '../areas/GArea';
 import { DIRECTION } from '../direction';
 import { GRect, GPerson, GSpirit, GKeyList, BoundedGameObject, GPoint2D, CardDir, Dir9, GInteractable, GGlossaryEntry, GItem, NINE } from '../types';
@@ -84,6 +85,7 @@ export class GAdventureContent extends GContentScene {
     private personsGroup: Phaser.GameObjects.Group;
     private impsGroup: Phaser.GameObjects.Group;
     private touchablesGroup: Phaser.GameObjects.Group;
+    private yardsGroup: Phaser.GameObjects.Group;
 
     private impSpawnTimeEvent: Phaser.Time.TimerEvent;
 
@@ -102,6 +104,7 @@ export class GAdventureContent extends GContentScene {
         this.personsGroup = this.add.group();
         this.impsGroup = this.add.group();
         this.touchablesGroup = this.add.group();
+        this.yardsGroup = this.add.group();
     }
 
     public create(): void {
@@ -182,6 +185,9 @@ export class GAdventureContent extends GContentScene {
                         this.showTestConsole();
                     }
                     break;
+                case 'u':
+                    this.playerUnstuck();
+                    break;
                 case ' ':
                     this.playerTalkOrInteract();
                     break;
@@ -190,6 +196,9 @@ export class GAdventureContent extends GContentScene {
                     break;
                 case 'h':
                     GConversation.fromFile('latest_update_intro');
+                    break;
+                case 'l':
+                    this.getCurrentRoom()?.logRoomInfo();
                     break;
                 case 'p':
                     if (this.canPray()) {
@@ -346,46 +355,67 @@ export class GAdventureContent extends GContentScene {
         }
     }
 
-    private doMapExport(fromX: number, fromY: number) {
-        // if (this.mapRt === undefined) {
-        //     this.mapRt = new Phaser.GameObjects.RenderTexture(this, 0, 0, 2000, 1200);
-        // }
-
+    public async doMapExport() {
         const area = this.getCurrentArea();
         const w = area.getWidth();
         const h = area.getHeight();
-        const finalX = fromX;
-        const finalY = fromY;
-        const n = (finalY * w) + finalX;
-        this.setCurrentRoom(finalX, finalY);
-        this.sys.game.renderer.snapshotArea(
-            0, 0, GFF.ROOM_W, GFF.ROOM_H,
-            (image: HTMLImageElement|Phaser.Display.Color) => {
-                // Save the image as a base64 data URL
-                let dataUrl = (image as HTMLImageElement).src;
 
-                // Trigger a download
-                let a = document.createElement('a');
-                a.href = dataUrl;
-                a.download = `Room-${n}__${finalX},${finalY}.png`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
+        const zip = new JSZip();
+        const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+        const folder = zip.folder(`MapExport-${timestamp}`)!;
 
-                let nextX = finalX;
-                let nextY = finalY;
-                if (nextX < w-1) {
-                    nextX++;
-                } else {
-                    nextX = 0;
-                    nextY++;
-                }
-                if (nextY < h) {
-                    // Recurse
-                    this.doMapExport(nextX, nextY);
-                }
+        // Canvas for thumbnail grid
+        const thumbSizeW = 145; // each room thumbnail width
+        const thumbSizeH = 100; // each room thumbnail height
+        const mapCanvas = document.createElement("canvas");
+        mapCanvas.width = w * thumbSizeW;
+        mapCanvas.height = h * thumbSizeH;
+        const ctx = mapCanvas.getContext("2d")!;
+
+        const captureRoom = async (x: number, y: number): Promise<void> => {
+            return new Promise((resolve) => {
+                this.setCurrentRoom(x, y);
+                this.sys.game.renderer.snapshotArea(
+                    0, 0, GFF.ROOM_W, GFF.ROOM_H,
+                    async (image: HTMLImageElement | Phaser.Display.Color) => {
+                        const dataUrl = (image as HTMLImageElement).src;
+                        const base64 = dataUrl.split(",")[1];
+                        const n = (y * w) + x;
+
+                        // Save full PNG in zip
+                        folder.file(`Room-${n}__${x},${y}.png`, base64, { base64: true });
+
+                        // Draw thumbnail onto mapCanvas
+                        const img = new Image();
+                        img.onload = () => {
+                            ctx.drawImage(img, x * thumbSizeW, y * thumbSizeH, thumbSizeW, thumbSizeH);
+                            resolve();
+                        };
+                        img.src = dataUrl;
+                    }
+                );
+            });
+        };
+
+        // Capture all rooms
+        for (let y = 0; y < h; y++) {
+            for (let x = 0; x < w; x++) {
+                await captureRoom(x, y);
             }
-        );
+        }
+
+        // Add stitched map image to zip
+        const mapDataUrl = mapCanvas.toDataURL("image/png");
+        folder.file(`MapOverview.png`, mapDataUrl.split(",")[1], { base64: true });
+
+        // Generate zip
+        const blob = await zip.generateAsync({ type: "blob" });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = `MapExport-${timestamp}.zip`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
     }
 
     private initPhysics() {
@@ -397,6 +427,7 @@ export class GAdventureContent extends GContentScene {
         this.physics.add.collider(this.player, this.impsGroup);
         this.physics.add.collider(this.player, this.obstaclesGroup);
         this.physics.add.collider(this.player, this.touchablesGroup);
+        this.physics.add.collider(this.player, this.yardsGroup);
         this.physics.add.collider(this.personsGroup, this.bottomBound);
         this.physics.add.collider(this.personsGroup, this.personsGroup);
         this.physics.add.collider(this.personsGroup, this.obstaclesGroup);
@@ -725,13 +756,20 @@ export class GAdventureContent extends GContentScene {
     }
 
     public getSpawnPointForTransient(transient: BoundedGameObject, body: GRect, essential: boolean): GPoint2D|null {
+        // Reduce the area a bit to avoid edges:
+        const margin: number = 1;
+
+        // Translate the body's position to be relative to the sprite's position:
+        body.x -= transient.x;
+        body.y -= transient.y;
+
         let t: number = 0;
         // If it is essential to spawn the transient, keep trying forever; we MUST do it!
         while(essential || t < NON_ESS_TRANS_SPAWN_TRIES) {
-            const top: number = GFF.ROOM_AREA_TOP;
-            const left: number = GFF.ROOM_AREA_LEFT;
-            const right: number = GFF.ROOM_AREA_RIGHT - body.width;
-            const bottom: number = GFF.ROOM_AREA_BOTTOM - body.height;
+            const top: number = GFF.ROOM_AREA_TOP + margin;
+            const left: number = GFF.ROOM_AREA_LEFT + margin;
+            const right: number = GFF.ROOM_AREA_RIGHT - body.width - margin;
+            const bottom: number = GFF.ROOM_AREA_BOTTOM - body.height - margin;
             const tX = RANDOM.randInt(left, right);
             const tY = RANDOM.randInt(top, bottom);
             if (this.spaceClearForTransient(body, tX, tY)) {
@@ -1029,6 +1067,10 @@ export class GAdventureContent extends GContentScene {
         this.touchablesGroup.add(touchable);
     }
 
+    public addYard(yard: Phaser.GameObjects.Rectangle) {
+        this.yardsGroup.add(yard);
+    }
+
     public getOccupiedPhysicalSpaces(): GRect[] {
         const occupiedSpaces: GRect[] = [];
         this.obstaclesGroup.getChildren().forEach((obstacle: Phaser.GameObjects.GameObject) => {
@@ -1178,6 +1220,17 @@ export class GAdventureContent extends GContentScene {
         });
 
         return target;
+    }
+
+    // Temporary solution to unstuck the player if they get trapped somehow;
+    // this can happen a lot in towns until we figure out what to do with border scenery.
+    public playerUnstuck() {
+        this.getSound().playSound('wind_rush');
+        this.player.setVisible(false);
+        const body: GRect = this.player.getBody();
+        const spawnPoint: GPoint2D = this.getSpawnPointForTransient(this.player, body, true) as GPoint2D;
+        this.player.setVisible(true);
+        this.player.setPosition(spawnPoint.x, spawnPoint.y);
     }
 
     public playerTalkOrInteract() {

@@ -11,4 +11,14 @@ export namespace ARRAY {
         }
         return undefined;
     }
+
+    export function copy<T>(array: T[]): T[] {
+        return array.slice();
+    }
+
+    export function swap<T>(array: T[], indexA: number, indexB: number): void {
+        const temp: T = array[indexA];
+        array[indexA] = array[indexB];
+        array[indexB] = temp;
+    }
 }

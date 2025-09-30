@@ -113,7 +113,13 @@ export namespace CONSOLE {
             PLAYER.changeStandards(20);
             REGISTRY.set('isNoImps', true);
             REGISTRY.set('isDebug', true);
-            GFF.AdventureContent.getSound().playSound('success');
+            playSuccess();
+            return 'Ok';
+        },
+        mapExport() {
+            GFF.AdventureContent.hideTestConsole();
+            GFF.AdventureContent.doMapExport();
+            playSuccess();
             return 'Ok';
         }
     };

@@ -33,6 +33,7 @@ export class GLoadingScene extends GBaseScene {
         this.load.json('json-manifest', 'assets/json-manifest.json');
         // this.load.json('font-manifest', 'assets/font-manifest.json');
         this.load.json('image-manifest', 'assets/image-manifest.json');
+        this.load.json('scenery-manifest', 'assets/scenery-manifest.json');
         this.load.json('sprite-manifest', 'assets/sprite-manifest.json');
         this.load.json('audio-manifest', 'assets/audio-manifest.json');
         this.load.xml('kjv', 'assets/xml/kjv.xml');

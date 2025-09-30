@@ -105,6 +105,7 @@ export class GWorldBuildContent extends GBaseScene {
 
     private areaList: AreaGenInfo[];
     public create(): void {
+        GFF.log('GWorldBuildContent.create()');
 
         // Church Areas (will be assigned to churches once they are created)
         AREA.CHURCH_AREAS = [];

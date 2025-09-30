@@ -33,6 +33,9 @@ export class GObstacleStatic extends Phaser.Physics.Arcade.Image {
             this.setDepth(this.body.bottom);
         }
 
+        // Set transparency (for debugging):
+        // this.setAlpha(0.35);
+
         // Add to the scene as an obstacle:
         GFF.AdventureContent.addObstacle(this);
     }

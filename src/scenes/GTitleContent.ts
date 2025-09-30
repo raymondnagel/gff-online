@@ -73,6 +73,15 @@ export class GTitleContent extends GContentScene {
                     thisScene.startGame();
                 });
 
+                // If [L] is pressed, turn on the world generation and game logging;
+                // Since this is a debug feature, we'll also skip the intro entirely.
+                thisScene.input.keyboard?.once('keydown-L', () => {
+                    REGISTRY.set('isGenLog', true);
+                    REGISTRY.set('isGameLog', true);
+                    REGISTRY.set('skipIntro', 1);
+                    thisScene.startGame();
+                });
+
                 // Also secretly listen for some other keys, which will skip the intro
                 thisScene.input.keyboard?.once('keydown-ONE', () => {
                     REGISTRY.set('skipIntro', 1);

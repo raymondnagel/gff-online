@@ -340,20 +340,12 @@
     "speaker": "player",
     "choice": [
       {
-        "choiceText": "Main Menu & Game Options",
+        "choiceText": "Town Rework",
         "resultId": "update_1"
       },
       {
-        "choiceText": "Intro Cutscene",
+        "choiceText": "'Unstuck' Player Key [U]",
         "resultId": "update_2"
-      },
-      {
-        "choiceText": "Cutscene Skipping",
-        "resultId": "update_3"
-      },
-      {
-        "choiceText": "Removed Cheat Menu",
-        "resultId": "update_4"
       },
       {
         "choiceText": "[back]",
@@ -364,25 +356,13 @@
   {
     "id": "update_1",
     "speaker": "player",
-    "text": "The main menu has been added after the title screen. Not all options are available yet; but you can start a new game, and then choose a difficulty level and books order. (There are also options for Game Type; but only Classic mode is available for now.)",
+    "text": "Over the last few months, I've been working on a major rework of towns. A lot of this is cosmetic, replacing building graphics and adding building orientations for different blocks. The composition of the towns is now much more complex, with districts, blocks, and different types of lots. Towns are still a work in progress, so check back each month to see how they develop!",
     "next": "updateMenu"
   },
   {
     "id": "update_2",
     "speaker": "player",
-    "text": "The game now begins with a cutscene that gives some context for the game, introduces the main character, gives him a few items, and provides some basic instructions for getting started.",
-    "next": "updateMenu"
-  },
-  {
-    "id": "update_3",
-    "speaker": "player",
-    "text": "Since the intro cutscene is quite lengthy, I've made some shortcuts for skipping all or part of it. At the title screen, when it says 'Press [Enter] to start', you can instead press [1] to skip the intro cutscene entirely, [2] to skip to the baptism scene (part 2), or [3] to skip to the preacher's exhortation (part 3).",
-    "next": "updateMenu"
-  },
-  {
-    "id": "update_4",
-    "speaker": "player",
-    "text": "The cheat menu, which was previously accessible by pressing [Y], has been removed. It was always meant to be temporary, for testing only, and I don't want players to get in the habit of cheating. The menu has been replaced by a hidden test console, which is more useful to me for debugging purposes.",
+    "text": "Since towns aren't quite finished yet, there are still some places where you can get stuck. To help with this, I've added a temporary 'unstuck' feature: just press the [U] key, and Adam will be teleported to a random location. (This feature will be removed in a future update, when town work is completed.)",
     "next": "updateMenu"
   },
   {
