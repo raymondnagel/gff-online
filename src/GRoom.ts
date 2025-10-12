@@ -1,5 +1,5 @@
 import { GRegion } from "./regions/GRegion";
-import { CardDir, Dir9, GCityBlock, GColor, GPoint2D, GRect, GRoomWalls, GSceneryDef, GSceneryPlan } from "./types";
+import { CardDir, Dir9, GCityBlock, GColor, GDoorways, GPoint2D, GRect, GRoomWalls, GSceneryDef, GSceneryPlan } from "./types";
 import { SCENERY } from "./scenery";
 import { GFF } from "./main";
 import { RANDOM } from "./random";
@@ -7,7 +7,7 @@ import { GArea } from "./areas/GArea";
 import { DIRECTION } from "./direction";
 import { GTown } from "./GTown";
 import { GChurch } from "./GChurch";
-import { GStronghold } from "./GStronghold";
+import { GStronghold } from "./strongholds/GStronghold";
 import { GWallEast } from "./objects/obstacles/walls/GWallEast";
 import { GWallNorth } from "./objects/obstacles/walls/GWallNorth";
 import { GWallWest } from "./objects/obstacles/walls/GWallWest";
@@ -19,12 +19,22 @@ import { DEPTH } from "./depths";
 import { ARRAY } from "./array";
 import { GEventTrigger } from "./triggers/GEventTrigger";
 import { GChurchDoorTrigger } from "./triggers/GChurchDoorTrigger";
-import { GChurchRegion } from "./regions/GChurchRegion";
-import { GWallSouthWithDoor } from "./objects/obstacles/walls/GWallSouthWithDoor";
 import { GWallSouth } from "./objects/obstacles/walls/GWallSouth";
 import { GInsideRegion } from "./regions/GInsideRegion";
 import { STATS } from "./stats";
 import { PEOPLE } from "./people";
+import { GTowerDoorTrigger } from "./triggers/GTowerDoorTrigger";
+import { GDungeonDoorTrigger } from "./triggers/GDungeonDoorTrigger";
+import { GKeepDoorTrigger } from "./triggers/GKeepDoorTrigger";
+import { GFortressDoorTrigger } from "./triggers/GFortressDoorTrigger";
+import { GCastleDoorTrigger } from "./triggers/GCastleDoorTrigger";
+import { GOutsideRegion } from "./regions/GOutsideRegion";
+import { GObstacleStatic } from "./objects/obstacles/GObstacleStatic";
+import { AREA } from "./area";
+import { GBuildingExit } from "./objects/touchables/GBuildingExit";
+import { GOverheadDecoration } from "./objects/decorations/GOverheadDecoration";
+import { GForegroundDecoration } from "./objects/decorations/GForegroundDecoration";
+import { GStrongholdNorthArchTrigger } from "./triggers/GStrongholdNorthArchTrigger";
 
 const WALL_GUARD_THICK: number = 10;
 const WALL_CTRS: number[] = [
@@ -40,6 +50,11 @@ const HORZ_WALL_SECTIONS: number = 16;
 const VERT_WALL_SECTIONS: number = 11;
 const TERRAIN_FADE_ALPHA: number = .5;
 const MIN_SCENERY_GAP: number = 16;
+
+const NORTH_DOOR_X: number = 448;
+const SOUTH_DOOR_X: number = 470;
+const VERT_MID_X: number = 485;
+const HORZ_DOOR_Y: number = 236;
 
 type TestZone = GRect &{
     label: string;
@@ -65,6 +80,12 @@ export class GRoom {
     private stronghold: GStronghold|null = null;
     private portalRoom: GRoom|null = null;
     private walls: GRoomWalls;
+    private doorways: GDoorways = {
+        [Dir9.N]: false,
+        [Dir9.E]: false,
+        [Dir9.S]: false,
+        [Dir9.W]: false,
+    };
     private startRoom: boolean = false;
     private discovered: boolean = false;
     private travelAgency: boolean = false;
@@ -374,10 +395,12 @@ export class GRoom {
         }
 
         // Create terrain fade images, if applicable, based on neighbors:
-        this.addFadeImageForNeighbor(Dir9.N, 'n');
-        this.addFadeImageForNeighbor(Dir9.E, 'e');
-        this.addFadeImageForNeighbor(Dir9.W, 'w');
-        this.addFadeImageForNeighbor(Dir9.S, 's');
+        if (!this.region.isInterior()) {
+            this.addFadeImageForNeighbor(Dir9.N, 'n');
+            this.addFadeImageForNeighbor(Dir9.E, 'e');
+            this.addFadeImageForNeighbor(Dir9.W, 'w');
+            this.addFadeImageForNeighbor(Dir9.S, 's');
+        }
 
         // Create a render-texture for any decorations:
         const decorRenderer: Phaser.GameObjects.RenderTexture = GFF.AdventureContent.add.renderTexture(GFF.ROOM_X, GFF.ROOM_Y, GFF.ROOM_W, GFF.ROOM_H);
@@ -445,11 +468,19 @@ export class GRoom {
     }
 
     private addFullWallObjects() {
+        if (this.region.isInterior()) {
+            this.addInsideFullWallObjects();
+        } else {
+            this.addOutsideFullWallObjects();
+        }
+    }
+
+    private addOutsideFullWallObjects(region: GOutsideRegion = this.region as GOutsideRegion) {
         const northWall: boolean = this.hasFullWall(Dir9.N);
         const westWall: boolean = this.hasFullWall(Dir9.W);
         const eastWall: boolean = this.hasFullWall(Dir9.E);
         const southWall: boolean = this.hasFullWall(Dir9.S);
-        const wallSet: Record<Dir9, GSceneryDef|null> = this.region.getWalls();
+        const wallSet: Record<Dir9, GSceneryDef|null> = region.getWalls();
 
         // Add cardinal walls:
         if (northWall) {
@@ -462,19 +493,7 @@ export class GRoom {
             new GWallEast(wallSet[Dir9.E] as GSceneryDef);
         }
         if (southWall) {
-            if (this.region instanceof GChurchRegion) {
-                // For a church interior, southWall is set so it is shown on the map;
-                // However, we need to do it in sections: the left and right sections
-                // are solid walls, but the center section is the doorway, which will
-                // be positioned above the player so he can walk under/through it.
-                new GWallSouthWithDoor(
-                    SCENERY.CHURCH_WALL_S_LEFT_DEF,
-                    SCENERY.CHURCH_WALL_S_RIGHT_DEF,
-                    SCENERY.CHURCH_WALL_S_DOORWAY_DEF
-                );
-            } else {
-                new GWallSouth(wallSet[Dir9.S] as GSceneryDef);
-            }
+            new GWallSouth(wallSet[Dir9.S] as GSceneryDef);
         }
 
         // Add any required corner pieces (for aesthetics):
@@ -489,6 +508,220 @@ export class GRoom {
         }
         if (southWall && eastWall) {
             new GWallSE(wallSet[Dir9.SE] as GSceneryDef);
+        }
+    }
+
+    private addInsideFullWallObjects(region: GInsideRegion = this.region as GInsideRegion) {
+        // const northWall: boolean = this.hasFullWall(Dir9.N);
+        // const westWall: boolean = this.hasFullWall(Dir9.W);
+        // const eastWall: boolean = this.hasFullWall(Dir9.E);
+        // const southWall: boolean = this.hasFullWall(Dir9.S);
+
+        // (Testing:) Replace any missing walls with wall+doorway:
+        // TODO: Remove this when room planning is more advanced.
+        let northWall: boolean = this.hasFullWall(Dir9.N);
+        let westWall: boolean = this.hasFullWall(Dir9.W);
+        let eastWall: boolean = this.hasFullWall(Dir9.E);
+        let southWall: boolean = this.hasFullWall(Dir9.S);
+        if (!northWall) {
+            northWall = true;
+            this.doorways[Dir9.N] = true;
+        }
+        if (!westWall) {
+            westWall = true;
+            this.doorways[Dir9.W] = true;
+        }
+        if (!eastWall) {
+            eastWall = true;
+            this.doorways[Dir9.E] = true;
+        }
+        if (!southWall) {
+            southWall = true;
+            this.doorways[Dir9.S] = true;
+        }
+
+
+        // Walls:
+
+        // NORTH:
+        if (northWall) {
+            // Sides:
+            const nLeftWall: GSceneryDef|undefined = region.getWallPiece('n_left');
+            const nRightWall: GSceneryDef|undefined = region.getWallPiece('n_right');
+            if (nLeftWall) {
+                new GObstacleStatic(nLeftWall, GFF.LEFT_BOUND, GFF.TOP_BOUND)
+                    .setOrigin(0, 0)
+                    .setDepth(DEPTH.WALL_NORTH);
+            }
+            if (nRightWall) {
+                new GObstacleStatic(nRightWall, GFF.RIGHT_BOUND, GFF.TOP_BOUND)
+                    .setOrigin(1, 0)
+                    .setDepth(DEPTH.WALL_NORTH);
+            }
+            // Center:
+            if (this.doorways[Dir9.N]) {
+                const nDoorLower: GSceneryDef|undefined = region.getWallPiece('n_door_lower');
+                if (nDoorLower) {
+                    new GForegroundDecoration(nDoorLower, SOUTH_DOOR_X, GFF.TOP_BOUND)
+                        .setOrigin(0, 0);
+                }
+                const nDoorUpper: GSceneryDef|undefined = region.getWallPiece('n_door_upper');
+                if (nDoorUpper) {
+                    const arch = new GOverheadDecoration(nDoorUpper, NORTH_DOOR_X, GFF.TOP_BOUND)
+                        .setOrigin(0, 0);
+                    this.addEventTrigger(new GStrongholdNorthArchTrigger(arch));
+                }
+            } else {
+                const nMidWall: GSceneryDef|undefined = region.getWallPiece('n_mid');
+                if (nMidWall) {
+                    new GObstacleStatic(nMidWall, VERT_MID_X, GFF.TOP_BOUND)
+                        .setOrigin(0, 0);
+                }
+            }
+        }
+
+        // WEST:
+        if (westWall) {
+            // Sides:
+            const wTopWall: GSceneryDef|undefined = region.getWallPiece('w_top');
+            const wBottomWall: GSceneryDef|undefined = region.getWallPiece('w_bottom');
+            if (wTopWall) {
+                new GObstacleStatic(wTopWall, GFF.LEFT_BOUND, GFF.TOP_BOUND)
+                    .setOrigin(0, 0)
+                    .setDepth(DEPTH.WALL_SIDE);
+            }
+            if (wBottomWall) {
+                new GObstacleStatic(wBottomWall, GFF.LEFT_BOUND, GFF.BOTTOM_BOUND)
+                    .setOrigin(0, 1)
+                    .setDepth(DEPTH.WALL_SIDE);
+            }
+            // Center:
+            if (this.doorways[Dir9.W]) {
+                const wDoorLower: GSceneryDef|undefined = region.getWallPiece('w_door_lower');
+                if (wDoorLower) {
+                    new GObstacleStatic(wDoorLower, GFF.LEFT_BOUND, HORZ_DOOR_Y)
+                        .setOrigin(0, 0);
+                }
+                const wDoorUpper: GSceneryDef|undefined = region.getWallPiece('w_door_upper');
+                if (wDoorUpper) {
+                    new GOverheadDecoration(wDoorUpper, GFF.LEFT_BOUND, HORZ_DOOR_Y)
+                        .setOrigin(0, 0);
+                }
+            } else {
+                const wMidWall: GSceneryDef|undefined = region.getWallPiece('w_mid');
+                if (wMidWall) {
+                    new GObstacleStatic(wMidWall, GFF.LEFT_BOUND, HORZ_DOOR_Y)
+                        .setOrigin(0, 0);
+                }
+            }
+        }
+
+        // EAST:
+        if (eastWall) {
+            // Sides:
+            const eTopWall: GSceneryDef|undefined = region.getWallPiece('e_top');
+            const eBottomWall: GSceneryDef|undefined = region.getWallPiece('e_bottom');
+            if (eTopWall) {
+                new GObstacleStatic(eTopWall, GFF.RIGHT_BOUND, GFF.TOP_BOUND)
+                    .setOrigin(1, 0)
+                    .setDepth(DEPTH.WALL_SIDE);
+            }
+            if (eBottomWall) {
+                new GObstacleStatic(eBottomWall, GFF.RIGHT_BOUND, GFF.BOTTOM_BOUND)
+                    .setOrigin(1, 1)
+                    .setDepth(DEPTH.WALL_SIDE);
+            }
+            // Center:
+            if (this.doorways[Dir9.E]) {
+                const eDoorLower: GSceneryDef|undefined = region.getWallPiece('e_door_lower');
+                if (eDoorLower) {
+                    new GObstacleStatic(eDoorLower, GFF.RIGHT_BOUND, HORZ_DOOR_Y)
+                        .setOrigin(1, 0);
+                }
+                const eDoorUpper: GSceneryDef|undefined = region.getWallPiece('e_door_upper');
+                if (eDoorUpper) {
+                    new GOverheadDecoration(eDoorUpper, GFF.RIGHT_BOUND, HORZ_DOOR_Y)
+                        .setOrigin(1, 0);
+                }
+            } else {
+                const eMidWall: GSceneryDef|undefined = region.getWallPiece('e_mid');
+                if (eMidWall) {
+                    new GObstacleStatic(eMidWall, GFF.RIGHT_BOUND, HORZ_DOOR_Y)
+                        .setOrigin(1, 0);
+                }
+            }
+        }
+
+        // SOUTH:
+        if (southWall) {
+            // Sides:
+            const sLeftWall: GSceneryDef|undefined = region.getWallPiece('s_left');
+            const sRightWall: GSceneryDef|undefined = region.getWallPiece('s_right');
+            if (sLeftWall) {
+                new GObstacleStatic(sLeftWall, GFF.LEFT_BOUND, GFF.BOTTOM_BOUND)
+                    .setOrigin(0, 1)
+                    .setDepth(DEPTH.WALL_SOUTH);
+            }
+            if (sRightWall) {
+                new GObstacleStatic(sRightWall, GFF.RIGHT_BOUND, GFF.BOTTOM_BOUND)
+                    .setOrigin(1, 1)
+                    .setDepth(DEPTH.WALL_SOUTH);
+            }
+            // Center:
+            const hasOutsidePortal: boolean = this.portalRoom?.getArea() === AREA.WORLD_AREA;
+            // If this room has a portal to the outside, it needs an exit:
+            if (hasOutsidePortal) {
+                const exit: GBuildingExit = new GBuildingExit(GFF.ROOM_X + (GFF.ROOM_W / 2) - 36, 703);
+            }
+            // If this room has a portal to the outside OR a doorway to the south,
+            // it needs a doorway in the south wall:
+            if (this.doorways[Dir9.S] || hasOutsidePortal) {
+                const sDoor: GSceneryDef|undefined = region.getWallPiece('s_door');
+                if (sDoor) {
+                    new GOverheadDecoration(sDoor, SOUTH_DOOR_X, GFF.BOTTOM_BOUND)
+                        .setOrigin(0, 1);
+                }
+            } else {
+                const sMidWall: GSceneryDef|undefined = region.getWallPiece('s_mid');
+                if (sMidWall) {
+                    new GObstacleStatic(sMidWall, VERT_MID_X, GFF.BOTTOM_BOUND)
+                        .setOrigin(0, 1);
+                }
+            }
+        }
+
+        // Add any required corner pieces (for aesthetics):
+        if (northWall && westWall) {
+            const nwCorner: GSceneryDef|undefined = region.getWallPiece('nw_corner');
+            if (nwCorner) {
+                new GObstacleStatic(nwCorner, GFF.LEFT_BOUND, GFF.TOP_BOUND)
+                    .setOrigin(0, 0)
+                    .setDepth(DEPTH.WALL_N_CORNER);
+            }
+        }
+        if (northWall && eastWall) {
+            const neCorner: GSceneryDef|undefined = region.getWallPiece('ne_corner');
+            if (neCorner) {
+                new GObstacleStatic(neCorner, GFF.RIGHT_BOUND, GFF.TOP_BOUND)
+                    .setOrigin(1, 0)
+                    .setDepth(DEPTH.WALL_N_CORNER);
+            }
+        }
+        if (southWall && westWall) {
+            const swCorner: GSceneryDef|undefined = region.getWallPiece('sw_corner');
+            if (swCorner) {
+                new GObstacleStatic(swCorner, GFF.LEFT_BOUND, GFF.BOTTOM_BOUND)
+                    .setOrigin(0, 1)
+                    .setDepth(DEPTH.WALL_S_CORNER);
+            }
+        }
+        if (southWall && eastWall) {
+            const seCorner: GSceneryDef|undefined = region.getWallPiece('se_corner');
+            if (seCorner) {
+                new GObstacleStatic(seCorner, GFF.RIGHT_BOUND, GFF.BOTTOM_BOUND)
+                    .setOrigin(1, 1)
+                    .setDepth(DEPTH.WALL_S_CORNER);
+            }
         }
     }
 
@@ -1359,16 +1592,16 @@ export class GRoom {
         const churchHeight: number = 409;
         const churchX: number = GFF.ROOM_X + (GFF.ROOM_W / 2) - (churchWidth / 2);
         const churchY: number = 64;
-        const animX: number = churchX + (churchWidth / 2) - 70;
-        const animY: number = churchY + churchHeight - 135;
         this.planPositionedScenery(churchDef, churchX + churchDef.body.x, churchY + churchDef.body.y, 0, 0);
 
         // As we plan the church, we can also add a trigger for the door:
         const radius: number = 100;
         const doorX: number = churchX + (churchWidth / 2);
         const doorY: number = churchY + churchHeight;
+        const animX: number = doorX - 70;
+        const animY: number = doorY - 135;
         const triggerArea: GRect = {x: doorX - radius, y: doorY - radius, width: radius * 2, height: radius * 2};
-        const doorSpriteDepth: number = churchY + churchHeight + 1;
+        const doorSpriteDepth: number = doorY + 1;
         this.addEventTrigger(new GChurchDoorTrigger(triggerArea, {x: animX, y: animY}, doorSpriteDepth));
 
         // A church is an important feature that shouldn't be covered up by random scenery
@@ -1425,6 +1658,58 @@ export class GRoom {
         } while (z !== start)
 
         return null;
+    }
+
+    public planStronghold() {
+        const strongholdDef: GSceneryDef = SCENERY.def((this.getStronghold() as GStronghold).getBuildingKey());
+        const corruptionDef: GSceneryDef = SCENERY.def('corruption_patch');
+        const cX: number = GFF.ROOM_X + (GFF.ROOM_W / 2);
+        const bY: number = 480;
+        const cY: number = bY - (strongholdDef.body.height / 2);
+        const shX: number = cX - (strongholdDef.body.width / 2);
+        const shY: number = bY - strongholdDef.body.height;
+        const corDist: number = 150;
+
+        // Create 12 corruption patches in a circle around cX,cY:
+        for (let i = 0; i < 12; i++) {
+            const angle = (i / 12) * (Math.PI * 2);
+            const x = cX + Math.cos(angle) * corDist;
+            const y = cY + Math.sin(angle) * corDist;
+            this.planPositionedScenery(corruptionDef as GSceneryDef, x, y);
+        }
+        // Put some in the center too:
+        this.planPositionedScenery(corruptionDef as GSceneryDef, cX - (corDist / 2), cY - (corDist / 2));
+        this.planPositionedScenery(corruptionDef as GSceneryDef, cX + (corDist / 2), cY - (corDist / 2));
+        this.planPositionedScenery(corruptionDef as GSceneryDef, cX - (corDist / 2), cY + (corDist / 2));
+        this.planPositionedScenery(corruptionDef as GSceneryDef, cX + (corDist / 2), cY + (corDist / 2));
+
+        // Finally, add the stronghold itself:
+        this.planPositionedScenery(strongholdDef as GSceneryDef, shX, shY);
+
+        // Place the correct door trigger for the stronghold type:
+        const radius: number = 100;
+        const doorX: number = shX + (strongholdDef.body.width / 2);
+        const doorY: number = bY;
+        const triggerArea: GRect = {x: doorX - radius, y: doorY - radius, width: radius * 2, height: radius * 2};
+        const doorSpriteDepth: number = bY + 1;
+
+        switch(strongholdDef.key) {
+            case 'tower_front':
+                this.addEventTrigger(new GTowerDoorTrigger(triggerArea, {x: doorX - 88, y: doorY - 148}, doorSpriteDepth));
+                break;
+            case 'dungeon_front':
+                this.addEventTrigger(new GDungeonDoorTrigger(triggerArea, {x: doorX - 84.5, y: doorY - 150}, doorSpriteDepth));
+                break;
+            case 'keep_front':
+                this.addEventTrigger(new GKeepDoorTrigger(triggerArea, {x: doorX - 91.5, y: doorY - 155}, doorSpriteDepth));
+                break;
+            case 'fortress_front':
+                this.addEventTrigger(new GFortressDoorTrigger(triggerArea, {x: doorX - 50, y: doorY - 143}, doorSpriteDepth));
+                break;
+            case 'castle_front':
+                this.addEventTrigger(new GCastleDoorTrigger(triggerArea, {x: doorX - 65.5, y: doorY - 159}, doorSpriteDepth));
+                break;
+        }
     }
 
     private simpleFit(objectWidth: number, objectHeight: number, maxTries: number, objects: GRect[], zones: GRect[]): GRect|null {

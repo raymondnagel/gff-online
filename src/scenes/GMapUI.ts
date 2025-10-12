@@ -47,7 +47,18 @@ export class GMapUI extends GUIScene {
         }).setOrigin(.5, 0);
 
         this.mapScrollImage = this.add.image(GFF.GAME_W / 2, 80, 'map_scroll').setOrigin(.5, 0);
-        this.mapTitleText = this.add.text(512, 172, this.area.getName(), {
+
+        let floorLabel: string = '';
+        if (this.area.getNumFloors() > 1) {
+            const perceivedFloor: number = this.area.getPerceivedFloor(this.floor);
+            if (perceivedFloor >= 0) {
+                floorLabel = ` - ${perceivedFloor}F`;
+            } else {
+                floorLabel = ` - ${Math.abs(perceivedFloor)}B`;
+            }
+        }
+
+        this.mapTitleText = this.add.text(512, 172, this.area.getName() + floorLabel, {
             color: '#735e48',
             fontFamily: 'olde',
             fontSize: '42px'

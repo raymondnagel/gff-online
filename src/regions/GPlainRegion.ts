@@ -4,18 +4,6 @@ import { SCENERY } from "../scenery";
 import { Dir9, GRect, GSceneryDef } from "../types";
 import { GOutsideRegion } from "./GOutsideRegion";
 
-const WALLS: Record<Dir9, GSceneryDef|null> = {
-    [Dir9.N]: SCENERY.PLAIN_WALL_N_DEF,
-    [Dir9.E]: SCENERY.PLAIN_WALL_E_DEF,
-    [Dir9.S]: SCENERY.PLAIN_WALL_S_DEF,
-    [Dir9.W]: SCENERY.PLAIN_WALL_W_DEF,
-    [Dir9.NE]: SCENERY.PLAIN_WALL_NE_DEF,
-    [Dir9.SE]: SCENERY.PLAIN_WALL_SE_DEF,
-    [Dir9.SW]: SCENERY.PLAIN_WALL_SW_DEF,
-    [Dir9.NW]: SCENERY.PLAIN_WALL_NW_DEF,
-    [Dir9.NONE]: null,
-};
-
 export class GPlainRegion extends GOutsideRegion{
 
     constructor(){
@@ -28,7 +16,17 @@ export class GPlainRegion extends GOutsideRegion{
     }
 
     public getWalls(): Record<Dir9, GSceneryDef|null> {
-        return WALLS;
+        return {
+            [Dir9.N]: SCENERY.def('plain_wall_n'),
+            [Dir9.E]: SCENERY.def('plain_wall_e'),
+            [Dir9.S]: SCENERY.def('plain_wall_s'),
+            [Dir9.W]: SCENERY.def('plain_wall_w'),
+            [Dir9.NE]: SCENERY.def('plain_wall_ne'),
+            [Dir9.SE]: SCENERY.def('plain_wall_se'),
+            [Dir9.SW]: SCENERY.def('plain_wall_sw'),
+            [Dir9.NW]: SCENERY.def('plain_wall_nw'),
+            [Dir9.NONE]: null,
+        };
     }
 
     public getTemperature(): number {

@@ -11,10 +11,9 @@ export class GChurch {
     private worldRoom: GRoom;
     private interiorArea: GChurchArea;
 
-    constructor(town: GTown, fruitNum: number|null) {
+    constructor(town: GTown) {
         this.name = `Church at ${town.getName()}`;
         this.town = town;
-        this.fruitNum = fruitNum;
     }
 
     public getName(): string {
@@ -23,6 +22,10 @@ export class GChurch {
 
     public getTown(): GTown {
         return this.town;
+    }
+
+    public setFruitNum(num: number|null) {
+        this.fruitNum = num;
     }
 
     public getFruitNum(): number|null {

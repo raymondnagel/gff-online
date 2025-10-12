@@ -23,15 +23,67 @@ export namespace EFFECTS {
             },
             {
                 spriteConfig: {
-                    key: 'new_church_door',
+                    key: 'tower_door',
                     frames: GFF.GAME.anims.generateFrameNumbers(
-                        'new_church_door',
+                        'tower_door',
                         { start: 0, end: 6 }
                     ),
                     frameRate: 15,
                     repeat: 0
                 },
-                soundKey: 'open_chest',
+                soundKey: 'stronghold_open',
+                hideOnFinish: false
+            },
+            {
+                spriteConfig: {
+                    key: 'dungeon_door',
+                    frames: GFF.GAME.anims.generateFrameNumbers(
+                        'dungeon_door',
+                        { start: 0, end: 6 }
+                    ),
+                    frameRate: 15,
+                    repeat: 0
+                },
+                soundKey: 'stronghold_open',
+                hideOnFinish: false
+            },
+            {
+                spriteConfig: {
+                    key: 'keep_door',
+                    frames: GFF.GAME.anims.generateFrameNumbers(
+                        'keep_door',
+                        { start: 0, end: 6 }
+                    ),
+                    frameRate: 15,
+                    repeat: 0
+                },
+                soundKey: 'stronghold_open',
+                hideOnFinish: false
+            },
+            {
+                spriteConfig: {
+                    key: 'fortress_door',
+                    frames: GFF.GAME.anims.generateFrameNumbers(
+                        'fortress_door',
+                        { start: 0, end: 6 }
+                    ),
+                    frameRate: 15,
+                    repeat: 0
+                },
+                soundKey: 'stronghold_open',
+                hideOnFinish: false
+            },
+            {
+                spriteConfig: {
+                    key: 'castle_door',
+                    frames: GFF.GAME.anims.generateFrameNumbers(
+                        'castle_door',
+                        { start: 0, end: 6 }
+                    ),
+                    frameRate: 15,
+                    repeat: 0
+                },
+                soundKey: 'stronghold_open',
                 hideOnFinish: false
             },
             {

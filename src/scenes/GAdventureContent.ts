@@ -44,6 +44,7 @@ import { FRUITS } from '../fruits';
 import { GQuickTravelCutscene } from '../cutscenes/GQuickTravelCutscene';
 import { REGISTRY } from '../registry';
 import { GOpeningCutscene } from '../cutscenes/GOpeningCutscene';
+import { GCorruptionPatch } from '../objects/decorations/GCorruptionPatch';
 
 const MOUSE_UI_BUTTON: string = 'MOUSE_UI_BUTTON';
 
@@ -116,9 +117,9 @@ export class GAdventureContent extends GContentScene {
         // which takes place in the start room's church.
         if (REGISTRY.getBoolean('doIntro')) {
             const portalRoom: GRoom = startRoom.getPortalRoom() as GRoom;
-            this.setCurrentRoom(portalRoom.getX(), portalRoom.getY(), portalRoom.getArea());
+            this.setCurrentRoom(portalRoom.getX(), portalRoom.getY(), portalRoom.getFloor(), portalRoom.getArea());
         } else {
-            this.setCurrentRoom(startRoom.getX(), startRoom.getY(), startRoom.getArea());
+            this.setCurrentRoom(startRoom.getX(), startRoom.getY(), startRoom.getFloor(), startRoom.getArea());
         }
 
         // Create the player:
@@ -309,7 +310,7 @@ export class GAdventureContent extends GContentScene {
             this.player.faceDirection(Dir9.N);
             this.player.stop();
 
-            this.transitionToRoom(portalRoom.getX(), portalRoom.getY(), portalRoom.getArea(), () => {
+            this.transitionToRoom(portalRoom.getX(), portalRoom.getY(), portalRoom.getFloor(), portalRoom.getArea(), () => {
                 // If the player is entering a church, we need to play the service cutscene:
                 if (room.getChurch() !== null) {
                     const church: GChurch = room.getChurch() as GChurch;
@@ -336,7 +337,7 @@ export class GAdventureContent extends GContentScene {
             this.player.walkDirection(Dir9.NONE);
             this.player.faceDirection(Dir9.S);
             this.player.stop();
-            this.transitionToRoom(portalRoom.getX(), portalRoom.getY(), portalRoom.getArea(), () => {
+            this.transitionToRoom(portalRoom.getX(), portalRoom.getY(), portalRoom.getFloor(), portalRoom.getArea(), () => {
                 // We'll initially hide the player.
                 // When the new room is loaded, his position will cause the door-open trigger,
                 // and we'll make him visible when that animation is finished.
@@ -374,7 +375,7 @@ export class GAdventureContent extends GContentScene {
 
         const captureRoom = async (x: number, y: number): Promise<void> => {
             return new Promise((resolve) => {
-                this.setCurrentRoom(x, y);
+                this.setCurrentRoom(x, y, this.playerFloor);
                 this.sys.game.renderer.snapshotArea(
                     0, 0, GFF.ROOM_W, GFF.ROOM_H,
                     async (image: HTMLImageElement | Phaser.Display.Color) => {
@@ -585,7 +586,7 @@ export class GAdventureContent extends GContentScene {
             // Before transitioning, walk NONE to stop moving and remove diagonals:
             this.player.walkDirection(Dir9.NONE);
             this.player.stop();
-            this.transitionToRoom(newRoomX, newRoomY, this.currentArea, () => {
+            this.transitionToRoom(newRoomX, newRoomY, this.playerFloor, this.currentArea, () => {
                 // Re-position player:
                 let newEdge: Dir9 = DIRECTION.getOpposite(dir);
                 let newPlayerX: number =
@@ -597,10 +598,17 @@ export class GAdventureContent extends GContentScene {
                     ? DIRECTION.getCharPosForEdge(newEdge)
                     : this.player.y;
                 this.player.setPosition(newPlayerX, newPlayerY);
-                const playerCtr: GPoint2D = this.player.getPhysicalCenter();
+
+                // For outdoor rooms, make sure the player is aligned with the
+                // nearest wall center (hole between wall sections) so he doesn't
+                // get faceplanted into a wall when he enters.
                 const room: GRoom = this.getCurrentRoom() as GRoom;
-                const wallCtr: GPoint2D = room.getNearestWallCenter(DIRECTION.getOpposite(dir) as CardDir, playerCtr);
-                this.player.centerPhysically(wallCtr);
+                if (!room.getRegion().isInterior()) {
+                    const playerCtr: GPoint2D = this.player.getPhysicalCenter();
+                    const wallCtr: GPoint2D = room.getNearestWallCenter(DIRECTION.getOpposite(dir) as CardDir, playerCtr);
+                    this.player.centerPhysically(wallCtr);
+                }
+
                 // Spawn companion after the player is positioned:
                 this.spawnCompanion();
             });
@@ -630,7 +638,7 @@ export class GAdventureContent extends GContentScene {
         this.getSound().fadeInMusic(500, this.currentArea.getBgMusic());
     }
 
-    public setCurrentRoom(roomX: number, roomY: number, area?: GArea) {
+    public setCurrentRoom(roomX: number, roomY: number, floor: number, area?: GArea) {
         // Unload the current room if there is one:
         let currentRoom: GRoom|null = this.getCurrentRoom();
         currentRoom?.unload();
@@ -643,6 +651,7 @@ export class GAdventureContent extends GContentScene {
         // Set the new coordinates:
         this.playerRoomX = roomX;
         this.playerRoomY = roomY;
+        this.playerFloor = floor;
 
         // Load the new room:
         currentRoom = this.getCurrentRoom() as GRoom;
@@ -667,16 +676,16 @@ export class GAdventureContent extends GContentScene {
     }
 
     public reloadCurrentRoom(meanwhile: Function) {
-        this.transitionToRoom(this.playerRoomX, this.playerRoomY, this.currentArea, meanwhile);
+        this.transitionToRoom(this.playerRoomX, this.playerRoomY, this.playerFloor, this.currentArea, meanwhile);
     }
 
-    public transitionToRoom(roomX: number, roomY: number, area: GArea, meanwhile: Function) {
+    public transitionToRoom(roomX: number, roomY: number, roomFloor: number, area: GArea, meanwhile: Function) {
         REGISTRY.set('isNametags', false);
         this.setInputMode(INPUT_DISABLED);
         this.stopChars();
         this.impSpawnTimeEvent?.remove();
         this.fadeOut(500, undefined, () => {
-            this.setCurrentRoom(roomX, roomY, area);
+            this.setCurrentRoom(roomX, roomY, roomFloor, area);
             this.spawnPeopleForRoom();
             this.setVisionWithCheck();
 
@@ -705,7 +714,7 @@ export class GAdventureContent extends GContentScene {
     public transitionRoomDuringCutscene(room: GRoom) {
         REGISTRY.set('isNametags', false);
         this.impSpawnTimeEvent?.remove();
-        this.setCurrentRoom(room.getX(), room.getY(), room.getArea());
+        this.setCurrentRoom(room.getX(), room.getY(), room.getFloor(), room.getArea());
         this.spawnPeopleForRoom();
         this.setVisionWithCheck();
 
@@ -1307,6 +1316,7 @@ export class GAdventureContent extends GContentScene {
         return (
             (!room.isSafe()) &&
             room.getArea() === AREA.WORLD_AREA &&
+            room.getStronghold() === null &&
             PLAYER.getFaith() > 0 &&
             PLAYER.getStandards() > 0
         );
@@ -1477,7 +1487,7 @@ export class GAdventureContent extends GContentScene {
             .setSize(GFF.GAME_W, GFF.BOTTOM_BOUND - brRad.y);
     }
 
-    public update(_time: number, _delta: number): void {
+    public update(_time: number, delta: number): void {
         // Only process user controls for the player if in adventuring input mode:
         if (this.getInputMode() === INPUT_ADVENTURING) {
             const polledKeys: GKeyList = INPUT_ADVENTURING.getPollKeys();
@@ -1487,6 +1497,16 @@ export class GAdventureContent extends GContentScene {
             } else {
                 this.player.walkDirection(direction);
             }
+        }
+
+        // Update special animations:
+        if (this.getCurrentRoom()?.getStronghold()) {
+            const corruptionPatches: GCorruptionPatch[] = this.children.list.filter(gameObject =>
+                gameObject instanceof GCorruptionPatch
+            ) as GCorruptionPatch[];
+            corruptionPatches.forEach(patch => {
+                patch.update(delta);
+            });
         }
 
         // Update vision:
@@ -1532,6 +1552,12 @@ export class GAdventureContent extends GContentScene {
         GFF.AdventureUI.hideConsole();
         this.scene.resume();
         this.setInputMode(INPUT_ADVENTURING);
+    }
+
+    public warpToRoom(room: GRoom) {
+        this.transitionToRoom(room.getX(), room.getY(), room.getFloor(), room.getArea(), () => {
+            this.playerUnstuck();
+        });
     }
 
     public deactivate(): void {

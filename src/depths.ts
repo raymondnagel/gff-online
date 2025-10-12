@@ -14,6 +14,8 @@ export namespace DEPTH {
 
     export const SPECIAL_EFFECT = 6000;
 
+    export const OH_DECOR = 1200;
+
     export const WALL_S_CORNER = 1002;
 
     export const WALL_SOUTH = 1001;

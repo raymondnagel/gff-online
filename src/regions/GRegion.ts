@@ -74,6 +74,10 @@ export abstract class GRegion {
             room.planChurch();
         }
 
+        if (room.getStronghold() !== null) {
+            room.planStronghold();
+        }
+
         // Temporarily disable scenery planning for town rooms
         if (room.getTown() === null) {
             this._furnishRoom(room);
@@ -85,6 +89,4 @@ export abstract class GRegion {
     public abstract isInterior(): boolean;
 
     public abstract getTemperature(): number;
-
-    public abstract getWalls(): Record<Dir9, GSceneryDef|null>;
 }

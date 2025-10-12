@@ -11,6 +11,10 @@ import { GSceneryDef } from '../../types';
  * The major difference between a foreground decoration and an obstacle
  * is that foreground decorations do not have a physical body, and they
  * don't obstruct movement.
+ *
+ * Foreground decorations sometimes appear in front of the player,
+ * and sometimes behind the player, depending on the player's
+ * Y position.
  */
 export class GForegroundDecoration extends Phaser.GameObjects.Image {
 

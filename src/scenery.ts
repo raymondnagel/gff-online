@@ -10,9 +10,10 @@ import { GTreasureChest } from './objects/touchables/GTreasureChest';
 import { GPiano } from './objects/interactables/GPiano';
 import { GChurchHouse } from './objects/obstacles/GChurchHouse';
 import { GBuildingEntrance } from './objects/touchables/GBuildingEntrance';
-import { GBuildingExit } from './objects/touchables/GBuildingExit';
 import { GTravelAgency } from './objects/obstacles/GTravelAgency';
 import { GSpiritTravelAgency } from './objects/obstacles/GSpiritTravelAgency';
+import { GOverheadDecoration } from './objects/decorations/GOverheadDecoration';
+import { GCorruptionPatch } from './objects/decorations/GCorruptionPatch';
 
 export namespace SCENERY {
     const WALL_N_BODY: GRect = {x: 0, y: 0, width: 1024, height: 64};
@@ -32,86 +33,102 @@ export namespace SCENERY {
 
     // Walls:
 
-    export const CHURCH_WALL_N_DEF: GSceneryDef = { key: 'church_wall_n', type: 'static', body: WALL_N_BODY };
-    export const CHURCH_WALL_E_DEF: GSceneryDef = { key: 'church_wall_e', type: 'static', body: WALL_E_BODY };
-    export const CHURCH_WALL_S_DEF: GSceneryDef = { key: 'church_wall_s', type: 'static', body: WALL_N_BODY };
-    export const CHURCH_WALL_W_DEF: GSceneryDef = { key: 'church_wall_w', type: 'static', body: WALL_W_BODY };
-    export const CHURCH_WALL_NW_DEF: GSceneryDef = { key: 'nothing', type: 'static', body: {x: 0, y: 0, width: 0, height: 0} };
-    export const CHURCH_WALL_NE_DEF: GSceneryDef = { key: 'nothing', type: 'static', body: {x: 0, y: 0, width: 0, height: 0} };
-    export const CHURCH_WALL_SE_DEF: GSceneryDef = { key: 'nothing', type: 'static', body: {x: 0, y: 0, width: 0, height: 0} };
-    export const CHURCH_WALL_SW_DEF: GSceneryDef = { key: 'nothing', type: 'static', body: {x: 0, y: 0, width: 0, height: 0} };
-    export const CHURCH_WALL_S_LEFT_DEF: GSceneryDef = { key: 'church_wall_s_left', type: 'static', body: {x: 0, y: 0, width: 483, height: 64} };
-    export const CHURCH_WALL_S_RIGHT_DEF: GSceneryDef = { key: 'church_wall_s_right', type: 'static', body: {x: 0, y: 0, width: 483, height: 64} };
-    export const CHURCH_WALL_S_DOORWAY_DEF: GSceneryDef = { key: 'church_wall_s_doorway', type: 'static', body: {x: 0, y: 0, width: 58, height: 64} };
-
-    export const ROCK_WALL_N_DEF: GSceneryDef = { key: 'rock_wall_n', type: 'static', body: WALL_N_BODY };
-    export const ROCK_WALL_E_DEF: GSceneryDef = { key: 'rock_wall_e', type: 'static', body: WALL_E_BODY };
-    export const ROCK_WALL_S_DEF: GSceneryDef = { key: 'rock_wall_s', type: 'static', body: WALL_S_BODY };
-    export const ROCK_WALL_W_DEF: GSceneryDef = { key: 'rock_wall_w', type: 'static', body: WALL_W_BODY };
-    export const ROCK_WALL_NW_DEF: GSceneryDef = { key: 'rock_wall_nw', type: 'static', body: {x: 0, y: 0, width: 114, height: 87} };
-    export const ROCK_WALL_NE_DEF: GSceneryDef = { key: 'rock_wall_ne', type: 'static', body: {x: 0, y: 0, width: 116, height: 87} };
-    export const ROCK_WALL_SE_DEF: GSceneryDef = { key: 'rock_wall_se', type: 'static', body: {x: 0, y: 0, width: 57, height: 161} };
-    export const ROCK_WALL_SW_DEF: GSceneryDef = { key: 'rock_wall_sw', type: 'static', body: {x: 0, y: 0, width: 58, height: 161} };
-
-    export const PLAIN_WALL_N_DEF: GSceneryDef = { key: 'plain_wall_n', type: 'static', body: WALL_N_BODY };
-    export const PLAIN_WALL_E_DEF: GSceneryDef = { key: 'plain_wall_e', type: 'static', body: WALL_E_BODY };
-    export const PLAIN_WALL_S_DEF: GSceneryDef = { key: 'plain_wall_s', type: 'static', body: WALL_S_BODY };
-    export const PLAIN_WALL_W_DEF: GSceneryDef = { key: 'plain_wall_w', type: 'static', body: WALL_W_BODY };
-    export const PLAIN_WALL_NW_DEF: GSceneryDef = { key: 'plain_wall_nw', type: 'static', body: {x: 0, y: 0, width: 114, height: 87} };
-    export const PLAIN_WALL_NE_DEF: GSceneryDef = { key: 'plain_wall_ne', type: 'static', body: {x: 0, y: 0, width: 116, height: 87} };
-    export const PLAIN_WALL_SE_DEF: GSceneryDef = { key: 'plain_wall_se', type: 'static', body: {x: 0, y: 0, width: 57, height: 161} };
-    export const PLAIN_WALL_SW_DEF: GSceneryDef = { key: 'plain_wall_sw', type: 'static', body: {x: 0, y: 0, width: 58, height: 161} };
-
-    export const DESERT_WALL_N_DEF: GSceneryDef = { key: 'desert_wall_n', type: 'static', body: WALL_N_BODY };
-    export const DESERT_WALL_E_DEF: GSceneryDef = { key: 'desert_wall_e', type: 'static', body: WALL_E_BODY };
-    export const DESERT_WALL_S_DEF: GSceneryDef = { key: 'desert_wall_s', type: 'static', body: WALL_S_BODY };
-    export const DESERT_WALL_W_DEF: GSceneryDef = { key: 'desert_wall_w', type: 'static', body: WALL_W_BODY };
-    export const DESERT_WALL_NW_DEF: GSceneryDef = { key: 'desert_wall_nw', type: 'static', body: {x: 0, y: 0, width: 114, height: 87} };
-    export const DESERT_WALL_NE_DEF: GSceneryDef = { key: 'desert_wall_ne', type: 'static', body: {x: 0, y: 0, width: 116, height: 87} };
-    export const DESERT_WALL_SE_DEF: GSceneryDef = { key: 'desert_wall_se', type: 'static', body: {x: 0, y: 0, width: 57, height: 161} };
-    export const DESERT_WALL_SW_DEF: GSceneryDef = { key: 'desert_wall_sw', type: 'static', body: {x: 0, y: 0, width: 58, height: 161} };
-
-    export const FOREST_WALL_N_DEF: GSceneryDef = { key: 'forest_wall_n', type: 'static', body: WALL_N_BODY };
-    export const FOREST_WALL_E_DEF: GSceneryDef = { key: 'forest_wall_e', type: 'static', body: WALL_E_BODY };
-    export const FOREST_WALL_S_DEF: GSceneryDef = { key: 'forest_wall_s', type: 'static', body: WALL_S_BODY };
-    export const FOREST_WALL_W_DEF: GSceneryDef = { key: 'forest_wall_w', type: 'static', body: WALL_W_BODY };
-    export const FOREST_WALL_NW_DEF: GSceneryDef = { key: 'forest_wall_nw', type: 'static', body: {x: 0, y: 0, width: 114, height: 87} };
-    export const FOREST_WALL_NE_DEF: GSceneryDef = { key: 'forest_wall_ne', type: 'static', body: {x: 0, y: 0, width: 116, height: 87} };
-    export const FOREST_WALL_SE_DEF: GSceneryDef = { key: 'forest_wall_se', type: 'static', body: {x: 0, y: 0, width: 57, height: 161} };
-    export const FOREST_WALL_SW_DEF: GSceneryDef = { key: 'forest_wall_sw', type: 'static', body: {x: 0, y: 0, width: 58, height: 161} };
-
-    export const TUNDRA_WALL_N_DEF: GSceneryDef = { key: 'tundra_wall_n', type: 'static', body: WALL_N_BODY };
-    export const TUNDRA_WALL_E_DEF: GSceneryDef = { key: 'tundra_wall_e', type: 'static', body: WALL_E_BODY };
-    export const TUNDRA_WALL_S_DEF: GSceneryDef = { key: 'tundra_wall_s', type: 'static', body: WALL_S_BODY };
-    export const TUNDRA_WALL_W_DEF: GSceneryDef = { key: 'tundra_wall_w', type: 'static', body: WALL_W_BODY };
-    export const TUNDRA_WALL_NW_DEF: GSceneryDef = { key: 'tundra_wall_nw', type: 'static', body: {x: 0, y: 0, width: 114, height: 87} };
-    export const TUNDRA_WALL_NE_DEF: GSceneryDef = { key: 'tundra_wall_ne', type: 'static', body: {x: 0, y: 0, width: 116, height: 87} };
-    export const TUNDRA_WALL_SE_DEF: GSceneryDef = { key: 'tundra_wall_se', type: 'static', body: {x: 0, y: 0, width: 57, height: 161} };
-    export const TUNDRA_WALL_SW_DEF: GSceneryDef = { key: 'tundra_wall_sw', type: 'static', body: {x: 0, y: 0, width: 63, height: 161} };
-
-    export const MOUNT_WALL_N_DEF: GSceneryDef = { key: 'mount_wall_n', type: 'static', body: WALL_N_BODY };
-    export const MOUNT_WALL_E_DEF: GSceneryDef = { key: 'mount_wall_e', type: 'static', body: WALL_E_BODY };
-    export const MOUNT_WALL_S_DEF: GSceneryDef = { key: 'mount_wall_s', type: 'static', body: WALL_S_BODY };
-    export const MOUNT_WALL_W_DEF: GSceneryDef = { key: 'mount_wall_w', type: 'static', body: WALL_W_BODY };
-    export const MOUNT_WALL_NW_DEF: GSceneryDef = { key: 'mount_wall_nw', type: 'static', body: {x: 0, y: 0, width: 114, height: 87} };
-    export const MOUNT_WALL_NE_DEF: GSceneryDef = { key: 'mount_wall_ne', type: 'static', body: {x: 0, y: 0, width: 116, height: 87} };
-    export const MOUNT_WALL_SE_DEF: GSceneryDef = { key: 'mount_wall_se', type: 'static', body: {x: 0, y: 0, width: 57, height: 161} };
-    export const MOUNT_WALL_SW_DEF: GSceneryDef = { key: 'mount_wall_sw', type: 'static', body: {x: 0, y: 0, width: 58, height: 161} };
-
-    export const SWAMP_WALL_N_DEF: GSceneryDef = { key: 'swamp_wall_n', type: 'static', body: WALL_N_BODY };
-    export const SWAMP_WALL_E_DEF: GSceneryDef = { key: 'swamp_wall_e', type: 'static', body: WALL_E_BODY };
-    export const SWAMP_WALL_S_DEF: GSceneryDef = { key: 'swamp_wall_s', type: 'static', body: WALL_S_BODY };
-    export const SWAMP_WALL_W_DEF: GSceneryDef = { key: 'swamp_wall_w', type: 'static', body: WALL_W_BODY };
-    export const SWAMP_WALL_NW_DEF: GSceneryDef = { key: 'swamp_wall_nw', type: 'static', body: {x: 0, y: 0, width: 114, height: 87} };
-    export const SWAMP_WALL_NE_DEF: GSceneryDef = { key: 'swamp_wall_ne', type: 'static', body: {x: 0, y: 0, width: 116, height: 87} };
-    export const SWAMP_WALL_SE_DEF: GSceneryDef = { key: 'swamp_wall_se', type: 'static', body: {x: 0, y: 0, width: 80, height: 120} };
-    export const SWAMP_WALL_SW_DEF: GSceneryDef = { key: 'swamp_wall_sw', type: 'static', body: {x: 0, y: 0, width: 80, height: 120} };
-
-
     const SCENERY_DEFS: Map<string, GSceneryDef> = new Map<string, GSceneryDef>();
 
     export function initSceneryDefs() {
         [
+            // WALLS:
+            // Stronghold Walls:
+            { key: 'hold_wall_n_left', type: 'static', body: {x: 0, y: 0, width: 485, height: 64} },
+            { key: 'hold_wall_n_right', type: 'static', body: {x: 0, y: 0, width: 485, height: 64} },
+            { key: 'hold_wall_n_mid', type: 'static', body: {x: 0, y: 0, width: 54, height: 64} },
+            { key: 'hold_wall_n_door_lower', type: 'static', body: {x: 0, y: 0, width: 84, height: 64} },
+            { key: 'hold_wall_n_door_upper', type: 'static', body: {x: 0, y: 0, width: 128, height: 64} },
+
+            { key: 'hold_wall_s_left', type: 'static', body: {x: 0, y: 64, width: 485, height: 64} },
+            { key: 'hold_wall_s_right', type: 'static', body: {x: 0, y: 64, width: 485, height: 64} },
+            { key: 'hold_wall_s_mid', type: 'static', body: {x: 0, y: 64, width: 54, height: 64} },
+            { key: 'hold_wall_s_door', type: 'static', body: {x: 0, y: 64, width: 84, height: 64} },
+
+            { key: 'hold_wall_w_top', type: 'static', body: {x: 0, y: 0, width: 64, height: 236} },
+            { key: 'hold_wall_w_bottom', type: 'static', body: {x: 0, y: 0, width: 64, height: 320} },
+            { key: 'hold_wall_w_mid', type: 'static', body: {x: 0, y: 0, width: 64, height: 148} },
+            { key: 'hold_wall_w_door_lower', type: 'static', body: {x: 0, y: 0, width: 64, height: 84} },
+            { key: 'hold_wall_w_door_upper', type: 'static', body: {x: 0, y: 0, width: 64, height: 148} },
+
+            { key: 'hold_wall_e_top', type: 'static', body: {x: 0, y: 0, width: 64, height: 236} },
+            { key: 'hold_wall_e_bottom', type: 'static', body: {x: 0, y: 0, width: 64, height: 320} },
+            { key: 'hold_wall_e_mid', type: 'static', body: {x: 0, y: 0, width: 64, height: 148} },
+            { key: 'hold_wall_e_door_lower', type: 'static', body: {x: 0, y: 0, width: 64, height: 84} },
+            { key: 'hold_wall_e_door_upper', type: 'static', body: {x: 0, y: 0, width: 64, height: 148} },
+
+            { key: 'hold_wall_nw_corner', type: 'static', body: {x: 0, y: 0, width: 64, height: 66} },
+            { key: 'hold_wall_ne_corner', type: 'static', body: {x: 17, y: 0, width: 64, height: 66} },
+            { key: 'hold_wall_sw_corner', type: 'static', body: {x: 0, y: 0, width: 64, height: 128} },
+            { key: 'hold_wall_se_corner', type: 'static', body: {x: 0, y: 0, width: 64, height: 128} },
+            // Rock Walls:
+            { key: 'rock_wall_n', type: 'static', body: WALL_N_BODY },
+            { key: 'rock_wall_e', type: 'static', body: WALL_E_BODY },
+            { key: 'rock_wall_s', type: 'static', body: WALL_S_BODY },
+            { key: 'rock_wall_w', type: 'static', body: WALL_W_BODY },
+            { key: 'rock_wall_nw', type: 'static', body: {x: 0, y: 0, width: 114, height: 87} },
+            { key: 'rock_wall_ne', type: 'static', body: {x: 0, y: 0, width: 116, height: 87} },
+            { key: 'rock_wall_se', type: 'static', body: {x: 0, y: 0, width: 57, height: 161} },
+            { key: 'rock_wall_sw', type: 'static', body: {x: 0, y: 0, width: 58, height: 161} },
+            // Plain Walls:
+            { key: 'plain_wall_n', type: 'static', body: WALL_N_BODY },
+            { key: 'plain_wall_e', type: 'static', body: WALL_E_BODY },
+            { key: 'plain_wall_s', type: 'static', body: WALL_S_BODY },
+            { key: 'plain_wall_w', type: 'static', body: WALL_W_BODY },
+            { key: 'plain_wall_nw', type: 'static', body: {x: 0, y: 0, width: 114, height: 87} },
+            { key: 'plain_wall_ne', type: 'static', body: {x: 0, y: 0, width: 116, height: 87} },
+            { key: 'plain_wall_se', type: 'static', body: {x: 0, y: 0, width: 57, height: 161} },
+            { key: 'plain_wall_sw', type: 'static', body: {x: 0, y: 0, width: 58, height: 161} },
+            // Desert Walls:
+            { key: 'desert_wall_n', type: 'static', body: WALL_N_BODY },
+            { key: 'desert_wall_e', type: 'static', body: WALL_E_BODY },
+            { key: 'desert_wall_s', type: 'static', body: WALL_S_BODY },
+            { key: 'desert_wall_w', type: 'static', body: WALL_W_BODY },
+            { key: 'desert_wall_nw', type: 'static', body: {x: 0, y: 0, width: 114, height: 87} },
+            { key: 'desert_wall_ne', type: 'static', body: {x: 0, y: 0, width: 116, height: 87} },
+            { key: 'desert_wall_se', type: 'static', body: {x: 0, y: 0, width: 57, height: 161} },
+            { key: 'desert_wall_sw', type: 'static', body: {x: 0, y: 0, width: 58, height: 161} },
+            // Forest Walls:
+            { key: 'forest_wall_n', type: 'static', body: WALL_N_BODY },
+            { key: 'forest_wall_e', type: 'static', body: WALL_E_BODY },
+            { key: 'forest_wall_s', type: 'static', body: WALL_S_BODY },
+            { key: 'forest_wall_w', type: 'static', body: WALL_W_BODY },
+            { key: 'forest_wall_nw', type: 'static', body: {x: 0, y: 0, width: 114, height: 87} },
+            { key: 'forest_wall_ne', type: 'static', body: {x: 0, y: 0, width: 116, height: 87} },
+            { key: 'forest_wall_se', type: 'static', body: {x: 0, y: 0, width: 57, height: 161} },
+            { key: 'forest_wall_sw', type: 'static', body: {x: 0, y: 0, width: 58, height: 161} },
+            // Tundra Walls:
+            { key: 'tundra_wall_n', type: 'static', body: WALL_N_BODY },
+            { key: 'tundra_wall_e', type: 'static', body: WALL_E_BODY },
+            { key: 'tundra_wall_s', type: 'static', body: WALL_S_BODY },
+            { key: 'tundra_wall_w', type: 'static', body: WALL_W_BODY },
+            { key: 'tundra_wall_nw', type: 'static', body: {x: 0, y: 0, width: 114, height: 87} },
+            { key: 'tundra_wall_ne', type: 'static', body: {x: 0, y: 0, width: 116, height: 87} },
+            { key: 'tundra_wall_se', type: 'static', body: {x: 0, y: 0, width: 57, height: 161} },
+            { key: 'tundra_wall_sw', type: 'static', body: {x: 0, y: 0, width: 63, height: 161} },
+            // Mountain Walls:
+            { key: 'mount_wall_n', type: 'static', body: WALL_N_BODY },
+            { key: 'mount_wall_e', type: 'static', body: WALL_E_BODY },
+            { key: 'mount_wall_s', type: 'static', body: WALL_S_BODY },
+            { key: 'mount_wall_w', type: 'static', body: WALL_W_BODY },
+            { key: 'mount_wall_nw', type: 'static', body: {x: 0, y: 0, width: 114, height: 87} },
+            { key: 'mount_wall_ne', type: 'static', body: {x: 0, y: 0, width: 116, height: 87} },
+            { key: 'mount_wall_se', type: 'static', body: {x: 0, y: 0, width: 57, height: 161} },
+            { key: 'mount_wall_sw', type: 'static', body: {x: 0, y: 0, width: 58, height: 161} },
+            // Swamp Walls:
+            { key: 'swamp_wall_n', type: 'static', body: WALL_N_BODY },
+            { key: 'swamp_wall_e', type: 'static', body: WALL_E_BODY },
+            { key: 'swamp_wall_s', type: 'static', body: WALL_S_BODY },
+            { key: 'swamp_wall_w', type: 'static', body: WALL_W_BODY },
+            { key: 'swamp_wall_nw', type: 'static', body: {x: 0, y: 0, width: 114, height: 87} },
+            { key: 'swamp_wall_ne', type: 'static', body: {x: 0, y: 0, width: 116, height: 87} },
+            { key: 'swamp_wall_se', type: 'static', body: {x: 0, y: 0, width: 80, height: 120} },
+            { key: 'swamp_wall_sw', type: 'static', body: {x: 0, y: 0, width: 80, height: 120} },
             // Obstacles:
             { key: 'barrel_cactus', type: 'static', body: {x: 7, y: 50, width: 64, height: 27} },
             { key: 'boulder', type: 'static', body: {x: 0, y: 22, width: 64, height: 24} },
@@ -142,20 +159,7 @@ export namespace SCENERY {
             { key: 'willow_tree', type: 'static', body: {x: 44, y: 209, width: 131, height: 21} },
             { key: 'wonky_tree', type: 'static', body: {x: 54, y: 130, width: 64, height: 30} },
             { key: 'help_sign', type: 'static', body: {x: 52, y: 72, width: 12, height: 8} },
-            // Old Buildings (to be replaced):
-            { key: 'church_house', type: 'custom', body: {x: 25, y: 260, width: 251, height: 103} },
-            { key: 'duplex', type: 'static', body: {x: 20, y: 280, width: 312, height: 110} },
-            { key: 'factory', type: 'static', body: {x: 0, y: 300, width: 350, height: 133} },
-            { key: 'garage', type: 'static', body: {x: 20, y: 164, width: 232, height: 65} },
-            { key: 'house_1', type: 'static', body: {x: 33, y: 198, width: 212, height: 100} },
-            { key: 'house_2', type: 'static', body: {x: 48, y: 238, width: 285, height: 100} },
-            { key: 'house_3', type: 'static', body: {x: 0, y: 207, width: 286, height: 84} },
-            { key: 'house_4', type: 'static', body: {x: 24, y: 264, width: 320, height: 120} },
-            { key: 'house_5', type: 'static', body: {x: 0, y: 269, width: 335, height: 83} },
-            { key: 'house_6', type: 'static', body: {x: 0, y: 258, width: 332, height: 100} },
-            { key: 'shop', type: 'static', body: {x: 0, y: 125, width: 240, height: 100} },
-            { key: 'travel_agency', type: 'custom', body: {x: 5, y: 253, width: 346, height: 136} },
-            // New Town Objects:
+            // Town Objects:
             { key: 'apartments_front', type: 'static', body: {x: 0, y: 250, width: 330, height: 214} },
             { key: 'bench', type: 'static', body: {x: 0, y: 41, width: 100, height: 22} },
             { key: 'camp_tent', type: 'static', body: {x: 0, y: 61, width: 174, height: 70} },
@@ -236,6 +240,12 @@ export namespace SCENERY {
             { key: 'trash', type: 'static', body: {x: 0, y: 53, width: 75, height: 20} },
             { key: 'travel_agency_front', type: 'custom', body: {x: 0, y: 175, width: 328, height: 144} },
             { key: 'warehouse_front', type: 'static', body: {x: 0, y: 194, width: 325, height: 157} },
+            // Stronghold Buildings:
+            { key: 'castle_front', type: 'custom', body: {x: 0, y: 221, width: 401, height: 175} },
+            { key: 'dungeon_front', type: 'custom', body: {x: 0, y: 65, width: 343, height: 146} },
+            { key: 'fortress_front', type: 'custom', body: {x: 0, y: 145, width: 368, height: 197} },
+            { key: 'keep_front', type: 'custom', body: {x: 0, y: 204, width: 289, height: 153} },
+            { key: 'tower_front', type: 'custom', body: {x: 0, y: 218, width: 176, height: 144} },
             // Foreground Decorations:
             { key: 'big_flower', type: 'fg_decor', body: {x: 0, y: 0, width: 20, height: 44} },
             { key: 'cattails', type: 'fg_decor', body: {x: 0, y: 0, width: 66, height: 48} },
@@ -276,6 +286,8 @@ export namespace SCENERY {
             { key: 'street_vert_se_int', type: 'bg_decor', body: {x: 0, y: 0, width: 64, height: 64} },
             { key: 'street_vert_sw_int', type: 'bg_decor', body: {x: 0, y: 0, width: 64, height: 64} },
             { key: 'street_vert_w', type: 'bg_decor', body: {x: 0, y: 0, width: 64, height: 64} },
+            // Overhead Decorations:
+            { key: 'flag', type: 'oh_decor', body: {x: 0, y: 0, width: 100, height: 100} },
             // Touchables:
             { key: 'building_entrance', type: 'custom', body: {x: 0, y: 0, width: 72, height: 1} },
             { key: 'building_exit', type: 'custom', body: {x: 0, y: 0, width: 72, height: 1} },
@@ -284,6 +296,8 @@ export namespace SCENERY {
             { key: 'red_chest', type: 'custom', body: {x: 0, y: 20, width: 48, height: 20} },
             // Interactables:
             { key: 'church_piano', type: 'custom', body: {x: 0, y: 50, width: 128, height: 50} },
+            // Special Cases:
+            { key: 'corruption_patch', type: 'custom', body: {x: 0, y: 0, width: 200, height: 200} },
         ].forEach(d => {
             SCENERY_DEFS.set(d.key, d as GSceneryDef);
         });
@@ -302,6 +316,9 @@ export namespace SCENERY {
             case 'fg_decor':
                 new GForegroundDecoration(sceneryDef, plan.x, plan.y);
                 break;
+            case 'oh_decor':
+                new GOverheadDecoration(sceneryDef, plan.x, plan.y);
+                break;
             case 'static':
                 new GObstacleStatic(sceneryDef, plan.x, plan.y);
                 break;
@@ -317,6 +334,26 @@ export namespace SCENERY {
                     case 'red_chest':
                         new GTreasureChest(plan.x, plan.y, plan.key);
                         break;
+                    case 'castle_front':
+                        new GObstacleStatic(sceneryDef, plan.x, plan.y);
+                        new GBuildingEntrance(plan.x + 164, plan.y + 396);
+                        break;
+                    case 'dungeon_front':
+                        new GObstacleStatic(sceneryDef, plan.x, plan.y);
+                        new GBuildingEntrance(plan.x + 136, plan.y + 211);
+                        break;
+                    case 'fortress_front':
+                        new GObstacleStatic(sceneryDef, plan.x, plan.y);
+                        new GBuildingEntrance(plan.x + 148, plan.y + 342);
+                        break;
+                    case 'keep_front':
+                        new GObstacleStatic(sceneryDef, plan.x, plan.y);
+                        new GBuildingEntrance(plan.x + 108, plan.y + 357);
+                        break;
+                    case 'tower_front':
+                        new GObstacleStatic(sceneryDef, plan.x, plan.y);
+                        new GBuildingEntrance(plan.x + 52, plan.y + 362);
+                        break;
                     case 'church_front':
                         new GChurchHouse(plan.x, plan.y);
                         new GBuildingEntrance(plan.x + 162, plan.y + 409);
@@ -329,6 +366,9 @@ export namespace SCENERY {
                         break;
                     case 'church_piano':
                         new GPiano(plan.x, plan.y);
+                        break;
+                    case 'corruption_patch':
+                        new GCorruptionPatch(plan.x, plan.y, RANDOM.randFloat(0.8, 1.2));
                         break;
                 }
         }

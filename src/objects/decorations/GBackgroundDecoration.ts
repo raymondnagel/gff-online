@@ -10,6 +10,8 @@
  *
  * Examples include a flower patch, carpet, or other visual
  * elements that can be walked over with no consequence.
+ *
+ * Background decorations ALWAYS appear behind the player.
  */
 export class GBackgroundDecoration {
 

@@ -15,7 +15,7 @@ import { TOWN } from "../town";
 import { GTown } from "../GTown";
 import { GChurch } from "../GChurch";
 import { CHURCH } from "../church";
-import { GStronghold } from "../GStronghold";
+import { GStronghold } from "../strongholds/GStronghold";
 import { PEOPLE } from "../people";
 import { BOOKS } from "../books";
 import { COMMANDMENTS } from "../commandments";
@@ -31,6 +31,11 @@ import { GSuburbResDiverseDistrict } from "../districts/GSuburbResDiverseDistric
 import { GBusinessDistrict } from "../districts/GBusinessDistrict";
 import { GMixedDistrict } from "../districts/GMixedDistrict";
 import { ARRAY } from "../array";
+import { GStrongholdCastle } from "../strongholds/GStrongholdCastle";
+import { GStrongholdDungeon } from "../strongholds/GStrongholdDungeon";
+import { GStrongholdFortress } from "../strongholds/GStrongholdFortress";
+import { GStrongholdKeep } from "../strongholds/GStrongholdKeep";
+import { GStrongholdTower } from "../strongholds/GStrongholdTower";
 
 type BorderWall = {
     room: GRoom,
@@ -270,7 +275,7 @@ export class GWorldArea extends GArea {
             const town: GTown = new GTown();
             TOWN.addTown(town);
             const fruitNum: number|null = t === 0 ? null : t;
-            const church: GChurch = new GChurch(town, fruitNum);
+            const church: GChurch = new GChurch(town);
             const interior: GChurchArea = AREA.CHURCH_AREAS[t];
             church.setInteriorArea(interior);
             CHURCH.addChurch(church);
@@ -284,8 +289,15 @@ export class GWorldArea extends GArea {
 
         this.addPopulation();
 
-        // Create start location:
-        this.startRoom = (RANDOM.randElement(CHURCH.getChurches()) as GChurch).getWorldRoom();
+        // Now that towns are finalized, add fruit to the churches:
+        RANDOM.shuffle(CHURCH.getChurches());
+        CHURCH.getChurches().forEach((c, i) => {
+            const fruitNum: number|null = i === 0 ? null : i;
+            c.setFruitNum(fruitNum);
+        });
+
+        // Create start location the first church's world room (the one with no fruit)
+        this.startRoom = CHURCH.getChurches()[0].getWorldRoom();
         this.startRoom.setStart();
 
         // Test population by town:
@@ -511,11 +523,11 @@ export class GWorldArea extends GArea {
 
     private createStrongholds() {
         const strongholds: GStronghold[] = [
-            new GStronghold('Tower of Deception'),  // Boss: Mammon     // Treasure: Girdle of Truth
-            new GStronghold('Dungeon of Doubt'),    // Boss: Apollyon   // Treasure: Shield of Faith
-            new GStronghold('Fortress of Enmity'),  // Boss: Legion     // Treasure: Preparation of Peace
-            new GStronghold('Keep of Wickedness'),  // Boss: Belial     // Treasure: Breastplate of Righteousness
-            new GStronghold('Castle of Perdition'), // Boss: Beelzebub  // Treasure: Helmet of Salvation
+            new GStrongholdTower(),    // Boss: Mammon     // Treasure: Girdle of Truth
+            new GStrongholdDungeon(),  // Boss: Apollyon   // Treasure: Shield of Faith
+            new GStrongholdFortress(), // Boss: Legion     // Treasure: Preparation of Peace
+            new GStrongholdKeep(),     // Boss: Belial     // Treasure: Breastplate of Righteousness
+            new GStrongholdCastle(),   // Boss: Beelzebub  // Treasure: Helmet of Salvation
         ];
         RANDOM.shuffle(strongholds);
 
@@ -540,6 +552,7 @@ export class GWorldArea extends GArea {
                     this.isFarEnoughFromOtherCenters(room, this.townCenters, d)
                     && !this.hasNeighboringTown(room)
                 ) {
+                    stronghold.createInterior();
                     room.setStronghold(stronghold);
                     GFF.genLog(`Created stronghold: ${stronghold.getName()} @: ${room.getX()}, ${room.getY()}`);
                     return;

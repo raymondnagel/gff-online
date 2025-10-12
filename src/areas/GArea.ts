@@ -30,6 +30,7 @@ export class GArea {
     private height: number;
     private floors: GFloor[] = [];
     private roomsByFloor: GRoom[][] = [];
+    private groundFloor: number = 0;
 
     constructor(
         name: string,
@@ -70,6 +71,20 @@ export class GArea {
         return this.height;
     }
 
+    public getNumFloors() {
+        return this.floors.length;
+    }
+
+    public setGroundFloor(floor: number) {
+        this.groundFloor = floor;
+    }
+
+    public getPerceivedFloor(floor: number): number {
+        const perceivedFloor = floor - this.groundFloor;
+        console.log(`actualFloor=${floor} groundFloor=${this.groundFloor} perceivedFloor=${perceivedFloor}`);
+        return perceivedFloor >= 0 ? perceivedFloor + 1 : perceivedFloor;
+    }
+
     public isSafe(): boolean {
         return false;
     }
@@ -83,7 +98,9 @@ export class GArea {
     }
 
     public containsRoom(floor: number, x: number, y: number): boolean {
-        return x >= 0 && x < this.width && y >= 0 && y < this.height && this.floors[floor][y][x] !== null;
+        const inBounds = x >= 0 && x < this.width && y >= 0 && y < this.height;
+        const roomExists = this.floors[floor]?.[y]?.[x] !== undefined;
+        return inBounds && roomExists;
     }
 
     public getRoomAt(floor: number, x: number, y: number): GRoom|null {

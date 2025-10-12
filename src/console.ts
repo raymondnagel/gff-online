@@ -1,7 +1,10 @@
 import { CHURCH } from "./church";
 import { FRUITS } from "./fruits";
+import { GChurch } from "./GChurch";
+import { GRoom } from "./GRoom";
 import { GFF } from "./main";
 import { PEOPLE } from "./people";
+import { PHYSICS } from "./physics";
 import { PLAYER } from "./player";
 import { REGISTRY } from "./registry";
 import { IntegerStatName, STATS } from "./stats";
@@ -116,11 +119,54 @@ export namespace CONSOLE {
             playSuccess();
             return 'Ok';
         },
+        spyFruit() {
+            const currentRoom = GFF.AdventureContent.getCurrentRoom() as GRoom;
+            const church: GChurch|null = currentRoom.getChurch();
+            if (church) {
+                const fruitNum: number|null = church.getFruitNum() as NINE;
+                if (fruitNum !== null) {
+                    const fruitQueued: boolean = FRUITS.isFruitQueued(fruitNum as NINE);
+                    playSuccess();
+                    return `Fruit ${fruitNum}: ${FRUITS.hasFruitOfChurch(church) ? 'Yes' : 'No'}, Queued: ${fruitQueued ? 'Yes' : 'No'}`;
+                } else {
+                    playError();
+                    return 'This church has no fruit.';
+                }
+            } else {
+                playError();
+                return 'No church in this room.';
+            }
+        },
         mapExport() {
             GFF.AdventureContent.hideTestConsole();
             GFF.AdventureContent.doMapExport();
             playSuccess();
             return 'Ok';
+        },
+        warp(x: number, y: number, floor: number = GFF.AdventureContent.getCurrentFloor()) {
+            const room = GFF.AdventureContent.getCurrentArea().getRoomAt(floor, x, y);
+            if (room) {
+                GFF.AdventureContent.hideTestConsole();
+                GFF.AdventureContent.warpToRoom(room as GRoom);
+                playSuccess();
+                return 'Ok';
+            } else {
+                playError();
+                return 'Room not found!';
+            }
+        },
+        listObjects() {
+            const objectList = GFF.AdventureContent.children.list;
+            objectList.forEach((obj, index) => {
+                const physical = PHYSICS.asBoundedGameObject(obj);
+                if (physical) {
+                    GFF.log(`#${index}: ${obj.name} @${physical.x}, ${physical.y} (Type: ${obj.type})`);
+                } else {
+                    GFF.log(`#${index}: ${obj.name} (Type: ${obj.type})`);
+                }
+            });
+            playSuccess();
+            return `Listed ${objectList.length} objects.`;
         }
     };
 

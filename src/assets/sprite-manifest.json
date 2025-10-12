@@ -4178,11 +4178,15 @@
   "sprites/chars/travel_agent/travel_agent_idle_sw.png",
   "sprites/chars/travel_agent/travel_agent_idle_w.png",
   "sprites/effects/baptism-100x100.png",
-  "sprites/effects/church_door-120x130.png",
+  "sprites/effects/castle_door-130x158.png",
+  "sprites/effects/church_door-140x160.png",
+  "sprites/effects/dungeon_door-168x167.png",
   "sprites/effects/flash-100x100.png",
+  "sprites/effects/fortress_door-100x143.png",
   "sprites/effects/imp_puff-100x100.png",
-  "sprites/effects/new_church_door-140x160.png",
+  "sprites/effects/keep_door-180x166.png",
   "sprites/effects/preach_sonic-512x512.png",
   "sprites/effects/slash-600x200.png",
+  "sprites/effects/tower_door-176x158.png",
   "sprites/scenery/campfire-116x150.png"
 ]

@@ -217,7 +217,7 @@ export interface GSceneryPlan extends GPoint2D {
 // turning it into a plan; but it doesn't have a location.
 export interface GSceneryDef {
     key: string;
-    type: 'bg_decor'|'fg_decor'|'static'|'custom';
+    type: 'bg_decor'|'fg_decor'|'oh_decor'|'static'|'custom';
     body: GRect;
 }
 
@@ -225,6 +225,21 @@ export type GFloor = GRoom[][];
 
 export type GRoomWalls = {
     [key in CardDir]: boolean[];
+};
+
+export type GDoorways = {
+    [key in CardDir]: boolean;
+};
+
+export type GInteriorWallPiece =
+    'n_left'|'n_right'|'n_mid'|'n_door_lower'|'n_door_upper'|
+    's_left'|'s_right'|'s_mid'|'s_door'|
+    'e_top'|'e_bottom'|'e_mid'|'e_door_lower'|'e_door_upper'|
+    'w_top'|'w_bottom'|'w_mid'|'w_door_lower'|'w_door_upper'|
+    'ne_corner'|'nw_corner'|'se_corner'|'sw_corner';
+
+export type GInteriorWallSet = {
+    [key in GInteriorWallPiece]?: string;
 };
 
 // Structure for associating a text option with an action

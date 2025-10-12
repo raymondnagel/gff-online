@@ -14,7 +14,7 @@ import { GRejoiceGoal } from "./goals/GRejoiceGoal";
 import { PEOPLE } from "./people";
 import { GRoom } from "./GRoom";
 import { AREA } from "./area";
-import { GStronghold } from "./GStronghold";
+import { GStronghold } from "./strongholds/GStronghold";
 import { GPopup } from "./objects/components/GPopup";
 import { COLOR } from "./colors";
 import { EFFECTS } from "./effects";
@@ -322,7 +322,7 @@ const CMD_FUNCTIONS: Record<string, (...args: any[]) => any> = {
         const room: GRoom = GFF.AdventureContent.getCurrentRoom() as GRoom;
         const church: GChurch = room.getChurch() as GChurch;
         const townName: string = church.getTown().getName();
-        const fruitNum: NINE = church.getFruitNum() as NINE
+        const fruitNum: NINE = church.getFruitNum() as NINE;
         const fruitEntry: GGlossaryEntry = FRUITS.lookupEntry(fruitNum);
         const fruitName: string = fruitEntry.title.split(': ')[1].toLowerCase();
         return `(T)While speaking to the saints in ${townName}, I realized that the Spirit of God is working in their hearts to bring forth ${fruitName}; and he's beginning to do the same in me...`;

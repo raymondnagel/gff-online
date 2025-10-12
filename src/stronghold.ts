@@ -1,4 +1,4 @@
-import { GStronghold } from "./GStronghold";
+import { GStronghold } from "./strongholds/GStronghold";
 
 export namespace STRONGHOLD {
     let strongholds: GStronghold[] = [];
