@@ -119,6 +119,7 @@ export namespace PLAYER {
         if (faith > getMaxFaith()) {
             faith = getMaxFaith();
         }
+        faith = Math.floor(faith);
     }
 
     export function getMaxFaith(): number {
@@ -146,6 +147,7 @@ export namespace PLAYER {
         if (grace > getMaxGrace()) {
             grace = getMaxGrace();
         }
+        grace = Math.floor(grace);
     }
 
     export function getMaxGrace(): number {

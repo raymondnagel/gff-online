@@ -34,11 +34,6 @@ export class GPlainRegion extends GOutsideRegion{
     }
 
     protected _furnishRoom(room: GRoom) {
-        // If room contains a stronghold, we don't want to add random scenery
-        if (room.getStronghold() !== null) {
-            return;
-        }
-
         // Essential objects, like shrines and entrances, should be placed first.
 
         // Get a zone to use:

@@ -50,6 +50,16 @@ export class GStrongholdRegion extends GInsideRegion{
     }
 
     protected _furnishRoom(room: GRoom) {
-        // Nothing yet
+        // Determine whether this room has a staircase (portal within same area)
+        const portalRoom = room.getPortalRoom();
+        if (portalRoom && room.getArea() === portalRoom.getArea()) {
+            if (room.getFloor() < portalRoom.getFloor()) {
+                // Stairs up:
+                room.planPositionedScenery(SCENERY.def('stairs_up'), 512, 352, .5, .5);
+            } else {
+                // Stairs down:
+                room.planPositionedScenery(SCENERY.def('stairs_down'), 512, 352, .5, .5);
+            }
+        }
     }
 }

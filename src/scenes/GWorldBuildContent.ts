@@ -8,6 +8,7 @@ import { GInputMode } from '../GInputMode';
 import { CHURCH } from '../church';
 import { GChurchArea } from '../areas/GChurchArea';
 import { TOWN } from '../town';
+import { GStrongholdArea } from '../areas/GStrongholdArea';
 
 type AreaGenInfo = { area: GArea, rooms: number };
 
@@ -113,21 +114,52 @@ export class GWorldBuildContent extends GBaseScene {
             AREA.CHURCH_AREAS.push(new GChurchArea());
         }
 
+        // Stronghold Areas (will be assigned to strongholds once they are created)
+        AREA.TOWER_AREA = new GStrongholdArea('Tower of Deception', 'armor_6', 3, 3, 0, [
+            'tower_0',
+            'tower_1',
+            'tower_2',
+            'tower_3',
+            'tower_4',
+            'tower_5',
+            'tower_6',
+        ]);
+        AREA.DUNGEON_AREA = new GStrongholdArea('Dungeon of Doubt', 'armor_3', 7, 5, 1, [
+            'dungeon_0',
+            'dungeon_1',
+        ]);
+        AREA.KEEP_AREA = new GStrongholdArea('Keep of Wickedness', 'armor_4', 9, 9, 0, [
+            'keep_0',
+        ]);
+        AREA.FORTRESS_AREA = new GStrongholdArea('Fortress of Enmity', 'armor_5', 11, 9, 0, [
+            'fortress_0'
+        ]);
+        AREA.CASTLE_AREA = new GStrongholdArea('Castle of Perdition', 'armor_2', 9, 9, 0, [
+            'castle_0',
+            'castle_1',
+            'castle_2',
+        ]);
+
         // World Area
         AREA.WORLD_AREA = new GWorldArea();
 
         this.areaList = [
-             { area: AREA.CHURCH_AREAS[0], rooms: 1 },
-             { area: AREA.CHURCH_AREAS[1], rooms: 1 },
-             { area: AREA.CHURCH_AREAS[2], rooms: 1 },
-             { area: AREA.CHURCH_AREAS[3], rooms: 1 },
-             { area: AREA.CHURCH_AREAS[4], rooms: 1 },
-             { area: AREA.CHURCH_AREAS[5], rooms: 1 },
-             { area: AREA.CHURCH_AREAS[6], rooms: 1 },
-             { area: AREA.CHURCH_AREAS[7], rooms: 1 },
-             { area: AREA.CHURCH_AREAS[8], rooms: 1 },
-             { area: AREA.CHURCH_AREAS[9], rooms: 1 },
-             { area: AREA.WORLD_AREA, rooms: 256 },
+            { area: AREA.CHURCH_AREAS[0], rooms: 1 },
+            { area: AREA.CHURCH_AREAS[1], rooms: 1 },
+            { area: AREA.CHURCH_AREAS[2], rooms: 1 },
+            { area: AREA.CHURCH_AREAS[3], rooms: 1 },
+            { area: AREA.CHURCH_AREAS[4], rooms: 1 },
+            { area: AREA.CHURCH_AREAS[5], rooms: 1 },
+            { area: AREA.CHURCH_AREAS[6], rooms: 1 },
+            { area: AREA.CHURCH_AREAS[7], rooms: 1 },
+            { area: AREA.CHURCH_AREAS[8], rooms: 1 },
+            { area: AREA.CHURCH_AREAS[9], rooms: 1 },
+            { area: AREA.TOWER_AREA, rooms: 63 },
+            { area: AREA.DUNGEON_AREA, rooms: 70 },
+            { area: AREA.KEEP_AREA, rooms: 81 },
+            { area: AREA.FORTRESS_AREA, rooms: 83 },
+            { area: AREA.CASTLE_AREA, rooms: 112 },
+            { area: AREA.WORLD_AREA, rooms: 256 },
         ];
 
         this.buildArea(0);

@@ -9,7 +9,7 @@ import { GTouchable } from "./GTouchable";
 export class GBuildingExit extends GTouchable {
 
     constructor(x: number, y: number) {
-        super(SCENERY.def('building_exit'), x, y);
+        super(SCENERY.def('threshold'), x, y);
         this.setOrigin(0, 0);
     }
 

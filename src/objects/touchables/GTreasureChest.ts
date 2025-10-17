@@ -6,20 +6,31 @@ import { GRoom } from "../../GRoom";
 import { GFF } from "../../main";
 import { PLAYER } from "../../player";
 import { SCENERY } from "../../scenery";
-import { GBookEntry, GGlossaryEntry, GItem, TEN } from "../../types";
+import { GBookEntry, GGlossaryEntry, GItem, SIX, TEN } from "../../types";
 import { GPopup } from "../components/GPopup";
 import { GTouchable } from "./GTouchable";
 import { STATS } from "../../stats";
 import { REGISTRY } from "../../registry";
+import { ARMORS } from "../../armors";
+import { DEPTH } from "../../depths";
+import { EFFECTS } from "../../effects";
 
 export class GTreasureChest extends GTouchable {
 
     private premium: boolean;
+    private color: 'brown'|'blue'|'red'|'purple'|'gold'|'black';
+    private wicked: boolean;
 
-    constructor(x: number, y: number, chestKey: 'common_chest'|'blue_chest'|'red_chest') {
+    constructor(x: number, y: number, chestKey: 'brown_chest'|'blue_chest'|'red_chest'|'purple_chest'|'gold_chest'|'black_chest', wicked: boolean = false) {
         super(SCENERY.def(chestKey), x, y);
         this.setOrigin(0, 0);
-        this.premium = chestKey !== 'common_chest';
+        this.premium = chestKey !== 'brown_chest' && chestKey !== 'black_chest';
+        this.color = chestKey.split('_')[0] as 'brown'|'blue'|'red'|'purple'|'gold'|'black';
+        this.wicked = wicked;
+    }
+
+    public isWicked(): boolean {
+        return this.wicked;
     }
 
     public canTouch(): boolean {
@@ -39,22 +50,42 @@ export class GTreasureChest extends GTouchable {
             GFF.AdventureContent.getCurrentRoom()?.removePremiumChest();
             switch (item.type) {
                 case 'book':
-                    GPopup.createBookPopup(item.name);
+                    GPopup.createBookPopup(item.name).onClose(() => {
+                        this.poofChest();
+                    });
                     break;
                 case 'item':
                     GPopup.createItemPopup(item.name).onClose(() => {
                         if (item.name.startsWith('cmd')) {
                             GFF.AdventureContent.setVisionWithCheck();
                         }
+                        this.poofChest();
                     });
                     break;
             }
             item.onCollect();
-            this.destroy();
+            if (this.wicked) {
+                this.color = 'black';
+            }
+            this.setTexture(`${this.color}_chest_open`);
         });
     }
 
+    private poofChest() {
+        const center = this.getCenter();
+        const effectSprite: Phaser.Physics.Arcade.Sprite = EFFECTS.doEffect('chest_puff', GFF.AdventureContent, center.x, center.y, .5, .5);
+        effectSprite.setDepth(DEPTH.SPECIAL_EFFECT);
+        this.destroy();
+    }
+
     private getCommonItem(): GItem {
+        if (this.wicked) {
+            return { name: 'wicked_treasure', type: 'item', onCollect: () => {
+                PLAYER.changeFaith(-(PLAYER.getFaith() * 0.5));
+                PLAYER.changeGrace(-(PLAYER.getGrace() * 0.5));
+            } };
+        }
+
         const item: GItem = RANDOM.randElementWeighted([
             {
                 element: { name: 'seed', type: 'item', onCollect: () => {PLAYER.changeSeeds(1)} },
@@ -121,6 +152,17 @@ export class GTreasureChest extends GTouchable {
                 type: 'book',
                 onCollect: () => {
                     BOOKS.obtainBook(itemName);
+                }
+            };
+        } else if (itemName.startsWith('armor')) {
+            // It's an armor item; look it up in the GLOSSARY:
+            entry = GLOSSARY.lookupEntry(itemName);
+            const armorNum = parseInt(itemName.split('_')[1]) as SIX;
+            return {
+                name: itemName,
+                type: 'item',
+                onCollect: () => {
+                    ARMORS.obtainArmor(armorNum);
                 }
             };
         } else {

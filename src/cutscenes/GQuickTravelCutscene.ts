@@ -10,6 +10,7 @@ import { PHYSICS } from "../physics";
 import { PLAYER } from "../player";
 import { RANDOM } from "../random";
 import { GAdventureContent } from "../scenes/GAdventureContent";
+import { STATS } from "../stats";
 import { Dir9, GPoint2D } from "../types";
 import { GCutscene } from "./GCutscene";
 
@@ -323,6 +324,7 @@ export class GQuickTravelCutscene extends GCutscene {
     }
 
     protected finalize(): void {
+        STATS.changeInt('FlightsTaken', 1);
         GFF.AdventureContent.startChars();
     }
 }

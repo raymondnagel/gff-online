@@ -34,7 +34,7 @@ const IMAGES_PATH = `${ASSETS_PATH}/images`;
 const IMAGE_MANIFEST_NAME = 'image-manifest.json';
 const IMAGE_MANIFEST_PATH = `${ASSETS_PATH}/${IMAGE_MANIFEST_NAME}`;
 
-const SCENERY_PATH = `${IMAGES_PATH}/new_scenery_objects`;
+const SCENERY_PATH = `${IMAGES_PATH}/scenery/new_scenery_objects`;
 const SCENERY_MANIFEST_NAME = 'scenery-manifest.json';
 const SCENERY_MANIFEST_PATH = `${ASSETS_PATH}/${SCENERY_MANIFEST_NAME}`;
 

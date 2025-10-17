@@ -114,6 +114,19 @@ export namespace EFFECTS {
             },
             {
                 spriteConfig: {
+                    key: 'chest_puff',
+                    frames: GFF.GAME.anims.generateFrameNumbers(
+                        'chest_puff',
+                        { start: 0, end: 9 }
+                    ),
+                    frameRate: 15,
+                    repeat: 0
+                },
+                soundKey: 'chest_poof',
+                hideOnFinish: true
+            },
+            {
+                spriteConfig: {
                     key: 'baptism',
                     frames: GFF.GAME.anims.generateFrameNumbers(
                         'baptism',

@@ -56,6 +56,11 @@ const SOUTH_DOOR_X: number = 470;
 const VERT_MID_X: number = 485;
 const HORZ_DOOR_Y: number = 236;
 
+const SHRINE_AREA_WIDTH: number = 256;
+const SHRINE_AREA_HEIGHT: number = 103;
+const SHRINE_BORDER_SIZE: number = 64;
+const SHRINE_FRONT_SPACE: number = 100;
+
 type TestZone = GRect &{
     label: string;
     color: GColor;
@@ -215,8 +220,8 @@ export class GRoom {
             return 'map_town';
         } else if (this.stronghold) {
             return 'map_hold';
-        } else if (this.hasPlanKey('blue_chest')) {
-            return 'map_blue_chest';
+        } else if (this.hasPlanKey('purple_chest')) {
+            return 'map_purple_chest';
         } else if (this.hasPlanKey('red_chest')) {
             return 'map_red_chest';
         }
@@ -362,7 +367,7 @@ export class GRoom {
     }
 
     public isSafe(): boolean {
-        if (this.church || this.area.isSafe() || this.hasPlanKey('standard')) {
+        if (this.church || this.area.isSafe() || this.hasPlanKey('standard') || this.hasPlanKey('shrine_curtain_ctr_gold')) {
             return true;
         } else {
             return false;
@@ -374,15 +379,15 @@ export class GRoom {
     }
 
     public hasPremiumChest(): boolean {
-        return this.plans.some(plan => plan.key === 'blue_chest' || plan.key === 'red_chest');
+        return this.plans.some(plan => plan.key === 'blue_chest' || plan.key === 'red_chest' || plan.key === 'purple_chest' || plan.key === 'gold_chest');
     }
 
     public canHavePremiumChest(): boolean {
-        return !this.church && !this.town && !this.stronghold && !this.hasPremiumChest();
+        return !this.church && !this.town && !this.stronghold && !this.portalRoom && !this.hasPremiumChest();
     }
 
     public removePremiumChest() {
-        const index = this.plans.findIndex(plan => plan.key === 'blue_chest' || plan.key === 'red_chest');
+        const index = this.plans.findIndex(plan => plan.key === 'blue_chest' || plan.key === 'red_chest' || plan.key === 'purple_chest' || plan.key === 'gold_chest');
         if (index !== -1) {
             this.plans.splice(index, 1);
         }
@@ -1175,38 +1180,45 @@ export class GRoom {
         return placement;
     }
 
-    public planPremiumChestShrine(itemName: string, color: 'blue'|'red' = 'blue') {
-        const shrineAreaWidth: number = 275;
-        const shrineAreaHeight: number = 122;
-        const borderSize: number = 64;
-
+    public planRandomPremiumChestShrine(itemName: string, color: 'blue'|'red'|'purple'|'gold') {
         // Don't need to check for any intersections, because this will be planned before other scenery
         // Can go anywhere within the room area rectangle - anywhere except space reserved for walls
-        let x: number = RANDOM.randInt(GFF.ROOM_AREA_LEFT + borderSize, GFF.ROOM_AREA_RIGHT - shrineAreaWidth - borderSize);
-        let y: number = RANDOM.randInt(GFF.ROOM_AREA_TOP + borderSize, GFF.ROOM_AREA_BOTTOM - shrineAreaHeight - borderSize);
+        const x: number = RANDOM.randInt(GFF.ROOM_AREA_LEFT + SHRINE_BORDER_SIZE, GFF.ROOM_AREA_RIGHT - SHRINE_AREA_WIDTH - SHRINE_BORDER_SIZE);
+        const y: number = RANDOM.randInt(GFF.ROOM_AREA_TOP + SHRINE_BORDER_SIZE, GFF.ROOM_AREA_BOTTOM - SHRINE_AREA_HEIGHT - SHRINE_BORDER_SIZE);
+        this.planChestShrine(x, y, itemName, color);
+    }
 
+    public planCenteredPremiumChestShrine(itemName: string, color: 'blue'|'red'|'purple'|'gold') {
+        const x: number = (GFF.ROOM_W / 2) - (SHRINE_AREA_WIDTH / 2) - SHRINE_BORDER_SIZE;
+        const y: number = (GFF.ROOM_H / 2) - (SHRINE_AREA_HEIGHT / 2) - SHRINE_BORDER_SIZE;
+        this.planChestShrine(x, y, itemName, color);
+    }
+
+    private planChestShrine(x: number, y: number, itemName: string, color: 'blue'|'red'|'purple'|'gold') {
         // Create a no-scenery zone:
-        this.noSceneryZones.push({x, y, width: shrineAreaWidth + (borderSize * 2), height: shrineAreaHeight + (borderSize * 2)});
+        this.noSceneryZones.push({x, y, width: SHRINE_AREA_WIDTH + (SHRINE_BORDER_SIZE * 2), height: SHRINE_AREA_HEIGHT + (SHRINE_BORDER_SIZE * 2) + SHRINE_FRONT_SPACE});
 
         // Adjust these to the physical bounds of the enclosed objects:
-        x += borderSize;
-        y += borderSize;
+        x += SHRINE_BORDER_SIZE;
+        y += SHRINE_BORDER_SIZE;
 
         // Add pillars:
-        this.addSceneryPlan('shrine_pillar', x + 55, y - 109); // Upper-left
-        this.addSceneryPlan('shrine_pillar', x + 211, y - 83); // Upper-right
-        this.addSceneryPlan('shrine_pillar', x, y - 43);       // Lower-left
-        this.addSceneryPlan('shrine_pillar', x + 156, y - 16); // Lower-right
+        const pillarDef: GSceneryDef = SCENERY.def('shrine_pillar');
+        this.planPositionedScenery(pillarDef, x + 37, y); // Upper-left
+        this.planPositionedScenery(pillarDef, x + 37 + 118, y); // Upper-right
+        this.planPositionedScenery(pillarDef, x, y + SHRINE_AREA_HEIGHT - pillarDef.body.height); // Lower-left
+        this.planPositionedScenery(pillarDef, x + SHRINE_AREA_WIDTH - pillarDef.body.width, y + SHRINE_AREA_HEIGHT - pillarDef.body.height); // Lower-right
 
         // Add pedestal:
-        this.addSceneryPlan('shrine_pedestal', x + 104, y + 42);
+        this.planPositionedScenery(SCENERY.def('shrine_pedestal'), x + 97, y + 44);
+
+        // Add curtains:
+        this.planPositionedScenery(SCENERY.def(`shrine_curtain_ctr_${color}`), x + 86, y - 113);
+        this.planPositionedScenery(SCENERY.def(`shrine_curtain_left_${color}`), x + 48, y - 117);
+        this.planPositionedScenery(SCENERY.def(`shrine_curtain_right_${color}`), x + SHRINE_AREA_WIDTH - 48 - 44, y - 117);
 
         // Add premium chest:
-        if (color === 'red') {
-            this.addSceneryPlan('red_chest', x + 111, y + 16);
-        } else {
-            this.addSceneryPlan('blue_chest', x + 111, y + 16);
-        }
+        this.planPositionedScenery(SCENERY.def(`${color}_chest`), x + 104, y + 32);
 
         // Set item to be obtained when the chest is opened:
         this.chestItem = itemName;
@@ -1710,6 +1722,9 @@ export class GRoom {
                 this.addEventTrigger(new GCastleDoorTrigger(triggerArea, {x: doorX - 65.5, y: doorY - 159}, doorSpriteDepth));
                 break;
         }
+
+        // A stronghold is an important feature that shouldn't be covered up by random scenery
+        this.noSceneryZones.push({x: 312, y: 128, width: 400, height: 576});
     }
 
     private simpleFit(objectWidth: number, objectHeight: number, maxTries: number, objects: GRect[], zones: GRect[]): GRect|null {

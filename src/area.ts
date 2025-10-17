@@ -1,4 +1,5 @@
 import { GChurchArea } from "./areas/GChurchArea";
+import { GStrongholdArea } from "./areas/GStrongholdArea";
 import { GWorldArea } from "./areas/GWorldArea";
 import { DIRECTION } from "./direction";
 import { GRoom } from "./GRoom";
@@ -7,6 +8,11 @@ import { GPoint2D } from "./types";
 export namespace AREA {
     export let WORLD_AREA: GWorldArea;
     export let CHURCH_AREAS: GChurchArea[];
+    export let TOWER_AREA: GStrongholdArea;
+    export let DUNGEON_AREA: GStrongholdArea;
+    export let KEEP_AREA: GStrongholdArea;
+    export let FORTRESS_AREA: GStrongholdArea;
+    export let CASTLE_AREA: GStrongholdArea;
 
     // Get a textual representation of the distance/direction between 2 rooms on the same floor
     export function describeDistanceBetweenRooms(originRoom: GRoom, otherRoom: GRoom) {

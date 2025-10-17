@@ -287,10 +287,14 @@ export class GPopup extends Phaser.GameObjects.Image {
      * @param itemName name of the item entry to be pulled from the glossary
      */
     public static createItemPopup(itemName: string): GPopup {
+        const wickedTreasure = itemName === 'wicked_treasure';
+        const title: string = wickedTreasure
+            ? 'The Lord reprove thee, for thou hast taken:'
+            : 'God hath been gracious unto thee, for thou hast obtained:';
         const entry: GGlossaryEntry = GLOSSARY.lookupEntry(itemName) as GGlossaryEntry;
         const popup: GPopup = new GPopup();
         GFF.AdventureUI.add.existing(popup);
-        popup.createMiniTitle('God hath been gracious unto thee, for thou hast obtained:');
+        popup.createMiniTitle(title);
         popup.createItemImage(entry.image);
         popup.createItemTitle(entry.title);
 
@@ -305,7 +309,11 @@ export class GPopup extends Phaser.GameObjects.Image {
         popup.positioner.arrangeAll();
 
         // Play a fanfare when we get an item!
-        GFF.AdventureUI.getSound().playSound('fanfare');
+        if (wickedTreasure) {
+            GFF.AdventureUI.getSound().playSound('bad_item');
+        } else {
+            GFF.AdventureUI.getSound().playSound('fanfare');
+        }
         return popup;
     }
 

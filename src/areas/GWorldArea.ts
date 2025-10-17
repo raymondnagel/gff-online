@@ -552,7 +552,6 @@ export class GWorldArea extends GArea {
                     this.isFarEnoughFromOtherCenters(room, this.townCenters, d)
                     && !this.hasNeighboringTown(room)
                 ) {
-                    stronghold.createInterior();
                     room.setStronghold(stronghold);
                     GFF.genLog(`Created stronghold: ${stronghold.getName()} @: ${room.getX()}, ${room.getY()}`);
                     return;
@@ -580,7 +579,7 @@ export class GWorldArea extends GArea {
                 BOOKS.getNextBookToFind();
 
             if (book !== undefined) {
-                room.planPremiumChestShrine(book, 'blue');
+                room.planRandomPremiumChestShrine(book, 'red');
             }
         }
 
@@ -592,7 +591,7 @@ export class GWorldArea extends GArea {
             }
             const commandment: string|undefined = COMMANDMENTS.getNextCommandmentToFind();
             if (commandment !== undefined) {
-                room.planPremiumChestShrine(commandment, 'red');
+                room.planRandomPremiumChestShrine(commandment, 'purple');
             }
         }
     }

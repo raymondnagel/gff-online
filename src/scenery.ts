@@ -10,10 +10,10 @@ import { GTreasureChest } from './objects/touchables/GTreasureChest';
 import { GPiano } from './objects/interactables/GPiano';
 import { GChurchHouse } from './objects/obstacles/GChurchHouse';
 import { GBuildingEntrance } from './objects/touchables/GBuildingEntrance';
-import { GTravelAgency } from './objects/obstacles/GTravelAgency';
 import { GSpiritTravelAgency } from './objects/obstacles/GSpiritTravelAgency';
 import { GOverheadDecoration } from './objects/decorations/GOverheadDecoration';
 import { GCorruptionPatch } from './objects/decorations/GCorruptionPatch';
+import { GStaircaseThreshold } from './objects/touchables/GStaircaseThreshold';
 
 export namespace SCENERY {
     const WALL_N_BODY: GRect = {x: 0, y: 0, width: 1024, height: 64};
@@ -44,24 +44,20 @@ export namespace SCENERY {
             { key: 'hold_wall_n_mid', type: 'static', body: {x: 0, y: 0, width: 54, height: 64} },
             { key: 'hold_wall_n_door_lower', type: 'static', body: {x: 0, y: 0, width: 84, height: 64} },
             { key: 'hold_wall_n_door_upper', type: 'static', body: {x: 0, y: 0, width: 128, height: 64} },
-
             { key: 'hold_wall_s_left', type: 'static', body: {x: 0, y: 64, width: 485, height: 64} },
             { key: 'hold_wall_s_right', type: 'static', body: {x: 0, y: 64, width: 485, height: 64} },
             { key: 'hold_wall_s_mid', type: 'static', body: {x: 0, y: 64, width: 54, height: 64} },
             { key: 'hold_wall_s_door', type: 'static', body: {x: 0, y: 64, width: 84, height: 64} },
-
             { key: 'hold_wall_w_top', type: 'static', body: {x: 0, y: 0, width: 64, height: 236} },
             { key: 'hold_wall_w_bottom', type: 'static', body: {x: 0, y: 0, width: 64, height: 320} },
             { key: 'hold_wall_w_mid', type: 'static', body: {x: 0, y: 0, width: 64, height: 148} },
             { key: 'hold_wall_w_door_lower', type: 'static', body: {x: 0, y: 0, width: 64, height: 84} },
             { key: 'hold_wall_w_door_upper', type: 'static', body: {x: 0, y: 0, width: 64, height: 148} },
-
             { key: 'hold_wall_e_top', type: 'static', body: {x: 0, y: 0, width: 64, height: 236} },
             { key: 'hold_wall_e_bottom', type: 'static', body: {x: 0, y: 0, width: 64, height: 320} },
             { key: 'hold_wall_e_mid', type: 'static', body: {x: 0, y: 0, width: 64, height: 148} },
             { key: 'hold_wall_e_door_lower', type: 'static', body: {x: 0, y: 0, width: 64, height: 84} },
             { key: 'hold_wall_e_door_upper', type: 'static', body: {x: 0, y: 0, width: 64, height: 148} },
-
             { key: 'hold_wall_nw_corner', type: 'static', body: {x: 0, y: 0, width: 64, height: 66} },
             { key: 'hold_wall_ne_corner', type: 'static', body: {x: 17, y: 0, width: 64, height: 66} },
             { key: 'hold_wall_sw_corner', type: 'static', body: {x: 0, y: 0, width: 64, height: 128} },
@@ -138,13 +134,14 @@ export namespace SCENERY {
             { key: 'church_pulpit', type: 'static', body: {x: 0, y: 50, width: 72, height: 37} },
             { key: 'cypress_tree', type: 'static', body: {x: 44, y: 207, width: 144, height: 20} },
             { key: 'desert_boulder', type: 'static', body: {x: 0, y: 22, width: 64, height: 24} },
+            { key: 'help_sign', type: 'static', body: {x: 52, y: 72, width: 12, height: 8} },
             { key: 'oak_tree', type: 'static', body: {x: 76, y: 200, width: 116, height: 36} },
+            { key: 'paddle_cactus', type: 'static', body: {x: 8, y: 81, width: 102, height: 30} },
             { key: 'palm_tree', type: 'static', body: {x: 95, y: 179, width: 30, height: 22} },
             { key: 'peak', type: 'static', body: {x: 0, y: 167, width: 300, height: 116} },
             { key: 'pine_tree', type: 'static', body: {x: 70, y: 264, width: 78, height: 36} },
-            { key: 'paddle_cactus', type: 'static', body: {x: 8, y: 81, width: 102, height: 30} },
             { key: 'rock_column', type: 'static', body: {x: 0, y: 240, width: 159, height: 40} },
-            { key: 'shrine_pillar', type: 'static', body: {x: 0, y: 113, width: 64, height: 25} },
+            { key: 'shrine_pillar', type: 'static', body: {x: 0, y: 119, width: 64, height: 21} },
             { key: 'shrub', type: 'static', body: {x: 0, y: 41, width: 64, height: 16} },
             { key: 'snowman', type: 'static', body: {x: 9, y: 64, width: 49, height: 26} },
             { key: 'snowy_boulder', type: 'static', body: {x: 0, y: 55, width: 95, height: 26} },
@@ -158,7 +155,6 @@ export namespace SCENERY {
             { key: 'tree_stump', type: 'static', body: {x: 0, y: 20, width: 115, height: 36} },
             { key: 'willow_tree', type: 'static', body: {x: 44, y: 209, width: 131, height: 21} },
             { key: 'wonky_tree', type: 'static', body: {x: 54, y: 130, width: 64, height: 30} },
-            { key: 'help_sign', type: 'static', body: {x: 52, y: 72, width: 12, height: 8} },
             // Town Objects:
             { key: 'apartments_front', type: 'static', body: {x: 0, y: 250, width: 330, height: 214} },
             { key: 'bench', type: 'static', body: {x: 0, y: 41, width: 100, height: 22} },
@@ -255,7 +251,7 @@ export namespace SCENERY {
             // Background Decorations:
             { key: 'flower_patch_1', type: 'bg_decor', body: {x: 0, y: 0, width: 40, height: 30} },
             { key: 'flower_patch_2', type: 'bg_decor', body: {x: 0, y: 0, width: 50, height: 44} },
-            { key: 'shrine_pedestal', type: 'bg_decor', body: {x: 0, y: 0, width: 64, height: 47} },
+            { key: 'shrine_pedestal', type: 'bg_decor', body: {x: 0, y: 0, width: 64, height: 21} },
             { key: 'steer_skull', type: 'bg_decor', body: {x: 0, y: 0, width: 64, height: 32} },
             { key: 'street_curve_ne_inner', type: 'bg_decor', body: {x: 0, y: 0, width: 64, height: 64} },
             { key: 'street_curve_ne_major', type: 'bg_decor', body: {x: 0, y: 0, width: 64, height: 64} },
@@ -287,17 +283,32 @@ export namespace SCENERY {
             { key: 'street_vert_sw_int', type: 'bg_decor', body: {x: 0, y: 0, width: 64, height: 64} },
             { key: 'street_vert_w', type: 'bg_decor', body: {x: 0, y: 0, width: 64, height: 64} },
             // Overhead Decorations:
-            { key: 'flag', type: 'oh_decor', body: {x: 0, y: 0, width: 100, height: 100} },
+            { key: 'shrine_curtain_ctr_red', type: 'oh_decor', body: {x: 0, y: 0, width: 86, height: 48} },
+            { key: 'shrine_curtain_left_red', type: 'oh_decor', body: {x: 0, y: 0, width: 86, height: 48} },
+            { key: 'shrine_curtain_right_red', type: 'oh_decor', body: {x: 0, y: 0, width: 44, height: 122} },
+            { key: 'shrine_curtain_ctr_blue', type: 'oh_decor', body: {x: 0, y: 0, width: 86, height: 48} },
+            { key: 'shrine_curtain_left_blue', type: 'oh_decor', body: {x: 0, y: 0, width: 86, height: 48} },
+            { key: 'shrine_curtain_right_blue', type: 'oh_decor', body: {x: 0, y: 0, width: 44, height: 122} },
+            { key: 'shrine_curtain_ctr_purple', type: 'oh_decor', body: {x: 0, y: 0, width: 86, height: 48} },
+            { key: 'shrine_curtain_left_purple', type: 'oh_decor', body: {x: 0, y: 0, width: 86, height: 48} },
+            { key: 'shrine_curtain_right_purple', type: 'oh_decor', body: {x: 0, y: 0, width: 44, height: 122} },
+            { key: 'shrine_curtain_ctr_gold', type: 'oh_decor', body: {x: 0, y: 0, width: 86, height: 48} },
+            { key: 'shrine_curtain_left_gold', type: 'oh_decor', body: {x: 0, y: 0, width: 86, height: 48} },
+            { key: 'shrine_curtain_right_gold', type: 'oh_decor', body: {x: 0, y: 0, width: 44, height: 122} },
             // Touchables:
-            { key: 'building_entrance', type: 'custom', body: {x: 0, y: 0, width: 72, height: 1} },
-            { key: 'building_exit', type: 'custom', body: {x: 0, y: 0, width: 72, height: 1} },
+            { key: 'black_chest', type: 'custom', body: {x: 0, y: 20, width: 48, height: 20} },
             { key: 'blue_chest', type: 'custom', body: {x: 0, y: 20, width: 48, height: 20} },
-            { key: 'common_chest', type: 'custom', body: {x: 0, y: 21, width: 48, height: 20} },
+            { key: 'brown_chest', type: 'custom', body: {x: 0, y: 20, width: 48, height: 20} },
+            { key: 'gold_chest', type: 'custom', body: {x: 0, y: 20, width: 48, height: 20} },
+            { key: 'purple_chest', type: 'custom', body: {x: 0, y: 20, width: 48, height: 20} },
             { key: 'red_chest', type: 'custom', body: {x: 0, y: 20, width: 48, height: 20} },
+            { key: 'threshold', type: 'custom', body: {x: 0, y: 0, width: 72, height: 1} },
             // Interactables:
             { key: 'church_piano', type: 'custom', body: {x: 0, y: 50, width: 128, height: 50} },
             // Special Cases:
             { key: 'corruption_patch', type: 'custom', body: {x: 0, y: 0, width: 200, height: 200} },
+            { key: 'stairs_down', type: 'custom', body: {x: 0, y: 0, width: 100, height: 84} },
+            { key: 'stairs_up', type: 'custom', body: {x: 0, y: 0, width: 100, height: 84} },
         ].forEach(d => {
             SCENERY_DEFS.set(d.key, d as GSceneryDef);
         });
@@ -329,9 +340,12 @@ export namespace SCENERY {
                     case 'campfire':
                         new GObstacleSprite(def('campfire') as GSceneryDef, plan.x, plan.y, 7, 10);
                         break;
-                    case 'common_chest':
+                    case 'brown_chest':
                     case 'blue_chest':
                     case 'red_chest':
+                    case 'purple_chest':
+                    case 'gold_chest':
+                    case 'black_chest':
                         new GTreasureChest(plan.x, plan.y, plan.key);
                         break;
                     case 'castle_front':
@@ -358,11 +372,13 @@ export namespace SCENERY {
                         new GChurchHouse(plan.x, plan.y);
                         new GBuildingEntrance(plan.x + 162, plan.y + 409);
                         break;
-                    case 'travel_agency':
-                        new GTravelAgency(plan.x, plan.y);
-                        break;
                     case 'travel_agency_front':
                         new GSpiritTravelAgency(plan.x, plan.y);
+                        break;
+                    case 'stairs_up':
+                    case 'stairs_down':
+                        new GObstacleStatic(sceneryDef, plan.x, plan.y).setData('stairs', true);
+                        new GStaircaseThreshold(plan.x + 14, plan.y + 84);
                         break;
                     case 'church_piano':
                         new GPiano(plan.x, plan.y);

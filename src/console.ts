@@ -152,7 +152,7 @@ export namespace CONSOLE {
                 return 'Ok';
             } else {
                 playError();
-                return 'Room not found!';
+                return `Room not found: ${x}, ${y}, ${floor}`;
             }
         },
         listObjects() {

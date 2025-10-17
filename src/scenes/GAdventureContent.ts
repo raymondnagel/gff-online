@@ -45,6 +45,7 @@ import { GQuickTravelCutscene } from '../cutscenes/GQuickTravelCutscene';
 import { REGISTRY } from '../registry';
 import { GOpeningCutscene } from '../cutscenes/GOpeningCutscene';
 import { GCorruptionPatch } from '../objects/decorations/GCorruptionPatch';
+import { GStairsCutscene } from '../cutscenes/GStairsCutscene';
 
 const MOUSE_UI_BUTTON: string = 'MOUSE_UI_BUTTON';
 
@@ -120,6 +121,10 @@ export class GAdventureContent extends GContentScene {
             this.setCurrentRoom(portalRoom.getX(), portalRoom.getY(), portalRoom.getFloor(), portalRoom.getArea());
         } else {
             this.setCurrentRoom(startRoom.getX(), startRoom.getY(), startRoom.getFloor(), startRoom.getArea());
+            // REGISTRY.set('isNoImps', true);
+            // REGISTRY.set('isDebug', true);
+            // const tempStartRoom: GRoom = AREA.TOWER_AREA.getRoomAt(0, 0, 0) as GRoom;
+            // this.setCurrentRoom(tempStartRoom.getX(), tempStartRoom.getY(), tempStartRoom.getFloor(), tempStartRoom.getArea());
         }
 
         // Create the player:
@@ -152,13 +157,6 @@ export class GAdventureContent extends GContentScene {
             const church: GChurch = startRoom.getChurch() as GChurch;
             new GOpeningCutscene(church).play();
         }
-
-        // if (REGISTRY.getBoolean('doIntro')) {
-        //     REGISTRY.set('doIntro', false);
-        //     this.time.delayedCall(1000, () => {
-        //         GConversation.fromFile('latest_update_intro');
-        //     });
-        // }
     }
 
     private initVision() {
@@ -181,6 +179,9 @@ export class GAdventureContent extends GContentScene {
         INPUT_ADVENTURING.setScene(this);
         INPUT_ADVENTURING.onKeyDown((keyEvent: KeyboardEvent) => {
             switch(keyEvent.key) {
+                case '=':
+                    // Can be used for testing purposes
+                    break;
                 case '`':
                     if (keyEvent.ctrlKey) {
                         this.showTestConsole();
@@ -299,6 +300,21 @@ export class GAdventureContent extends GContentScene {
         // INPUT_DISABLED is active during transitions and cutscenes;
         // no additional initialization is needed, since it won't do anything.
         INPUT_DISABLED.setScene(this);
+    }
+
+    public playerUseStairs() {
+        const room: GRoom = this.getCurrentRoom() as GRoom;
+        const portalRoom: GRoom|null = room.getPortalRoom();
+
+        if (portalRoom !== null) {
+            // Both up and down staircases are entered by facing north;
+            // TODO: the player will continue moving north (might need a cutscene to make that happen)
+            this.player.walkDirection(Dir9.NONE);
+            this.player.faceDirection(Dir9.N);
+            this.player.stop();
+
+            new GStairsCutscene().play();
+        }
     }
 
     public playerEnterBuilding() {
@@ -894,7 +910,9 @@ export class GAdventureContent extends GContentScene {
     }
 
     public spawnCommonChest(): boolean {
-        const chest: GTreasureChest = new GTreasureChest(0, 0, 'common_chest');
+        const isWicked: boolean = this.getCurrentArea() === AREA.KEEP_AREA && RANDOM.flipCoin();
+        const key = isWicked && PLAYER.getFaith() >= PLAYER.getMaxFaith() ? 'black_chest' : 'brown_chest';
+        const chest: GTreasureChest = new GTreasureChest(0, 0, key, isWicked);
         chest.setVisible(false);
         const body: GRect = chest.getBody();
         const spawnPoint: GPoint2D|null = this.getSpawnPointForTransient(chest, body, false);
@@ -905,6 +923,18 @@ export class GAdventureContent extends GContentScene {
             chest.setVisible(true);
             chest.setPosition(spawnPoint.x, spawnPoint.y);
             return true;
+        }
+    }
+
+    public flipCommonChests() {
+        const faithMax: boolean = PLAYER.getFaith() >= PLAYER.getMaxFaith();
+        for (let obj of this.touchablesGroup.getChildren()) {
+            if (obj instanceof GTreasureChest) {
+                const chest: GTreasureChest = obj as GTreasureChest;
+                if (chest.isWicked()) {
+                    chest.setTexture(faithMax ? 'black_chest' : 'brown_chest');
+                }
+            }
         }
     }
 
@@ -1455,6 +1485,11 @@ export class GAdventureContent extends GContentScene {
         this.cameras.main.resetPostPipeline();
         if (PLAYER.getFaith() <= 0) {
             this.cameras.main.setPostPipeline(GrayscalePostFxPipeline);
+        }
+        // Common chest appearance may depend on the player's faith,
+        // if we are in the Keep of Wickedness:
+        if (this.getCurrentArea() === AREA.KEEP_AREA) {
+            this.flipCommonChests();
         }
     }
 

@@ -298,7 +298,7 @@ export class GChurchServiceCutscene extends GCutscene {
             GFF.AdventureContent.setBottomBoundEnabled(true);
             // Position the player at the center of the church:
             PLAYER.getSprite().centerPhysically({x: CENTER_X, y: CENTER_Y});
-            PLAYER.getSprite().faceDirection(Dir9.S);
+            PLAYER.getSprite().faceDirection(Dir9.S, true);
             PLAYER.giveGrace('minor');
         });
     }

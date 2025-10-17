@@ -281,7 +281,7 @@ const CMD_FUNCTIONS: Record<string, (...args: any[]) => any> = {
             if (chestRoom === PLAYER.getMarkedChestRoom()) {
                 markedText = `Hmm... I know of a treasure chest nearby, but you already have it marked on your map.`;
             } else {
-                const chestText: string = chestRoom.hasPlanKey('red_chest')
+                const chestText: string = chestRoom.hasPlanKey('purple_chest')
                     ? 'one of the 10 commandments, which will help to enlighten your path'
                     : 'a book of the Bible, which will strengthen you to face the enemy';
                 const distText: string = AREA.describeDistanceBetweenRooms(originRoom, chestRoom);

@@ -30,9 +30,15 @@ export namespace PHYSICS {
         // was just repositioned.
         if (object.body) {
             const body: Phaser.Physics.Arcade.Body = object.body as Phaser.Physics.Arcade.Body;
+            let originOffsetX = 0;
+            let originOffsetY = 0;
+            if ('originX' in object && 'originY' in object) {
+                originOffsetX = object.width * (object.originX as number);
+                originOffsetY = object.height * (object.originY as number);
+            }
             return {
-                x: object.x + body.offset.x + body.width / 2,
-                y: object.y + body.offset.y + body.height / 2
+                x: (object.x - originOffsetX) + body.offset.x + body.width / 2,
+                y: (object.y - originOffsetY) + body.offset.y + body.height / 2
             };
         }
         return null;

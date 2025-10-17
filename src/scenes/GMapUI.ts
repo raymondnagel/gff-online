@@ -113,7 +113,7 @@ export class GMapUI extends GUIScene {
                     // Draw feature, if applicable:
                     if (feature) {
                         switch (feature) {
-                            case 'map_blue_chest':
+                            case 'map_purple_chest':
                             case 'map_red_chest':
                                 // Chests are shown if the room is marked, regardless of discovery:
                                 if (PLAYER.getMarkedChestRoom() === room) {
