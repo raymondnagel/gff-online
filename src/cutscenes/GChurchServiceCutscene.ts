@@ -16,7 +16,7 @@ type PewSeat = {
 
 const CENTER_X: number = 512;
 const CENTER_Y: number = 352;
-const THRESH_Y: number = 553;
+const THRESH_Y: number = 497;
 const SPAWN_PT: GPoint2D = {x: CENTER_X, y: 800};
 const THRESH_PT: GPoint2D = {x: CENTER_X, y: THRESH_Y};
 const BEFORE_PULPIT_PT: GPoint2D = {x: CENTER_X, y: 290};
@@ -38,7 +38,7 @@ export class GChurchServiceCutscene extends GCutscene {
     }
 
     private createPewSeats() {
-        const rows: number[] = [297, 425, THRESH_Y];
+        const rows: number[] = [297, 397, THRESH_Y];
         const distToFirst: number = 100;
         const distBetween: number = 62;
 

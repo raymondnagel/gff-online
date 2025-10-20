@@ -1,10 +1,7 @@
 import { COLOR } from "../colors";
-import { DEPTH } from "../depths";
-import { EFFECTS } from "../effects";
 import { GRoom } from "../GRoom";
 import { GFF } from "../main";
 import { GImpSprite } from "../objects/chars/GImpSprite";
-import { GPersonSprite } from "../objects/chars/GPersonSprite";
 import { PHYSICS } from "../physics";
 import { PLAYER } from "../player";
 import { SCENERY } from "../scenery";

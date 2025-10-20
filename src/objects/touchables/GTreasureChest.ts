@@ -47,7 +47,9 @@ export class GTreasureChest extends GTouchable {
         STATS.changeInt('ChestsOpened', 1);
         GFF.AdventureContent.scene.pause();
         GFF.AdventureUI.getSound().playSound('open_chest').once('complete', () => {
-            GFF.AdventureContent.getCurrentRoom()?.removePremiumChest();
+            if (this.premium) {
+                GFF.AdventureContent.getCurrentRoom()?.removePremiumChest();
+            }
             switch (item.type) {
                 case 'book':
                     GPopup.createBookPopup(item.name).onClose(() => {

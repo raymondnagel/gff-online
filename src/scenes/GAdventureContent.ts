@@ -308,11 +308,9 @@ export class GAdventureContent extends GContentScene {
 
         if (portalRoom !== null) {
             // Both up and down staircases are entered by facing north;
-            // TODO: the player will continue moving north (might need a cutscene to make that happen)
             this.player.walkDirection(Dir9.NONE);
             this.player.faceDirection(Dir9.N);
             this.player.stop();
-
             new GStairsCutscene().play();
         }
     }
@@ -1378,6 +1376,7 @@ export class GAdventureContent extends GContentScene {
          * - the entire world, since it is procedurally generated
          * - all the procedurally generated people
          * - player state (level, experience, faith, grace, items, etc.)
+         * - enemy state (similar to player state)
          * - any special event flags
          * - all recorded statistics
          * I'll delay this for now, since most parts of the game are still

@@ -38,6 +38,23 @@ export namespace SCENERY {
     export function initSceneryDefs() {
         [
             // WALLS:
+            // Church Walls:
+            { key: 'church_wall_n_left', type: 'static', body: {x: 0, y: 0, width: 485, height: 64} },
+            { key: 'church_wall_n_right', type: 'static', body: {x: 0, y: 0, width: 485, height: 64} },
+            { key: 'church_wall_n_mid', type: 'static', body: {x: 0, y: 0, width: 54, height: 64} },
+            { key: 'church_wall_s_left', type: 'static', body: {x: 0, y: 64, width: 485, height: 64} },
+            { key: 'church_wall_s_right', type: 'static', body: {x: 0, y: 64, width: 485, height: 64} },
+            { key: 'church_wall_s_door', type: 'static', body: {x: 0, y: 64, width: 84, height: 64} },
+            { key: 'church_wall_w_top', type: 'static', body: {x: 0, y: 0, width: 64, height: 236} },
+            { key: 'church_wall_w_bottom', type: 'static', body: {x: 0, y: 0, width: 64, height: 320} },
+            { key: 'church_wall_w_mid', type: 'static', body: {x: 0, y: 0, width: 64, height: 148} },
+            { key: 'church_wall_e_top', type: 'static', body: {x: 0, y: 0, width: 64, height: 236} },
+            { key: 'church_wall_e_bottom', type: 'static', body: {x: 0, y: 0, width: 64, height: 320} },
+            { key: 'church_wall_e_mid', type: 'static', body: {x: 0, y: 0, width: 64, height: 148} },
+            { key: 'church_wall_nw_corner', type: 'static', body: {x: 0, y: 0, width: 64, height: 66} },
+            { key: 'church_wall_ne_corner', type: 'static', body: {x: 17, y: 0, width: 64, height: 66} },
+            { key: 'church_wall_sw_corner', type: 'static', body: {x: 0, y: 0, width: 64, height: 128} },
+            { key: 'church_wall_se_corner', type: 'static', body: {x: 0, y: 0, width: 64, height: 128} },
             // Stronghold Walls:
             { key: 'hold_wall_n_left', type: 'static', body: {x: 0, y: 0, width: 485, height: 64} },
             { key: 'hold_wall_n_right', type: 'static', body: {x: 0, y: 0, width: 485, height: 64} },
@@ -249,6 +266,14 @@ export namespace SCENERY {
             { key: 'grass_tuft', type: 'fg_decor', body: {x: 0, y: 0, width: 64, height: 43} },
             { key: 'mushrooms', type: 'fg_decor', body: {x: 0, y: 0, width: 60, height: 62} },
             // Background Decorations:
+            { key: 'curb_bend_ne', type: 'bg_decor', body: {x: 0, y: 0, width: 74, height: 82} },
+            { key: 'curb_bend_nw', type: 'bg_decor', body: {x: 0, y: 0, width: 74, height: 82} },
+            { key: 'curb_bend_se', type: 'bg_decor', body: {x: 0, y: 0, width: 74, height: 82} },
+            { key: 'curb_bend_sw', type: 'bg_decor', body: {x: 0, y: 0, width: 74, height: 82} },
+            { key: 'curb_horz_n', type: 'bg_decor', body: {x: 0, y: 0, width: 73, height: 12} },
+            { key: 'curb_horz_s', type: 'bg_decor', body: {x: 0, y: 0, width: 73, height: 9} },
+            { key: 'curb_vert_e', type: 'bg_decor', body: {x: 0, y: 0, width: 9, height: 73} },
+            { key: 'curb_vert_w', type: 'bg_decor', body: {x: 0, y: 0, width: 9, height: 73} },
             { key: 'flower_patch_1', type: 'bg_decor', body: {x: 0, y: 0, width: 40, height: 30} },
             { key: 'flower_patch_2', type: 'bg_decor', body: {x: 0, y: 0, width: 50, height: 44} },
             { key: 'shrine_pedestal', type: 'bg_decor', body: {x: 0, y: 0, width: 64, height: 21} },
@@ -320,25 +345,27 @@ export namespace SCENERY {
 
     export function create(plan: GSceneryPlan, decorRenderer?: Phaser.GameObjects.RenderTexture) {
         const sceneryDef: GSceneryDef = def(plan.key);
+        let sceneryObj: Phaser.GameObjects.GameObject|undefined;
         switch (sceneryDef.type) {
             case 'bg_decor':
+                // Background decorations are rendered to a RenderTexture for performance; no new object is created.
                 new GBackgroundDecoration(plan.key, plan.x, plan.y, decorRenderer as Phaser.GameObjects.RenderTexture);
                 break;
             case 'fg_decor':
-                new GForegroundDecoration(sceneryDef, plan.x, plan.y);
+                sceneryObj = new GForegroundDecoration(sceneryDef, plan.x, plan.y);
                 break;
             case 'oh_decor':
-                new GOverheadDecoration(sceneryDef, plan.x, plan.y);
+                sceneryObj = new GOverheadDecoration(sceneryDef, plan.x, plan.y);
                 break;
             case 'static':
-                new GObstacleStatic(sceneryDef, plan.x, plan.y);
+                sceneryObj = new GObstacleStatic(sceneryDef, plan.x, plan.y);
                 break;
             default:
                 // If not decor or static obstacle, it is "custom": look it up specifically by key.
                 // These require additional info not in the scenery def, possibly even their own class.
                 switch(plan.key) {
                     case 'campfire':
-                        new GObstacleSprite(def('campfire') as GSceneryDef, plan.x, plan.y, 7, 10);
+                        sceneryObj = new GObstacleSprite(def('campfire') as GSceneryDef, plan.x, plan.y, 7, 10);
                         break;
                     case 'brown_chest':
                     case 'blue_chest':
@@ -346,47 +373,52 @@ export namespace SCENERY {
                     case 'purple_chest':
                     case 'gold_chest':
                     case 'black_chest':
-                        new GTreasureChest(plan.x, plan.y, plan.key);
+                        sceneryObj = new GTreasureChest(plan.x, plan.y, plan.key);
                         break;
                     case 'castle_front':
-                        new GObstacleStatic(sceneryDef, plan.x, plan.y);
+                        sceneryObj = new GObstacleStatic(sceneryDef, plan.x, plan.y);
                         new GBuildingEntrance(plan.x + 164, plan.y + 396);
                         break;
                     case 'dungeon_front':
-                        new GObstacleStatic(sceneryDef, plan.x, plan.y);
+                        sceneryObj = new GObstacleStatic(sceneryDef, plan.x, plan.y);
                         new GBuildingEntrance(plan.x + 136, plan.y + 211);
                         break;
                     case 'fortress_front':
-                        new GObstacleStatic(sceneryDef, plan.x, plan.y);
+                        sceneryObj = new GObstacleStatic(sceneryDef, plan.x, plan.y);
                         new GBuildingEntrance(plan.x + 148, plan.y + 342);
                         break;
                     case 'keep_front':
-                        new GObstacleStatic(sceneryDef, plan.x, plan.y);
+                        sceneryObj = new GObstacleStatic(sceneryDef, plan.x, plan.y);
                         new GBuildingEntrance(plan.x + 108, plan.y + 357);
                         break;
                     case 'tower_front':
-                        new GObstacleStatic(sceneryDef, plan.x, plan.y);
+                        sceneryObj = new GObstacleStatic(sceneryDef, plan.x, plan.y);
                         new GBuildingEntrance(plan.x + 52, plan.y + 362);
                         break;
                     case 'church_front':
-                        new GChurchHouse(plan.x, plan.y);
+                        sceneryObj = new GChurchHouse(plan.x, plan.y);
                         new GBuildingEntrance(plan.x + 162, plan.y + 409);
                         break;
                     case 'travel_agency_front':
-                        new GSpiritTravelAgency(plan.x, plan.y);
+                        sceneryObj = new GSpiritTravelAgency(plan.x, plan.y);
                         break;
                     case 'stairs_up':
                     case 'stairs_down':
-                        new GObstacleStatic(sceneryDef, plan.x, plan.y).setData('stairs', true);
+                        sceneryObj = new GObstacleStatic(sceneryDef, plan.x, plan.y).setData('stairs', true);
                         new GStaircaseThreshold(plan.x + 14, plan.y + 84);
                         break;
                     case 'church_piano':
-                        new GPiano(plan.x, plan.y);
+                        sceneryObj = new GPiano(plan.x, plan.y);
                         break;
                     case 'corruption_patch':
-                        new GCorruptionPatch(plan.x, plan.y, RANDOM.randFloat(0.8, 1.2));
+                        sceneryObj = new GCorruptionPatch(plan.x, plan.y, RANDOM.randFloat(0.8, 1.2));
                         break;
                 }
+            break;
+        }
+        if (sceneryObj) {
+            sceneryObj.setData('id', plan.id);
+            sceneryObj.name = plan.key;
         }
     }
 

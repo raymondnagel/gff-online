@@ -863,7 +863,7 @@ export class GRoom {
      * into visual (object) coordinates prior to calling this method.
      */
     public addSceneryPlan(key: string, x: number, y: number): GSceneryPlan {
-        const plan: GSceneryPlan = { key, x, y };
+        const plan: GSceneryPlan = { key, x, y, id: this.plans.length };
         this.plans.push(plan);
         return plan;
     }
@@ -1225,7 +1225,6 @@ export class GRoom {
     }
 
     public planTownStreets(roadNorth: boolean, roadEast: boolean, roadSouth: boolean, roadWest: boolean): GCityBlock[] {
-
         const cornerBlockWidth: number = 416;
         const cornerBlockHeight: number = 256;
         const horzNorthBaseline: number = cornerBlockHeight;
@@ -1588,6 +1587,9 @@ export class GRoom {
             this.planTileScenery('street_horz_s', 8, 6);
         }
 
+        // Add curbs along the edges of all roads
+        this.createCurbs(roadNorth, roadEast, roadSouth, roadWest);
+
         // We know which blocks are used, so we can create yards for them now
         // (skip church rooms - they don't have real blocks)
         if (!this.church) {
@@ -1596,6 +1598,169 @@ export class GRoom {
             }
         }
         return cityBlocks;
+    }
+
+    private createCurbs(roadNorth: boolean, roadEast: boolean, roadSouth: boolean, roadWest: boolean) {
+        const H_MAX = 1024;
+        const V_MAX = 704;
+
+        const CURB_N_HT = 12;
+        const CURB_S_HT = 9;
+        const CURB_VERT_WD = 9;
+        const CURB_INSET = 5; // Curb inset from road edge
+        const CURB_OUT_HZ = CURB_VERT_WD - (CURB_INSET + 1); // Horizontal curb out from road edge
+        const CURB_OUT_N = CURB_N_HT - (CURB_INSET + 1);     // North curb out from road edge
+        const CURB_OUT_S = CURB_S_HT - (CURB_INSET + 1);     // South curb out from road edge
+
+        const ROAD_VERT_L = 448;
+        const ROAD_VERT_R = ROAD_VERT_L + (GFF.TILE_W * 2) - 1;
+
+        const ROAD_HORZ_T = 288;
+        const ROAD_HORZ_B = ROAD_HORZ_T + (GFF.TILE_W * 2) - 1;
+
+        const CURB_BEND_WD = 74;
+        const CURB_BEND_HT = 82;
+
+        const CURB_BEND_E_X = ROAD_VERT_R + (CURB_OUT_HZ + 1) - CURB_BEND_WD;
+        const CURB_BEND_W_X = ROAD_VERT_L - (CURB_OUT_HZ + 1);
+        const CURB_BEND_S_Y = ROAD_HORZ_B + (CURB_OUT_S + 1) - CURB_BEND_HT;
+        const CURB_BEND_N_Y = ROAD_HORZ_T - CURB_OUT_N;
+
+        const CURB_HORZ_N_Y = ROAD_HORZ_T - CURB_OUT_N;
+        const CURB_HORZ_S_Y = ROAD_HORZ_B - CURB_INSET;
+        const CURB_VERT_W_X = ROAD_VERT_L - (CURB_OUT_HZ + 1);
+        const CURB_VERT_E_X = ROAD_VERT_R - CURB_INSET;
+
+        const CURB_INNER_W_X = ROAD_VERT_L + CURB_INSET;
+        const CURB_INNER_E_X = ROAD_VERT_R - CURB_INSET;
+        const CURB_INNER_N_Y = CURB_HORZ_N_Y + 1;
+        const CURB_INNER_S_Y = CURB_HORZ_S_Y + CURB_S_HT;
+
+        const CURB_OUTER_S_Y = CURB_BEND_N_Y + CURB_BEND_HT;
+
+        // 4-way intersection
+        if (roadNorth && roadWest && roadEast && roadSouth) {
+            // NW inner (square) corner curbs
+            this.planCurbLine('curb_horz_n', CURB_INNER_W_X, CURB_HORZ_N_Y, -1, 0);
+            this.planCurbLine('curb_vert_w', CURB_VERT_W_X, CURB_INNER_N_Y, -1, 0);
+            // NE inner (square) corner curbs
+            this.planCurbLine('curb_horz_n', CURB_VERT_E_X, CURB_HORZ_N_Y, 1, H_MAX);
+            this.planCurbLine('curb_vert_e', CURB_INNER_E_X, CURB_INNER_N_Y, -1, 0);
+            // SW inner (square) corner curbs
+            this.planCurbLine('curb_horz_s', CURB_INNER_W_X, CURB_HORZ_S_Y, -1, 0);
+            this.planCurbLine('curb_vert_w', CURB_VERT_W_X, CURB_INNER_S_Y, 1, V_MAX);
+            // SE inner (square) corner curbs
+            this.planCurbLine('curb_horz_s', CURB_VERT_E_X, CURB_HORZ_S_Y, 1, H_MAX);
+            this.planCurbLine('curb_vert_e', CURB_INNER_E_X, CURB_INNER_S_Y, 1, V_MAX);
+        }
+
+        // 3-way intersections (T)
+        if (roadNorth && roadWest && roadEast && (!roadSouth)) {
+            // Full straight on the south
+            this.planCurbLine('curb_horz_s', -32, CURB_HORZ_S_Y, 1, H_MAX);
+            // NW inner (square) corner curbs
+            this.planCurbLine('curb_horz_n', CURB_INNER_W_X, CURB_HORZ_N_Y, -1, 0);
+            this.planCurbLine('curb_vert_w', CURB_VERT_W_X, CURB_INNER_N_Y, -1, 0);
+            // NE inner (square) corner curbs
+            this.planCurbLine('curb_horz_n', CURB_VERT_E_X, CURB_HORZ_N_Y, 1, H_MAX);
+            this.planCurbLine('curb_vert_e', CURB_INNER_E_X, CURB_INNER_N_Y, -1, 0);
+        }
+        if (roadSouth && roadWest && roadEast && (!roadNorth)) {
+            // Full straight on the north
+            this.planCurbLine('curb_horz_n', -32, CURB_HORZ_N_Y, 1, H_MAX);
+            // SW inner (square) corner curbs
+            this.planCurbLine('curb_horz_s', CURB_INNER_W_X, CURB_HORZ_S_Y, -1, 0);
+            this.planCurbLine('curb_vert_w', CURB_VERT_W_X, CURB_INNER_S_Y, 1, V_MAX);
+            // SE inner (square) corner curbs
+            this.planCurbLine('curb_horz_s', CURB_VERT_E_X, CURB_HORZ_S_Y, 1, H_MAX);
+            this.planCurbLine('curb_vert_e', CURB_INNER_E_X, CURB_INNER_S_Y, 1, V_MAX);
+        }
+        if (roadNorth && roadWest && roadSouth && (!roadEast)) {
+            // Full straight on the east
+            this.planCurbLine('curb_vert_e', CURB_VERT_E_X, -32, 1, V_MAX);
+            // NW inner (square) corner curbs
+            this.planCurbLine('curb_horz_n', CURB_INNER_W_X, CURB_HORZ_N_Y, -1, 0);
+            this.planCurbLine('curb_vert_w', CURB_VERT_W_X, CURB_INNER_N_Y, -1, 0);
+            // SW inner (square) corner curbs
+            this.planCurbLine('curb_horz_s', CURB_INNER_W_X, CURB_HORZ_S_Y, -1, 0);
+            this.planCurbLine('curb_vert_w', CURB_VERT_W_X, CURB_INNER_S_Y, 1, V_MAX);
+        }
+        if (roadNorth && roadEast && roadSouth && (!roadWest)) {
+            // Full straight on the west
+            this.planCurbLine('curb_vert_w', CURB_VERT_W_X, -32, 1, V_MAX);
+            // NE inner (square) corner curbs
+            this.planCurbLine('curb_horz_n', CURB_VERT_E_X, CURB_HORZ_N_Y, 1, H_MAX);
+            this.planCurbLine('curb_vert_e', CURB_INNER_E_X, CURB_INNER_N_Y, -1, 0);
+            // SE inner (square) corner curbs
+            this.planCurbLine('curb_horz_s', CURB_VERT_E_X, CURB_HORZ_S_Y, 1, H_MAX);
+            this.planCurbLine('curb_vert_e', CURB_INNER_E_X, CURB_INNER_S_Y, 1, V_MAX);
+        }
+
+        // 2-way intersections: bends
+        if (roadNorth && roadWest && (!roadEast) && (!roadSouth)) {
+            this.planPositionedScenery(SCENERY.def('curb_bend_se'), CURB_BEND_E_X, CURB_BEND_S_Y);
+            // NW inner (square) corner curbs
+            this.planCurbLine('curb_horz_n', CURB_INNER_W_X, CURB_HORZ_N_Y, -1, 0);
+            this.planCurbLine('curb_vert_w', CURB_VERT_W_X, CURB_INNER_N_Y, -1, 0);
+            // SE outer (rounded) corner curbs
+            this.planCurbLine('curb_horz_s', CURB_BEND_E_X, CURB_HORZ_S_Y, -1, 0);
+            this.planCurbLine('curb_vert_e', CURB_VERT_E_X, CURB_BEND_S_Y, -1, 0);
+        }
+        if (roadNorth && roadEast && (!roadWest) && (!roadSouth)) {
+            this.planPositionedScenery(SCENERY.def('curb_bend_sw'), CURB_BEND_W_X, CURB_BEND_S_Y);
+            // NE inner (square) corner curbs
+            this.planCurbLine('curb_horz_n', CURB_VERT_E_X, CURB_HORZ_N_Y, 1, H_MAX);
+            this.planCurbLine('curb_vert_e', CURB_INNER_E_X, CURB_INNER_N_Y, -1, 0);
+            // SW outer (rounded) corner curbs
+            this.planCurbLine('curb_horz_s', CURB_BEND_W_X + CURB_BEND_WD, CURB_HORZ_S_Y, 1, H_MAX);
+            this.planCurbLine('curb_vert_w', CURB_VERT_W_X, CURB_BEND_S_Y, -1, 0);
+        }
+        if (roadSouth && roadWest && (!roadEast) && (!roadNorth)) {
+            this.planPositionedScenery(SCENERY.def('curb_bend_ne'), CURB_BEND_E_X, CURB_BEND_N_Y);
+            // SW inner (square) corner curbs
+            this.planCurbLine('curb_horz_s', CURB_INNER_W_X, CURB_HORZ_S_Y, -1, 0);
+            this.planCurbLine('curb_vert_w', CURB_VERT_W_X, CURB_INNER_S_Y, 1, V_MAX);
+            // NE outer (rounded) corner curbs
+            this.planCurbLine('curb_horz_n', CURB_BEND_E_X, CURB_HORZ_N_Y, -1, 0);
+            this.planCurbLine('curb_vert_e', CURB_VERT_E_X, CURB_OUTER_S_Y, 1, V_MAX);
+        }
+        if (roadSouth && roadEast && (!roadWest) && (!roadNorth)) {
+            this.planPositionedScenery(SCENERY.def('curb_bend_nw'), CURB_BEND_W_X, CURB_BEND_N_Y);
+            // SE inner (square) corner curbs
+            this.planCurbLine('curb_horz_s', CURB_VERT_E_X, CURB_HORZ_S_Y, 1, H_MAX);
+            this.planCurbLine('curb_vert_e', CURB_INNER_E_X, CURB_INNER_S_Y, 1, V_MAX);
+            // NW outer (rounded) corner curbs
+            this.planCurbLine('curb_horz_n', CURB_BEND_W_X + CURB_BEND_WD, CURB_HORZ_N_Y, 1, H_MAX);
+            this.planCurbLine('curb_vert_w', CURB_VERT_W_X, CURB_OUTER_S_Y, 1, V_MAX);
+        }
+
+        // 2-way straight
+        if (roadNorth && roadSouth && (!roadWest) && (!roadEast)) {
+            this.planCurbLine('curb_vert_w', CURB_VERT_W_X, -32, 1, V_MAX);
+            this.planCurbLine('curb_vert_e', CURB_VERT_E_X, -32, 1, V_MAX);
+        }
+        if (roadWest && roadEast && (!roadNorth) && (!roadSouth)) {
+            this.planCurbLine('curb_horz_n', -32, CURB_HORZ_N_Y, 1, H_MAX);
+            this.planCurbLine('curb_horz_s', -32, CURB_HORZ_S_Y, 1, H_MAX);
+        }
+
+        // Dead ends
+        if (roadNorth && (!roadSouth) && (!roadWest) && (!roadEast)) {
+            this.planCurbLine('curb_vert_w', CURB_VERT_W_X, CURB_INNER_N_Y, -1, 0);
+            this.planCurbLine('curb_vert_e', CURB_VERT_E_X, CURB_INNER_N_Y, -1, 0);
+        }
+        if (roadSouth && (!roadNorth) && (!roadWest) && (!roadEast)) {
+            this.planCurbLine('curb_vert_w', CURB_VERT_W_X, CURB_INNER_S_Y, 1, V_MAX);
+            this.planCurbLine('curb_vert_e', CURB_VERT_E_X, CURB_INNER_S_Y, 1, V_MAX);
+        }
+        if (roadWest && (!roadSouth) && (!roadEast) && (!roadNorth)) {
+            this.planCurbLine('curb_horz_n', CURB_INNER_W_X, CURB_HORZ_N_Y, -1, 0);
+            this.planCurbLine('curb_horz_s', CURB_INNER_W_X, CURB_HORZ_S_Y, -1, 0);
+        }
+        if (roadEast && (!roadSouth) && (!roadWest) && (!roadNorth)) {
+            this.planCurbLine('curb_horz_n', CURB_INNER_E_X, CURB_HORZ_N_Y, 1, H_MAX);
+            this.planCurbLine('curb_horz_s', CURB_INNER_E_X, CURB_HORZ_S_Y, 1, H_MAX);
+        }
     }
 
     public planChurch() {
@@ -1635,14 +1800,33 @@ export class GRoom {
         // Left-side pews:
         let h: number = 310;
         this.planPositionedScenery(SCENERY.def('church_pew'), 287, h, .5, .5);
-        this.planPositionedScenery(SCENERY.def('church_pew'), 287, h += 128, .5, .5);
-        this.planPositionedScenery(SCENERY.def('church_pew'), 287, h += 128, .5, .5);
+        this.planPositionedScenery(SCENERY.def('church_pew'), 287, h += 100, .5, .5);
+        this.planPositionedScenery(SCENERY.def('church_pew'), 287, h += 100, .5, .5);
 
         // Right-side pews:
         h = 310;
         this.planPositionedScenery(SCENERY.def('church_pew'), 735, h, .5, .5);
-        this.planPositionedScenery(SCENERY.def('church_pew'), 735, h += 128, .5, .5);
-        this.planPositionedScenery(SCENERY.def('church_pew'), 735, h += 128, .5, .5);
+        this.planPositionedScenery(SCENERY.def('church_pew'), 735, h += 100, .5, .5);
+        this.planPositionedScenery(SCENERY.def('church_pew'), 735, h += 100, .5, .5);
+    }
+
+    private planCurbLine(curbKey: string, startX: number, startY: number, inc: 1|-1, target: number) {
+        const curbDef: GSceneryDef = SCENERY.def(curbKey);
+        const horizontal: boolean = (curbKey.includes('horz'));
+        const actualInc: number = (horizontal ? curbDef.body.width : curbDef.body.height) * inc;
+        let x: number = startX;
+        let y: number = startY;
+        while ((inc === -1 && ((horizontal && x >= target) || (!horizontal && y >= target))) ||
+               (inc === 1 && ((horizontal && x <= target) || (!horizontal && y <= target)))) {
+            const offsetX: number = (!horizontal) || inc > 0 ? x : x - curbDef.body.width;
+            const offsetY: number = horizontal || inc > 0 ? y : y - curbDef.body.height;
+            this.planPositionedScenery(curbDef, offsetX, offsetY);
+            if (horizontal) {
+                x += actualInc;
+            } else {
+                y += actualInc;
+            }
+        }
     }
 
     private sampleFit(objectWidth: number, objectHeight: number, inc: number, objects: GRect[], zones: GRect[]): GRect|null {

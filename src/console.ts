@@ -160,13 +160,25 @@ export namespace CONSOLE {
             objectList.forEach((obj, index) => {
                 const physical = PHYSICS.asBoundedGameObject(obj);
                 if (physical) {
-                    GFF.log(`#${index}: ${obj.name} @${physical.x}, ${physical.y} (Type: ${obj.type})`);
+                    GFF.log(`#${obj.getData('id')}: ${obj.name} @${physical.x}, ${physical.y} (Type: ${obj.type})`);
                 } else {
-                    GFF.log(`#${index}: ${obj.name} (Type: ${obj.type})`);
+                    GFF.log(`#${obj.getData('id')}: ${obj.name} (Type: ${obj.type})`);
                 }
             });
             playSuccess();
             return `Listed ${objectList.length} objects.`;
+        },
+        deleteObject(id: number) {
+            const objectList = GFF.AdventureContent.children.list;
+            for (const obj of objectList) {
+                if (obj.getData('id') === id) {
+                    obj.destroy();
+                    playSuccess();
+                    return `Deleted object #${id}.`;
+                }
+            }
+            playError();
+            return `No object for ID: ${id}`;
         }
     };
 

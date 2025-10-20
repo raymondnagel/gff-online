@@ -397,6 +397,7 @@ export class GLot {
             ...objDef,
             x: 0,
             y: 0,
+            id: 0 // The LotPlan itself doesn't get added to the room, so this won't be used.
         };
         this.objectPlans.push(plan);
         return plan;

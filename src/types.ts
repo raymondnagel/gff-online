@@ -207,9 +207,12 @@ export interface GRect extends GPoint2D {
 
 // Structure for planning placement of a scenery object
 // Since it was already placed, we only care about the key
-// and location now.
+// and location now. Id is assigned when the plan is created,
+// and then transferred to the actual scenery object so it
+// can be referenced later.
 export interface GSceneryPlan extends GPoint2D {
     key: string;
+    id: number;
 }
 
 // Structure for pre-defining a scenery object
