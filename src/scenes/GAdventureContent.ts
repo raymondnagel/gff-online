@@ -46,6 +46,9 @@ import { REGISTRY } from '../registry';
 import { GOpeningCutscene } from '../cutscenes/GOpeningCutscene';
 import { GCorruptionPatch } from '../objects/decorations/GCorruptionPatch';
 import { GStairsCutscene } from '../cutscenes/GStairsCutscene';
+import { GStronghold } from '../strongholds/GStronghold';
+import { GStrongholdArea } from '../areas/GStrongholdArea';
+import { GIllusionaryBlock } from '../objects/touchables/GIllusionaryBlock';
 
 const MOUSE_UI_BUTTON: string = 'MOUSE_UI_BUTTON';
 
@@ -90,6 +93,7 @@ export class GAdventureContent extends GContentScene {
     private yardsGroup: Phaser.GameObjects.Group;
 
     private impSpawnTimeEvent: Phaser.Time.TimerEvent;
+    private playTimerTick: number = 0;
 
     private popup: GPopup|null = null;
     private conversation: GConversation|null = null;
@@ -120,11 +124,11 @@ export class GAdventureContent extends GContentScene {
             const portalRoom: GRoom = startRoom.getPortalRoom() as GRoom;
             this.setCurrentRoom(portalRoom.getX(), portalRoom.getY(), portalRoom.getFloor(), portalRoom.getArea());
         } else {
-            this.setCurrentRoom(startRoom.getX(), startRoom.getY(), startRoom.getFloor(), startRoom.getArea());
-            // REGISTRY.set('isNoImps', true);
-            // REGISTRY.set('isDebug', true);
-            // const tempStartRoom: GRoom = AREA.TOWER_AREA.getRoomAt(0, 0, 0) as GRoom;
-            // this.setCurrentRoom(tempStartRoom.getX(), tempStartRoom.getY(), tempStartRoom.getFloor(), tempStartRoom.getArea());
+            // this.setCurrentRoom(startRoom.getX(), startRoom.getY(), startRoom.getFloor(), startRoom.getArea());
+            REGISTRY.set('isNoImps', true);
+            REGISTRY.set('isDebug', true);
+            const tempStartRoom: GRoom = AREA.FORTRESS_AREA.getRoomAt(0, 5, 5) as GRoom;
+            this.setCurrentRoom(tempStartRoom.getX(), tempStartRoom.getY(), tempStartRoom.getFloor(), tempStartRoom.getArea());
         }
 
         // Create the player:
@@ -315,6 +319,23 @@ export class GAdventureContent extends GContentScene {
         }
     }
 
+    public playerSentToLowerFloor() {
+        // This only happens in the Tower of Deception, when the player enters a "false" staircase.
+
+        // Play sound effect to indicate failure:
+        this.getSound().playSound('bad_item');
+
+        if (this.playerFloor === 0) {
+            // If the player is on the ground floor, send him outside:
+            this.playerExitBuilding((this.getCurrentArea() as GStrongholdArea).getEntranceRoom().getPortalRoom());
+        } else {
+            // Otherwise, just send him down one floor in the current room:
+            const room: GRoom = this.getCurrentRoom() as GRoom;
+            const newRoom: GRoom = room.getArea().getRoomAt(room.getFloor() - 1, room.getX(), room.getY()) as GRoom;
+            this.warpToRoom(newRoom);
+        }
+    }
+
     public playerEnterBuilding() {
         const room: GRoom = this.getCurrentRoom() as GRoom;
         const portalRoom: GRoom|null = room.getPortalRoom();
@@ -343,9 +364,11 @@ export class GAdventureContent extends GContentScene {
         }
     }
 
-    public playerExitBuilding() {
+    public playerExitBuilding(portalRoom: GRoom|null = null) {
         const room: GRoom = this.getCurrentRoom() as GRoom;
-        const portalRoom: GRoom|null = room.getPortalRoom();
+        if (portalRoom === null) {
+            portalRoom = room.getPortalRoom();
+        }
 
         if (portalRoom !== null) {
             this.player.walkDirection(Dir9.NONE);
@@ -355,6 +378,7 @@ export class GAdventureContent extends GContentScene {
                 // We'll initially hide the player.
                 // When the new room is loaded, his position will cause the door-open trigger,
                 // and we'll make him visible when that animation is finished.
+                // (Since the door-open trigger requires the player to have some faith, this won't work if he's faithless.)
                 this.player.setVisible(false);
 
                 // Although you left through an exit, you'll actually come out the entrance:
@@ -366,6 +390,11 @@ export class GAdventureContent extends GContentScene {
                 const newPlayerX: number = entrance.x + (entrance.width / 2);
                 const newPlayerY: number = entrance.y + (GFF.CHAR_BODY_H / 2) + 1;
                 this.player.centerPhysically({x: newPlayerX, y: newPlayerY});
+
+                // Set player to be visible if he is faithless, since the door-open trigger won't run:
+                if (PLAYER.getFaith() <= 0) {
+                    this.player.setVisible(true);
+                }
             });
         }
     }
@@ -649,7 +678,10 @@ export class GAdventureContent extends GContentScene {
     }
 
     public startAreaBgMusic() {
-        this.getSound().fadeInMusic(500, this.currentArea.getBgMusic());
+        // Only start music if the player has faith; otherwise, we're in faithless mode, dull and silent.
+        if (PLAYER.getFaith() > 0) {
+            this.getSound().fadeInMusic(500, this.currentArea.getBgMusic());
+        }
     }
 
     public setCurrentRoom(roomX: number, roomY: number, floor: number, area?: GArea) {
@@ -671,6 +703,8 @@ export class GAdventureContent extends GContentScene {
         currentRoom = this.getCurrentRoom() as GRoom;
         currentRoom.discover();
         currentRoom.load();
+        // Certain things may appear differently, depending on area and current faith:
+        this.setVisualsByFaith();
 
         // Add the new room to the list of unique rooms visited:
         if (!this.uniqueRoomsVisited.includes(currentRoom)) {
@@ -924,13 +958,47 @@ export class GAdventureContent extends GContentScene {
         }
     }
 
-    public flipCommonChests() {
+    private setVisualsByFaith() {
+        if (this.getCurrentArea() === AREA.TOWER_AREA) {
+            this.flipStaircases();
+        } else if (this.getCurrentArea() === AREA.DUNGEON_AREA) {
+            this.flipIllusionaryBlocks();
+        } else if (this.getCurrentArea() === AREA.KEEP_AREA) {
+            this.flipCommonChests();
+        }
+    }
+
+    private flipCommonChests() {
         const faithMax: boolean = PLAYER.getFaith() >= PLAYER.getMaxFaith();
         for (let obj of this.touchablesGroup.getChildren()) {
             if (obj instanceof GTreasureChest) {
                 const chest: GTreasureChest = obj as GTreasureChest;
                 if (chest.isWicked()) {
                     chest.setTexture(faithMax ? 'black_chest' : 'brown_chest');
+                }
+            }
+        }
+    }
+
+    private flipIllusionaryBlocks() {
+        const faithMax: boolean = PLAYER.getFaith() >= PLAYER.getMaxFaith();
+        for (let obj of this.touchablesGroup.getChildren()) {
+            if (obj instanceof GIllusionaryBlock) {
+                const block: GIllusionaryBlock = obj as GIllusionaryBlock;
+                block.setIllusionActive(!faithMax);
+            }
+        }
+    }
+
+    private flipStaircases() {
+        const faithMax: boolean = PLAYER.getFaith() >= PLAYER.getMaxFaith();
+        for (let obj of this.obstaclesGroup.getChildren()) {
+            if (obj.name.includes('stairs_up')) {
+                const stairs: GObstacleStatic = obj as GObstacleStatic;
+                if (obj.name === 'stairs_up') {
+                    stairs.setTexture(faithMax ? 'stairs_up_true' : 'stairs_up');
+                } else if (obj.name === 'stairs_up_false') {
+                    stairs.setTexture(faithMax ? 'stairs_up_false' : 'stairs_up');
                 }
             }
         }
@@ -1184,11 +1252,20 @@ export class GAdventureContent extends GContentScene {
                     this.startChars();
                 }
             } else {
-                PLAYER.setGrace(0);
-                GPopup.createSimplePopup('While you have no faith, enemies will not attack you; however, you cannot open treasure chests or obtain new items.\n\nYou must seek out other believers who can restore you in the spirit of meekness.\n\nBe not faithless, but believing!', 'Where is your faith?').onClose(() => {
-                    this.setInputMode(INPUT_ADVENTURING);
-                    this.startChars();
-                });
+                this.startFaithlessMode();
+            }
+        });
+    }
+
+    private startFaithlessMode() {
+        PLAYER.setGrace(0);
+        GPopup.createSimplePopup('While you have no faith, enemies will not attack you; however, you cannot open treasure chests or obtain new items.\n\nYou must seek out other believers who can restore you in the spirit of meekness.\n\nBe not faithless, but believing!', 'Where is your faith?').onClose(() => {
+            // If the player loses all faith in a stronghold, he'll be expelled from it:
+            if (this.getCurrentArea() instanceof GStrongholdArea) {
+                this.playerExitBuilding((this.getCurrentArea() as GStrongholdArea).getEntranceRoom().getPortalRoom());
+            } else {
+                this.setInputMode(INPUT_ADVENTURING);
+                this.startChars();
             }
         });
     }
@@ -1484,12 +1561,10 @@ export class GAdventureContent extends GContentScene {
         this.cameras.main.resetPostPipeline();
         if (PLAYER.getFaith() <= 0) {
             this.cameras.main.setPostPipeline(GrayscalePostFxPipeline);
+            this.getSound().stopMusic();
         }
-        // Common chest appearance may depend on the player's faith,
-        // if we are in the Keep of Wickedness:
-        if (this.getCurrentArea() === AREA.KEEP_AREA) {
-            this.flipCommonChests();
-        }
+        // Certain objects' appearance may depend on the player's faith:
+        this.setVisualsByFaith();
     }
 
     private updateVision() {
@@ -1558,6 +1633,26 @@ export class GAdventureContent extends GContentScene {
 
         // Process current conversation, if there is one:
         this.conversation?.update();
+
+        // Update play timer:
+        this.playTimerTick += delta;
+        while (this.playTimerTick >= 1000) {
+            this.playTimerTick -= 1000;
+            this.doPlayTimerTickEvents();
+        }
+    }
+
+    private doPlayTimerTickEvents() {
+        // Trigger any events that should happen every second during gameplay:
+
+        // Castle of Perdition effect: faith drain
+        if (PLAYER.getFaith() > 0 && PLAYER.getFaith() < PLAYER.getMaxFaith() && this.getCurrentArea() === AREA.CASTLE_AREA) {
+            PLAYER.changeFaith(-1);
+            if (PLAYER.getFaith() === 0) {
+                this.updateFidelityMode();
+                this.startFaithlessMode();
+            }
+        }
     }
 
     public endGame() {

@@ -14,6 +14,9 @@ import { GSpiritTravelAgency } from './objects/obstacles/GSpiritTravelAgency';
 import { GOverheadDecoration } from './objects/decorations/GOverheadDecoration';
 import { GCorruptionPatch } from './objects/decorations/GCorruptionPatch';
 import { GStaircaseThreshold } from './objects/touchables/GStaircaseThreshold';
+import { GFalseStaircaseThreshold } from './objects/touchables/GFalseStaircaseThreshold';
+import { GIllusionaryBlock } from './objects/touchables/GIllusionaryBlock';
+import { GDevilStatue } from './objects/obstacles/GDevilStatue';
 
 export namespace SCENERY {
     const WALL_N_BODY: GRect = {x: 0, y: 0, width: 1024, height: 64};
@@ -172,6 +175,7 @@ export namespace SCENERY {
             { key: 'tree_stump', type: 'static', body: {x: 0, y: 20, width: 115, height: 36} },
             { key: 'willow_tree', type: 'static', body: {x: 44, y: 209, width: 131, height: 21} },
             { key: 'wonky_tree', type: 'static', body: {x: 54, y: 130, width: 64, height: 30} },
+            { key: 'stone_block', type: 'static', body: {x: 0, y: 38, width: 64, height: 64} },
             // Town Objects:
             { key: 'apartments_front', type: 'static', body: {x: 0, y: 250, width: 330, height: 214} },
             { key: 'bench', type: 'static', body: {x: 0, y: 41, width: 100, height: 22} },
@@ -276,7 +280,7 @@ export namespace SCENERY {
             { key: 'curb_vert_w', type: 'bg_decor', body: {x: 0, y: 0, width: 9, height: 73} },
             { key: 'flower_patch_1', type: 'bg_decor', body: {x: 0, y: 0, width: 40, height: 30} },
             { key: 'flower_patch_2', type: 'bg_decor', body: {x: 0, y: 0, width: 50, height: 44} },
-            { key: 'shrine_pedestal', type: 'bg_decor', body: {x: 0, y: 0, width: 64, height: 21} },
+            { key: 'shrine_pedestal', type: 'bg_decor', body: {x: 0, y: 0, width: 64, height: 14} },
             { key: 'steer_skull', type: 'bg_decor', body: {x: 0, y: 0, width: 64, height: 32} },
             { key: 'street_curve_ne_inner', type: 'bg_decor', body: {x: 0, y: 0, width: 64, height: 64} },
             { key: 'street_curve_ne_major', type: 'bg_decor', body: {x: 0, y: 0, width: 64, height: 64} },
@@ -307,6 +311,7 @@ export namespace SCENERY {
             { key: 'street_vert_se_int', type: 'bg_decor', body: {x: 0, y: 0, width: 64, height: 64} },
             { key: 'street_vert_sw_int', type: 'bg_decor', body: {x: 0, y: 0, width: 64, height: 64} },
             { key: 'street_vert_w', type: 'bg_decor', body: {x: 0, y: 0, width: 64, height: 64} },
+            { key: 'statue_pedestal', type: 'bg_decor', body: {x: 0, y: 0, width: 64, height: 14} },
             // Overhead Decorations:
             { key: 'shrine_curtain_ctr_red', type: 'oh_decor', body: {x: 0, y: 0, width: 86, height: 48} },
             { key: 'shrine_curtain_left_red', type: 'oh_decor', body: {x: 0, y: 0, width: 86, height: 48} },
@@ -328,12 +333,15 @@ export namespace SCENERY {
             { key: 'purple_chest', type: 'custom', body: {x: 0, y: 20, width: 48, height: 20} },
             { key: 'red_chest', type: 'custom', body: {x: 0, y: 20, width: 48, height: 20} },
             { key: 'threshold', type: 'custom', body: {x: 0, y: 0, width: 72, height: 1} },
+            { key: 'illusionary_block', type: 'custom', body: {x: 0, y: 38, width: 64, height: 64} },
             // Interactables:
             { key: 'church_piano', type: 'custom', body: {x: 0, y: 50, width: 128, height: 50} },
             // Special Cases:
             { key: 'corruption_patch', type: 'custom', body: {x: 0, y: 0, width: 200, height: 200} },
             { key: 'stairs_down', type: 'custom', body: {x: 0, y: 0, width: 100, height: 84} },
             { key: 'stairs_up', type: 'custom', body: {x: 0, y: 0, width: 100, height: 84} },
+            { key: 'stairs_up_false', type: 'custom', body: {x: 0, y: 0, width: 100, height: 84} },
+            { key: 'devil_statue', type: 'custom', body: {x: -2, y: 86, width: 64, height: 14} },
         ].forEach(d => {
             SCENERY_DEFS.set(d.key, d as GSceneryDef);
         });
@@ -407,11 +415,23 @@ export namespace SCENERY {
                         sceneryObj = new GObstacleStatic(sceneryDef, plan.x, plan.y).setData('stairs', true);
                         new GStaircaseThreshold(plan.x + 14, plan.y + 84);
                         break;
+                    case 'stairs_up_false':
+                        sceneryObj = new GObstacleStatic(sceneryDef, plan.x, plan.y);
+                        new GFalseStaircaseThreshold(plan.x + 14, plan.y + 84);
+                        break;
+                    case 'illusionary_block':
+                        sceneryObj = new GIllusionaryBlock(plan.x, plan.y);
+                        break;
                     case 'church_piano':
                         sceneryObj = new GPiano(plan.x, plan.y);
                         break;
                     case 'corruption_patch':
                         sceneryObj = new GCorruptionPatch(plan.x, plan.y, RANDOM.randFloat(0.8, 1.2));
+                        break;
+                    case 'devil_statue':
+                        new GBackgroundDecoration('statue_pedestal', plan.x - 2, plan.y + 86, decorRenderer as Phaser.GameObjects.RenderTexture);
+                        sceneryObj = new GDevilStatue(plan.x, plan.y);
+                        (sceneryObj as GDevilStatue).addTrigger();
                         break;
                 }
             break;

@@ -55,11 +55,20 @@ export class GStrongholdRegion extends GInsideRegion{
         if (portalRoom && room.getArea() === portalRoom.getArea()) {
             if (room.getFloor() < portalRoom.getFloor()) {
                 // Stairs up:
-                room.planPositionedScenery(SCENERY.def('stairs_up'), 512, 352, .5, .5);
+                this.furnishStairsRoom(room, 'stairs_up');
             } else {
                 // Stairs down:
-                room.planPositionedScenery(SCENERY.def('stairs_down'), 512, 352, .5, .5);
+                this.furnishStairsRoom(room, 'stairs_down');
             }
         }
+    }
+
+    /**
+     * Strongholds can override this to furnish stair rooms differently.
+     * (This is especially useful for the Tower stronghold, which contains
+     * "false" up staircases that actually go down.)
+     */
+    protected furnishStairsRoom(room: GRoom, stairsKey: string): void {
+        room.planPositionedScenery(SCENERY.def(stairsKey), 512, 352, .5, .5);
     }
 }

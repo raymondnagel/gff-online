@@ -1,3 +1,4 @@
+import { AREA } from "../area";
 import { COLOR } from "../colors";
 import { DEPTH } from "../depths";
 import { GRoom } from "../GRoom";
@@ -39,14 +40,19 @@ export class GStairsCutscene extends GCutscene {
         // Determine if we are going up or down the stairs:
         const dir = nextRoom.getFloor() > room.getFloor() ? 'up' : 'down';
 
+        // In the Tower of Deception, play a "success" sound when the player ascends;
+        // because of the "false" staircases, actually going up means he picked the right stairs.
+        if (dir === 'up' && room.getArea() === AREA.TOWER_AREA) {
+            GFF.AdventureContent.getSound().playSound('success');
+        }
+
         // Get staircase objects in the current room:
         const startStairs: GObstacleStatic = this.getStairs();
         const startThreshold: GStaircaseThreshold = this.getThreshold();
 
-        const destX = startStairs.x + 50;
+        const firstDestX = startStairs.x + 50;
         const firstDestY = dir === 'up' ? startStairs.y + 16 : startStairs.y + 50;
-        const lastStartY = dir === 'up' ? startStairs.y + 50 : startStairs.y + 16;
-        const lastDestY = startStairs.y + 101;
+        // "last" values are assigned to the cutscene registry later when the destination stairs are loaded
 
         const firstTime = dir === 'up' ? 500 : 300;
         const secondTime = dir === 'up' ? 300 : 500;
@@ -71,7 +77,7 @@ export class GStairsCutscene extends GCutscene {
         this.addCutsceneEvent({
             eventId: 'playerClimb',
             actor: 'player',
-            command: `walkTo(${destX},${firstDestY})`,
+            command: `walkTo(${firstDestX},${firstDestY})`,
             after: 'start',
             since: 5
         });
@@ -117,6 +123,10 @@ export class GStairsCutscene extends GCutscene {
                 const endStairs: GObstacleStatic = this.getStairs();
                 const endThreshold: GStaircaseThreshold = this.getThreshold();
 
+                this.registry.set('lastStartY', dir === 'up' ? endStairs.y + 50 : endStairs.y + 16);
+                this.registry.set('lastDestY', endStairs.y + 101);
+                this.registry.set('lastDestX', endStairs.x + 50);
+
                 // Disable threshold so player doesn't trigger it on the way out:
                 endThreshold.getBody().enable = false;
                 // Treat the stairs as a background decoration so the player can walk over it:
@@ -124,7 +134,7 @@ export class GStairsCutscene extends GCutscene {
                 endStairs.setDepth(DEPTH.BG_DECOR);
 
                 // Place the player so he is coming out of the stairwell:
-                PLAYER.getSprite().centerPhysically({x: destX, y: lastStartY});
+                PLAYER.getSprite().centerPhysically({x: this.registry.get('lastDestX'), y: this.registry.get('lastStartY')});
                 PLAYER.getSprite().faceDirection(Dir9.S, true);
                 PLAYER.getSprite().setVisible(true);
             },
@@ -147,7 +157,7 @@ export class GStairsCutscene extends GCutscene {
         this.addCutsceneEvent({
             eventId: 'playerEmerge',
             actor: 'player',
-            command: `walkTo(${destX},${lastDestY})`,
+            command: `walkTo(@lastDestX,@lastDestY)`,
             after: 'transitionToDestination',
             since: 100
         });
@@ -163,13 +173,13 @@ export class GStairsCutscene extends GCutscene {
 
     protected finalize(): void {
         // Get staircase objects in the destination room:
-        const topStairs: GObstacleStatic = this.getStairs();
-        const topThreshold: GStaircaseThreshold = this.getThreshold();
+        const destStairs: GObstacleStatic = this.getStairs();
+        const destThreshold: GStaircaseThreshold = this.getThreshold();
         // Re-enable threshold so player can descend the stairs:
-        topThreshold.getBody().enable = true;
+        destThreshold.getBody().enable = true;
         // Treat the stairs as a background decoration so the player can walk over it:
-        topStairs.getBody().enable = true;
-        topStairs.setDepth(topStairs.getBody().bottom);
+        destStairs.getBody().enable = true;
+        destStairs.setDepth(destStairs.getBody().bottom);
 
         GFF.AdventureContent.startChars();
     }

@@ -95,7 +95,11 @@ export class GRoom {
     private discovered: boolean = false;
     private travelAgency: boolean = false;
     private chestItem: string|null = null;
-    private eventTriggers: GEventTrigger[] = [];
+
+    // Permanent event triggers are added once when the room is planned
+    private permanentEventTriggers: GEventTrigger[] = [];
+    // Temporary event triggers are added each time the room is loaded, and cleared on unload
+    private temporaryEventTriggers: GEventTrigger[] = [];
 
     private testZones: TestZone[] = [];
     private yards: GRect[] = [];
@@ -236,12 +240,16 @@ export class GRoom {
         }
     }
 
-    public addEventTrigger(trigger: GEventTrigger) {
-        this.eventTriggers.push(trigger);
+    public addPermanentEventTrigger(trigger: GEventTrigger) {
+        this.permanentEventTriggers.push(trigger);
+    }
+
+    public addTemporaryEventTrigger(trigger: GEventTrigger) {
+        this.temporaryEventTriggers.push(trigger);
     }
 
     public getEventTriggers(): GEventTrigger[] {
-        return this.eventTriggers;
+        return this.permanentEventTriggers.concat(this.temporaryEventTriggers);
     }
 
     public setFullWall(dir: CardDir, wall: boolean) {
@@ -447,10 +455,13 @@ export class GRoom {
             }
         }
 
-        // Reset the event triggers:
-        this.eventTriggers.forEach(t => {
+        // Reset the permanent event triggers:
+        this.permanentEventTriggers.forEach(t => {
             t.resetTimes();
         });
+
+        // Clear temporary event triggers:
+        this.temporaryEventTriggers = [];
     }
 
     private addFadeImageForNeighbor(dir: CardDir, dirStr: string) {
@@ -574,7 +585,7 @@ export class GRoom {
                 if (nDoorUpper) {
                     const arch = new GOverheadDecoration(nDoorUpper, NORTH_DOOR_X, GFF.TOP_BOUND)
                         .setOrigin(0, 0);
-                    this.addEventTrigger(new GStrongholdNorthArchTrigger(arch));
+                    this.addPermanentEventTrigger(new GStrongholdNorthArchTrigger(arch));
                 }
             } else {
                 const nMidWall: GSceneryDef|undefined = region.getWallPiece('n_mid');
@@ -1779,7 +1790,7 @@ export class GRoom {
         const animY: number = doorY - 135;
         const triggerArea: GRect = {x: doorX - radius, y: doorY - radius, width: radius * 2, height: radius * 2};
         const doorSpriteDepth: number = doorY + 1;
-        this.addEventTrigger(new GChurchDoorTrigger(triggerArea, {x: animX, y: animY}, doorSpriteDepth));
+        this.addPermanentEventTrigger(new GChurchDoorTrigger(triggerArea, {x: animX, y: animY}, doorSpriteDepth));
 
         // A church is an important feature that shouldn't be covered up by random scenery
         this.noSceneryZones.push({x: 312, y: 128, width: 400, height: 576});
@@ -1891,19 +1902,19 @@ export class GRoom {
 
         switch(strongholdDef.key) {
             case 'tower_front':
-                this.addEventTrigger(new GTowerDoorTrigger(triggerArea, {x: doorX - 88, y: doorY - 148}, doorSpriteDepth));
+                this.addPermanentEventTrigger(new GTowerDoorTrigger(triggerArea, {x: doorX - 88, y: doorY - 148}, doorSpriteDepth));
                 break;
             case 'dungeon_front':
-                this.addEventTrigger(new GDungeonDoorTrigger(triggerArea, {x: doorX - 84.5, y: doorY - 150}, doorSpriteDepth));
+                this.addPermanentEventTrigger(new GDungeonDoorTrigger(triggerArea, {x: doorX - 84.5, y: doorY - 150}, doorSpriteDepth));
                 break;
             case 'keep_front':
-                this.addEventTrigger(new GKeepDoorTrigger(triggerArea, {x: doorX - 91.5, y: doorY - 155}, doorSpriteDepth));
+                this.addPermanentEventTrigger(new GKeepDoorTrigger(triggerArea, {x: doorX - 91.5, y: doorY - 155}, doorSpriteDepth));
                 break;
             case 'fortress_front':
-                this.addEventTrigger(new GFortressDoorTrigger(triggerArea, {x: doorX - 50, y: doorY - 143}, doorSpriteDepth));
+                this.addPermanentEventTrigger(new GFortressDoorTrigger(triggerArea, {x: doorX - 50, y: doorY - 143}, doorSpriteDepth));
                 break;
             case 'castle_front':
-                this.addEventTrigger(new GCastleDoorTrigger(triggerArea, {x: doorX - 65.5, y: doorY - 159}, doorSpriteDepth));
+                this.addPermanentEventTrigger(new GCastleDoorTrigger(triggerArea, {x: doorX - 65.5, y: doorY - 159}, doorSpriteDepth));
                 break;
         }
 
@@ -1946,7 +1957,8 @@ export class GRoom {
     }
 
     public planTileScenery(key: string, x: number, y: number) {
-        this.addSceneryPlan(key, GFF.ROOM_X + (x * GFF.TILE_W), GFF.ROOM_Y + (y * GFF.TILE_H));
+        const def: GSceneryDef = SCENERY.def(key);
+        this.addSceneryPlan(key, GFF.ROOM_X + (x * GFF.TILE_W) - def.body.x, GFF.ROOM_Y + (y * GFF.TILE_H) - def.body.y);
     }
 
     public getTileArea(x: number, y: number, w: number, h: number): GRect {

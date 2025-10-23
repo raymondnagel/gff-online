@@ -171,6 +171,7 @@ export abstract class GCutscene {
         this.sceneEvents.filter(
             e => e.after === afterEventId
         ).forEach(e => {
+            console.log(`Beginning event "${e.eventId}"...`);
             if ('actor' in e) {
                 // Processing an actor event will execute it:
                 this.processActorEvent(e as GActorEvent);
@@ -185,6 +186,7 @@ export abstract class GCutscene {
     }
 
     private processActorEvent(actorEvent: GActorEvent): void {
+        console.log(`Processing ${actorEvent.actor}'s "${actorEvent.command}"`);
         const actor: GCharSprite = this.getSpecificActor(actorEvent.actor) as GCharSprite;
         const goal: GGoal|Function = this.createActorGoalOrEvent(actor, actorEvent);
         // Determine whether to finish instantly, or after a delay:
@@ -265,6 +267,16 @@ export abstract class GCutscene {
      */
     private createActorGoalOrEvent(actorSprite: GCharSprite, actorCommand: GActorEvent): GGoal|Function {
         const commandTokens: string[] = actorCommand.command.split(/[\(\),]+/).filter(Boolean);
+
+        // Replace any registry references with their actual values:
+        for (let i = 1; i < commandTokens.length; i++) {
+            commandTokens[i] = commandTokens[i].trim();
+            if (commandTokens[i].startsWith('@')) {
+                const registryKey = commandTokens[i].substring(1);
+                const registryValue = this.registry.get(registryKey);
+                commandTokens[i] = registryValue.toString();
+            }
+        }
 
         // The first token is the command name; use it to determine the type of goal.
         // Some commands will return an event as a function, instead of a character-based goal.

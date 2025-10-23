@@ -114,6 +114,19 @@ export namespace EFFECTS {
             },
             {
                 spriteConfig: {
+                    key: 'statue_burst',
+                    frames: GFF.GAME.anims.generateFrameNumbers(
+                        'statue_burst',
+                        { start: 0, end:6 }
+                    ),
+                    frameRate: 15,
+                    repeat: 0
+                },
+                soundKey: 'statue_crumble',
+                hideOnFinish: true
+            },
+            {
+                spriteConfig: {
                     key: 'chest_puff',
                     frames: GFF.GAME.anims.generateFrameNumbers(
                         'chest_puff',
@@ -122,7 +135,7 @@ export namespace EFFECTS {
                     frameRate: 15,
                     repeat: 0
                 },
-                soundKey: 'chest_poof',
+                soundKey: 'dispel',
                 hideOnFinish: true
             },
             {

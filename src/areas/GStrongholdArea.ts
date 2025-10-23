@@ -19,8 +19,9 @@ export class GStrongholdArea extends GBuildingArea {
     private entranceRoom: GRoom;
     private bossRoom: GRoom;
     private armorKey: string;
+    private region: GStrongholdRegion;
 
-    constructor(strongholdName: string, armorKey: string, width: number, height: number, groundFloor: number, floorImageKeys: string[]) {
+    constructor(strongholdName: string, region: GStrongholdRegion, armorKey: string, width: number, height: number, groundFloor: number, floorImageKeys: string[]) {
         super(
             strongholdName,
             'stronghold',
@@ -28,6 +29,7 @@ export class GStrongholdArea extends GBuildingArea {
             width,
             height
         );
+        this.region = region;
         this.armorKey = armorKey;
         this.setGroundFloor(groundFloor);
         this.loadFloors(floorImageKeys);
@@ -48,7 +50,7 @@ export class GStrongholdArea extends GBuildingArea {
 
     protected initRoom(room: GRoom): void {
         super.initRoom(room);
-        room.setRegion(new GStrongholdRegion());
+        room.setRegion(this.region);
     }
 
     protected loadFloors(floorImageKeys: string[]): void {

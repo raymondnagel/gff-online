@@ -9,6 +9,11 @@ import { CHURCH } from '../church';
 import { GChurchArea } from '../areas/GChurchArea';
 import { TOWN } from '../town';
 import { GStrongholdArea } from '../areas/GStrongholdArea';
+import { GTowerRegion } from '../regions/GTowerRegion';
+import { GDungeonRegion } from '../regions/GDungeonRegion';
+import { GKeepRegion } from '../regions/GKeepRegion';
+import { GFortressRegion } from '../regions/GFortressRegion';
+import { GCastleRegion } from '../regions/GCastleRegion';
 
 type AreaGenInfo = { area: GArea, rooms: number };
 
@@ -115,7 +120,7 @@ export class GWorldBuildContent extends GBaseScene {
         }
 
         // Stronghold Areas (will be assigned to strongholds once they are created)
-        AREA.TOWER_AREA = new GStrongholdArea('Tower of Deception', 'armor_6', 3, 3, 0, [
+        AREA.TOWER_AREA = new GStrongholdArea('Tower of Deception', new GTowerRegion(), 'armor_6', 3, 3, 0, [
             'tower_0',
             'tower_1',
             'tower_2',
@@ -124,17 +129,17 @@ export class GWorldBuildContent extends GBaseScene {
             'tower_5',
             'tower_6',
         ]);
-        AREA.DUNGEON_AREA = new GStrongholdArea('Dungeon of Doubt', 'armor_3', 7, 5, 1, [
+        AREA.DUNGEON_AREA = new GStrongholdArea('Dungeon of Doubt', new GDungeonRegion(), 'armor_3', 7, 5, 1, [
             'dungeon_0',
             'dungeon_1',
         ]);
-        AREA.KEEP_AREA = new GStrongholdArea('Keep of Wickedness', 'armor_4', 9, 9, 0, [
+        AREA.KEEP_AREA = new GStrongholdArea('Keep of Wickedness', new GKeepRegion(), 'armor_4', 9, 9, 0, [
             'keep_0',
         ]);
-        AREA.FORTRESS_AREA = new GStrongholdArea('Fortress of Enmity', 'armor_5', 11, 9, 0, [
+        AREA.FORTRESS_AREA = new GStrongholdArea('Fortress of Enmity', new GFortressRegion(), 'armor_5', 11, 9, 0, [
             'fortress_0'
         ]);
-        AREA.CASTLE_AREA = new GStrongholdArea('Castle of Perdition', 'armor_2', 9, 9, 0, [
+        AREA.CASTLE_AREA = new GStrongholdArea('Castle of Perdition', new GCastleRegion(), 'armor_2', 9, 9, 0, [
             'castle_0',
             'castle_1',
             'castle_2',
