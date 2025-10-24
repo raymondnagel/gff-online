@@ -1,39 +1,36 @@
 import 'phaser';
 import { RANDOM } from '../../random';
-import { GSpirit } from '../../types';
+import { Dir9, GSpirit } from '../../types';
 import { GSearchForPlayerGoal } from '../../goals/GSearchForPlayerGoal';
-import { GSpawnImpGoal } from '../../goals/GSpawnImpGoal';
 import { GGoal } from '../../goals/GGoal';
 import { GEnemySprite } from './GEnemySprite';
+import { GRestGoal } from '../../goals/GRestGoal';
 
-export class GImpSprite extends GEnemySprite {
+export class GDevilSprite extends GEnemySprite {
 
     constructor(spirit: GSpirit, x: number, y: number) {
         super(
-            'imp',
+            'devil',
             spirit,
             x,
             y
         );
 
-        // Imps spawn before they can move:
-        this.setGoal(new GSpawnImpGoal(2000));
+        // Devils pause for 1 second before they can move:
+        this.setGoal(new GRestGoal(1000, Dir9.S));
     }
 
     protected thinkOfNextGoal(): GGoal|null {
-        // Set alpha here, just to make sure the spawn didn't mess up and keep it at 1.0:
-        this.alpha = 0.35;
         let x: number = RANDOM.randInt(100, 924);
         let y: number = RANDOM.randInt(100, 668);
         return new GSearchForPlayerGoal(x, y, 10, 5000);
     }
 
     public getPortraitKey(): string {
-        return 'imp_circle';
+        return 'devil_circle';
     }
 
     public getAvatarKey(): string {
-        return 'battle_imp';
+        return 'battle_devil';
     }
-
 }

@@ -46,7 +46,7 @@ export class GSpawnImpGoal extends GGoal {
                 this.char.alpha = 0.35;
                 this.char.walkDirection(Dir9.NONE);
             } else {
-                GFF.AdventureContent.banishImp(this.char as GImpSprite);
+                GFF.AdventureContent.banishEnemy(this.char as GImpSprite);
             }
         }
         return false;

@@ -1,18 +1,18 @@
 import { GFF } from "./main";
-import { GImpSprite } from "./objects/chars/GImpSprite";
+import { GEnemySprite } from "./objects/chars/GEnemySprite";
 import { PLAYER } from "./player";
 import { GSpirit } from "./types";
 
 const REL_XP_DEC_PER_LEVEL: number = .3;
 
 export namespace ENEMY {
-    let imps: GSpirit[] = [];
+    let spirits: GSpirit[] = [];
     let maxResistance: number = 50;
     let resistance: number = 50;
     let portrait: string;
     let avatar: string;
     let spirit: GSpirit;
-    let sprite: GImpSprite;
+    let sprite: GEnemySprite;
 
     export function getXpValue(): number {
         /**
@@ -57,7 +57,7 @@ export namespace ENEMY {
         return GFF.getDifficulty().enemyBaseAttack + (GFF.getDifficulty().enemyAttackPerLevel * spirit.level);
     }
 
-    export function getSpirit(): GSpirit {
+    export function getCurrentSpirit(): GSpirit {
         return spirit;
     }
 
@@ -69,11 +69,11 @@ export namespace ENEMY {
         return avatar;
     }
 
-    export function getSprite(): GImpSprite {
+    export function getSprite(): GEnemySprite {
         return sprite;
     }
 
-    export function init(enemy: GImpSprite, enemySpirit: GSpirit, enemyPortrait: string, enemyAvatar: string) {
+    export function init(enemy: GEnemySprite, enemySpirit: GSpirit, enemyPortrait: string, enemyAvatar: string) {
         sprite = enemy;
         spirit = enemySpirit;
         portrait = enemyPortrait;
@@ -86,11 +86,11 @@ export namespace ENEMY {
         spirit.level = Math.min(50, spirit.level + 1);
     }
 
-    export function addImp(impSpirit: GSpirit) {
-        imps.push(impSpirit);
+    export function addSpirit(spirit: GSpirit) {
+        spirits.push(spirit);
     }
 
-    export function getImps(): GSpirit[] {
-        return imps;
+    export function getSpirits(): GSpirit[] {
+        return spirits;
     }
 }

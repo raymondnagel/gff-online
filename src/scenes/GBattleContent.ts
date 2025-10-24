@@ -218,7 +218,7 @@ export class GBattleContent extends GContentScene {
             fontSize: '18px'
         }).setOrigin(.5, 0).setVisible(false);
 
-        this.enemyLevelText = this.add.text(ENEMY_LEVEL_TEXT_X, LEVEL_TEXT_Y, ENEMY.getSpirit().level + '', {
+        this.enemyLevelText = this.add.text(ENEMY_LEVEL_TEXT_X, LEVEL_TEXT_Y, ENEMY.getCurrentSpirit().level + '', {
             color: GOLD_COLOR,
             fontFamily: 'dyonisius',
             fontSize: '18px'
@@ -236,12 +236,12 @@ export class GBattleContent extends GContentScene {
             fontSize: '24px'
         }).setOrigin(0, 0).setVisible(false);
 
-        this.enemyNameTextShadow = this.add.text(ENEMY_NAME_X + 2, NAME_Y + 2, ENEMY.getSpirit().name, {
+        this.enemyNameTextShadow = this.add.text(ENEMY_NAME_X + 2, NAME_Y + 2, ENEMY.getCurrentSpirit().name, {
             color: TEXT_SHADOW,
             fontFamily: 'dyonisius',
             fontSize: '24px'
         }).setOrigin(1, 0).setVisible(false);
-        this.enemyNameText = this.add.text(ENEMY_NAME_X, NAME_Y, ENEMY.getSpirit().name, {
+        this.enemyNameText = this.add.text(ENEMY_NAME_X, NAME_Y, ENEMY.getCurrentSpirit().name, {
             color: TEXT_COLOR,
             fontFamily: 'dyonisius',
             fontSize: '24px'
@@ -498,7 +498,7 @@ export class GBattleContent extends GContentScene {
         const ENEMY_ATTACKS: GEnemyAttack[] = [
             {
                 attackName: 'basic attack',
-                enemies: ['imp'],
+                enemies: ['minion'],
                 minLevel: 0,
                 weight: 3,
                 text: '_ attacks!',
@@ -510,7 +510,7 @@ export class GBattleContent extends GContentScene {
         this.enemyAttacks = [];
         ENEMY_ATTACKS.forEach(a => {
             // Check if the enemy is eligible for this attack:
-            if (a.enemies.includes(ENEMY.getSpirit().type) && a.minLevel <= ENEMY.getSpirit().level) {
+            if (a.enemies.includes(ENEMY.getCurrentSpirit().type) && a.minLevel <= ENEMY.getCurrentSpirit().level) {
                 // Eligible: add to array of attacks:
                 this.enemyAttacks.push({element: a, weight: a.weight});
             }
@@ -679,7 +679,7 @@ export class GBattleContent extends GContentScene {
             onComplete: () => {
                 this.eventText.alpha = 1.0;
                 this.eventText.setVisible(true);
-                this.eventText.text = chosenAttack.text.replace('_', ENEMY.getSpirit().name);
+                this.eventText.text = chosenAttack.text.replace('_', ENEMY.getCurrentSpirit().name);
                 this.time.delayedCall(700, () => {
                     this.getSound().playSound(chosenAttack.soundKey);
                     chosenAttack.actionFunction();

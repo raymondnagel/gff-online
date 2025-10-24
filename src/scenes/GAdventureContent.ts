@@ -10,7 +10,7 @@ import { GObstacleStatic } from '../objects/obstacles/GObstacleStatic';
 import { GObstacleSprite } from '../objects/obstacles/GObstacleSprite';
 import { GFF } from '../main';
 import { GRoom } from '../GRoom';
-import { GImpSprite } from '../objects/chars/GImpSprite';
+import { GEnemySprite } from '../objects/chars/GEnemySprite';
 import { GCharSprite } from '../objects/chars/GCharSprite';
 import { GContentScene } from './GContentScene';
 import { GConversation } from '../GConversation';
@@ -49,6 +49,8 @@ import { GStairsCutscene } from '../cutscenes/GStairsCutscene';
 import { GStronghold } from '../strongholds/GStronghold';
 import { GStrongholdArea } from '../areas/GStrongholdArea';
 import { GIllusionaryBlock } from '../objects/touchables/GIllusionaryBlock';
+import { GImpSprite } from '../objects/chars/GImpSprite';
+import { GDevilSprite } from '../objects/chars/GDevilSprite';
 
 const MOUSE_UI_BUTTON: string = 'MOUSE_UI_BUTTON';
 
@@ -88,7 +90,7 @@ export class GAdventureContent extends GContentScene {
     private player: GPlayerSprite;
     private obstaclesGroup: Phaser.GameObjects.Group;
     private personsGroup: Phaser.GameObjects.Group;
-    private impsGroup: Phaser.GameObjects.Group;
+    private enemiesGroup: Phaser.GameObjects.Group;
     private touchablesGroup: Phaser.GameObjects.Group;
     private yardsGroup: Phaser.GameObjects.Group;
 
@@ -108,7 +110,7 @@ export class GAdventureContent extends GContentScene {
     public preload(): void {
         this.obstaclesGroup = this.add.group();
         this.personsGroup = this.add.group();
-        this.impsGroup = this.add.group();
+        this.enemiesGroup = this.add.group();
         this.touchablesGroup = this.add.group();
         this.yardsGroup = this.add.group();
     }
@@ -124,11 +126,11 @@ export class GAdventureContent extends GContentScene {
             const portalRoom: GRoom = startRoom.getPortalRoom() as GRoom;
             this.setCurrentRoom(portalRoom.getX(), portalRoom.getY(), portalRoom.getFloor(), portalRoom.getArea());
         } else {
-            // this.setCurrentRoom(startRoom.getX(), startRoom.getY(), startRoom.getFloor(), startRoom.getArea());
-            REGISTRY.set('isNoImps', true);
-            REGISTRY.set('isDebug', true);
-            const tempStartRoom: GRoom = AREA.FORTRESS_AREA.getRoomAt(0, 5, 5) as GRoom;
-            this.setCurrentRoom(tempStartRoom.getX(), tempStartRoom.getY(), tempStartRoom.getFloor(), tempStartRoom.getArea());
+            this.setCurrentRoom(startRoom.getX(), startRoom.getY(), startRoom.getFloor(), startRoom.getArea());
+            // REGISTRY.set('isNoImps', true);
+            // REGISTRY.set('isDebug', true);
+            // const tempStartRoom: GRoom = AREA.FORTRESS_AREA.getRoomAt(0, 5, 5) as GRoom;
+            // this.setCurrentRoom(tempStartRoom.getX(), tempStartRoom.getY(), tempStartRoom.getFloor(), tempStartRoom.getArea());
         }
 
         // Create the player:
@@ -468,7 +470,7 @@ export class GAdventureContent extends GContentScene {
         // Add colliders:
         this.physics.add.collider(this.player, this.bottomBound);
         this.physics.add.collider(this.player, this.personsGroup);
-        this.physics.add.collider(this.player, this.impsGroup);
+        this.physics.add.collider(this.player, this.enemiesGroup);
         this.physics.add.collider(this.player, this.obstaclesGroup);
         this.physics.add.collider(this.player, this.touchablesGroup);
         this.physics.add.collider(this.player, this.yardsGroup);
@@ -476,8 +478,8 @@ export class GAdventureContent extends GContentScene {
         this.physics.add.collider(this.personsGroup, this.personsGroup);
         this.physics.add.collider(this.personsGroup, this.obstaclesGroup);
         this.physics.add.collider(this.personsGroup, this.touchablesGroup);
-        this.physics.add.collider(this.impsGroup, this.impsGroup);
-        this.physics.add.collider(this.impsGroup, this.bottomBound);
+        this.physics.add.collider(this.enemiesGroup, this.enemiesGroup);
+        this.physics.add.collider(this.enemiesGroup, this.bottomBound);
 
         // Detect collisions between two objects:
         // (only the player has this.body.onCollide = true;
@@ -531,11 +533,11 @@ export class GAdventureContent extends GContentScene {
 
             // Enemy:
             if (
-                (obj1 instanceof GImpSprite || obj2 instanceof GImpSprite)
+                (obj1 instanceof GEnemySprite || obj2 instanceof GEnemySprite)
                 && (obj1 === this.player || obj2 === this.player)
             ) {
                 if (!this.isConversationOrCutsceneActive()) {
-                    let enemy: GImpSprite = (obj1 instanceof GImpSprite ? obj1 : obj2) as GImpSprite;
+                    let enemy: GEnemySprite = (obj1 instanceof GEnemySprite ? obj1 : obj2) as GEnemySprite;
                     this.encounterEnemy(enemy);
                 }
             }
@@ -801,11 +803,23 @@ export class GAdventureContent extends GContentScene {
                     }
                 }
             });
+        } else if (this.canSpawnDevil()) {
+            for (let i = 0; i < RANDOM.randInt(1, 3); i++) {
+                this.addRandomDevil();
+            }
         }
     }
 
     public canSpawnImp(): boolean {
-        return !REGISTRY.getBoolean('isNoImps') && !this.getCurrentRoom()?.isSafe();
+        return !REGISTRY.getBoolean('isNoImps')
+            && !this.getCurrentRoom()!.isSafe()
+            && this.getCurrentArea() === AREA.WORLD_AREA;
+    }
+
+    public canSpawnDevil(): boolean {
+        return !REGISTRY.getBoolean('isNoImps')
+            && !this.getCurrentRoom()!.isSafe()
+            && this.getCurrentArea() instanceof GStrongholdArea;
     }
 
     private resetUniqueRoomsFlags() {
@@ -936,7 +950,36 @@ export class GAdventureContent extends GContentScene {
         } else {
             sprite.setVisible(true);
             sprite.setPosition(spawnPoint.x, spawnPoint.y);
-            this.addImp(sprite);
+            this.addEnemy(sprite);
+            return sprite;
+        }
+    }
+
+    /**
+     * Spawn a devil sprite at a given or random location.
+     * If devil is a GDevilSprite, the existing sprite is positioned.
+     * If devil is a GSpirit, a sprite is created for it.
+     *
+     * The sprite is destroyed if it doesn't fit in the chosen location;
+     * for that reason, only spawn important sprites at locations that
+     * are known to be safe. Sprites attempting to spawn at random
+     * locations are deemed to be non-critical, and may not spawn at all
+     * if an invalid location is chosen.
+     */
+    public spawnDevil(devil: GSpirit|GDevilSprite, location?: GPoint2D): GCharSprite|null {
+        const sprite: GDevilSprite = devil instanceof GDevilSprite ?
+            devil :
+            new GDevilSprite(devil, 0, 0);
+        sprite.setVisible(false);
+        const body: GRect = sprite.getBody();
+        const spawnPoint: GPoint2D|null = location ?? this.getSpawnPointForTransient(sprite, body, false);
+        if (!spawnPoint) {
+            sprite.destroy();
+            return null;
+        } else {
+            sprite.setVisible(true);
+            sprite.setPosition(spawnPoint.x, spawnPoint.y);
+            this.addEnemy(sprite);
             return sprite;
         }
     }
@@ -1124,18 +1167,28 @@ export class GAdventureContent extends GContentScene {
             return;
         }
 
-        let imp: GSpirit;
-        let exists: boolean;
-        do {
-            exists = false;
-            imp = RANDOM.randElement(ENEMY.getImps());
-            for (let i of this.impsGroup.getChildren() as GImpSprite[]) {
-                if (i.getSpirit() === imp) {
-                    exists = true;
-                }
-            }
-        } while (exists);
-        this.spawnImp(imp);
+        // Get a list of spirits not currently in use:
+        const usedSpirits: GSpirit[] = this.getEnemies().map((e: GEnemySprite) => e.getSpirit());
+        const unusedSpirits: GSpirit[] = ENEMY.getSpirits().filter((s: GSpirit) => !usedSpirits.includes(s));
+
+        if (unusedSpirits.length > 0) {
+            this.spawnImp(RANDOM.randElement(unusedSpirits));
+        }
+    }
+
+    public addRandomDevil(location?: GPoint2D) {
+        // Only spawn a devil if the player is not in a conversation or cutscene:
+        if (this.isConversationOrCutsceneActive()) {
+            return;
+        }
+
+        // Get a list of spirits not currently in use:
+        const usedSpirits: GSpirit[] = this.getEnemies().map((e: GEnemySprite) => e.getSpirit());
+        const unusedSpirits: GSpirit[] = ENEMY.getSpirits().filter((s: GSpirit) => !usedSpirits.includes(s));
+
+        if (unusedSpirits.length > 0) {
+            this.spawnDevil(RANDOM.randElement(unusedSpirits), location);
+        }
     }
 
     public addObstacle(obstacleObject: GObstacleStatic|GObstacleSprite|Phaser.GameObjects.Rectangle) {
@@ -1160,12 +1213,12 @@ export class GAdventureContent extends GContentScene {
         return persons.find(p => p instanceof GTravelAgentSprite) ?? null;
     }
 
-    public addImp(impSprite: GImpSprite) {
-        this.impsGroup.add(impSprite);
+    public addEnemy(enemySprite: GEnemySprite) {
+        this.enemiesGroup.add(enemySprite);
     }
 
-    public getImps(): GImpSprite[] {
-        return this.impsGroup.getChildren() as GImpSprite[];
+    public getEnemies(): GEnemySprite[] {
+        return this.enemiesGroup.getChildren() as GEnemySprite[];
     }
 
     public addTouchable(touchable: GTouchable) {
@@ -1188,8 +1241,8 @@ export class GAdventureContent extends GContentScene {
                 occupiedSpaces.push(person.getBody());
             }
         });
-        this.impsGroup.getChildren().forEach((imp: Phaser.GameObjects.GameObject) => {
-            if (imp instanceof GImpSprite) {
+        this.enemiesGroup.getChildren().forEach((imp: Phaser.GameObjects.GameObject) => {
+            if (imp instanceof GEnemySprite) {
                 occupiedSpaces.push(imp.getBody());
             }
         });
@@ -1201,28 +1254,28 @@ export class GAdventureContent extends GContentScene {
         return occupiedSpaces;
     }
 
-    public encounterEnemy(enemy: GImpSprite) {
+    public encounterEnemy(enemy: GEnemySprite) {
         if (PLAYER.getFaith() > 0 && !enemy.isImmobile()) {
             this.stopChars();
             this.setInputMode(INPUT_DISABLED);
             enemy.getSpirit().introduced = true;
             this.player.walkDirection(Dir9.NONE);
             this.getSound().stopMusic();
-            ENEMY.init(enemy, enemy.getSpirit(), 'spirit_circle', 'battle_spirit');
+            ENEMY.init(enemy, enemy.getSpirit(), enemy.getPortraitKey(), enemy.getAvatarKey());
             STATS.changeInt('Battles', 1);
             GFF.AdventureUI.transitionToBattle(this.player.getCenter(), (this.getCurrentRoom() as GRoom).getEncounterBg());
         }
     }
 
-    public destroyImp(imp: GImpSprite) {
-        this.impsGroup.remove(imp);
-        imp.destroy();
+    public destroyEnemy(enemy: GEnemySprite) {
+        this.enemiesGroup.remove(enemy);
+        enemy.destroy();
     }
 
-    public banishImp(imp: GImpSprite) {
-        const effectSprite: Phaser.Physics.Arcade.Sprite = EFFECTS.doEffect('silent_flash', GFF.AdventureContent, imp.x, imp.y);
+    public banishEnemy(enemy: GEnemySprite) {
+        const effectSprite: Phaser.Physics.Arcade.Sprite = EFFECTS.doEffect('silent_flash', GFF.AdventureContent, enemy.x, enemy.y);
         effectSprite.setDepth(DEPTH.SPECIAL_EFFECT);
-        this.destroyImp(imp);
+        this.destroyEnemy(enemy);
     }
 
     public resumeAfterBattlePreFadeIn(victory: boolean) {
@@ -1231,7 +1284,7 @@ export class GAdventureContent extends GContentScene {
         ENEMY.levelUp();
         if (victory) {
             STATS.changeInt('Victories', 1);
-            this.destroyImp(ENEMY.getSprite());
+            this.destroyEnemy(ENEMY.getSprite());
         } else {
             // It wasn't a victory... faith is probably at 0
             STATS.changeInt('Defeats', 1);
@@ -1243,7 +1296,7 @@ export class GAdventureContent extends GContentScene {
         this.time.delayedCall(500, () => {
             if (victory) {
                 PLAYER.addXp(ENEMY.getXpValue());
-                PLAYER.changeGrace(ENEMY.getSpirit().level);
+                PLAYER.changeGrace(ENEMY.getCurrentSpirit().level);
                 if (PLAYER.canLevelUp()) {
                     this.levelUp();
                 } else {
@@ -1525,7 +1578,7 @@ export class GAdventureContent extends GContentScene {
     }
 
     public startChars() {
-        let objs: Phaser.GameObjects.GameObject[] = this.impsGroup.getChildren();
+        let objs: Phaser.GameObjects.GameObject[] = this.enemiesGroup.getChildren();
         objs.forEach(obj => {
             (obj as GCharSprite).setImmobile(false);
             (obj as GCharSprite).setControlled(false);
@@ -1540,7 +1593,7 @@ export class GAdventureContent extends GContentScene {
     }
 
     public stopChars(stopPeople: boolean = true, stopImps: boolean = true, stopPlayer: boolean = true) {
-        let objs: Phaser.GameObjects.GameObject[] = this.impsGroup.getChildren();
+        let objs: Phaser.GameObjects.GameObject[] = this.enemiesGroup.getChildren();
         if (stopImps) {
             objs.forEach(obj => {
                 (obj as GCharSprite).setImmobile(true);

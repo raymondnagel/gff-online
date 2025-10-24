@@ -25,6 +25,7 @@ export class GDevilStatue extends GObstacleStatic {
     }
 
     public burst() {
+        GFF.AdventureContent.addRandomDevil({x: this.x - 20, y: this.y - 9});
         const effectSprite: Phaser.Physics.Arcade.Sprite = EFFECTS.doEffect('statue_burst', GFF.AdventureContent, this.x - 30, this.y - 13);
         effectSprite.setDepth(DEPTH.SPECIAL_EFFECT);
         this.destroy();

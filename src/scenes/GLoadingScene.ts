@@ -11,6 +11,7 @@ import { EFFECTS } from '../effects';
 import { PLAYER } from '../player';
 import { STATS } from '../stats';
 import { REGISTRY } from '../registry';
+import { GEnemySprite } from '../objects/chars/GEnemySprite';
 
 const LOAD_COLOR: number     = 0xffffff;
 const PROGRESS_COLOR: number = 0x00c220;
@@ -135,8 +136,8 @@ export class GLoadingScene extends GBaseScene {
                 // Create the people:
                 GPersonSprite.createAllPeople();
 
-                // Create the imps:
-                GImpSprite.createAllImps();
+                // Create the enemies:
+                GEnemySprite.createAllSpirits();
 
                 // Add a listener for the mouse leaving the game canvas:
                 GFF.GAME.canvas.addEventListener('mouseleave', () => {

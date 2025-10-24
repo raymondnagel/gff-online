@@ -1,6 +1,7 @@
 import { COLOR } from "../colors";
 import { GRoom } from "../GRoom";
 import { GFF } from "../main";
+import { GEnemySprite } from "../objects/chars/GEnemySprite";
 import { GImpSprite } from "../objects/chars/GImpSprite";
 import { PHYSICS } from "../physics";
 import { PLAYER } from "../player";
@@ -41,10 +42,10 @@ export class GRaiseStandardCutscene extends GCutscene {
         }
     }
 
-    private banishImps(imps: GImpSprite[]) {
-        // Banish all imps in the room:
-        for (let n = imps.length - 1; n >= 0; n--) {
-            GFF.AdventureContent.banishImp(imps[n]);
+    private banishEnemies(enemies: GEnemySprite[]) {
+        // Banish all enemies in the room:
+        for (let n = enemies.length - 1; n >= 0; n--) {
+            GFF.AdventureContent.banishEnemy(enemies[n]);
         }
     }
 
@@ -52,8 +53,8 @@ export class GRaiseStandardCutscene extends GCutscene {
         // Stop characters, or the player might slide while trying to set up the standard:
         GFF.AdventureContent.stopChars();
 
-        // Get a list of imps in the room, so we can banish them later:
-        const imps: GImpSprite[] = GFF.AdventureContent.getImps();
+        // Get a list of enemies in the room, so we can banish them later:
+        const enemies: GEnemySprite[] = GFF.AdventureContent.getEnemies();
 
         // Set up the script by adding actor commands:
 
@@ -82,7 +83,7 @@ export class GRaiseStandardCutscene extends GCutscene {
                     this.placeStandard();
                     GFF.AdventureContent.setVisionWithCheck();
                     GFF.AdventureContent.fadeIn(500, COLOR.WHITE.num(), () => {
-                        this.banishImps(imps);
+                        this.banishEnemies(enemies);
                     });
                 });
             },

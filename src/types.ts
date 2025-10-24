@@ -165,7 +165,7 @@ export interface GPerson {
     conversations: number; // Number of conversations with this person
 }
 
-// Represents a unique enemy displayed as a GImpSprite
+// Represents a unique enemy displayed as a GEnemySprite
 export interface GSpirit {
     type: string;
     name: string;
