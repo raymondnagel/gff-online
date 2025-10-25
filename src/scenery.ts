@@ -382,6 +382,9 @@ export namespace SCENERY {
                     case 'gold_chest':
                     case 'black_chest':
                         sceneryObj = new GTreasureChest(plan.x, plan.y, plan.key);
+                        if (plan.key === 'gold_chest') {
+                            (sceneryObj as GTreasureChest).addBossTrigger();
+                        }
                         break;
                     case 'castle_front':
                         sceneryObj = new GObstacleStatic(sceneryDef, plan.x, plan.y);
@@ -431,7 +434,7 @@ export namespace SCENERY {
                     case 'devil_statue':
                         new GBackgroundDecoration('statue_pedestal', plan.x - 2, plan.y + 86, decorRenderer as Phaser.GameObjects.RenderTexture);
                         sceneryObj = new GDevilStatue(plan.x, plan.y);
-                        (sceneryObj as GDevilStatue).addTrigger();
+                        (sceneryObj as GDevilStatue).addBurstTrigger();
                         break;
                 }
             break;

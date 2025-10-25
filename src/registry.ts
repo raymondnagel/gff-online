@@ -12,6 +12,11 @@ export namespace REGISTRY {
      */
     export function init(): void {
         REGISTRY.set('skipIntro', 0);
+        REGISTRY.set('bossDefeated_Mammon', false);
+        REGISTRY.set('bossDefeated_Apollyon', false);
+        REGISTRY.set('bossDefeated_Belial', false);
+        REGISTRY.set('bossDefeated_Legion', false);
+        REGISTRY.set('bossDefeated_Beelzebub', false);
     }
 
     export function get(key: string): any {

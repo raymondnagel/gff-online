@@ -1,11 +1,12 @@
 import { BOOKS } from "../books";
 import { COMMANDMENTS } from "../commandments";
+import { ENEMY } from "../enemy";
 import { GRoom } from "../GRoom";
 import { GFF } from "../main";
 import { RANDOM } from "../random";
 import { GStrongholdRegion } from "../regions/GStrongholdRegion";
 import { REGISTRY } from "../registry";
-import { GPoint3D } from "../types";
+import { GPoint3D, GSpirit } from "../types";
 import { GBuildingArea } from "./GBuildingArea";
 
 const EMPTY_C = '0,0,0';
@@ -20,8 +21,9 @@ export class GStrongholdArea extends GBuildingArea {
     private bossRoom: GRoom;
     private armorKey: string;
     private region: GStrongholdRegion;
+    private bossIndex: 0|1|2|3|4|5|6;
 
-    constructor(strongholdName: string, region: GStrongholdRegion, armorKey: string, width: number, height: number, groundFloor: number, floorImageKeys: string[]) {
+    constructor(strongholdName: string, bossIndex: 0|1|2|3|4|5|6, region: GStrongholdRegion, armorKey: string, width: number, height: number, groundFloor: number, floorImageKeys: string[]) {
         super(
             strongholdName,
             'stronghold',
@@ -30,6 +32,7 @@ export class GStrongholdArea extends GBuildingArea {
             height
         );
         this.region = region;
+        this.bossIndex = bossIndex;
         this.armorKey = armorKey;
         this.setGroundFloor(groundFloor);
         this.loadFloors(floorImageKeys);
@@ -46,6 +49,10 @@ export class GStrongholdArea extends GBuildingArea {
 
     public getBossRoom(): GRoom {
         return this.bossRoom;
+    }
+
+    public getBossSpirit(): GSpirit {
+        return ENEMY.BOSS_SPIRITS[this.bossIndex];
     }
 
     protected initRoom(room: GRoom): void {

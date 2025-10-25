@@ -13,7 +13,7 @@ export class GDevilStatue extends GObstacleStatic {
         this.setOrigin(0, 0);
     }
 
-    public addTrigger() {
+    public addBurstTrigger() {
         // This is called when the statue is added to the scene,
         // which means the room is already loaded. We can add the trigger now.
         const trigger = new GDevilStatueTrigger(

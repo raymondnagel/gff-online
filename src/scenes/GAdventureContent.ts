@@ -90,7 +90,8 @@ export class GAdventureContent extends GContentScene {
     private player: GPlayerSprite;
     private obstaclesGroup: Phaser.GameObjects.Group;
     private personsGroup: Phaser.GameObjects.Group;
-    private enemiesGroup: Phaser.GameObjects.Group;
+    private impsGroup: Phaser.GameObjects.Group;
+    private devilsGroup: Phaser.GameObjects.Group;
     private touchablesGroup: Phaser.GameObjects.Group;
     private yardsGroup: Phaser.GameObjects.Group;
 
@@ -110,7 +111,8 @@ export class GAdventureContent extends GContentScene {
     public preload(): void {
         this.obstaclesGroup = this.add.group();
         this.personsGroup = this.add.group();
-        this.enemiesGroup = this.add.group();
+        this.impsGroup = this.add.group();
+        this.devilsGroup = this.add.group();
         this.touchablesGroup = this.add.group();
         this.yardsGroup = this.add.group();
     }
@@ -129,7 +131,7 @@ export class GAdventureContent extends GContentScene {
             this.setCurrentRoom(startRoom.getX(), startRoom.getY(), startRoom.getFloor(), startRoom.getArea());
             // REGISTRY.set('isNoImps', true);
             // REGISTRY.set('isDebug', true);
-            // const tempStartRoom: GRoom = AREA.FORTRESS_AREA.getRoomAt(0, 5, 5) as GRoom;
+            // const tempStartRoom: GRoom = AREA.TOWER_AREA.getRoomAt(6, 0, 1) as GRoom;
             // this.setCurrentRoom(tempStartRoom.getX(), tempStartRoom.getY(), tempStartRoom.getFloor(), tempStartRoom.getArea());
         }
 
@@ -470,7 +472,8 @@ export class GAdventureContent extends GContentScene {
         // Add colliders:
         this.physics.add.collider(this.player, this.bottomBound);
         this.physics.add.collider(this.player, this.personsGroup);
-        this.physics.add.collider(this.player, this.enemiesGroup);
+        this.physics.add.collider(this.player, this.impsGroup);
+        this.physics.add.collider(this.player, this.devilsGroup);
         this.physics.add.collider(this.player, this.obstaclesGroup);
         this.physics.add.collider(this.player, this.touchablesGroup);
         this.physics.add.collider(this.player, this.yardsGroup);
@@ -478,8 +481,12 @@ export class GAdventureContent extends GContentScene {
         this.physics.add.collider(this.personsGroup, this.personsGroup);
         this.physics.add.collider(this.personsGroup, this.obstaclesGroup);
         this.physics.add.collider(this.personsGroup, this.touchablesGroup);
-        this.physics.add.collider(this.enemiesGroup, this.enemiesGroup);
-        this.physics.add.collider(this.enemiesGroup, this.bottomBound);
+        this.physics.add.collider(this.devilsGroup, this.bottomBound);
+        this.physics.add.collider(this.devilsGroup, this.personsGroup);
+        this.physics.add.collider(this.devilsGroup, this.obstaclesGroup);
+        this.physics.add.collider(this.devilsGroup, this.touchablesGroup);
+        this.physics.add.collider(this.impsGroup, this.impsGroup);
+        this.physics.add.collider(this.impsGroup, this.bottomBound);
 
         // Detect collisions between two objects:
         // (only the player has this.body.onCollide = true;
@@ -1214,11 +1221,16 @@ export class GAdventureContent extends GContentScene {
     }
 
     public addEnemy(enemySprite: GEnemySprite) {
-        this.enemiesGroup.add(enemySprite);
+        if (enemySprite instanceof GImpSprite) {
+            this.impsGroup.add(enemySprite);
+        } else if (enemySprite instanceof GDevilSprite) {
+            this.devilsGroup.add(enemySprite);
+        }
     }
 
     public getEnemies(): GEnemySprite[] {
-        return this.enemiesGroup.getChildren() as GEnemySprite[];
+        return (this.impsGroup.getChildren() as GEnemySprite[])
+            .concat(this.devilsGroup.getChildren() as GEnemySprite[]);
     }
 
     public addTouchable(touchable: GTouchable) {
@@ -1241,9 +1253,14 @@ export class GAdventureContent extends GContentScene {
                 occupiedSpaces.push(person.getBody());
             }
         });
-        this.enemiesGroup.getChildren().forEach((imp: Phaser.GameObjects.GameObject) => {
+        this.impsGroup.getChildren().forEach((imp: Phaser.GameObjects.GameObject) => {
             if (imp instanceof GEnemySprite) {
                 occupiedSpaces.push(imp.getBody());
+            }
+        });
+        this.devilsGroup.getChildren().forEach((devil: Phaser.GameObjects.GameObject) => {
+            if (devil instanceof GEnemySprite) {
+                occupiedSpaces.push(devil.getBody());
             }
         });
         this.touchablesGroup.getChildren().forEach((touchable: Phaser.GameObjects.GameObject) => {
@@ -1267,9 +1284,26 @@ export class GAdventureContent extends GContentScene {
         }
     }
 
-    public destroyEnemy(enemy: GEnemySprite) {
-        this.enemiesGroup.remove(enemy);
-        enemy.destroy();
+    public encounterBoss(bossSpirit: GSpirit) {
+        this.stopChars();
+        this.setInputMode(INPUT_DISABLED);
+        bossSpirit.introduced = true;
+        this.player.walkDirection(Dir9.NONE);
+        this.getSound().stopMusic();
+        ENEMY.initBoss(bossSpirit);
+        STATS.changeInt('Battles', 1);
+        GFF.AdventureUI.transitionToBattle(this.player.getCenter(), (this.getCurrentRoom() as GRoom).getEncounterBg());
+    }
+
+    public destroyEnemy(enemy: GEnemySprite|null) {
+        // If a boss was defeated, they have no sprite to destroy.
+        if (enemy !== null) {
+            if (enemy instanceof GImpSprite) {
+                this.impsGroup.remove(enemy, true, true);
+            } else if (enemy instanceof GDevilSprite) {
+                this.devilsGroup.remove(enemy, true, true);
+            }
+        }
     }
 
     public banishEnemy(enemy: GEnemySprite) {
@@ -1285,6 +1319,9 @@ export class GAdventureContent extends GContentScene {
         if (victory) {
             STATS.changeInt('Victories', 1);
             this.destroyEnemy(ENEMY.getSprite());
+            if (ENEMY.BOSS_SPIRITS.includes(ENEMY.getCurrentSpirit())) {
+                REGISTRY.set(`bossDefeated_${ENEMY.getCurrentSpirit().name}`, true);
+            }
         } else {
             // It wasn't a victory... faith is probably at 0
             STATS.changeInt('Defeats', 1);
@@ -1578,7 +1615,12 @@ export class GAdventureContent extends GContentScene {
     }
 
     public startChars() {
-        let objs: Phaser.GameObjects.GameObject[] = this.enemiesGroup.getChildren();
+        let objs: Phaser.GameObjects.GameObject[] = this.impsGroup.getChildren();
+        objs.forEach(obj => {
+            (obj as GCharSprite).setImmobile(false);
+            (obj as GCharSprite).setControlled(false);
+        });
+        objs = this.devilsGroup.getChildren();
         objs.forEach(obj => {
             (obj as GCharSprite).setImmobile(false);
             (obj as GCharSprite).setControlled(false);
@@ -1592,9 +1634,13 @@ export class GAdventureContent extends GContentScene {
         this.player.setControlled(true);
     }
 
-    public stopChars(stopPeople: boolean = true, stopImps: boolean = true, stopPlayer: boolean = true) {
-        let objs: Phaser.GameObjects.GameObject[] = this.enemiesGroup.getChildren();
-        if (stopImps) {
+    public stopChars(stopPeople: boolean = true, stopEnemies: boolean = true, stopPlayer: boolean = true) {
+        let objs: Phaser.GameObjects.GameObject[] = this.impsGroup.getChildren();
+        if (stopEnemies) {
+            objs.forEach(obj => {
+                (obj as GCharSprite).setImmobile(true);
+            });
+            objs = this.devilsGroup.getChildren();
             objs.forEach(obj => {
                 (obj as GCharSprite).setImmobile(true);
             });

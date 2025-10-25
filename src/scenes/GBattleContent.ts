@@ -12,6 +12,7 @@ import { GEnemyAttack, GScripture } from "../types";
 import { GContentScene } from "./GContentScene";
 import { STATS } from "../stats";
 import { REGISTRY } from "../registry";
+import { ARMORS } from "../armors";
 
 const BAR_COLOR: number = 0xff0000;
 const GOLD_COLOR: string = '#d5ccb4';
@@ -97,7 +98,8 @@ export class GBattleContent extends GContentScene {
     private playerMeterImage: Phaser.GameObjects.Image;
     private enemyMeterImage: Phaser.GameObjects.Image;
     private vsImage: Phaser.GameObjects.Image;
-    private playerAvatar: Phaser.GameObjects.Image;
+    private playerBaseImage: Phaser.GameObjects.Image;
+    private playerAvatar: Phaser.GameObjects.Container;
     private enemyAvatar: Phaser.GameObjects.Image;
     private playerBar: Phaser.GameObjects.Rectangle;
     private enemyBar: Phaser.GameObjects.Rectangle;
@@ -177,7 +179,7 @@ export class GBattleContent extends GContentScene {
         this.bgImage = this.add.image(0, 0, GFF.BATTLE_MODE.getBgImage()).setOrigin(0, 0);
 
         // Player and Enemy avatars:
-        this.createAvatars(PLAYER.getAvatar(), ENEMY.getAvatar());
+        this.createAvatars(ENEMY.getAvatar());
 
         // Drawn under the meter images:
         this.enemyPortraitImage = this.add.image(GFF.GAME_W - SIDE_MARGIN - ENEMY_CIRCLE_XOFF, TOP_MARGIN + ENEMY_CIRCLE_YOFF, ENEMY.getPortrait()).setOrigin(0, 0).setVisible(false);
@@ -498,7 +500,7 @@ export class GBattleContent extends GContentScene {
         const ENEMY_ATTACKS: GEnemyAttack[] = [
             {
                 attackName: 'basic attack',
-                enemies: ['minion'],
+                enemies: ['minion', 'Mammon', 'Apollyon', 'Belial', 'Legion', 'Beelzebub', 'Lucifer', 'Dragon'],
                 minLevel: 0,
                 weight: 3,
                 text: '_ attacks!',
@@ -562,10 +564,30 @@ export class GBattleContent extends GContentScene {
         });
     }
 
-    private createAvatars(heroImageKey: string, enemyImageKey: string) {
+    private createAvatars(enemyImageKey: string) {
         // Player and enemy begin off the screen
-        this.playerAvatar = this.add.image(0, 0, heroImageKey).setOrigin(0, 0);
-        this.playerAvatar.setPosition(-this.playerAvatar.width, AVATAR_BOTTOM - this.playerAvatar.height);
+
+        // Add the player avatar as a container of images:
+        this.playerBaseImage = this.add.image(0, 0, 'adam_base').setOrigin(0, 0);
+        const shoesImage = this.add.image(24, 240, 'adam_shoes').setOrigin(0, 0).setVisible(ARMORS.hasArmor(4));
+        const breastplateImage = this.add.image(21, 72, 'adam_breastplate').setOrigin(0, 0).setVisible(ARMORS.hasArmor(3));
+        const girdleImage = this.add.image(37, 132, 'adam_girdle').setOrigin(0, 0).setVisible(ARMORS.hasArmor(5));
+        const armImage = this.add.image(17, 116, 'adam_arm').setOrigin(0, 0);
+        const shieldImage = this.add.image(0, 97, 'adam_shield').setOrigin(0, 0).setVisible(ARMORS.hasArmor(2));
+        const helmetImage = this.add.image(35, 0, 'adam_helmet').setOrigin(0, 0).setVisible(ARMORS.hasArmor(1));
+
+        this.playerAvatar = this.add.container(0, 0);
+        this.playerAvatar.add([
+            this.playerBaseImage,
+            shoesImage,
+            breastplateImage,
+            girdleImage,
+            armImage,
+            shieldImage,
+            helmetImage,
+        ]);
+        this.playerAvatar.setPosition(-this.playerBaseImage.width, AVATAR_BOTTOM - this.playerBaseImage.height);
+
         this.enemyAvatar = this.add.image(0, 0, enemyImageKey).setOrigin(0, 0);
         this.enemyAvatar.setPosition(GFF.GAME_W, AVATAR_BOTTOM - this.enemyAvatar.height);
     }
@@ -574,7 +596,7 @@ export class GBattleContent extends GContentScene {
         // Get final destinations:
         const playerDestX: number = APPROACH_GAP;
         // (enemies come in different sizes; if the normal size makes him too close, only come as far as the player)
-        const enemyDestX: number = Math.max(GFF.GAME_W - APPROACH_GAP - this.enemyAvatar.width, GFF.GAME_W - APPROACH_GAP - this.playerAvatar.width);
+        const enemyDestX: number = Math.max(GFF.GAME_W - APPROACH_GAP - this.enemyAvatar.width, GFF.GAME_W - APPROACH_GAP - this.playerBaseImage.width);
 
         // Create tween to advance player:
         this.tweens.add({
@@ -1173,7 +1195,7 @@ export class GBattleContent extends GContentScene {
             // Create tween to retreat player:
             this.tweens.add({
                 targets: this.playerAvatar,
-                x: -this.playerAvatar.width,
+                x: -this.playerBaseImage.width,
                 duration: APPROACH_TIME,
                 onComplete: () => {
                     this.getSound().playSound('enemy_laugh').once('complete', () => {

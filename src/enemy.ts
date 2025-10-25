@@ -6,13 +6,73 @@ import { GSpirit } from "./types";
 const REL_XP_DEC_PER_LEVEL: number = .3;
 
 export namespace ENEMY {
+
+    export const BOSS_SPIRITS: GSpirit[] = [
+        {
+            type: 'Mammon',
+            name: 'Mammon',
+            level: 0,
+            introduced: false,
+            portraitKey: 'mammon_circle',
+            avatarKey: 'battle_mammon',
+        },
+        {
+            type: 'Apollyon',
+            name: 'Apollyon',
+            level: 0,
+            introduced: false,
+            portraitKey: 'apollyon_circle',
+            avatarKey: 'battle_apollyon',
+        },
+        {
+            type: 'Belial',
+            name: 'Belial',
+            level: 0,
+            introduced: false,
+            portraitKey: 'belial_circle',
+            avatarKey: 'battle_belial',
+        },
+        {
+            type: 'Legion',
+            name: 'Legion',
+            level: 0,
+            introduced: false,
+            portraitKey: 'legion_circle',
+            avatarKey: 'battle_legion',
+        },
+        {
+            type: 'Beelzebub',
+            name: 'Beelzebub',
+            level: 0,
+            introduced: false,
+            portraitKey: 'beelzebub_circle',
+            avatarKey: 'battle_beelzebub',
+        },
+        {
+            type: 'Lucifer',
+            name: 'Lucifer',
+            level: 0,
+            introduced: false,
+            portraitKey: 'lucifer_circle',
+            avatarKey: 'battle_lucifer',
+        },
+        {
+            type: 'Dragon',
+            name: 'Dragon',
+            level: 0,
+            introduced: false,
+            portraitKey: 'dragon_circle',
+            avatarKey: 'battle_dragon_upright',
+        },
+    ];
+
     let spirits: GSpirit[] = [];
     let maxResistance: number = 50;
     let resistance: number = 50;
     let portrait: string;
     let avatar: string;
     let spirit: GSpirit;
-    let sprite: GEnemySprite;
+    let sprite: GEnemySprite|null;
 
     export function getXpValue(): number {
         /**
@@ -69,7 +129,7 @@ export namespace ENEMY {
         return avatar;
     }
 
-    export function getSprite(): GEnemySprite {
+    export function getSprite(): GEnemySprite|null {
         return sprite;
     }
 
@@ -79,6 +139,16 @@ export namespace ENEMY {
         portrait = enemyPortrait;
         avatar = enemyAvatar;
         setMaxResistance(GFF.getDifficulty().enemyBaseResist + (GFF.getDifficulty().enemyResistPerLevel * enemySpirit.level));
+        setResistance(getMaxResistance());
+    }
+
+    export function initBoss(bossSpirit: GSpirit) {
+        sprite = null;
+        bossSpirit.level = PLAYER.getLevel();
+        spirit = bossSpirit;
+        portrait = bossSpirit.portraitKey!;
+        avatar = bossSpirit.avatarKey!;
+        setMaxResistance(Math.floor(PLAYER.getMaxFaith() * GFF.getDifficulty().bossResistPct));
         setResistance(getMaxResistance());
     }
 

@@ -14,6 +14,8 @@ import { REGISTRY } from "../../registry";
 import { ARMORS } from "../../armors";
 import { DEPTH } from "../../depths";
 import { EFFECTS } from "../../effects";
+import { GStrongholdArea } from "../../areas/GStrongholdArea";
+import { GBossTrigger } from "../../triggers/GBossTrigger";
 
 export class GTreasureChest extends GTouchable {
 
@@ -71,6 +73,18 @@ export class GTreasureChest extends GTouchable {
             }
             this.setTexture(`${this.color}_chest_open`);
         });
+    }
+
+    public addBossTrigger() {
+        // This is called when the chest is added to the scene,
+        // which means the room is already loaded. We can add the trigger now.
+        const bossSpirit = (GFF.AdventureContent.getCurrentRoom()!.getArea() as GStrongholdArea).getBossSpirit();
+        const trigger = new GBossTrigger(
+            bossSpirit,
+            this.body!.x + (this.body!.width / 2),
+            this.body!.y + (this.body!.height / 2)
+        );
+        GFF.AdventureContent.getCurrentRoom()!.addTemporaryEventTrigger(trigger);
     }
 
     private poofChest() {

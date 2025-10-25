@@ -127,6 +127,7 @@ export namespace GFF {
         enemyBaseResist: 10,
         enemyResistPerLevel: 10,
         enemySpeed: .9,
+        bossResistPct: 0.75,
         minorGraceIncrease: .06,
         majorGraceIncrease: .12
     };
@@ -137,6 +138,7 @@ export namespace GFF {
         enemyBaseResist: 20,
         enemyResistPerLevel: 20,
         enemySpeed: 1.0,
+        bossResistPct: 1.0,
         minorGraceIncrease: .04,
         majorGraceIncrease: .08
     };
@@ -147,6 +149,7 @@ export namespace GFF {
         enemyBaseResist: 30,
         enemyResistPerLevel: 30,
         enemySpeed: 1.1,
+        bossResistPct: 1.25,
         minorGraceIncrease: .02,
         majorGraceIncrease: .04
     };

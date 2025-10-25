@@ -72,6 +72,7 @@ export type GDifficulty = {
     enemyBaseResist: number;
     enemyResistPerLevel: number;
     enemySpeed: number;
+    bossResistPct: number;
     minorGraceIncrease: number;
     majorGraceIncrease: number;
 };
@@ -171,6 +172,8 @@ export interface GSpirit {
     name: string;
     level: number;
     introduced: boolean;
+    portraitKey?: string;
+    avatarKey?: string;
 }
 
 // Represents a compass direction, with the possibility of NONE

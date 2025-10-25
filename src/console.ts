@@ -1,6 +1,9 @@
+import { AREA } from "./area";
+import { ARMORS } from "./armors";
 import { CHURCH } from "./church";
 import { FRUITS } from "./fruits";
 import { GChurch } from "./GChurch";
+import { GLOSSARY } from "./glossary";
 import { GRoom } from "./GRoom";
 import { GFF } from "./main";
 import { PEOPLE } from "./people";
@@ -8,7 +11,7 @@ import { PHYSICS } from "./physics";
 import { PLAYER } from "./player";
 import { REGISTRY } from "./registry";
 import { IntegerStatName, STATS } from "./stats";
-import { NINE } from "./types";
+import { NINE, SIX } from "./types";
 
 export namespace CONSOLE {
 
@@ -42,6 +45,23 @@ export namespace CONSOLE {
             }
             playSuccess();
             return `Queued fruits: ${amount - fruitsToQueue}`;
+        },
+        cheatArmor: (armorNum: number) => {
+            if (armorNum === 0) {
+                for (let i = 1; i <= 6; i++) {
+                    ARMORS.obtainArmor(i as SIX);
+                }
+                playSuccess();
+                return 'Obtained the whole Armour of God.';
+            }
+            if (armorNum >= 1 && armorNum <= 6) {
+                ARMORS.obtainArmor(armorNum as SIX);
+                playSuccess();
+                return `Obtained armor: ${GLOSSARY.lookupEntry(`armor_${armorNum}`)?.title}`;
+            } else {
+                playError();
+                return `Invalid armor number: ${armorNum}.`;
+            }
         },
         cheatSeeds: (amount: number) => {
             PLAYER.changeSeeds(amount);
@@ -153,6 +173,37 @@ export namespace CONSOLE {
             } else {
                 playError();
                 return `Room not found: ${x}, ${y}, ${floor}`;
+            }
+        },
+        boss(bossNum: number) {
+            let room;
+            switch (bossNum) {
+                case 1:
+                    room = AREA.TOWER_AREA.getBossRoom();
+                    break;
+                case 2:
+                    room = AREA.DUNGEON_AREA.getBossRoom();
+                    break;
+                case 3:
+                    room = AREA.KEEP_AREA.getBossRoom();
+                    break;
+                case 4:
+                    room = AREA.FORTRESS_AREA.getBossRoom();
+                    break;
+                case 5:
+                    room = AREA.CASTLE_AREA.getBossRoom();
+                    break;
+                default:
+                    room = null;
+            }
+            if (room) {
+                GFF.AdventureContent.hideTestConsole();
+                GFF.AdventureContent.warpToRoom(room as GRoom);
+                playSuccess();
+                return 'Ok';
+            } else {
+                playError();
+                return `Invalid boss number: ${bossNum}`;
             }
         },
         listObjects() {
