@@ -102,7 +102,8 @@ export class GTreasureChest extends GTouchable {
             } };
         }
 
-        const item: GItem = RANDOM.randElementWeighted([
+        // Items in the original list can be obtained by the player at any level.
+        const itemList = [
             {
                 element: { name: 'seed', type: 'item', onCollect: () => {PLAYER.changeSeeds(1)} },
                 weight: 20
@@ -116,14 +117,6 @@ export class GTreasureChest extends GTouchable {
                 weight: 10
             },
             {
-                element: { name: 'meat', type: 'item', onCollect: () => {PLAYER.changeFaith(200)} },
-                weight: 10
-            },
-            {
-                element: { name: 'strong_meat', type: 'item', onCollect: () => {PLAYER.changeFaith(500)} },
-                weight: 5
-            },
-            {
                 element: { name: 'sermon', type: 'item', onCollect: () => {PLAYER.changeSermons(1)} },
                 weight: 5
             },
@@ -131,7 +124,23 @@ export class GTreasureChest extends GTouchable {
                 element: { name: 'standard', type: 'item', onCollect: () => {PLAYER.changeStandards(1)} },
                 weight: 5
             }
-        ]) as GItem;
+        ];
+
+        // Meat and Strong Meat are only available once the player reaches certain levels:
+        if (PLAYER.getLevel() >= 10) {
+            itemList.push({
+                element: { name: 'meat', type: 'item', onCollect: () => {PLAYER.changeFaith(200)} },
+                weight: 10
+            });
+        }
+        if (PLAYER.getLevel() >= 20) {
+            itemList.push({
+                element: { name: 'strong_meat', type: 'item', onCollect: () => {PLAYER.changeFaith(500)} },
+                weight: 5
+            });
+        }
+
+        const item: GItem = RANDOM.randElementWeighted(itemList) as GItem;
 
         return item;
     }
