@@ -74,8 +74,8 @@ export class GPlayerSprite extends GCharSprite {
         this.faceDirection(direction);
 
         // Calculate and assign x/y velocities
-        let horzInc: number = DIRECTION.getHorzInc(direction);
-        let vertInc: number = DIRECTION.getVertInc(direction);
+        let horzInc: number = DIRECTION.getXInc(direction);
+        let vertInc: number = DIRECTION.getYInc(direction);
         let speed: number = this.getSpeed() * 2;
         let dirSpeed = speed * DIRECTION.getDistanceFactor(direction);
         this.setVelocityX(horzInc * dirSpeed);
@@ -120,8 +120,8 @@ export class GPlayerSprite extends GCharSprite {
         let faceDir: Dir9 = this.getDirection();
         let bodyCtr: Phaser.Math.Vector2 = this.getPhysicalCenter() as Phaser.Math.Vector2;
         let distance: number = DIRECTION.getDistanceFactor(faceDir) * INTERACTION_RANGE;
-        let intCtrX: number = bodyCtr.x + (DIRECTION.getHorzInc(faceDir) * distance);
-        let intCtrY: number = bodyCtr.y + (DIRECTION.getVertInc(faceDir) * distance);
+        let intCtrX: number = bodyCtr.x + (DIRECTION.getXInc(faceDir) * distance);
+        let intCtrY: number = bodyCtr.y + (DIRECTION.getYInc(faceDir) * distance);
         return {
             x: intCtrX - (INTERACTION_AREA_SIDE / 2),
             y: intCtrY - (INTERACTION_AREA_SIDE / 2),

@@ -90,7 +90,7 @@ export namespace PLAYER {
     }
 
     export function getXpNeededAtLevel(currentLevel: number): number {
-        return Math.floor(Math.pow(10, 1 + (.1 * currentLevel)));
+        return Math.floor(Math.pow(10, 1 + (.1 * currentLevel)) * GFF.getDifficulty().neededXpModifier);
     }
 
     export function getRequiredXp(): number {

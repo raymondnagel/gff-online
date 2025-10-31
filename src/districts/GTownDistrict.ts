@@ -131,7 +131,7 @@ export abstract class GTownDistrict {
                 const buildingDef = SCENERY.def(RANDOM.randElement(keyList));
                 // If the selected building is single-instance, remove it from the list
                 if (this.singleInstanceKeys.includes(buildingDef.key)) {
-                    ARRAY.removeIfExistsIn(buildingDef.key, keyList);
+                    ARRAY.removeObject(buildingDef.key, keyList);
                 }
                 // Create the lot, either front or back
                 const lot = block.orientation === 'front' ? GLot.createFrontBuildingLot(buildingDef, room, this) : GLot.createBackBuildingLot(buildingDef, room, this);
@@ -204,7 +204,7 @@ export abstract class GTownDistrict {
             const buildingDef = SCENERY.def(RANDOM.randElement(keyList));
             // If the selected building is single-instance, remove it from the list
             if (this.singleInstanceKeys.includes(buildingDef.key)) {
-                ARRAY.removeIfExistsIn(buildingDef.key, keyList);
+                ARRAY.removeObject(buildingDef.key, keyList);
             }
             // Create the lot (since this is vertical, we can assume either left or right)
             const lot = block.anchor === 'left' ? GLot.createLeftBuildingLot(buildingDef, room, this) : GLot.createRightBuildingLot(buildingDef, room, this);

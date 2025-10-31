@@ -306,7 +306,7 @@ export class GStatusUI extends GUIScene {
         for (let i = 1; i <= 6; i++) {
             const itemPoint: GPoint2D = this.getPointForPanelItemNum(i, 2);
             if (ARMORS.hasArmor(i - 1)) {
-                this.setItemAt(`arm${i}`, 572, 204, itemPoint.x, itemPoint.y);
+                this.setItemAt(`arm${i}`, 572, 205, itemPoint.x, itemPoint.y);
             }
         }
     }
@@ -328,9 +328,9 @@ export class GStatusUI extends GUIScene {
         for (let i = 1; i <= 9; i++) {
             const itemPoint: GPoint2D = this.getPointForPanelItemNum(i, 3);
             if (FRUITS.hasFruit(i as NINE)) {
-                this.setItemAt(`fruit${i}`, 773, 204, itemPoint.x, itemPoint.y);
+                this.setItemAt(`fruit${i}`, 773, 205, itemPoint.x, itemPoint.y);
             } else if (FRUITS.isFruitQueued(i as NINE)) {
-                this.setItemAt(`plant`, 773, 204, itemPoint.x, itemPoint.y);
+                this.setItemAt(`plant`, 773, 205, itemPoint.x, itemPoint.y);
             }
         }
     }
@@ -352,7 +352,7 @@ export class GStatusUI extends GUIScene {
         for (let i = 1; i <= 10; i++) {
             const itemPoint: GPoint2D = this.getPointForPanelItemNum(i, 5);
             if (COMMANDMENTS.hasCommandment(i - 1)) {
-                this.setItemAt(`cmd${i}`, 608, 518, itemPoint.x, itemPoint.y);
+                this.setItemAt(`cmd${i}`, 608, 519, itemPoint.x, itemPoint.y);
             }
         }
     }

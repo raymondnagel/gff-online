@@ -4,12 +4,18 @@
  */
 export namespace ARRAY {
 
-    export function removeIfExistsIn(object: any, array: any[]): any|undefined {
-        const index: number = array.indexOf(object);
-        if (index !== -1) {
-            return array.splice(index, 1);
+    export function removeObject<T>(item: T, arr: T[]): T|undefined {
+        const index = arr.indexOf(item);
+        return removeAt(index, arr);
+    }
+
+    export function removeAt<T>(index: number, arr: T[]): T|undefined {
+        if (index < 0 || index >= arr.length) return undefined;
+        const lastIndex = arr.length - 1;
+        if (index !== lastIndex) {
+            [arr[index], arr[lastIndex]] = [arr[lastIndex], arr[index]];
         }
-        return undefined;
+        return arr.pop();
     }
 
     export function copy<T>(array: T[]): T[] {

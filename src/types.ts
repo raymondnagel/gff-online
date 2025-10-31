@@ -75,6 +75,8 @@ export type GDifficulty = {
     bossResistPct: number;
     minorGraceIncrease: number;
     majorGraceIncrease: number;
+    maxRandomEnemies: number;
+    neededXpModifier: number;
 };
 
 // Represents an attack that the enemy can perform:
@@ -176,6 +178,11 @@ export interface GSpirit {
     avatarKey?: string;
 }
 
+export enum DirVert {
+    UP = 9,
+    DOWN = 10
+}
+
 // Represents a compass direction, with the possibility of NONE
 export enum Dir9 {
     NONE = 0,
@@ -190,6 +197,8 @@ export enum Dir9 {
 };
 
 export type CardDir = Dir9.N|Dir9.E|Dir9.S|Dir9.W;
+
+export type CubeDir = Dir9.N|Dir9.E|Dir9.S|Dir9.W|DirVert.UP|DirVert.DOWN;
 
 // Represents a simple X,Y coordinate point
 export interface GPoint2D {
@@ -228,6 +237,11 @@ export interface GSceneryDef {
 }
 
 export type GFloor = GRoom[][];
+
+export type BorderWall = {
+    room: GRoom,
+    dir: CardDir,
+};
 
 export type GRoomWalls = {
     [key in CardDir]: boolean[];

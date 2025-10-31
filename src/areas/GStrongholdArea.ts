@@ -1,12 +1,16 @@
+import { ARRAY } from "../array";
 import { BOOKS } from "../books";
+import { COLOR } from "../colors";
 import { COMMANDMENTS } from "../commandments";
+import { DIRECTION } from "../direction";
 import { ENEMY } from "../enemy";
 import { GRoom } from "../GRoom";
 import { GFF } from "../main";
 import { RANDOM } from "../random";
+import { GSector } from "../regions/GSector";
 import { GStrongholdRegion } from "../regions/GStrongholdRegion";
 import { REGISTRY } from "../registry";
-import { GPoint3D, GSpirit } from "../types";
+import { BorderWall, CardDir, Dir9, GPoint3D, GSpirit } from "../types";
 import { GBuildingArea } from "./GBuildingArea";
 
 const EMPTY_C = '0,0,0';
@@ -16,12 +20,21 @@ const STAIRS_UP_C = '0,0,1';
 const STAIRS_DOWN_C = '1,0,1';
 const BOSS_C = '0,1,0';
 
+const SECTOR_MIN = 5;
+const SECTOR_MAX = 9;
+const SECTOR_COLORS = COLOR.getSerialColors(40);
+
 export class GStrongholdArea extends GBuildingArea {
     private entranceRoom: GRoom;
     private bossRoom: GRoom;
     private armorKey: string;
     private region: GStrongholdRegion;
     private bossIndex: 0|1|2|3|4|5|6;
+
+    private sectors: GSector[] = [];
+    private sectorBorders: Map<GSector, BorderWall[]> = new Map();
+    private unconnectedRooms: GRoom[] = [];
+    private sectorColorIndex: number = 0;
 
     constructor(strongholdName: string, bossIndex: 0|1|2|3|4|5|6, region: GStrongholdRegion, armorKey: string, width: number, height: number, groundFloor: number, floorImageKeys: string[]) {
         super(
@@ -36,7 +49,9 @@ export class GStrongholdArea extends GBuildingArea {
         this.armorKey = armorKey;
         this.setGroundFloor(groundFloor);
         this.loadFloors(floorImageKeys);
+        this.createSectors();
         this.createShrines();
+        this.createDoorways();
     }
 
     public isSafe(): boolean {
@@ -58,6 +73,217 @@ export class GStrongholdArea extends GBuildingArea {
     protected initRoom(room: GRoom): void {
         super.initRoom(room);
         room.setRegion(this.region);
+    }
+
+    /**
+     * We've used walls as separators until now; but all stronghold rooms
+     * technically have walls. Now we'll create doorways between rooms
+     * that are connected (no walls), and then put walls everywhere.
+     */
+    private createDoorways(): void {
+        const floors: number = this.getNumFloors();
+        for (let f: number = 0; f < floors; f++) {
+            // First pass: create doorways where there are no walls
+            this.getRoomsByFloor(f).forEach(room => {
+                const neighborN = room.getNeighbor(Dir9.N);
+                const neighborE = room.getNeighbor(Dir9.E);
+                const neighborW = room.getNeighbor(Dir9.W);
+                const neighborS = room.getNeighbor(Dir9.S);
+                if (neighborN && !room.hasFullWall(Dir9.N) ) {
+                    this.setDoorwayByRoom(room, Dir9.N, true);
+                }
+                if (neighborE && !room.hasFullWall(Dir9.E) ) {
+                    this.setDoorwayByRoom(room, Dir9.E, true);
+                }
+                if (neighborW && !room.hasFullWall(Dir9.W) ) {
+                    this.setDoorwayByRoom(room, Dir9.W, true);
+                }
+                if (neighborS && !room.hasFullWall(Dir9.S) ) {
+                    this.setDoorwayByRoom(room, Dir9.S, true);
+                }
+            });
+            // Second pass: put walls everywhere
+            this.getRoomsByFloor(f).forEach(room => {
+                const neighborN = room.getNeighbor(Dir9.N);
+                const neighborE = room.getNeighbor(Dir9.E);
+                const neighborW = room.getNeighbor(Dir9.W);
+                const neighborS = room.getNeighbor(Dir9.S);
+                if (neighborN) {
+                    this.setWallByRoom(room, Dir9.N, true);
+                }
+                if (neighborE) {
+                    this.setWallByRoom(room, Dir9.E, true);
+                }
+                if (neighborW) {
+                    this.setWallByRoom(room, Dir9.W, true);
+                }
+                if (neighborS) {
+                    this.setWallByRoom(room, Dir9.S, true);
+                }
+            });
+        }
+    }
+
+    protected createSectors(): void {
+        while (this.unconnectedRooms.length > 0) {
+            const sector = new GSector(SECTOR_COLORS[this.sectorColorIndex++]);
+            this.sectors.push(sector);
+            const room = RANDOM.randElement(this.unconnectedRooms);
+            this.createSector(sector, room);
+            this.unconnectedRooms = this.unconnectedRooms.filter(r => r.getSector() === undefined);
+        }
+
+        this.mergeSectorsAcrossFloors();
+
+        this.mergeSmallSectors();
+
+        for (let sector of this.sectors) {
+            this.borderSector(sector);
+            GFF.genLog(`Sector created: ${sector.getRooms().length} rooms`);
+        }
+
+        this.sectors[0].connectExplicitly();
+        for (let sector of this.sectors) {
+            this.createSectorGateways(sector);
+        }
+        while (this.sectors.some(s => !s.isConnected())) {
+            for (let sector of this.sectors) {
+                if (!sector.isConnected()) {
+                    this.createSectorGateways(sector, true);
+                }
+            }
+        }
+    }
+
+    private createSector(sector: GSector, startRoom: GRoom) {
+        const targetSize: number = RANDOM.randInt(SECTOR_MIN, SECTOR_MAX);
+        const candidates: GRoom[] = [startRoom];
+        const neighborCondition = (n: GRoom): boolean => {
+            return n.getSector() === undefined && n.getFloor() === startRoom.getFloor();
+        };
+        startRoom.setSector(sector);
+
+        while (sector.getRooms().length < targetSize && candidates.length > 0) {
+            let current: GRoom = RANDOM.randElement(candidates);
+            let neighbors: GRoom[] = current.getNeighbors(neighborCondition);
+
+            for (let neighbor of neighbors) {
+                if (sector.getRooms().length < targetSize) {
+                    neighbor.setSector(sector);
+                    if (neighbor.getNeighbors(neighborCondition).length > 0) {
+                        candidates.push(neighbor);
+                    }
+                }
+            }
+            ARRAY.removeObject(current, candidates);
+        }
+    }
+
+    private mergeSmallSectors() {
+        for (let i = this.sectors.length - 1; i >= 0; i--) {
+            const sector = this.sectors[i];
+            if (sector.getRooms().length < SECTOR_MIN) {
+                GFF.genLog(`Merging small sector: ${sector.getRooms().length} rooms...`);
+                // Get a random room on the border of this sector
+                const anyRoom = RANDOM.randElement(sector.getRooms().filter(r => r.getNeighbors().some(n => n.getSector() !== sector))) as GRoom|undefined;
+                if (anyRoom) {
+                    GFF.genLog(`Border room: (${anyRoom.getX()},${anyRoom.getY()},${anyRoom.getFloor()})`);
+                    // Find a neighboring sector to merge with
+                    const neighborSector = anyRoom.getNeighbors().map(r => r.getSector()).find(s => s !== sector);
+                    if (neighborSector) {
+                        GFF.genLog(`Merging with neighbor sector: ${neighborSector.getRooms().length} rooms`);
+                        GSector.mergeSectors(sector, neighborSector);
+                        GFF.genLog(`Old sector: ${sector.getRooms().length}, New sector: ${neighborSector.getRooms().length}`);
+                    }
+                }
+            }
+        }
+        // Remove empty sectors
+        this.sectors = this.sectors.filter(s => s.getRooms().length > 0);
+    }
+
+    private mergeSectorsAcrossFloors() {
+        for (let i = this.sectors.length - 1; i >= 0; i--) {
+            const sector = this.sectors[i];
+            for (const room of sector.getRooms()) {
+                const otherRoom = room.getUpstairsRoom() || room.getDownstairsRoom() || null;
+                if (otherRoom && otherRoom.getSector() !== sector) {
+                    GSector.mergeSectors(sector, otherRoom.getSector()!);
+                    break;
+                }
+            }
+        }
+        // Remove empty sectors
+        this.sectors = this.sectors.filter(s => s.getRooms().length > 0);
+    }
+
+    private borderSector(sector: GSector) {
+        const borderWalls: BorderWall[] = [];
+        for (let room of sector.getRooms()) {
+            let neighbor: GRoom|null = room.getNeighbor(Dir9.N);
+            if (neighbor && neighbor.getSector() !== room.getSector()) {
+                this.setWallByRoom(room, Dir9.N, true);
+                borderWalls.push({ room, dir: Dir9.N });
+            }
+            neighbor = room.getNeighbor(Dir9.E);
+            if (neighbor && neighbor.getSector() !== room.getSector()) {
+                this.setWallByRoom(room, Dir9.E, true);
+                borderWalls.push({ room, dir: Dir9.E });
+            }
+            neighbor = room.getNeighbor(Dir9.W);
+            if (neighbor && neighbor.getSector() !== room.getSector()) {
+                this.setWallByRoom(room, Dir9.W, true);
+                borderWalls.push({ room, dir: Dir9.W });
+            }
+            neighbor = room.getNeighbor(Dir9.S);
+            if (neighbor && neighbor.getSector() !== room.getSector()) {
+                this.setWallByRoom(room, Dir9.S, true);
+                borderWalls.push({ room, dir: Dir9.S });
+            }
+        }
+        this.sectorBorders.set(sector, borderWalls);
+    }
+
+    private createSectorGateways(sector: GSector, allowMultiple: boolean = false) {
+        const borderWall = this.sectorBorders.get(sector) as BorderWall[];
+        RANDOM.shuffle(borderWall);
+        for (let b of borderWall) {
+            const outerNeighbor: GRoom|null = b.room.getNeighbor(b.dir);
+            if (outerNeighbor) {
+                const otherSector = outerNeighbor.getSector() as GSector;
+                GFF.genLog(`Checking border between sectors: ${sector.getRooms().length}/${sector.isConnected()} and ${otherSector.getRooms().length}/${otherSector.isConnected()}`);
+                if (allowMultiple || sector.isConnected() !== otherSector.isConnected()) {
+                    GSector.connectSectors(sector, outerNeighbor.getSector()!);
+                    this.setWallByRoom(b.room, b.dir, false);
+                    this.setLockedDoorByRoom(b.room, b.dir, true);
+                }
+            }
+        }
+    }
+
+    /**
+     * Can be used to establish the location of a locked door between two rooms
+     * during stronghold generation. Can also be used to remove a locked door
+     * when completing the "key verse" minigame.
+     */
+    public setLockedDoorByRoom(room: GRoom, dir: CardDir, isLocked: boolean) {
+        if (room !== null) {
+            room.setLockedDoor(dir, isLocked);
+            const neighboringRoom = room.getNeighbor(dir);
+            if (neighboringRoom !== null) {
+                neighboringRoom.setLockedDoor(DIRECTION.getOpposite(dir) as CardDir, isLocked);
+            }
+        }
+    }
+
+    protected setDoorwayByRoom(room: GRoom, dir: CardDir, hasDoorway: boolean) {
+        if (room !== null) {
+            room.setDoorway(dir, hasDoorway);
+            const neighboringRoom = room.getNeighbor(dir);
+            if (neighboringRoom !== null) {
+                neighboringRoom.setDoorway(DIRECTION.getOpposite(dir) as CardDir, hasDoorway);
+            }
+        }
     }
 
     protected loadFloors(floorImageKeys: string[]): void {
@@ -152,6 +378,7 @@ export class GStrongholdArea extends GBuildingArea {
         const room = new GRoom(floor, x, y, this);
         this.setRoom(floor, x, y, room);
         this.initRoom(room);
+        this.unconnectedRooms.push(room);
         return room;
     }
 }

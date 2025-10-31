@@ -15,7 +15,7 @@ export class GFalseStaircaseThreshold extends GTouchable {
 
     public canTouch(): boolean {
         // Can enter only if facing a northward direction
-        return DIRECTION.getVertInc(PLAYER.getSprite().getDirection()) < 0;
+        return DIRECTION.getYInc(PLAYER.getSprite().getDirection()) < 0;
     }
 
     public doTouch() {

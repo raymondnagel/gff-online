@@ -20,6 +20,10 @@ export namespace DEPTH {
 
     export const WALL_SOUTH = 1001;
 
+    export const LOCKED_DOOR = 2;
+
+    export const DOORWAY = 1;
+
     // Bottom-sorted scenery should never be > 1000
 
 

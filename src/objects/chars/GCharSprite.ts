@@ -233,8 +233,8 @@ export abstract class GCharSprite extends Phaser.Physics.Arcade.Sprite {
         this.faceDirection(direction);
 
         // Get horz/vert increments by direction
-        let horzInc: number = DIRECTION.getHorzInc(direction);
-        let vertInc: number = DIRECTION.getVertInc(direction);
+        let horzInc: number = DIRECTION.getXInc(direction);
+        let vertInc: number = DIRECTION.getYInc(direction);
 
         // Get the speed we should use for the direction;
         // this differs for diagonal vs ordinal directions

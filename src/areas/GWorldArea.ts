@@ -1,7 +1,7 @@
 import { GArea } from "./GArea";
 import { GRegion } from "../regions/GRegion";
 import { GRoom } from "../GRoom";
-import { CardDir, Dir9, GCityBlock, GPerson, GSceneryDef } from "../types";
+import { BorderWall, CardDir, Dir9, GCityBlock, GPerson } from "../types";
 import { GPlainRegion } from "../regions/GPlainRegion";
 import { GForestRegion } from "../regions/GForestRegion";
 import { GDesertRegion } from "../regions/GDesertRegion";
@@ -19,7 +19,6 @@ import { GStronghold } from "../strongholds/GStronghold";
 import { PEOPLE } from "../people";
 import { BOOKS } from "../books";
 import { COMMANDMENTS } from "../commandments";
-import { SCENERY } from "../scenery";
 import { AREA } from "../area";
 import { GChurchArea } from "./GChurchArea";
 import { REGISTRY } from "../registry";
@@ -36,11 +35,6 @@ import { GStrongholdDungeon } from "../strongholds/GStrongholdDungeon";
 import { GStrongholdFortress } from "../strongholds/GStrongholdFortress";
 import { GStrongholdKeep } from "../strongholds/GStrongholdKeep";
 import { GStrongholdTower } from "../strongholds/GStrongholdTower";
-
-type BorderWall = {
-    room: GRoom,
-    dir: CardDir,
-};
 
 const WORLD_WIDTH: number = 16;
 const WORLD_HEIGHT: number = 16;
@@ -208,8 +202,9 @@ export class GWorldArea extends GArea {
                     candidates.push(neighbor);
                 }
             }
+            ARRAY.removeObject(current, candidates);
         }
-
+        GFF.genLog(`Region created: ${region.getRooms().length} rooms`);
         return this.borderRegion(region);
     }
 
@@ -614,7 +609,7 @@ export class GWorldArea extends GArea {
             // Choose now whether to use the business or mixed district for the town's travel location:
             const travelDistrict: GTownDistrict = RANDOM.randElement([DISTRICT_BUSINESS, DISTRICT_MIXED]);
             // Remove the chosen district from the available districts:
-            ARRAY.removeIfExistsIn(travelDistrict, availableDistricts);
+            ARRAY.removeObject(travelDistrict, availableDistricts);
             // Remaining districts can be used for non-travel locations
 
             const rooms: GRoom[] = town.getRooms();
@@ -656,7 +651,7 @@ export class GWorldArea extends GArea {
                         const district = RANDOM.randElement(availableDistricts);
                         // If the chosen district is business or mixed, we'll remove it from the list so it isn't used again
                         if (district instanceof GBusinessDistrict || district instanceof GMixedDistrict) {
-                            ARRAY.removeIfExistsIn(district, availableDistricts);
+                            ARRAY.removeObject(district, availableDistricts);
                         }
                         district.initForRoom(room, false);
                         district.planCityBlocks(room, cityBlocks);

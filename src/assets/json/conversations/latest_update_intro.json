@@ -140,13 +140,13 @@
   {
     "id": "obj_explore",
     "speaker": "player",
-    "text": "You can explore the Land of Allegoria to find new locations, items, and people! In GFF, the world is procedurally-generated, which means that each time you play, the world will be different: no two playthroughs are the same! There are a total of 10 towns, each with its own citizens, church, and travel agency. Each region (forest, desert, plains, etc.) has at least one town.",
+    "text": "You can explore the Land of Allegoria to find new locations, items, and people! In GFF, the world is procedurally-generated, which means that each time you play, the world will be different: no two playthroughs are the same! There are a total of 10 towns, each with its own citizens, church, and travel agency. Each region (forest, desert, plains, etc.) has at least one town. There are also 5 strongholds, each with a unique layout, theme, and boss enemy.",
     "next": "objectivesMenu"
   },
   {
     "id": "obj_collect",
     "speaker": "player",
-    "text": "A main part of your adventure is collecting items. Scattered throughout the land, you will find two types of treasure chests. Common chests are brown; these appear randomly in the world and contain minor bonuses or consumable items. Premium chests have gold trim, and are found on a pedestal surrounded by pillars; they contain more valuable items, such as books of the Bible (used in battle) or the Ten Commandments (increase vision range). Fruit of the Spirit (improve evangelism) can be obtained also; but they must be the work of the Spirit, and brought forth with patience! (Hint: talk to the saints!) Eventually, you will also be able to collect the Armour of God (protection from enemies); one piece of the armour will be found in each stronghold.",
+    "text": "A main part of your adventure is collecting items. Scattered throughout the land, you will find several types of treasure chests. Common chests are brown; these appear randomly in the world and contain minor bonuses or consumable items. Premium chests have gold trim, and are found on a pedestal surrounded by pillars; they contain more valuable items, such as books of the Bible (used in battle) or the Ten Commandments (increase vision range). Fruit of the Spirit (improve evangelism) can be obtained also; but they must be the work of the Spirit, and brought forth with patience! (Hint: talk to the saints!) You can also explore the strongholds to collect the whole armour of God!",
     "next": "objectivesMenu"
   },
   {
@@ -340,12 +340,32 @@
     "speaker": "player",
     "choice": [
       {
-        "choiceText": "Town Rework",
+        "choiceText": "Stronghold Entrances Added",
         "resultId": "update_1"
       },
       {
-        "choiceText": "'Unstuck' Player Key [U]",
+        "choiceText": "Stronghold Interior Generation",
         "resultId": "update_2"
+      },
+      {
+        "choiceText": "Stronghold Content",
+        "resultId": "update_3"
+      },
+      {
+        "choiceText": "New Enemies",
+        "resultId": "update_4"
+      },
+      {
+        "choiceText": "Dynamic Player Avatar",
+        "resultId": "update_5"
+      },
+      {
+        "choiceText": "Graphical Improvements",
+        "resultId": "update_6"
+      },
+      {
+        "choiceText": "Difficulty Setting Adjustments",
+        "resultId": "update_7"
       },
       {
         "choiceText": "[back]",
@@ -356,13 +376,43 @@
   {
     "id": "update_1",
     "speaker": "player",
-    "text": "Over the last few months, I've been working on a major rework of towns. A lot of this is cosmetic, replacing building graphics and adding building orientations for different blocks. The composition of the towns is now much more complex, with districts, blocks, and different types of lots. Towns are still a work in progress, so check back each month to see how they develop!",
+    "text": "Stronghold entrances have been added to the game, each with unique appearance and door animation! It is now possible to enter each of the 5 strongholds (1 in each themed region). Ask the saints in each town for directions to the nearest stronghold entrance.",
     "next": "updateMenu"
   },
   {
     "id": "update_2",
     "speaker": "player",
-    "text": "Since towns aren't quite finished yet, there are still some places where you can get stuck. To help with this, I've added a temporary 'unstuck' feature: just press the [U] key, and Adam will be teleported to a random location. (This feature will be removed in a future update, when town work is completed.)",
+    "text": "Not only can you enter the strongholds - you can explore them, too! Each stronghold interior has a static layout matching its theme; but walls, doors, and scenery are all procedurally generated at game start. Each stronghold is divided into sectors, and locked doors allow passage between them. (Keys will be added in a future update; for now, they will unlock as you touch them.) Some strongholds have multiple floors, which can be accessed via staircases.",
+    "next": "updateMenu"
+  },
+  {
+    "id": "update_3",
+    "speaker": "player",
+    "text": "Each stronghold contains 7 books and 1 commandment to find, as well as a piece of the armour of God. When you attempt to claim the armour piece, you will be challenged by the stronghold's boss enemy! Each stronghold has its own unique challenge feature, based on its theme. After obtaining the final treasure, a portal will appear to take you back outside so you don't have to backtrack all the way to the entrance.",
+    "next": "updateMenu"
+  },
+  {
+    "id": "update_4",
+    "speaker": "player",
+    "text": "The imps (spirit-like enemies that appear in a puff of smoke) only appear in the outside world area. Within the strongholds, the enemies appear in a different form, as devils, waiting in ambush to attack you! Additionally, each stronghold has a unique boss enemy that must be defeated to claim the armour piece. (New features and attacks for these enemies will be added in a future update.)",
+    "next": "updateMenu"
+  },
+  {
+    "id": "update_5",
+    "speaker": "player",
+    "text": "Adam has a new battle avatar - and it's dynamic! As he collects pieces of the armour of God, his appearance in battle will change to reflect the armour he is wearing. (Currently the armour is non-functional; in a future update, each piece of the armour will help protect you.)",
+    "next": "updateMenu"
+  },
+  {
+    "id": "update_6",
+    "speaker": "player",
+    "text": "Many aspects of the game have received significant graphical improvements. All battle backgrounds, items, enemies, the player avatar, and various UI elements have been redone with higher-quality graphics. As new stronghold wall graphics were added to match the game's perspective, I've also redone the church interior in a similar style. Treasure chests and premium chest shrines (pillars, pedestal) have also been improved. Finally, I added curbs to the streets in towns to make them look a bit nicer.",
+    "next": "updateMenu"
+  },
+  {
+    "id": "update_7",
+    "speaker": "player",
+    "text": "I've made some minor changes to the difficulty settings to improve game balance. Babe, Disciple, and Soldier difficulties now spawn a maximum of 1, 2, and 3 enemies respectively. (This is the same for Soldier, but the average number of enemies encountered on lower difficulties has been reduced.) Additionally, the amount of experience required to level up has been lowered by 25% on Babe, and raised by 25% on Soldier. This is to maintain balance with the number of enemies encountered.",
     "next": "updateMenu"
   },
   {

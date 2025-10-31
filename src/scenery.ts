@@ -17,6 +17,7 @@ import { GStaircaseThreshold } from './objects/touchables/GStaircaseThreshold';
 import { GFalseStaircaseThreshold } from './objects/touchables/GFalseStaircaseThreshold';
 import { GIllusionaryBlock } from './objects/touchables/GIllusionaryBlock';
 import { GDevilStatue } from './objects/obstacles/GDevilStatue';
+import { GTeleporter } from './objects/touchables/GTeleporter';
 
 export namespace SCENERY {
     const WALL_N_BODY: GRect = {x: 0, y: 0, width: 1024, height: 64};
@@ -45,9 +46,9 @@ export namespace SCENERY {
             { key: 'church_wall_n_left', type: 'static', body: {x: 0, y: 0, width: 485, height: 64} },
             { key: 'church_wall_n_right', type: 'static', body: {x: 0, y: 0, width: 485, height: 64} },
             { key: 'church_wall_n_mid', type: 'static', body: {x: 0, y: 0, width: 54, height: 64} },
-            { key: 'church_wall_s_left', type: 'static', body: {x: 0, y: 64, width: 485, height: 64} },
-            { key: 'church_wall_s_right', type: 'static', body: {x: 0, y: 64, width: 485, height: 64} },
-            { key: 'church_wall_s_door', type: 'static', body: {x: 0, y: 64, width: 84, height: 64} },
+            { key: 'church_wall_s_left', type: 'static', body: {x: 0, y: 102, width: 485, height: 26} },
+            { key: 'church_wall_s_right', type: 'static', body: {x: 0, y: 102, width: 485, height: 26} },
+            { key: 'church_wall_s_door', type: 'static', body: {x: 0, y: 102, width: 84, height: 26} },
             { key: 'church_wall_w_top', type: 'static', body: {x: 0, y: 0, width: 64, height: 236} },
             { key: 'church_wall_w_bottom', type: 'static', body: {x: 0, y: 0, width: 64, height: 320} },
             { key: 'church_wall_w_mid', type: 'static', body: {x: 0, y: 0, width: 64, height: 148} },
@@ -334,6 +335,10 @@ export namespace SCENERY {
             { key: 'red_chest', type: 'custom', body: {x: 0, y: 20, width: 48, height: 20} },
             { key: 'threshold', type: 'custom', body: {x: 0, y: 0, width: 72, height: 1} },
             { key: 'illusionary_block', type: 'custom', body: {x: 0, y: 38, width: 64, height: 64} },
+            { key: 'vert_locked_door', type: 'custom', body: {x: 0, y: 13, width: 54, height: 43} },
+            { key: 'west_locked_door', type: 'custom', body: {x: 0, y: 0, width: 14, height: 122} },
+            { key: 'east_locked_door', type: 'custom', body: {x: 0, y: 0, width: 14, height: 122} },
+            { key: 'teleporter', type: 'custom', body: {x: 0, y: 0, width: 59, height: 30} },
             // Interactables:
             { key: 'church_piano', type: 'custom', body: {x: 0, y: 50, width: 128, height: 50} },
             // Special Cases:
@@ -435,6 +440,9 @@ export namespace SCENERY {
                         new GBackgroundDecoration('statue_pedestal', plan.x - 2, plan.y + 86, decorRenderer as Phaser.GameObjects.RenderTexture);
                         sceneryObj = new GDevilStatue(plan.x, plan.y);
                         (sceneryObj as GDevilStatue).addBurstTrigger();
+                        break;
+                    case 'teleporter':
+                        sceneryObj = new GTeleporter(plan.x, plan.y);
                         break;
                 }
             break;

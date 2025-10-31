@@ -1,5 +1,5 @@
 import { GRegion } from "./regions/GRegion";
-import { CardDir, Dir9, GCityBlock, GColor, GDoorways, GPoint2D, GRect, GRoomWalls, GSceneryDef, GSceneryPlan } from "./types";
+import { CardDir, CubeDir, Dir9, GCityBlock, GColor, GDoorways, GPoint2D, GPoint3D, GRect, GRoomWalls, GSceneryDef, GSceneryPlan } from "./types";
 import { SCENERY } from "./scenery";
 import { GFF } from "./main";
 import { RANDOM } from "./random";
@@ -35,6 +35,9 @@ import { GBuildingExit } from "./objects/touchables/GBuildingExit";
 import { GOverheadDecoration } from "./objects/decorations/GOverheadDecoration";
 import { GForegroundDecoration } from "./objects/decorations/GForegroundDecoration";
 import { GStrongholdNorthArchTrigger } from "./triggers/GStrongholdNorthArchTrigger";
+import { GSector } from "./regions/GSector";
+import { GStrongholdArea } from "./areas/GStrongholdArea";
+import { GLockedDoor } from "./objects/touchables/GLockedDoor";
 
 const WALL_GUARD_THICK: number = 10;
 const WALL_CTRS: number[] = [
@@ -80,12 +83,19 @@ export class GRoom {
     private plans: GSceneryPlan[] = [];
     private noSceneryZones: GRect[] = [];
     private region: GRegion;
+    private sector: GSector|undefined = undefined;
     private town: GTown|null = null;
     private church: GChurch|null = null;
     private stronghold: GStronghold|null = null;
     private portalRoom: GRoom|null = null;
     private walls: GRoomWalls;
     private doorways: GDoorways = {
+        [Dir9.N]: false,
+        [Dir9.E]: false,
+        [Dir9.S]: false,
+        [Dir9.W]: false,
+    };
+    private lockedDoors: GDoorways = {
         [Dir9.N]: false,
         [Dir9.E]: false,
         [Dir9.S]: false,
@@ -193,6 +203,29 @@ export class GRoom {
 
     public getRegion(): GRegion {
         return this.region;
+    }
+
+    public getSector(): GSector|undefined {
+        return this.sector;
+    }
+
+    public setSector(sector: GSector) {
+        this.sector = sector;
+        this.sector.addRoom(this);
+    }
+
+    public getUpstairsRoom(): GRoom|null {
+        if (this.portalRoom !== null) {
+            return this.portalRoom.getArea() === this.getArea() && this.portalRoom.getFloor() > this.floor ? this.portalRoom : null;
+        }
+        return null;
+    }
+
+    public getDownstairsRoom(): GRoom|null {
+        if (this.portalRoom !== null) {
+            return this.portalRoom.getArea() === this.getArea() && this.portalRoom.getFloor() < this.floor ? this.portalRoom : null;
+        }
+        return null;
     }
 
     public isDiscovered(): boolean {
@@ -315,20 +348,36 @@ export class GRoom {
         }
     }
 
-    public hasNeighbor(direction: Dir9): boolean {
-        const velocity: GPoint2D = DIRECTION.getVelocity(direction);
-        return this.area.containsRoom(this.floor, this.x + velocity.x, this.y + velocity.y);
+    public setDoorway(dir: CardDir, hasDoorway: boolean) {
+        this.doorways[dir] = hasDoorway;
     }
 
-    public getNeighbor(direction: Dir9): GRoom|null {
-        const velocity: GPoint2D = DIRECTION.getVelocity(direction);
-        return this.area.getRoomAt(this.floor, this.x + velocity.x, this.y + velocity.y);
+    public hasDoorway(dir: CardDir): boolean {
+        return this.doorways[dir];
+    }
+
+    public setLockedDoor(dir: CardDir, isLocked: boolean) {
+        this.lockedDoors[dir] = isLocked;
+    }
+
+    public hasLockedDoor(dir: CardDir): boolean {
+        return this.lockedDoors[dir];
+    }
+
+    public hasNeighbor(direction: CubeDir): boolean {
+        const velocity: GPoint3D = DIRECTION.getVelocity3d(direction);
+        return this.area.containsRoom(this.floor - velocity.z, this.x + velocity.x, this.y + velocity.y);
+    }
+
+    public getNeighbor(direction: CubeDir): GRoom|null {
+        const velocity: GPoint3D = DIRECTION.getVelocity3d(direction);
+        return this.area.getRoomAt(this.floor - velocity.z, this.x + velocity.x, this.y + velocity.y);
     }
 
     public getNeighbors(condition?: (n: GRoom) => boolean): GRoom[] {
         const neighbors: GRoom[] = [];
-        for (let d: number = 0; d < 4; d++) {
-            const neighbor: GRoom|null = this.getNeighbor(DIRECTION.cardDirFrom4(d as 0|1|2|3));
+        for (let d: number = 0; d < 6; d++) {
+            const neighbor: GRoom|null = this.getNeighbor(DIRECTION.cubeDirFrom6(d as 0|1|2|3|4|5));
             if (neighbor) {
                 if (condition === undefined || condition(neighbor)) {
                     neighbors.push(neighbor);
@@ -338,6 +387,11 @@ export class GRoom {
         return neighbors;
     }
 
+    /**
+     * Connects this room to a random undiscovered neighboring room by removing the wall between them.
+     * This is only used for cardinal directions; we'll never remove a floor or ceiling to connect
+     * rooms vertically.
+     */
     public connectToRandomUndiscoveredNeighbor(): GRoom|null {
         let d: number = RANDOM.randInt(0, 3);
         const start: number = d;
@@ -420,7 +474,10 @@ export class GRoom {
         decorRenderer.setOrigin(0, 0).setDepth(DEPTH.BG_DECOR);
 
         // Create partial wall guards: (blocks movement in case player slips past wall scenery)
-        this.addPartialWallGuards();
+        // (this isn't needed for strongholds; wall guards would interfere with doorways)
+        if (this.getArea() instanceof GStrongholdArea === false) {
+            this.addPartialWallGuards();
+        }
 
         // Create full wall objects:
         this.addFullWallObjects();
@@ -528,34 +585,10 @@ export class GRoom {
     }
 
     private addInsideFullWallObjects(region: GInsideRegion = this.region as GInsideRegion) {
-        // const northWall: boolean = this.hasFullWall(Dir9.N);
-        // const westWall: boolean = this.hasFullWall(Dir9.W);
-        // const eastWall: boolean = this.hasFullWall(Dir9.E);
-        // const southWall: boolean = this.hasFullWall(Dir9.S);
-
-        // (Testing:) Replace any missing walls with wall+doorway:
-        // TODO: Remove this when room planning is more advanced.
-        let northWall: boolean = this.hasFullWall(Dir9.N);
-        let westWall: boolean = this.hasFullWall(Dir9.W);
-        let eastWall: boolean = this.hasFullWall(Dir9.E);
-        let southWall: boolean = this.hasFullWall(Dir9.S);
-        if (!northWall) {
-            northWall = true;
-            this.doorways[Dir9.N] = true;
-        }
-        if (!westWall) {
-            westWall = true;
-            this.doorways[Dir9.W] = true;
-        }
-        if (!eastWall) {
-            eastWall = true;
-            this.doorways[Dir9.E] = true;
-        }
-        if (!southWall) {
-            southWall = true;
-            this.doorways[Dir9.S] = true;
-        }
-
+        const northWall: boolean = this.hasFullWall(Dir9.N);
+        const westWall: boolean = this.hasFullWall(Dir9.W);
+        const eastWall: boolean = this.hasFullWall(Dir9.E);
+        const southWall: boolean = this.hasFullWall(Dir9.S);
 
         // Walls:
 
@@ -616,7 +649,8 @@ export class GRoom {
                 const wDoorLower: GSceneryDef|undefined = region.getWallPiece('w_door_lower');
                 if (wDoorLower) {
                     new GObstacleStatic(wDoorLower, GFF.LEFT_BOUND, HORZ_DOOR_Y)
-                        .setOrigin(0, 0);
+                        .setOrigin(0, 0)
+                        .setDepth(DEPTH.DOORWAY);
                 }
                 const wDoorUpper: GSceneryDef|undefined = region.getWallPiece('w_door_upper');
                 if (wDoorUpper) {
@@ -652,7 +686,8 @@ export class GRoom {
                 const eDoorLower: GSceneryDef|undefined = region.getWallPiece('e_door_lower');
                 if (eDoorLower) {
                     new GObstacleStatic(eDoorLower, GFF.RIGHT_BOUND, HORZ_DOOR_Y)
-                        .setOrigin(1, 0);
+                        .setOrigin(1, 0)
+                        .setDepth(DEPTH.DOORWAY);
                 }
                 const eDoorUpper: GSceneryDef|undefined = region.getWallPiece('e_door_upper');
                 if (eDoorUpper) {
@@ -738,6 +773,20 @@ export class GRoom {
                     .setOrigin(1, 1)
                     .setDepth(DEPTH.WALL_S_CORNER);
             }
+        }
+
+        // Add locked doors, if any:
+        if (this.hasLockedDoor(Dir9.N)) {
+            new GLockedDoor('vert_locked_door', 'N').setDepth(DEPTH.LOCKED_DOOR);
+        }
+        if (this.hasLockedDoor(Dir9.S)) {
+            new GLockedDoor('vert_locked_door', 'S').setDepth(DEPTH.LOCKED_DOOR);
+        }
+        if (this.hasLockedDoor(Dir9.W)) {
+            new GLockedDoor('west_locked_door').setDepth(DEPTH.LOCKED_DOOR);
+        }
+        if (this.hasLockedDoor(Dir9.E)) {
+            new GLockedDoor('east_locked_door').setDepth(DEPTH.LOCKED_DOOR);
         }
     }
 
@@ -1388,43 +1437,43 @@ export class GRoom {
         // At this point, if there are any full blocks, we can
         // remove any partial blocks that make up the same areas:
         if (cityBlocks.includes(fullNorthHorzBlock)) {
-            ARRAY.removeIfExistsIn(nwHorz, cityBlocks);
-            ARRAY.removeIfExistsIn(neHorz, cityBlocks);
-            ARRAY.removeIfExistsIn(nwVert, cityBlocks);
-            ARRAY.removeIfExistsIn(neVert, cityBlocks);
+            ARRAY.removeObject(nwHorz, cityBlocks);
+            ARRAY.removeObject(neHorz, cityBlocks);
+            ARRAY.removeObject(nwVert, cityBlocks);
+            ARRAY.removeObject(neVert, cityBlocks);
         }
         if (cityBlocks.includes(fullSouthHorzBlock)) {
-            ARRAY.removeIfExistsIn(swHorz, cityBlocks);
-            ARRAY.removeIfExistsIn(seHorz, cityBlocks);
-            ARRAY.removeIfExistsIn(swVert, cityBlocks);
-            ARRAY.removeIfExistsIn(seVert, cityBlocks);
+            ARRAY.removeObject(swHorz, cityBlocks);
+            ARRAY.removeObject(seHorz, cityBlocks);
+            ARRAY.removeObject(swVert, cityBlocks);
+            ARRAY.removeObject(seVert, cityBlocks);
         }
         if (cityBlocks.includes(fullWestVertBlock)) {
-            ARRAY.removeIfExistsIn(nwHorz, cityBlocks);
-            ARRAY.removeIfExistsIn(swHorz, cityBlocks);
-            ARRAY.removeIfExistsIn(nwVert, cityBlocks);
-            ARRAY.removeIfExistsIn(swVert, cityBlocks);
+            ARRAY.removeObject(nwHorz, cityBlocks);
+            ARRAY.removeObject(swHorz, cityBlocks);
+            ARRAY.removeObject(nwVert, cityBlocks);
+            ARRAY.removeObject(swVert, cityBlocks);
         }
         if (cityBlocks.includes(fullEastVertBlock)) {
-            ARRAY.removeIfExistsIn(neHorz, cityBlocks);
-            ARRAY.removeIfExistsIn(seHorz, cityBlocks);
-            ARRAY.removeIfExistsIn(neVert, cityBlocks);
-            ARRAY.removeIfExistsIn(seVert, cityBlocks);
+            ARRAY.removeObject(neHorz, cityBlocks);
+            ARRAY.removeObject(seHorz, cityBlocks);
+            ARRAY.removeObject(neVert, cityBlocks);
+            ARRAY.removeObject(seVert, cityBlocks);
         }
 
         // Check partial (corner) blocks; if the same block exists for both
         // directions, prefer horz and remove vert
         if (cityBlocks.includes(nwHorz) && cityBlocks.includes(nwVert)) {
-            ARRAY.removeIfExistsIn(nwVert, cityBlocks);
+            ARRAY.removeObject(nwVert, cityBlocks);
         }
         if (cityBlocks.includes(neHorz) && cityBlocks.includes(neVert)) {
-            ARRAY.removeIfExistsIn(neVert, cityBlocks);
+            ARRAY.removeObject(neVert, cityBlocks);
         }
         if (cityBlocks.includes(swHorz) && cityBlocks.includes(swVert)) {
-            ARRAY.removeIfExistsIn(swVert, cityBlocks);
+            ARRAY.removeObject(swVert, cityBlocks);
         }
         if (cityBlocks.includes(seHorz) && cityBlocks.includes(seVert)) {
-            ARRAY.removeIfExistsIn(seVert, cityBlocks);
+            ARRAY.removeObject(seVert, cityBlocks);
         }
 
         // This method is only called on town rooms, so there will always be

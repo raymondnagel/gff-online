@@ -1,5 +1,4 @@
 import { GRoom } from "../GRoom";
-import { Dir9, GSceneryDef } from "../types";
 
 /**
  * GRegion represents part of a GArea that should

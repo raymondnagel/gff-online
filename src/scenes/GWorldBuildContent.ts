@@ -5,7 +5,6 @@ import { GWorldArea } from '../areas/GWorldArea';
 import { GFF } from '../main';
 import { GArea } from '../areas/GArea';
 import { GInputMode } from '../GInputMode';
-import { CHURCH } from '../church';
 import { GChurchArea } from '../areas/GChurchArea';
 import { TOWN } from '../town';
 import { GStrongholdArea } from '../areas/GStrongholdArea';
@@ -34,6 +33,7 @@ export class GWorldBuildContent extends GBaseScene {
     constructor() {
         super("WorldBuildContent");
         this.setContainingMode(GFF.WORLDBUILD_MODE);
+        GFF.genLog('GWorldBuildContent constructed');
     }
 
     public preload(): void {
@@ -111,7 +111,7 @@ export class GWorldBuildContent extends GBaseScene {
 
     private areaList: AreaGenInfo[];
     public create(): void {
-        GFF.log('GWorldBuildContent.create()');
+        GFF.genLog('GWorldBuildContent.create()');
 
         // Church Areas (will be assigned to churches once they are created)
         AREA.CHURCH_AREAS = [];

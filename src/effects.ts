@@ -151,6 +151,19 @@ export namespace EFFECTS {
                 soundKey: 'baptism_splash',
                 hideOnFinish: false
             },
+            {
+                spriteConfig: {
+                    key: 'teleport_aura',
+                    frames: GFF.GAME.anims.generateFrameNumbers(
+                        'teleport_aura',
+                        { start: 0, end: 9 }
+                    ),
+                    frameRate: 15,
+                    repeat: -1
+                },
+                soundKey: null, // No sound; the sound is played separately when the teleporter is created
+                hideOnFinish: false
+            },
 
         ].forEach(s => {
             SPRITE_EFFECTS.set(s.spriteConfig.key, s as SpriteEffect);

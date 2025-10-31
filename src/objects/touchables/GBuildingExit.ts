@@ -15,7 +15,7 @@ export class GBuildingExit extends GTouchable {
 
     public canTouch(): boolean {
         // Can exit only if facing a southward direction
-        return DIRECTION.getVertInc(PLAYER.getSprite().getDirection()) > 0;
+        return DIRECTION.getYInc(PLAYER.getSprite().getDirection()) > 0;
     }
 
     public doTouch() {

@@ -6,7 +6,7 @@ import { GRoom } from "../../GRoom";
 import { GFF } from "../../main";
 import { PLAYER } from "../../player";
 import { SCENERY } from "../../scenery";
-import { GBookEntry, GGlossaryEntry, GItem, SIX, TEN } from "../../types";
+import { GBookEntry, GGlossaryEntry, GItem, GSceneryDef, GSceneryPlan, SIX, TEN } from "../../types";
 import { GPopup } from "../components/GPopup";
 import { GTouchable } from "./GTouchable";
 import { STATS } from "../../stats";
@@ -92,6 +92,12 @@ export class GTreasureChest extends GTouchable {
         const effectSprite: Phaser.Physics.Arcade.Sprite = EFFECTS.doEffect('chest_puff', GFF.AdventureContent, center.x, center.y, .5, .5);
         effectSprite.setDepth(DEPTH.SPECIAL_EFFECT);
         this.destroy();
+
+        // When the gold chest is opened, spawn a teleporter so the player can exit easily:
+        if (this.color === 'gold') {
+            GFF.AdventureContent.createTeleporter();
+            GFF.AdventureUI.getSound().playSound('ahh');
+        }
     }
 
     private getCommonItem(): GItem {

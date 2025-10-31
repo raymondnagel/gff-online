@@ -1,11 +1,12 @@
 import { GArea } from "../areas/GArea";
+import { GStrongholdArea } from "../areas/GStrongholdArea";
 import { COLOR } from "../colors";
 import { GInputMode } from "../GInputMode";
 import { GRoom } from "../GRoom";
 import { GFF } from "../main";
 import { PLAYER } from "../player";
 import { REGISTRY } from "../registry";
-import { CardDir, Dir9, GPoint2D } from "../types";
+import { Dir9, GPoint2D } from "../types";
 import { GUIScene } from "./GUIScene";
 
 const INPUT_DEFAULT: GInputMode = new GInputMode('map.default');
@@ -14,6 +15,31 @@ const CELL_WIDTH: number = 32; // 16 wall sections, doubled
 const CELL_HEIGHT: number = 22; // 11 wall sections, doubled
 const WALL_SECTION_LENGTH: number = 2;
 const BORDER_COVER_COLOR: number = 0xd4bd97;
+
+const STRONGHOLD_H_WALL: boolean[] = [
+    true, true, true, true, true, true, true, true,
+    true, true, true, true, true, true, true, true
+];
+const STRONGHOLD_H_DOOR: boolean[] = [
+    true, true, true, true, true, true, false, false,
+    false, false, true, true, true, true, true, true
+];
+const STRONGHOLD_H_LOCK: boolean[] = [
+    false, false, false, false, false, false, true, true,
+    true, true, false, false, false, false, false, false
+];
+const STRONGHOLD_V_WALL: boolean[] = [
+    true, true, true, true, true, true, true, true,
+    true, true, true
+];
+const STRONGHOLD_V_DOOR: boolean[] = [
+    true, true, true, true, false, false, false, true,
+    true, true, true
+];
+const STRONGHOLD_V_LOCK: boolean[] = [
+    false, false, false, false, true, true, true, false,
+    false, false, false
+];
 
 export class GMapUI extends GUIScene {
 
@@ -82,7 +108,7 @@ export class GMapUI extends GUIScene {
      * 5. map edges       (upperTexture)
      * 6. overlays        (independent objects, possibly animated)
      */
-    private renderMap() {
+    private renderMap() {;
         const drawingDim: GPoint2D = this.getDrawingDimension();
         const ctrX: number = Math.floor(GFF.GAME_W / 2);
         const ctrY: number = 408;
@@ -129,6 +155,14 @@ export class GMapUI extends GUIScene {
                         }
                     }
 
+                    // Draw sector shade, if applicable:
+                    if (REGISTRY.getBoolean('isDebug') && this.area instanceof GStrongholdArea) {
+                        const sector = room.getSector();
+                        if (sector) {
+                            this.lowerTexture.fill(sector.getColor().num(), 0.5, cellX, cellY, CELL_WIDTH, CELL_HEIGHT);
+                        }
+                    }
+
                     // Draw the rest only if the room is discovered:
                     if (room.isDiscovered() || REGISTRY.getBoolean('isDebug')) {
                         // Draw terrain overlap:
@@ -136,10 +170,13 @@ export class GMapUI extends GUIScene {
 
                         // Draw walls, if applicable:
                         // (these need to be drawn over the overlaps, or wall sections may appear as holes when covered by overlaps)
-                        this.drawWalls(room, cellX, cellY, this.wallGraphics);
-
-                        // Draw map edges to make it not look so perfect:
-                        this.drawMapEdgesForRoom(room, cellX, cellY, this.upperTexture);
+                        if (this.area instanceof GStrongholdArea) {
+                            this.drawStrongholdWalls(room, cellX, cellY, this.wallGraphics);
+                        } else {
+                            this.drawWalls(room, cellX, cellY, this.wallGraphics);
+                            // Draw map edges to make it not look so perfect:
+                            this.drawMapEdgesForRoom(room, cellX, cellY, this.upperTexture);
+                        }
                     }
                 }
             }
@@ -204,6 +241,100 @@ export class GMapUI extends GUIScene {
             wX = cellX;
             wY = cellY + CELL_HEIGHT - 1;
             sections = room.getWallSections(Dir9.S);
+            for (let s: number = 0; s < sections.length; s++) {
+                if (sections[s]) {
+                    wallGraphics.lineBetween(wX + (s * WALL_SECTION_LENGTH), wY, wX + WALL_SECTION_LENGTH + (s * WALL_SECTION_LENGTH), wY);
+                }
+            }
+        }
+    }
+
+    private drawStrongholdWalls(room: GRoom, cellX: number, cellY: number, wallGraphics: Phaser.GameObjects.Graphics) {
+        let sections: boolean[];
+        let wX: number = cellX;
+        let wY: number = cellY;
+        wallGraphics.lineStyle(1, 0x493726, .7);
+
+        // Draw north wall:
+        if (room.hasFullWall(Dir9.N)) {
+            sections = room.hasDoorway(Dir9.N) ? STRONGHOLD_H_DOOR : STRONGHOLD_H_WALL;
+            for (let s: number = 0; s < sections.length; s++) {
+                if (sections[s]) {
+                    wallGraphics.lineBetween(wX + (s * WALL_SECTION_LENGTH), wY, wX + WALL_SECTION_LENGTH + (s * WALL_SECTION_LENGTH), wY);
+                }
+            }
+        }
+        // Draw west wall:
+        if (room.hasFullWall(Dir9.W)) {
+            wX = cellX + 1;
+            sections = room.hasDoorway(Dir9.W) ? STRONGHOLD_V_DOOR : STRONGHOLD_V_WALL;
+            for (let s: number = 0; s < sections.length; s++) {
+                if (sections[s]) {
+                    wallGraphics.lineBetween(wX, wY + (s * WALL_SECTION_LENGTH), wX, wY + WALL_SECTION_LENGTH + (s * WALL_SECTION_LENGTH));
+                }
+            }
+        }
+        // Draw east wall:
+        if (room.hasFullWall(Dir9.E)) {
+            wX = cellX + CELL_WIDTH;
+            sections = room.hasDoorway(Dir9.E) ? STRONGHOLD_V_DOOR : STRONGHOLD_V_WALL;
+            for (let s: number = 0; s < sections.length; s++) {
+                if (sections[s]) {
+                    wallGraphics.lineBetween(wX, wY + (s * WALL_SECTION_LENGTH), wX, wY + WALL_SECTION_LENGTH + (s * WALL_SECTION_LENGTH));
+                }
+            }
+        }
+        // Draw south wall:
+        if (room.hasFullWall(Dir9.S)) {
+            wX = cellX;
+            wY = cellY + CELL_HEIGHT - 1;
+            sections = room.hasDoorway(Dir9.S) ? STRONGHOLD_H_DOOR : STRONGHOLD_H_WALL;
+            for (let s: number = 0; s < sections.length; s++) {
+                if (sections[s]) {
+                    wallGraphics.lineBetween(wX + (s * WALL_SECTION_LENGTH), wY, wX + WALL_SECTION_LENGTH + (s * WALL_SECTION_LENGTH), wY);
+                }
+            }
+        }
+
+        // Draw locked door locations
+        wX = cellX;
+        wY = cellY;
+        wallGraphics.lineStyle(1, 0xff0000, .7);
+
+        // Draw north wall:
+        if (room.hasLockedDoor(Dir9.N)) {
+            sections = STRONGHOLD_H_LOCK;
+            for (let s: number = 0; s < sections.length; s++) {
+                if (sections[s]) {
+                    wallGraphics.lineBetween(wX + (s * WALL_SECTION_LENGTH), wY, wX + WALL_SECTION_LENGTH + (s * WALL_SECTION_LENGTH), wY);
+                }
+            }
+        }
+        // Draw west wall:
+        if (room.hasLockedDoor(Dir9.W)) {
+            wX = cellX + 1;
+            sections = STRONGHOLD_V_LOCK;
+            for (let s: number = 0; s < sections.length; s++) {
+                if (sections[s]) {
+                    wallGraphics.lineBetween(wX, wY + (s * WALL_SECTION_LENGTH), wX, wY + WALL_SECTION_LENGTH + (s * WALL_SECTION_LENGTH));
+                }
+            }
+        }
+        // Draw east wall:
+        if (room.hasLockedDoor(Dir9.E)) {
+            wX = cellX + CELL_WIDTH;
+            sections = STRONGHOLD_V_LOCK;
+            for (let s: number = 0; s < sections.length; s++) {
+                if (sections[s]) {
+                    wallGraphics.lineBetween(wX, wY + (s * WALL_SECTION_LENGTH), wX, wY + WALL_SECTION_LENGTH + (s * WALL_SECTION_LENGTH));
+                }
+            }
+        }
+        // Draw south wall:
+        if (room.hasLockedDoor(Dir9.S)) {
+            wX = cellX;
+            wY = cellY + CELL_HEIGHT - 1;
+            sections = STRONGHOLD_H_LOCK;
             for (let s: number = 0; s < sections.length; s++) {
                 if (sections[s]) {
                     wallGraphics.lineBetween(wX + (s * WALL_SECTION_LENGTH), wY, wX + WALL_SECTION_LENGTH + (s * WALL_SECTION_LENGTH), wY);

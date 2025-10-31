@@ -16,7 +16,7 @@ export class GBuildingEntrance extends GTouchable {
     public canTouch(): boolean {
         // Can enter only if player has faith, and if facing a northward direction
         return PLAYER.getFaith() > 0
-            && DIRECTION.getVertInc(PLAYER.getSprite().getDirection()) < 0;
+            && DIRECTION.getYInc(PLAYER.getSprite().getDirection()) < 0;
     }
 
     public doTouch() {

@@ -22,8 +22,8 @@ export class GWalkDirGoal extends GGoal {
     }
 
     public start(): void {
-        const xDist: number = (DIRECTION.getHorzInc(this.direction) * this.distance);
-        const yDist: number = (DIRECTION.getVertInc(this.direction) * this.distance);
+        const xDist: number = (DIRECTION.getXInc(this.direction) * this.distance);
+        const yDist: number = (DIRECTION.getYInc(this.direction) * this.distance);
         const charCtr: GPoint2D = this.char.getPhysicalCenter();
         this.targetX = charCtr.x + xDist;
         this.targetY = charCtr.y + yDist;

@@ -11,7 +11,7 @@
 
 import { RANDOM } from "./random";
 import { GFF } from "./main";
-import { CardDir, Dir9, GKeyList, GPoint2D } from "./types";
+import { CardDir, CubeDir, Dir9, DirVert, GKeyList, GPoint2D, GPoint3D } from "./types";
 
 export namespace DIRECTION {
 
@@ -85,15 +85,17 @@ export namespace DIRECTION {
     ];
 
     const directionData = [
-        [ 0,  0 ],
-        [ 0, -1 ],
-        [ 1, -1 ],
-        [ 1,  0 ],
-        [ 1,  1 ],
-        [ 0,  1 ],
-        [-1,  1 ],
-        [-1,  0 ],
-        [-1, -1 ]
+        [ 0,  0,  0 ], // None
+        [ 0, -1,  0 ], // N
+        [ 1, -1,  0 ], // NE
+        [ 1,  0,  0 ], // E
+        [ 1,  1,  0 ], // SE
+        [ 0,  1,  0 ], // S
+        [-1,  1,  0 ], // SW
+        [-1,  0,  0 ], // W
+        [-1, -1,  0 ], // NW
+        [ 0,  0, -1 ], // Up
+        [ 0,  0,  1 ], // Down
     ];
 
     export const DIAGONAL_MODIFIER: number = .7;
@@ -145,6 +147,23 @@ export namespace DIRECTION {
                 return Dir9.S;
             case 3:
                 return Dir9.W;
+        }
+    }
+
+    export function cubeDirFrom6(n: 0|1|2|3|4|5): CubeDir {
+        switch (n) {
+            case 0:
+                return Dir9.N;
+            case 1:
+                return Dir9.E;
+            case 2:
+                return Dir9.S;
+            case 3:
+                return Dir9.W;
+            case 4:
+                return DirVert.UP;
+            case 5:
+                return DirVert.DOWN;
         }
     }
 
@@ -281,18 +300,30 @@ export namespace DIRECTION {
         }
     }
 
-    export function getHorzInc(direction: Dir9): number {
+    export function getXInc(direction: Dir9): number {
         return directionData[direction][0];
     }
 
-    export function getVertInc(direction: Dir9): number {
+    export function getYInc(direction: Dir9): number {
         return directionData[direction][1];
+    }
+
+    export function getZInc(direction: Dir9|DirVert): number {
+        return directionData[direction][2];
     }
 
     export function getVelocity(direction: Dir9): GPoint2D {
         return {
             x: directionData[direction][0],
             y: directionData[direction][1]
+        };
+    }
+
+    export function getVelocity3d(direction: CubeDir): GPoint3D {
+        return {
+            x: directionData[direction][0],
+            y: directionData[direction][1],
+            z: directionData[direction][2]
         };
     }
 
@@ -331,8 +362,8 @@ export namespace DIRECTION {
     }
 
     export function getPointDistanceFrom(origin: GPoint2D, dir: Dir9, distance: number): GPoint2D {
-        const xInc: number = getHorzInc(dir) * distance;
-        const yInc: number = getVertInc(dir) * distance;
+        const xInc: number = getXInc(dir) * distance;
+        const yInc: number = getYInc(dir) * distance;
         return {
             x: origin.x + xInc,
             y: origin.y + yInc

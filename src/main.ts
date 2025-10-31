@@ -129,7 +129,9 @@ export namespace GFF {
         enemySpeed: .9,
         bossResistPct: 0.75,
         minorGraceIncrease: .06,
-        majorGraceIncrease: .12
+        majorGraceIncrease: .12,
+        maxRandomEnemies: 1,
+        neededXpModifier: 0.75
     };
     export const DIFFICULTY_DISCIPLE: GDifficulty = {
         levelName: 'Disciple',
@@ -140,7 +142,9 @@ export namespace GFF {
         enemySpeed: 1.0,
         bossResistPct: 1.0,
         minorGraceIncrease: .04,
-        majorGraceIncrease: .08
+        majorGraceIncrease: .08,
+        maxRandomEnemies: 2,
+        neededXpModifier: 1.0
     };
     export const DIFFICULTY_SOLDIER: GDifficulty = {
         levelName: 'Soldier',
@@ -151,7 +155,9 @@ export namespace GFF {
         enemySpeed: 1.1,
         bossResistPct: 1.25,
         minorGraceIncrease: .02,
-        majorGraceIncrease: .04
+        majorGraceIncrease: .04,
+        maxRandomEnemies: 3,
+        neededXpModifier: 1.25
     };
 
     /**

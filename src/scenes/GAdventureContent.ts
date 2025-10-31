@@ -2,7 +2,7 @@ import 'phaser';
 import JSZip from "jszip";
 import { GArea } from '../areas/GArea';
 import { DIRECTION } from '../direction';
-import { GRect, GPerson, GSpirit, GKeyList, BoundedGameObject, GPoint2D, CardDir, Dir9, GInteractable, GGlossaryEntry, GItem, NINE } from '../types';
+import { GRect, GPerson, GSpirit, GKeyList, BoundedGameObject, GPoint2D, CardDir, Dir9, GInteractable, GGlossaryEntry, GItem, NINE, GSceneryDef, GSceneryPlan, GDifficulty } from '../types';
 import { RANDOM } from '../random';
 import { GPlayerSprite } from '../objects/chars/GPlayerSprite';
 import { GPersonSprite } from '../objects/chars/GPersonSprite';
@@ -51,6 +51,7 @@ import { GStrongholdArea } from '../areas/GStrongholdArea';
 import { GIllusionaryBlock } from '../objects/touchables/GIllusionaryBlock';
 import { GImpSprite } from '../objects/chars/GImpSprite';
 import { GDevilSprite } from '../objects/chars/GDevilSprite';
+import { SCENERY } from '../scenery';
 
 const MOUSE_UI_BUTTON: string = 'MOUSE_UI_BUTTON';
 
@@ -631,8 +632,8 @@ export class GAdventureContent extends GContentScene {
 
     public walkToAdjacentRoom(dir: CardDir) {
         // Move to the adjacent room, if there is one:
-        let newRoomX = this.playerRoomX + DIRECTION.getHorzInc(dir);
-        let newRoomY = this.playerRoomY + DIRECTION.getVertInc(dir);
+        let newRoomX = this.playerRoomX + DIRECTION.getXInc(dir);
+        let newRoomY = this.playerRoomY + DIRECTION.getYInc(dir);
 
         if (this.currentArea.containsRoom(this.playerFloor, newRoomX, newRoomY)) {
             // Before transitioning, walk NONE to stop moving and remove diagonals:
@@ -789,20 +790,25 @@ export class GAdventureContent extends GContentScene {
     }
 
     public doImpSpawns() {
+        const diff: GDifficulty = GFF.getDifficulty();
+        const enemiesToSpawn = RANDOM.randInt(1, diff.maxRandomEnemies);
+
         // Check whether we can spawn an imp EACH time one can spawn, before AND after the time event is created;
         // we don't want any imps to spawn after repellant was used, or after the room was made safe (i.e. standard raised).
         if (this.canSpawnImp()) {
             // Spawn an imp in 1-5 seconds, with 50% chance for up to 2 more:
             this.impSpawnTimeEvent = this.time.delayedCall(RANDOM.randInt(1000, 5000), () => {
-                if (this.canSpawnImp()) {
+                if (this.canSpawnImp() && enemiesToSpawn > 0) {
                     this.addRandomImp();
                     if (RANDOM.flipCoin()) {
                         this.impSpawnTimeEvent = this.time.delayedCall(RANDOM.randInt(1000, 5000), () => {
-                            if (this.canSpawnImp()) {
+                            if (this.canSpawnImp() && enemiesToSpawn > 1) {
                                 this.addRandomImp();
                                 if (RANDOM.flipCoin()) {
                                     this.impSpawnTimeEvent = this.time.delayedCall(RANDOM.randInt(1000, 5000), () => {
-                                        this.addRandomImp();
+                                         if (this.canSpawnImp() && enemiesToSpawn > 2) {
+                                            this.addRandomImp();
+                                         }
                                     });
                                 }
                             }
@@ -811,7 +817,7 @@ export class GAdventureContent extends GContentScene {
                 }
             });
         } else if (this.canSpawnDevil()) {
-            for (let i = 0; i < RANDOM.randInt(1, 3); i++) {
+            for (let i = 0; i < enemiesToSpawn; i++) {
                 this.addRandomDevil();
             }
         }
@@ -1352,6 +1358,7 @@ export class GAdventureContent extends GContentScene {
         GPopup.createSimplePopup('While you have no faith, enemies will not attack you; however, you cannot open treasure chests or obtain new items.\n\nYou must seek out other believers who can restore you in the spirit of meekness.\n\nBe not faithless, but believing!', 'Where is your faith?').onClose(() => {
             // If the player loses all faith in a stronghold, he'll be expelled from it:
             if (this.getCurrentArea() instanceof GStrongholdArea) {
+                this.setInputMode(INPUT_ADVENTURING);
                 this.playerExitBuilding((this.getCurrentArea() as GStrongholdArea).getEntranceRoom().getPortalRoom());
             } else {
                 this.setInputMode(INPUT_ADVENTURING);
@@ -1612,6 +1619,17 @@ export class GAdventureContent extends GContentScene {
     public clearCutscene() {
         this.cutscene = null;
         this.setInputMode(INPUT_ADVENTURING);
+    }
+
+    public createTeleporter() {
+        const telDef: GSceneryDef = SCENERY.def('teleporter');
+        const room: GRoom = this.getCurrentRoom() as GRoom;
+        const baseY: number = 352;
+        const ctrX: number = 256;
+        const plan: GSceneryPlan|null = room.planSceneryDuringGameplay(telDef, ctrX - telDef.body.width / 2, baseY - telDef.body.height, 0, 0);
+        if (plan !== null) {
+            SCENERY.create(plan);
+        }
     }
 
     public startChars() {
