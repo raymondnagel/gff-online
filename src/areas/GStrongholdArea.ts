@@ -5,12 +5,14 @@ import { COMMANDMENTS } from "../commandments";
 import { DIRECTION } from "../direction";
 import { ENEMY } from "../enemy";
 import { GRoom } from "../GRoom";
+import { KEYS } from "../keys";
 import { GFF } from "../main";
+import { PEOPLE } from "../people";
 import { RANDOM } from "../random";
 import { GSector } from "../regions/GSector";
 import { GStrongholdRegion } from "../regions/GStrongholdRegion";
 import { REGISTRY } from "../registry";
-import { BorderWall, CardDir, Dir9, GPoint3D, GSpirit } from "../types";
+import { RoomBorder, CardDir, Dir9, GPoint3D, GSpirit, GPerson } from "../types";
 import { GBuildingArea } from "./GBuildingArea";
 
 const EMPTY_C = '0,0,0';
@@ -25,14 +27,16 @@ const SECTOR_MAX = 9;
 const SECTOR_COLORS = COLOR.getSerialColors(40);
 
 export class GStrongholdArea extends GBuildingArea {
+    private strongholdIndex: number;
     private entranceRoom: GRoom;
     private bossRoom: GRoom;
+    private prophetChamber: GRoom;
     private armorKey: string;
     private region: GStrongholdRegion;
     private bossIndex: 0|1|2|3|4|5|6;
 
     private sectors: GSector[] = [];
-    private sectorBorders: Map<GSector, BorderWall[]> = new Map();
+    private sectorBorders: Map<GSector, RoomBorder[]> = new Map();
     private unconnectedRooms: GRoom[] = [];
     private sectorColorIndex: number = 0;
 
@@ -44,14 +48,25 @@ export class GStrongholdArea extends GBuildingArea {
             width,
             height
         );
+        GFF.genLog(`----------------- Creating stronghold interior: ${strongholdName}`);
         this.region = region;
         this.bossIndex = bossIndex;
         this.armorKey = armorKey;
         this.setGroundFloor(groundFloor);
         this.loadFloors(floorImageKeys);
         this.createSectors();
+        this.createKeys();
+        this.createDepthRooms();
         this.createShrines();
         this.createDoorways();
+    }
+
+    public setStrongholdIndex(index: number): void {
+        this.strongholdIndex = index;
+    }
+
+    public getStrongholdIndex(): number {
+        return this.strongholdIndex;
     }
 
     public isSafe(): boolean {
@@ -62,12 +77,24 @@ export class GStrongholdArea extends GBuildingArea {
         return this.entranceRoom;
     }
 
+    public setProphetChamber(room: GRoom): void {
+        this.prophetChamber = room;
+    }
+
+    public getProphetChamber(): GRoom {
+        return this.prophetChamber;
+    }
+
     public getBossRoom(): GRoom {
         return this.bossRoom;
     }
 
     public getBossSpirit(): GSpirit {
         return ENEMY.BOSS_SPIRITS[this.bossIndex];
+    }
+
+    public getCellRooms(): GRoom[] {
+        return this.getRooms(r => r.getPrisoner() !== undefined);
     }
 
     protected initRoom(room: GRoom): void {
@@ -218,7 +245,7 @@ export class GStrongholdArea extends GBuildingArea {
     }
 
     private borderSector(sector: GSector) {
-        const borderWalls: BorderWall[] = [];
+        const borderWalls: RoomBorder[] = [];
         for (let room of sector.getRooms()) {
             let neighbor: GRoom|null = room.getNeighbor(Dir9.N);
             if (neighbor && neighbor.getSector() !== room.getSector()) {
@@ -245,20 +272,87 @@ export class GStrongholdArea extends GBuildingArea {
     }
 
     private createSectorGateways(sector: GSector, allowMultiple: boolean = false) {
-        const borderWall = this.sectorBorders.get(sector) as BorderWall[];
+        const borderWall = this.sectorBorders.get(sector) as RoomBorder[];
         RANDOM.shuffle(borderWall);
         for (let b of borderWall) {
             const outerNeighbor: GRoom|null = b.room.getNeighbor(b.dir);
             if (outerNeighbor) {
                 const otherSector = outerNeighbor.getSector() as GSector;
-                GFF.genLog(`Checking border between sectors: ${sector.getRooms().length}/${sector.isConnected()} and ${otherSector.getRooms().length}/${otherSector.isConnected()}`);
+                // GFF.genLog(`Checking border between sectors: ${sector.getRooms().length}/${sector.isConnected()} and ${otherSector.getRooms().length}/${otherSector.isConnected()}`);
                 if (allowMultiple || sector.isConnected() !== otherSector.isConnected()) {
                     GSector.connectSectors(sector, outerNeighbor.getSector()!);
                     this.setWallByRoom(b.room, b.dir, false);
-                    this.setLockedDoorByRoom(b.room, b.dir, true);
+                    this.setLockedDoorByRoom(b.room, b.dir, 'placeholder');
                 }
             }
         }
+    }
+
+    /**
+     * This function explores the stronhold sector by sector, starting from the entrance room.
+     * For each connecting sector, it creates a key room in the current sector, ensuring that
+     * there are sufficient keys in each sector to continue to any further sectors.
+     */
+    private createKeys(): void {
+        let currentSector: GSector = this.entranceRoom.getSector() as GSector;
+
+        const lockedDoors = this.createKeysForSector(currentSector);
+
+        // Finally, re-lock all locked doors for gameplay
+        for (let lockedDoor of lockedDoors) {
+            this.setLockedDoorByRoom(lockedDoor.room, lockedDoor.dir, KEYS.getNextKeyVerse());
+        }
+
+        // Reset all rooms to undiscovered for gameplay
+        for (let room of this.getRooms()) {
+            room.conceal();
+        }
+    }
+
+    private createKeysForSector(sector: GSector): RoomBorder[] {
+        // Get all sectors that can be reached from this one via locked doors
+        const lockedSectors: GSector[] = [];
+        const lockedDoors: RoomBorder[] = [];
+        for (let room of sector.getRooms()) {
+            const roomLockedDoors = room.getLockedDoors();
+            lockedDoors.push(...roomLockedDoors);
+            roomLockedDoors.map(ld => {
+                return room.getNeighbor(ld.dir)!.getSector()!;
+            }).forEach(s => {
+                if (!lockedSectors.includes(s)) {
+                    lockedSectors.push(s);
+                }
+            });
+        }
+        GFF.genLog(`Sector (${sector.getRooms().length}) has ${lockedSectors.length} locked sectors connected.`);
+
+        // For each locked sector, create a key room in the current sector
+        for (let k: number = 0; k < lockedSectors.length; k++) {
+            this.createAccessibleKeyRoom(sector);
+        }
+        GFF.genLog(`Created ${lockedSectors.length} keys.`);
+
+        // Unlock all doors in the sector, so the current sector won't be revisited
+        for (let lockedDoor of lockedDoors) {
+            this.setLockedDoorByRoom(lockedDoor.room, lockedDoor.dir, null);
+        }
+        GFF.genLog(`Unlocked ${lockedDoors.length} doors.`);
+
+        // Recurse into each unlocked sector
+        for (let unlockedSector of lockedSectors) {
+            lockedDoors.push(...this.createKeysForSector(unlockedSector));
+        }
+
+        return lockedDoors;
+    }
+
+    private createAccessibleKeyRoom(sector: GSector): void {
+        let room: GRoom|null = null;
+        while (!room || !room.canHavePremiumChest()) {
+            room = RANDOM.randElement(sector.getRooms()) as GRoom;
+        }
+        room.planCenteredPremiumChestShrine('key', 'blue');
+        GFF.genLog(`Created key @ (${room.getX()},${room.getY()},${room.getFloor()})`);
     }
 
     /**
@@ -266,14 +360,85 @@ export class GStrongholdArea extends GBuildingArea {
      * during stronghold generation. Can also be used to remove a locked door
      * when completing the "key verse" minigame.
      */
-    public setLockedDoorByRoom(room: GRoom, dir: CardDir, isLocked: boolean) {
+    public setLockedDoorByRoom(room: GRoom, dir: CardDir, keyRef: string|null) {
         if (room !== null) {
-            room.setLockedDoor(dir, isLocked);
+            room.setLockedDoor(dir, keyRef);
             const neighboringRoom = room.getNeighbor(dir);
             if (neighboringRoom !== null) {
-                neighboringRoom.setLockedDoor(DIRECTION.getOpposite(dir) as CardDir, isLocked);
+                neighboringRoom.setLockedDoor(DIRECTION.getOpposite(dir) as CardDir, keyRef);
             }
         }
+    }
+
+    /**
+     * Determines the "depth" of each room in the stronghold, based on its
+     * distance from the entrance room; and then creates certain special rooms
+     * that should be placed at specific depths.
+     */
+    protected createDepthRooms(): void {
+        const roomsByDepth: GRoom[] = [];
+        this.getRooms().forEach(room => {
+            const deltaX = room.getX() - this.entranceRoom.getX();
+            const deltaY = room.getY() - this.entranceRoom.getY();
+            const deltaF = room.getFloor() - this.entranceRoom.getFloor();
+            const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY + (deltaF * 1.2) * (deltaF * 1.2));
+            room.setDepthDistance(distance);
+            roomsByDepth.push(room);
+        });
+
+        roomsByDepth.sort((a, b) => a.getDepthDistance() - b.getDepthDistance());
+
+        // Create the prophet's chamber: he will help guide the player through the stronghold.
+        const prophetRoom = this.chooseRoomAtDepth(RANDOM.randFloat(0.2, 0.4), roomsByDepth);
+        if (prophetRoom) {
+            prophetRoom.planProphetChamber();
+            prophetRoom.setProphetChamber();
+            GFF.genLog(`Prophet chamber placed at ${prophetRoom.getX()},${prophetRoom.getY()},${prophetRoom.getFloor()}`);
+        } else {
+            GFF.genLog(`No suitable room found for prophet chamber.`, true);
+        }
+
+        /**
+         * 1-2 prisoners will be held captive in the stronghold.
+         * Since unlocking the cell requires a key verse, we need to create
+         * an additional key room in the stronghold for each prisoner.
+         */
+
+        // First prisoner:
+        const prisoner1Room = this.chooseRoomAtDepth(RANDOM.randFloat(0.7, 0.9), roomsByDepth);
+        if (prisoner1Room) {
+            prisoner1Room.planPrisonerCell();
+            prisoner1Room.setPrisoner(null); // Cell planned, but no prisoner assigned yet
+            this.createAccessibleKeyRoom(prisoner1Room.getSector() as GSector);
+            GFF.genLog(`Cell created at ${prisoner1Room.getX()},${prisoner1Room.getY()},${prisoner1Room.getFloor()}`);
+        }
+
+        // 50% chance to add second prisoner:
+        const prisoner2Room = this.chooseRoomAtDepth(RANDOM.randFloat(0.6, 0.8), roomsByDepth);
+        if (prisoner2Room && RANDOM.flipCoin()) {
+            prisoner2Room.planPrisonerCell();
+            prisoner2Room.setPrisoner(null); // Cell planned, but no prisoner assigned yet
+            this.createAccessibleKeyRoom(prisoner2Room.getSector() as GSector);
+            GFF.genLog(`Cell created at ${prisoner2Room.getX()},${prisoner2Room.getY()},${prisoner2Room.getFloor()}`);
+        }
+    }
+
+    protected chooseRoomAtDepth(targetDepthPct: number, roomsByDepth: GRoom[]): GRoom|null {
+        const targetIndex = Math.floor(targetDepthPct * (roomsByDepth.length - 1));
+        // Try to find a room at the target depth:
+        if (!roomsByDepth[targetIndex].hasSpecialFeature()) {
+            return roomsByDepth[targetIndex];
+        }
+
+        // If not, try nearby rooms:
+        for (let offset = 0; offset < 20; offset++) {
+            if (!roomsByDepth[targetIndex + offset].hasSpecialFeature()) {
+                return roomsByDepth[targetIndex + offset];
+            } else if (!roomsByDepth[targetIndex - offset].hasSpecialFeature()) {
+                return roomsByDepth[targetIndex - offset];
+            }
+        }
+        return null;
     }
 
     protected setDoorwayByRoom(room: GRoom, dir: CardDir, hasDoorway: boolean) {
@@ -304,7 +469,7 @@ export class GStrongholdArea extends GBuildingArea {
             if (lowerRoom && upperRoom) {
                 GRoom.createPortal(lowerRoom, upperRoom);
             } else {
-                console.warn(`Staircase at (${stairPt.x},${stairPt.y},${stairPt.z}) is missing a connecting room.`);
+                console.error(`Staircase at (${stairPt.x},${stairPt.y},${stairPt.z}) is missing a connecting room.`);
             }
         }
     }
@@ -380,5 +545,10 @@ export class GStrongholdArea extends GBuildingArea {
         this.initRoom(room);
         this.unconnectedRooms.push(room);
         return room;
+    }
+
+    public getProphetTreasureText(): string {
+        // TODO: Construct a message based on actual treasures in the stronghold
+        return `Someday Brother Ray will give me the ability to divine the presence of special treasures within strongholds. Alas, until that day, I'm as clueless as you are. ¯\\_(ツ)_/¯`;
     }
 }

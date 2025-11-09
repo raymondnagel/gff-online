@@ -163,7 +163,7 @@ export class GWorldBuildContent extends GBaseScene {
             { area: AREA.DUNGEON_AREA, rooms: 70 },
             { area: AREA.KEEP_AREA, rooms: 81 },
             { area: AREA.FORTRESS_AREA, rooms: 83 },
-            { area: AREA.CASTLE_AREA, rooms: 112 },
+            { area: AREA.CASTLE_AREA, rooms: 113 },
             { area: AREA.WORLD_AREA, rooms: 256 },
         ];
 

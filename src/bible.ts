@@ -9,7 +9,12 @@ export type FocusVerses = {
 
 export namespace BIBLE {
 
-    export function getVerseText(bookName: string, chapterNo: number, verseNo: number): string | null {
+    export function getVerseTextByRef(verseRef: string): string|null {
+        const { bookName, chapterNo, verseNo } = parseReference(verseRef);
+        return getVerseText(bookName, chapterNo, verseNo);
+    }
+
+    export function getVerseText(bookName: string, chapterNo: number, verseNo: number): string|null {
         // Access the loaded XML data
         const kjvXml: XMLDocument = GFF.GAME.cache.xml.get('kjv') as XMLDocument;
 
@@ -165,4 +170,19 @@ export namespace BIBLE {
         };
     }
 
+    function parseReference(ref: string) {
+        const lastSpace = ref.lastIndexOf(' ');
+        if (lastSpace === -1) {
+            throw new Error(`Invalid reference: ${ref}`);
+        }
+
+        const bookName = ref.substring(0, lastSpace);
+        const numbers = ref.substring(lastSpace + 1);
+
+        const [chapterStr, verseStr] = numbers.split(':');
+        const chapterNo = parseInt(chapterStr);
+        const verseNo = parseInt(verseStr);
+
+        return { bookName, chapterNo, verseNo };
+    }
 }

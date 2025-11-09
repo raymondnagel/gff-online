@@ -14,6 +14,18 @@ export class GStrongholdKeep extends GStronghold {
      */
 
     constructor() {
-        super("Keep of Wickedness", "keep_front", AREA.KEEP_AREA);
+        super("Keep of Wickedness", 2, "keep_front", AREA.KEEP_AREA);
+    }
+
+    public getProphetThemeText(): string {
+        return `Thou art in the very heart of evil, the Keep of Wickedness. Beware the treasures of wickedness: for the end of those things is death! But walk by faith, and not by sight; and thou shalt not fall prey to the deceitfulness of sin.`;
+    }
+
+    public getProphetArmourText(): string {
+        return `The Breastplate of Righteousness shall be thy reward, if by faith thou dost overcome. For with the heart man believeth unto righteousness: even the righteousness of God which is by faith of Jesus Christ unto all and upon all them that believe.`;
+    }
+
+    public getProphetBossText(): string {
+        return `Wicked Belial reigneth within this stronghold, the enemy of all righteousness, whose sons have long perverted the right ways of the Lord. Therefore love righteousness, and hate wickedness: for what concord hath Christ with Belial?`;
     }
 }

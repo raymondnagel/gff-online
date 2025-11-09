@@ -3,7 +3,7 @@ import { RANDOM } from "../random";
 import { GRoom } from "../GRoom";
 import { GFF } from "../main";
 import { GRegion } from "../regions/GRegion";
-import { CardDir, Dir9, GFloor, GPoint2D, GPoint3D, ProgressCallback } from "../types";
+import { CardDir, CubeDir, Dir9, GFloor, GPoint2D, GPoint3D, ProgressCallback } from "../types";
 
 const HORZ_WALL_SECTIONS: number = 16;
 const VERT_WALL_SECTIONS: number = 11;
@@ -120,11 +120,11 @@ export class GArea {
         return RANDOM.randElement(this.roomsByFloor[floor]) as GRoom;
     }
 
-    public getRoomsWithCondition(condition: (r: GRoom) => boolean): GRoom[] {
+    public getRooms(condition?: (r: GRoom) => boolean): GRoom[] {
         const rooms: GRoom[] = [];
         for (let f: number = 0; f < this.floors.length; f++) {
             this.roomsByFloor[f].forEach(room => {
-                if (condition(room)) {
+                if (!condition || condition(room)) {
                     rooms.push(room);
                 }
             });
@@ -133,7 +133,7 @@ export class GArea {
     }
 
     public findNearestRoomWith(origin: GRoom, condition: (r: GRoom) => boolean): GRoom|null {
-        const rooms: GRoom[] = this.getRoomsWithCondition(condition);
+        const rooms: GRoom[] = this.getRooms(condition);
         let nearestRoom: GRoom|null = null;
         let nearestDistance: number = Number.MAX_VALUE;
         rooms.forEach(room => {
@@ -152,10 +152,10 @@ export class GArea {
 
     protected exploreContiguous(startRoom: GRoom) {
         startRoom.discover();
-        for (let d: number = 0; d < 4; d++) {
-            const dir: CardDir = DIRECTION.cardDirFrom4(d as 0|1|2|3);
+        for (let d: number = 0; d < 6; d++) {
+            const dir: CubeDir = DIRECTION.cubeDirFrom6(d as 0|1|2|3|4|5);
             const neighbor: GRoom|null = startRoom.getNeighbor(dir);
-            if (neighbor && !neighbor.isDiscovered() && !startRoom.hasFullWall(dir)) {
+            if (neighbor && (!neighbor.isDiscovered()) && startRoom.isAccessible(dir)) {
                 this.exploreContiguous(neighbor);
             }
         }

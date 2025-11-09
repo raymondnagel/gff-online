@@ -12,6 +12,7 @@ import { FRUITS } from "../fruits";
 import { COMMANDMENTS } from "../commandments";
 import { STATS } from "../stats";
 import { TOWN } from "../town";
+import { GStrongholdArea } from "../areas/GStrongholdArea";
 
 const INPUT_DEFAULT: GInputMode = new GInputMode('status.default');
 
@@ -194,7 +195,9 @@ export class GStatusUI extends GUIScene {
             fontSize: textSize,
             color: COLOR.GREY_1.str()
         }).setOrigin(0, 0);
-        this.add.text(x + infoGap2, y, `${KEYS.getObtainedCount()}`, {
+        const area = GFF.AdventureContent.getCurrentArea();
+        const keyCount = area instanceof GStrongholdArea ? PLAYER.getKeys(area.getStrongholdIndex()) : 0;
+        this.add.text(x + infoGap2, y, `${keyCount}`, {
             fontFamily: 'dyonisius',
             fontSize: textSize,
             color: COLOR.GREY_1.str()

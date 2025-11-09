@@ -12,6 +12,7 @@ import { PLAYER } from '../player';
 import { STATS } from '../stats';
 import { REGISTRY } from '../registry';
 import { GEnemySprite } from '../objects/chars/GEnemySprite';
+import { KEYS } from '../keys';
 
 const LOAD_COLOR: number     = 0xffffff;
 const PROGRESS_COLOR: number = 0x00c220;
@@ -120,6 +121,9 @@ export class GLoadingScene extends GBaseScene {
                  * selected game options (difficulty, game type, books order).
                  */
                 REGISTRY.init();
+
+                // Init key verses:
+                KEYS.initKeys();
 
                 // Init Commandments:
                 COMMANDMENTS.initCommandments();

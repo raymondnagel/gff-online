@@ -128,7 +128,7 @@ export class GStreetPreachCutscene extends GCutscene {
             sinner.setGoal(new GRestGoal(RANDOM.randInt(1000, 5000), sinner.getDirection()));
         });
 
-        PLAYER.getSprite().showFloatingText('-1 sermon');
+        PLAYER.getSprite().showFloatingText('-1 sermon', 'info');
         PLAYER.changeSermons(-1);
         PLAYER.giveGrace('major');
         STATS.changeInt('SermonsPreached', 1);

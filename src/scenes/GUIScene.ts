@@ -1,3 +1,4 @@
+import { GStrongholdArea } from "../areas/GStrongholdArea";
 import { COLOR } from "../colors";
 import { GConversation } from "../GConversation";
 import { KEYS } from "../keys";
@@ -92,17 +93,6 @@ export abstract class GUIScene extends GBaseScene {
                     }
                 }
             },
-            // {
-            //     option: 'Save',
-            //     hotkey: excludeNonSubscreens ? undefined : 's',
-            //     action: () => {
-            //         this.getSound().playSound('icon_click');
-            //         GPopup.createChoicePopup('Do you want to save the game?', 'Save Game', [
-            //             {option: 'Yes', hotkey: 'y', action: () => {GFF.log('Yes, I want to save the game!')}},
-            //             {option: 'No', hotkey: 'n', action: () => {GFF.log("No, I don't want to save the game!")}}
-            //         ]);
-            //     }
-            // },
             {
                 option: 'Glossary',
                 hotkey: 'g',
@@ -278,7 +268,9 @@ export abstract class GUIScene extends GBaseScene {
         // Standard count:
         this.standardText.text = `${PLAYER.getStandards()}`;
         // Key count:
-        this.keyText.text = `${KEYS.getObtainedCount()}`;
+        const area = GFF.AdventureContent.getCurrentArea();
+        const keyCount = area instanceof GStrongholdArea ? PLAYER.getKeys(area.getStrongholdIndex()) : 0;
+        this.keyText.text = `${keyCount}`;
     }
 
 

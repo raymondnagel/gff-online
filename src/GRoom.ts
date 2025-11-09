@@ -1,5 +1,5 @@
 import { GRegion } from "./regions/GRegion";
-import { CardDir, CubeDir, Dir9, GCityBlock, GColor, GDoorways, GPoint2D, GPoint3D, GRect, GRoomWalls, GSceneryDef, GSceneryPlan } from "./types";
+import { CardDir, CubeDir, Dir9, DirVert, GCityBlock, GColor, GDoorways, GLockedDoorRef, GPerson, GPoint2D, GPoint3D, GRect, GRoomWalls, GSceneryDef, GSceneryPlan, RoomBorder } from "./types";
 import { SCENERY } from "./scenery";
 import { GFF } from "./main";
 import { RANDOM } from "./random";
@@ -38,6 +38,8 @@ import { GStrongholdNorthArchTrigger } from "./triggers/GStrongholdNorthArchTrig
 import { GSector } from "./regions/GSector";
 import { GStrongholdArea } from "./areas/GStrongholdArea";
 import { GLockedDoor } from "./objects/touchables/GLockedDoor";
+import { KEYS } from "./keys";
+import { GProphetTrigger } from "./triggers/GProphetTrigger";
 
 const WALL_GUARD_THICK: number = 10;
 const WALL_CTRS: number[] = [
@@ -95,16 +97,24 @@ export class GRoom {
         [Dir9.S]: false,
         [Dir9.W]: false,
     };
-    private lockedDoors: GDoorways = {
-        [Dir9.N]: false,
-        [Dir9.E]: false,
-        [Dir9.S]: false,
-        [Dir9.W]: false,
+    private lockedDoors: GLockedDoorRef = {
+        [Dir9.N]: null,
+        [Dir9.E]: null,
+        [Dir9.S]: null,
+        [Dir9.W]: null,
     };
     private startRoom: boolean = false;
     private discovered: boolean = false;
     private travelAgency: boolean = false;
     private chestItem: string|null = null;
+    private depthDistance: number = 0;
+
+    private prophetChamber: boolean = false;
+
+    // The prisoner held captive in this room.
+    // null = cell planned but no prisoner assigned yet; undefined = no cell planned.
+    private prisoner: GPerson|null|undefined = undefined;
+    private cellVerseRef: string|null = null;
 
     // Permanent event triggers are added once when the room is planned
     private permanentEventTriggers: GEventTrigger[] = [];
@@ -127,6 +137,28 @@ export class GRoom {
             [Dir9.S]: new Array(HORZ_WALL_SECTIONS).fill(false),
             [Dir9.W]: new Array(VERT_WALL_SECTIONS).fill(false)
         };
+    }
+
+    public setDepthDistance(distance: number) {
+        this.depthDistance = distance;
+    }
+
+    public getDepthDistance(): number {
+        return this.depthDistance;
+    }
+
+    public hasSpecialFeature(): boolean {
+        return (
+            this.isProphetChamber()
+            || this.hasPremiumChest()
+            || this.getUpstairsRoom() !== null
+            || this.getDownstairsRoom() !== null
+            || this.getPrisoner() !== undefined
+            || this.church !== null
+            || this.town !== null
+            || this.stronghold !== null
+            || this.portalRoom !== null
+        );
     }
 
     public setStart() {
@@ -196,6 +228,30 @@ export class GRoom {
         return this.portalRoom;
     }
 
+    public setPrisoner(prisoner: GPerson|null) {
+        this.prisoner = prisoner;
+        if (prisoner !== null) {
+            this.cellVerseRef = KEYS.getNextKeyVerse();
+        }
+    }
+
+    public getPrisoner(): GPerson|null|undefined {
+        return this.prisoner;
+    }
+
+    public getCellVerseRef(): string|null {
+        return this.cellVerseRef;
+    }
+
+    public setProphetChamber() {
+        this.prophetChamber = true;
+        (this.area as GStrongholdArea).setProphetChamber(this);
+    }
+
+    public isProphetChamber(): boolean {
+        return this.prophetChamber;
+    }
+
     public setRegion(region: GRegion) {
         this.region = region;
         this.region.addRoom(this);
@@ -261,6 +317,10 @@ export class GRoom {
             return 'map_purple_chest';
         } else if (this.hasPlanKey('red_chest')) {
             return 'map_red_chest';
+        } else if (this.hasPlanKey('blue_chest')) {
+            return 'map_blue_chest';
+        } else if (this.hasPlanKey('gold_chest')) {
+            return 'map_gold_chest';
         }
         return null;
     }
@@ -306,8 +366,16 @@ export class GRoom {
         return !this.walls[dir].every(section => section === false);
     }
 
-    public hasFullWall(dir: CardDir): boolean {
-        return this.walls[dir].every(section => section === true);
+    public hasFullWall(dir: CubeDir): boolean {
+        return dir !== DirVert.UP
+            && dir !== DirVert.DOWN
+            && this.walls[dir].every(section => section === true);
+    }
+
+    public isAccessible(dir: CubeDir): boolean {
+        return (dir === DirVert.UP && this.getUpstairsRoom() !== null)
+            || (dir === DirVert.DOWN && this.getDownstairsRoom() !== null)
+            || (dir !== DirVert.UP && dir !== DirVert.DOWN && !this.hasFullWall(dir) && !this.hasLockedDoor(dir));
     }
 
     public getNearestWallCenter(wallDir: CardDir, point: GPoint2D): GPoint2D {
@@ -356,12 +424,26 @@ export class GRoom {
         return this.doorways[dir];
     }
 
-    public setLockedDoor(dir: CardDir, isLocked: boolean) {
-        this.lockedDoors[dir] = isLocked;
+    public setLockedDoor(dir: CardDir, keyRef: string|null) {
+        this.lockedDoors[dir] = keyRef;
     }
 
-    public hasLockedDoor(dir: CardDir): boolean {
-        return this.lockedDoors[dir];
+    public hasLockedDoor(dir: CubeDir): boolean {
+        return dir !== DirVert.UP
+            && dir !== DirVert.DOWN
+            && this.lockedDoors[dir] !== null;
+    }
+
+    public getLockedDoors(): RoomBorder[] {
+        const lockedDoors: RoomBorder[] = [];
+        const dirNums: CardDir[] = [Dir9.N, Dir9.E, Dir9.S, Dir9.W];
+        RANDOM.shuffle(dirNums);
+        for (let d of dirNums) {
+            if (this.hasLockedDoor(d)) {
+                lockedDoors.push({ room: this, dir: d as CardDir });
+            }
+        }
+        return lockedDoors;
     }
 
     public hasNeighbor(direction: CubeDir): boolean {
@@ -429,7 +511,13 @@ export class GRoom {
     }
 
     public isSafe(): boolean {
-        if (this.church || this.area.isSafe() || this.hasPlanKey('standard') || this.hasPlanKey('shrine_curtain_ctr_gold')) {
+        if (
+            this.church
+            || this.area.isSafe()
+            || this.hasPlanKey('standard')
+            || this.hasPlanKey('shrine_curtain_ctr_gold')
+            || this.isProphetChamber()
+        ) {
             return true;
         } else {
             return false;
@@ -445,11 +533,18 @@ export class GRoom {
     }
 
     public canHavePremiumChest(): boolean {
-        return !this.church && !this.town && !this.stronghold && !this.portalRoom && !this.hasPremiumChest();
+        return this.hasSpecialFeature() === false;
     }
 
     public removePremiumChest() {
         const index = this.plans.findIndex(plan => plan.key === 'blue_chest' || plan.key === 'red_chest' || plan.key === 'purple_chest' || plan.key === 'gold_chest');
+        if (index !== -1) {
+            this.plans.splice(index, 1);
+        }
+    }
+
+    public removePlanByKey(planKey: string) {
+        const index = this.plans.findIndex(plan => plan.key === planKey);
         if (index !== -1) {
             this.plans.splice(index, 1);
         }
@@ -777,16 +872,16 @@ export class GRoom {
 
         // Add locked doors, if any:
         if (this.hasLockedDoor(Dir9.N)) {
-            new GLockedDoor('vert_locked_door', 'N').setDepth(DEPTH.LOCKED_DOOR);
+            new GLockedDoor('vert_locked_door', this.lockedDoors[Dir9.N]!, 'N').setDepth(DEPTH.LOCKED_DOOR);
         }
         if (this.hasLockedDoor(Dir9.S)) {
-            new GLockedDoor('vert_locked_door', 'S').setDepth(DEPTH.LOCKED_DOOR);
+            new GLockedDoor('vert_locked_door', this.lockedDoors[Dir9.S]!, 'S').setDepth(DEPTH.LOCKED_DOOR);
         }
         if (this.hasLockedDoor(Dir9.W)) {
-            new GLockedDoor('west_locked_door').setDepth(DEPTH.LOCKED_DOOR);
+            new GLockedDoor('west_locked_door', this.lockedDoors[Dir9.W]!).setDepth(DEPTH.LOCKED_DOOR);
         }
         if (this.hasLockedDoor(Dir9.E)) {
-            new GLockedDoor('east_locked_door').setDepth(DEPTH.LOCKED_DOOR);
+            new GLockedDoor('east_locked_door', this.lockedDoors[Dir9.E]!).setDepth(DEPTH.LOCKED_DOOR);
         }
     }
 
@@ -1282,6 +1377,25 @@ export class GRoom {
 
         // Set item to be obtained when the chest is opened:
         this.chestItem = itemName;
+    }
+
+    public planProphetChamber(): void {
+        this.planPositionedScenery(SCENERY.def('prophet_bed'), 462, 300, 1, .5);
+        this.planPositionedScenery(SCENERY.def('prophet_table'), 562, 300, 0, .5);
+        this.addPermanentEventTrigger(new GProphetTrigger(512, 380));
+    }
+
+    public planPrisonerCell(): void {
+        const cellX: number = 430.5;
+        const cellY: number = 250;
+        this.addSceneryPlan('cell_back', cellX + 11, cellY);
+        this.addSceneryPlan('cell_left', cellX, cellY + 1);
+        this.addSceneryPlan('cell_right', cellX + 144, cellY + 1);
+        this.addSceneryPlan('cell_front_left', cellX, cellY + 25);
+        this.addSceneryPlan('cell_front_right', cellX + 109, cellY + 25);
+        this.addSceneryPlan('cell_front_top', cellX + 52, cellY + 25);
+        this.addSceneryPlan('cell_front_bottom', cellX + 52, cellY + 122);
+        this.addSceneryPlan('cell_locked_door', cellX + 53, cellY + 33);
     }
 
     public planTownStreets(roadNorth: boolean, roadEast: boolean, roadSouth: boolean, roadWest: boolean): GCityBlock[] {

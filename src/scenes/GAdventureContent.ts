@@ -52,6 +52,7 @@ import { GIllusionaryBlock } from '../objects/touchables/GIllusionaryBlock';
 import { GImpSprite } from '../objects/chars/GImpSprite';
 import { GDevilSprite } from '../objects/chars/GDevilSprite';
 import { SCENERY } from '../scenery';
+import { GProphetSprite } from '../objects/chars/GProphetSprite';
 
 const MOUSE_UI_BUTTON: string = 'MOUSE_UI_BUTTON';
 
@@ -190,6 +191,8 @@ export class GAdventureContent extends GContentScene {
             switch(keyEvent.key) {
                 case '=':
                     // Can be used for testing purposes
+                    const physCtr = this.player.getPhysicalCenter();
+                    console.log(`Player @ ${physCtr.x},${physCtr.y} in room (${this.getCurrentRoom()!.getX()},${this.getCurrentRoom()!.getY()}) floor ${this.getCurrentRoom()!.getFloor()}`);
                     break;
                 case '`':
                     if (keyEvent.ctrlKey) {
@@ -449,7 +452,9 @@ export class GAdventureContent extends GContentScene {
         // Capture all rooms
         for (let y = 0; y < h; y++) {
             for (let x = 0; x < w; x++) {
-                await captureRoom(x, y);
+                if (area.containsRoom(this.playerFloor, x, y)) {
+                    await captureRoom(x, y);
+                }
             }
         }
 
@@ -752,7 +757,7 @@ export class GAdventureContent extends GContentScene {
 
             } else {
                 // Non-safe rooms:
-                this.doImpSpawns();
+                this.doEnemySpawns();
 
                 // 33% chance to spawn a common chest:
                 if (RANDOM.randPct() <= .33) {
@@ -780,7 +785,7 @@ export class GAdventureContent extends GContentScene {
             // Safe rooms:
         } else {
             // Non-safe rooms:
-            this.doImpSpawns();
+            this.doEnemySpawns();
 
             // 33% chance to spawn a common chest:
             if (RANDOM.randPct() <= .33) {
@@ -789,7 +794,7 @@ export class GAdventureContent extends GContentScene {
         }
     }
 
-    public doImpSpawns() {
+    public doEnemySpawns() {
         const diff: GDifficulty = GFF.getDifficulty();
         const enemiesToSpawn = RANDOM.randInt(1, diff.maxRandomEnemies);
 
@@ -817,8 +822,14 @@ export class GAdventureContent extends GContentScene {
                 }
             });
         } else if (this.canSpawnDevil()) {
-            for (let i = 0; i < enemiesToSpawn; i++) {
-                this.addRandomDevil();
+            if (this.getCurrentRoom()!.getPrisoner()) {
+                // If there is a prisoner, spawn cell-guard devils:
+                this.spawnCellGuardDevils();
+            } else {
+                // Otherwise, spawn random devils:
+                for (let i = 0; i < enemiesToSpawn; i++) {
+                    this.addRandomDevil();
+                }
             }
         }
     }
@@ -979,7 +990,7 @@ export class GAdventureContent extends GContentScene {
      * locations are deemed to be non-critical, and may not spawn at all
      * if an invalid location is chosen.
      */
-    public spawnDevil(devil: GSpirit|GDevilSprite, location?: GPoint2D): GCharSprite|null {
+    public spawnDevil(devil: GSpirit|GDevilSprite, location?: GPoint2D): GDevilSprite|null {
         const sprite: GDevilSprite = devil instanceof GDevilSprite ?
             devil :
             new GDevilSprite(devil, 0, 0);
@@ -994,6 +1005,20 @@ export class GAdventureContent extends GContentScene {
             sprite.setPosition(spawnPoint.x, spawnPoint.y);
             this.addEnemy(sprite);
             return sprite;
+        }
+    }
+
+    public spawnCellGuardDevils() {
+        // const prisoner = this.spawnPerson(room.getPrisoner()!, {x: 460, y: 271}, 512, 363) as GPersonSprite;
+
+        // If difficulty is odd, spawn one devil in the center:
+        if (GFF.getDifficulty().level % 2 === 1) {
+            this.addRandomDevil({x: 460, y: 320}, {x: 512, y: 412});
+        }
+        // If difficulty is 2 or higher, spawn two more devils to the sides:
+        if (GFF.getDifficulty().level > 1) {
+            this.addRandomDevil({x: 410, y: 320}, {x: 462, y: 412});
+            this.addRandomDevil({x: 510, y: 320}, {x: 562, y: 412});
         }
     }
 
@@ -1068,6 +1093,14 @@ export class GAdventureContent extends GContentScene {
         } else if (room.getArea() === AREA.WORLD_AREA) {
             // Add random people from nearby towns
             this.spawnNeighbors(room);
+        } else if (room.getPrisoner()) {
+            // Spawn the prisoner if there is one (eventually there will be a cell to put him in)
+            const prisoner = this.spawnPerson(room.getPrisoner()!, {x: 460, y: 271}) as GPersonSprite;
+            prisoner.setPrisoner(true);
+        } else if (room.isProphetChamber()) {
+            // Spawn the prophet if there is one
+            const prophet: GProphetSprite = new GProphetSprite(0, 0)
+            this.spawnPerson(prophet, {x: 460, y: 300});
         }
     }
 
@@ -1189,7 +1222,7 @@ export class GAdventureContent extends GContentScene {
         }
     }
 
-    public addRandomDevil(location?: GPoint2D) {
+    public addRandomDevil(location?: GPoint2D, guardPoint?: GPoint2D) {
         // Only spawn a devil if the player is not in a conversation or cutscene:
         if (this.isConversationOrCutsceneActive()) {
             return;
@@ -1200,7 +1233,10 @@ export class GAdventureContent extends GContentScene {
         const unusedSpirits: GSpirit[] = ENEMY.getSpirits().filter((s: GSpirit) => !usedSpirits.includes(s));
 
         if (unusedSpirits.length > 0) {
-            this.spawnDevil(RANDOM.randElement(unusedSpirits), location);
+            const devil = this.spawnDevil(RANDOM.randElement(unusedSpirits), location);
+            if (devil && guardPoint) {
+                devil.guard(guardPoint);
+            }
         }
     }
 

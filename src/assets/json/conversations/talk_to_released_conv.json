@@ -1,0 +1,28 @@
+[
+  {
+    "id": "start",
+    "speaker": "other",
+    "hearer": "player",
+    "next": "captiveRejoice"
+  },
+  {
+    "id": "captiveRejoice",
+    "speaker": "other",
+    "hearer": "player",
+    "text": "Hallelujah! The Son hath made me free indeed!",
+    "preCmd": "rejoiceEvermore()",
+    "next": "playerAdmonish"
+  },
+  {
+    "id": "playerAdmonish",
+    "speaker": "player",
+    "hearer": "other",
+    "text": "Amen! Stand fast therefore in the liberty wherewith Christ hath made us free, and be not entangled again with the yoke of bondage!",
+    "next": "endConversation"
+  },
+  {
+    "id": "endConversation",
+    "speaker": "player",
+    "hearer": "other"
+  }
+]

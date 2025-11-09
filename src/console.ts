@@ -1,6 +1,8 @@
 import { AREA } from "./area";
 import { ARMORS } from "./armors";
+import { BOOKS } from "./books";
 import { CHURCH } from "./church";
+import { COMMANDMENTS } from "./commandments";
 import { FRUITS } from "./fruits";
 import { GChurch } from "./GChurch";
 import { GLOSSARY } from "./glossary";
@@ -11,12 +13,41 @@ import { PHYSICS } from "./physics";
 import { PLAYER } from "./player";
 import { REGISTRY } from "./registry";
 import { IntegerStatName, STATS } from "./stats";
-import { NINE, SIX } from "./types";
+import { NINE, SIX, TEN } from "./types";
 
 export namespace CONSOLE {
 
     // Commands that can be executed in the test console
     const CMD_FUNCTIONS: Record<string, (...args: any[]) => string> = {
+        cheatFull: () => {
+            for (let i = 0; i < 50; i++) {
+                PLAYER.levelUp();
+            }
+            for (let i = 1; i <= 6; i++) {
+                ARMORS.obtainArmor(i as SIX);
+            }
+            for (let i = 1; i <= 9; i++) {
+                FRUITS.obtainFruit(i as NINE);
+            }
+            for (let i = 1; i <= 10; i++) {
+                COMMANDMENTS.obtainCommandment(i as TEN);
+            }
+            const books = BOOKS.getAllBooks();
+            books.forEach(bookName => {
+                BOOKS.obtainBook(bookName);
+                BOOKS.setBookEnabled(bookName, true);
+            });
+            PLAYER.changeSeeds(99);
+            PLAYER.changeSermons(99);
+            PLAYER.changeStandards(99);
+            for (let i = 0; i < 4; i++) {
+                PLAYER.changeKeys(i, 99);
+            }
+            PLAYER.setFaith(PLAYER.getMaxFaith());
+            PLAYER.setGrace(PLAYER.getMaxGrace());
+            playSuccess();
+            return 'Ok';
+        },
         cheatFaith: (amount: number) => {
             PLAYER.setFaith(amount);
             playSuccess();
@@ -75,6 +106,13 @@ export namespace CONSOLE {
         },
         cheatStandards: (amount: number) => {
             PLAYER.changeStandards(amount);
+            playSuccess();
+            return 'Ok';
+        },
+        cheatKeys: (amount: number) => {
+            for (let i = 0; i < 4; i++) {
+                PLAYER.changeKeys(i, amount);
+            }
             playSuccess();
             return 'Ok';
         },
@@ -203,7 +241,69 @@ export namespace CONSOLE {
                 return 'Ok';
             } else {
                 playError();
-                return `Invalid boss number: ${bossNum}`;
+                return `Invalid stronghold number: ${bossNum}`;
+            }
+        },
+        prophet(prophetNum: number) {
+            let room;
+            switch (prophetNum) {
+                case 1:
+                    room = AREA.TOWER_AREA.getProphetChamber();
+                    break;
+                case 2:
+                    room = AREA.DUNGEON_AREA.getProphetChamber();
+                    break;
+                case 3:
+                    room = AREA.KEEP_AREA.getProphetChamber();
+                    break;
+                case 4:
+                    room = AREA.FORTRESS_AREA.getProphetChamber();
+                    break;
+                case 5:
+                    room = AREA.CASTLE_AREA.getProphetChamber();
+                    break;
+                default:
+                    room = null;
+            }
+            if (room) {
+                GFF.AdventureContent.hideTestConsole();
+                GFF.AdventureContent.warpToRoom(room as GRoom);
+                playSuccess();
+                return 'Ok';
+            } else {
+                playError();
+                return `Invalid stronghold number: ${prophetNum}`;
+            }
+        },
+        cell(cellNum: number) {
+            let room;
+            switch (cellNum) {
+                case 1:
+                    room = AREA.TOWER_AREA.getRooms(room => room.getPrisoner() !== undefined)[0];
+                    break;
+                case 2:
+                    room = AREA.DUNGEON_AREA.getRooms(room => room.getPrisoner() !== undefined)[0];
+                    break;
+                case 3:
+                    room = AREA.KEEP_AREA.getRooms(room => room.getPrisoner() !== undefined)[0];
+                    break;
+                case 4:
+                    room = AREA.FORTRESS_AREA.getRooms(room => room.getPrisoner() !== undefined)[0];
+                    break;
+                case 5:
+                    room = AREA.CASTLE_AREA.getRooms(room => room.getPrisoner() !== undefined)[0];
+                    break;
+                default:
+                    room = null;
+            }
+            if (room) {
+                GFF.AdventureContent.hideTestConsole();
+                GFF.AdventureContent.warpToRoom(room as GRoom);
+                playSuccess();
+                return 'Ok';
+            } else {
+                playError();
+                return `Invalid stronghold number: ${cellNum}`;
             }
         },
         listObjects() {

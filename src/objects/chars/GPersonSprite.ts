@@ -18,6 +18,8 @@ import { GChurch } from '../../GChurch';
 import { GRoom } from '../../GRoom';
 import { STATS } from '../../stats';
 import { REGISTRY } from '../../registry';
+import { AREA } from '../../area';
+import { GStrongholdArea } from '../../areas/GStrongholdArea';
 
 const GENDER     = ['m', 'f'] as const;
 const SKIN_COLOR = ['w', 'y', 't', 'b'] as const;
@@ -46,6 +48,7 @@ export class GPersonSprite extends GCharSprite implements GInteractable {
     private person: GPerson;
     private readyToTalk: boolean = true;
     private justConverted: boolean = false;
+    private prisoner: boolean = false;
 
     constructor(person: GPerson, x: number, y: number) {
         super(
@@ -83,6 +86,14 @@ export class GPersonSprite extends GCharSprite implements GInteractable {
         this.justConverted = true;
     }
 
+    public setPrisoner(isPrisoner: boolean) {
+        this.prisoner = isPrisoner;
+    }
+
+    public isPrisoner(): boolean {
+        return this.prisoner;
+    }
+
     public setReadyToTalk(ready: boolean) {
         if (REGISTRY.getBoolean('isChatty')) {
             this.readyToTalk = true;
@@ -104,8 +115,21 @@ export class GPersonSprite extends GCharSprite implements GInteractable {
     }
 
     protected thinkOfNextGoal(): GGoal|null {
-        // Persons have two "modes", depending on whether they are a companion
-        if (this.isCompanion()) {
+        // Persons have three "modes", depending on whether they are a
+        // companion, a prisoner, or neither:
+        if (this.isPrisoner()) {
+            if (RANDOM.flipCoin()) {
+                this.showFloatingText(RANDOM.randElement([
+                    'Help!',
+                    'Please, help me!',
+                    'Have mercy on me!',
+                ]), 'phrase');
+                return new GRestGoal(RANDOM.randInt(3000, 7000));
+            } else {
+                const x = RANDOM.randElement([468, 512, 556]);
+                return new GWalkToPointGoal(x, 363, 1);
+            }
+        } else if (this.isCompanion()) {
             // Companion: follow the player, but only if he isn't very close
             if (PLAYER.getSprite().getDistanceToChar(this) > 100) {
                 return new GFollowPlayerGoal(RANDOM.randInt(1000, 5000));
@@ -253,6 +277,13 @@ export class GPersonSprite extends GCharSprite implements GInteractable {
         // Increment the conversation count:
         this.person.conversations++;
 
+        if (this.isPrisoner()) {
+            GConversation.fromFile('talk_to_prisoner_conv', [
+                { label: 'other', char: this }
+            ]);
+            return;
+        }
+
         if (this.person.faith >= 100) {
             // This person is a saint!
 
@@ -285,9 +316,17 @@ export class GPersonSprite extends GCharSprite implements GInteractable {
                 // if so, trigger a special one-time conversation:
                 if (this.justConverted && this.readyToTalk) {
                     this.setReadyToTalk(false);
-                    GConversation.fromFile('convert_conv', [
-                        { label: 'saint', char: this }
-                    ]);
+                    if (room.getArea() === AREA.WORLD_AREA) {
+                        // Normal world area conversion:
+                        GConversation.fromFile('convert_conv', [
+                            { label: 'saint', char: this }
+                        ]);
+                    } else {
+                        // Stronghold deliverance conversion:
+                        GConversation.fromFile('rescue_conv', [
+                            { label: 'saint', char: this }
+                        ]);
+                    }
                 }
             }
 

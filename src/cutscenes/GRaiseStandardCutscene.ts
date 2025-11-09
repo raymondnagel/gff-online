@@ -100,7 +100,7 @@ export class GRaiseStandardCutscene extends GCutscene {
     }
 
     protected finalize(): void {
-        PLAYER.getSprite().showFloatingText('-1 standard');
+        PLAYER.getSprite().showFloatingText('-1 standard', 'info');
         PLAYER.changeStandards(-1);
         PLAYER.giveGrace('major');
         STATS.changeInt('StandardsRaised', 1);

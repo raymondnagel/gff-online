@@ -7,17 +7,20 @@ import { GFF } from "../../main";
 import { PLAYER } from "../../player";
 import { SCENERY } from "../../scenery";
 import { CardDir, Dir9 } from "../../types";
+import { GPopup } from "../components/GPopup";
 import { GTouchable } from "./GTouchable";
 
 
 export class GLockedDoor extends GTouchable {
 
+    private verseRef: string;
     private direction: CardDir;
     private isUnlocking: boolean = false;
 
-    constructor(key: string, vertDir?: 'N'|'S') {
+    constructor(key: string, verseRef: string, vertDir?: 'N'|'S') {
         super(SCENERY.def(key), 0, 0);
         this.setOrigin(0, 0);
+        this.verseRef = verseRef;
 
         switch (`${key}${vertDir ? vertDir : ''}`) {
             case 'vert_locked_doorN':
@@ -45,20 +48,28 @@ export class GLockedDoor extends GTouchable {
     }
 
     public doTouch() {
-        // Unlock the door:
-        this.isUnlocking = true;
         const room: GRoom = GFF.AdventureContent.getCurrentRoom() as GRoom;
         const area: GStrongholdArea = room.getArea() as GStrongholdArea;
-        area.setLockedDoorByRoom(room, this.direction, false);
+        const keys = PLAYER.getKeys(area.getStrongholdIndex());
+        GPopup.createUnlockPopup(this.verseRef, keys > 0).onClose(() => {
+            if (PLAYER.getKeys(area.getStrongholdIndex()) < keys) {
+                // The player has used a key to unlock the door
+                this.isUnlocking = true;
+                area.setLockedDoorByRoom(room, this.direction, null);
 
-        // Fade out the door and destroy it once fully transparent:
-        GFF.AdventureContent.getSound().playSound('stronghold_open');
-        GFF.AdventureContent.tweens.add({
-            targets: this,
-            alpha: 0,
-            duration: 500,
-            onComplete: () => {
-                this.destroy();
+                // Show floating text to indicate the key verse was used:
+                PLAYER.getSprite().showFloatingText('-1 key verse', 'info');
+
+                // Fade out the door and destroy it once fully transparent:
+                GFF.AdventureContent.getSound().playSound('stronghold_open');
+                GFF.AdventureContent.tweens.add({
+                    targets: this,
+                    alpha: 0,
+                    duration: 200,
+                    onComplete: () => {
+                        this.destroy();
+                    }
+                });
             }
         });
     }

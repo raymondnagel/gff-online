@@ -8,7 +8,7 @@ export class GFortressRegion extends GStrongholdRegion {
         // Call the parent method for common stronghold furnishing:
         super._furnishRoom(room);
 
-        if (!room.hasPremiumChest() && !room.getUpstairsRoom() && !room.getDownstairsRoom()) {
+        if (!room.hasSpecialFeature()) {
             // Add devil statues randomly:
             for (let i = 0; i < 5; i++) {
                 const x = RANDOM.randInt(2, 13);

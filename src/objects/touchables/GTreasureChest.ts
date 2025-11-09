@@ -196,8 +196,8 @@ export class GTreasureChest extends GTouchable {
                     ARMORS.obtainArmor(armorNum);
                 }
             };
-        } else {
-            // Otherwise, it's a commandment; look it up in the GLOSSARY:
+        } else if (itemName.startsWith('cmd')) {
+            // It's a commandment; look it up in the GLOSSARY:
             entry = GLOSSARY.lookupEntry(itemName);
             const cmdNum = parseInt(itemName.split('_')[1]) as TEN;
             return {
@@ -205,6 +205,16 @@ export class GTreasureChest extends GTouchable {
                 type: 'item',
                 onCollect: () => {
                     COMMANDMENTS.obtainCommandment(cmdNum);
+                }
+            };
+        } else {
+            // Otherwise, it's a key for the stronghold:
+            return {
+                name: itemName,
+                type: 'item',
+                onCollect: () => {
+                    const area = room.getArea() as GStrongholdArea;
+                    PLAYER.changeKeys(area.getStrongholdIndex(), 1);
                 }
             };
         }

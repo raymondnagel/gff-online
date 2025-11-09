@@ -138,20 +138,29 @@ export class GMapUI extends GUIScene {
 
                     // Draw feature, if applicable:
                     if (feature) {
-                        switch (feature) {
-                            case 'map_purple_chest':
-                            case 'map_red_chest':
-                                // Chests are shown if the room is marked, regardless of discovery:
-                                if (PLAYER.getMarkedChestRoom() === room) {
-                                    this.lowerTexture.draw(feature, cellX, cellY);
-                                }
-                                break;
-                            default:
-                                // Other features are shown only if the room is discovered:
-                                if (room.isDiscovered() || REGISTRY.getBoolean('isDebug')) {
-                                    this.lowerTexture.draw(feature, cellX, cellY);
-                                }
-                                break;
+                        // If debug mode, always draw feature.
+                        if (REGISTRY.getBoolean('isDebug')) {
+                            this.lowerTexture.draw(feature, cellX, cellY);
+                        } else {
+                            switch (feature) {
+                                case 'map_purple_chest':
+                                case 'map_red_chest':
+                                    // Marked chests are shown if the room is marked, regardless of discovery:
+                                    if (PLAYER.getMarkedChestRoom() === room) {
+                                        this.lowerTexture.draw(feature, cellX, cellY);
+                                    }
+                                    break;
+                                // Blue and gold chests are never shown on the map (only in debug):
+                                case 'map_blue_chest':
+                                case 'map_gold_chest':
+                                    break;
+                                default:
+                                    // Other features are shown only if the room is discovered:
+                                    if (room.isDiscovered() || REGISTRY.getBoolean('isDebug')) {
+                                        this.lowerTexture.draw(feature, cellX, cellY);
+                                    }
+                                    break;
+                            }
                         }
                     }
 
@@ -159,7 +168,7 @@ export class GMapUI extends GUIScene {
                     if (REGISTRY.getBoolean('isDebug') && this.area instanceof GStrongholdArea) {
                         const sector = room.getSector();
                         if (sector) {
-                            this.lowerTexture.fill(sector.getColor().num(), 0.5, cellX, cellY, CELL_WIDTH, CELL_HEIGHT);
+                            this.lowerTexture.fill(sector.getColor().num(), 0.25, cellX, cellY, CELL_WIDTH, CELL_HEIGHT);
                         }
                     }
 

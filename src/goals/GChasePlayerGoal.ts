@@ -14,7 +14,7 @@ export class GChasePlayerGoal extends GGoal {
     public start(): void {
         const char: GImpSprite = this.char as GImpSprite;
         char.setChasing(true);
-        char.showFloatingText('Grrr!');
+        char.showFloatingText('Grrr!', 'word');
         GFF.AdventureContent.getSound().playSound('imp_growl');
     }
 

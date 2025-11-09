@@ -1,0 +1,104 @@
+[
+  {
+    "id": "start",
+    "speaker": "player",
+    "hearer": "other",
+    "fork": "personMet('playerAgainHello','playerInitialHello')"
+  },
+  {
+    "id": "playerInitialHello",
+    "speaker": "player",
+    "hearer": "other",
+    "text": "Hello! You do not look like a denizen of such a place. Who are you?",
+    "postCmd": "familiarize()",
+    "next": "prophetInitialHello"
+  },
+  {
+    "id": "prophetInitialHello",
+    "speaker": "other",
+    "hearer": "player",
+    "text": "Nay, HEARER_SAINT: I am SPEAKER_FIRST, a prophet of the LORD. I have been waiting for thine arrival, praying for thee, that thy faith fail not. I would share counsel with thee, that thou mayest overcome this stronghold of the enemy.",
+    "next": "prophetMenu"
+  },
+  {
+    "id": "playerAgainHello",
+    "speaker": "player",
+    "hearer": "other",
+    "text": "Greetings, HEARER_FIRST.",
+    "postCmd": "familiarize()",
+    "next": "prophetAgainHello"
+  },
+  {
+    "id": "prophetAgainHello",
+    "speaker": "other",
+    "hearer": "player",
+    "text": "I rejoice to see thee again, dear brother! How may I aid thee?",
+    "next": "prophetMenu"
+  },
+  {
+    "id": "prophetMenu",
+    "speaker": "player",
+    "hearer": "other",
+    "choice": [
+      { "choiceText": "Tell me about this stronghold.", "resultId": "aboutStronghold"},
+      { "choiceText": "What Armour of God can I find here?", "resultId": "aboutArmour"},
+      { "choiceText": "Are there any other treasures in here?", "resultId": "aboutTreasures"},
+      { "choiceText": "I sense a powerful enemy nearby...", "resultId": "aboutBoss"},
+      { "choiceText": "Farewell.", "resultId": "farewell"}
+    ]
+  },
+  {
+    "id": "aboutStronghold",
+    "speaker": "other",
+    "hearer": "player",
+    "textFunc": "informStronghold()",
+    "next": "prophetMenu"
+  },
+  {
+    "id": "aboutArmour",
+    "speaker": "other",
+    "hearer": "player",
+    "textFunc": "informArmour()",
+    "next": "prophetMenu"
+  },
+  {
+    "id": "aboutTreasures",
+    "speaker": "other",
+    "hearer": "player",
+    "textFunc": "informTreasures()",
+    "next": "prophetMenu"
+  },
+  {
+    "id": "aboutBoss",
+    "speaker": "other",
+    "hearer": "player",
+    "textFunc": "informBoss()",
+    "next": "prophetMenu"
+  },
+  {
+    "id": "farewell",
+    "speaker": "other",
+    "hearer": "player",
+    "fork": "needsFaith('restoreFaith','prophetBye')"
+  },
+  {
+    "id": "restoreFaith",
+    "speaker": "other",
+    "hearer": "player",
+    "text": "Brother, faith cometh by hearing, and hearing by the word of God. Stand thou still a while, that I may shew thee the word of God.",
+    "postCmd": "restoreFaith()",
+    "next": "endConversation"
+  },
+  {
+    "id": "prophetBye",
+    "speaker": "other",
+    "hearer": "player",
+    "text": "God speed, my brother. Be strong in the Lord, and in the power of his might.",
+    "next": "endConversation"
+  },
+  {
+    "id": "endConversation",
+    "speaker": "player",
+    "hearer": "other"
+  }
+]

@@ -66,6 +66,7 @@ export type GKeyList = {
 
 // Represents a game difficulty:
 export type GDifficulty = {
+    level: number;
     levelName: string;
     enemyBaseAttack: number;
     enemyAttackPerLevel: number;
@@ -238,7 +239,7 @@ export interface GSceneryDef {
 
 export type GFloor = GRoom[][];
 
-export type BorderWall = {
+export type RoomBorder = {
     room: GRoom,
     dir: CardDir,
 };
@@ -249,6 +250,10 @@ export type GRoomWalls = {
 
 export type GDoorways = {
     [key in CardDir]: boolean;
+};
+
+export type GLockedDoorRef = {
+    [key in CardDir]: string|null;
 };
 
 export type GInteriorWallPiece =

@@ -1,13 +1,13 @@
 import { GStronghold } from "./strongholds/GStronghold";
 
 export namespace STRONGHOLD {
-    let strongholds: GStronghold[] = [];
+    const strongholds: GStronghold[] = [];
 
-    export function addGStronghold(stronghold: GStronghold) {
+    export function addStronghold(stronghold: GStronghold) {
         strongholds.push(stronghold);
     }
 
-    export function getGStrongholds() {
+    export function getStrongholds() {
         return strongholds;
     }
 }

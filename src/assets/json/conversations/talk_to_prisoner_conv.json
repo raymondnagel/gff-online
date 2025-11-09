@@ -1,0 +1,48 @@
+[
+  {
+    "id": "start",
+    "speaker": "player",
+    "hearer": "other",
+    "fork": "personMet('prisonerInstruct','playerHello')"
+  },
+  {
+    "id": "playerHello",
+    "speaker": "player",
+    "hearer": "other",
+    "text": "Hey! Who are you? What are you doing in there?",
+    "postCmd": "familiarize()",
+    "next": "prisonerIntro"
+  },
+  {
+    "id": "prisonerIntro",
+    "speaker": "other",
+    "hearer": "player",
+    "text": "I'm so glad to see you! My name is SPEAKER_FIRST. I should never have come here... I was taken captive by the devil at his will!",
+    "next": "prisonerInstruct"
+  },
+  {
+    "id": "prisonerInstruct",
+    "speaker": "other",
+    "hearer": "player",
+    "fork": "isEnemyPresent('instructEnemyAndLock','instructLock')"
+  },
+  {
+    "id": "instructEnemyAndLock",
+    "speaker": "other",
+    "hearer": "player",
+    "text": "Please, help me! You'll have to defeat the guards first, and then unlock the cell.",
+    "next": "endConversation"
+  },
+  {
+    "id": "instructLock",
+    "speaker": "other",
+    "hearer": "player",
+    "text": "Please, help me! You'll need to use a key verse to unlock the cell.",
+    "next": "endConversation"
+  },
+  {
+    "id": "endConversation",
+    "speaker": "player",
+    "hearer": "other"
+  }
+]

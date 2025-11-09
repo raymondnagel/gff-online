@@ -1,7 +1,7 @@
 import { GArea } from "./GArea";
 import { GRegion } from "../regions/GRegion";
 import { GRoom } from "../GRoom";
-import { BorderWall, CardDir, Dir9, GCityBlock, GPerson } from "../types";
+import { RoomBorder, CardDir, Dir9, GCityBlock, GPerson } from "../types";
 import { GPlainRegion } from "../regions/GPlainRegion";
 import { GForestRegion } from "../regions/GForestRegion";
 import { GDesertRegion } from "../regions/GDesertRegion";
@@ -35,6 +35,7 @@ import { GStrongholdDungeon } from "../strongholds/GStrongholdDungeon";
 import { GStrongholdFortress } from "../strongholds/GStrongholdFortress";
 import { GStrongholdKeep } from "../strongholds/GStrongholdKeep";
 import { GStrongholdTower } from "../strongholds/GStrongholdTower";
+import { STRONGHOLD } from "../stronghold";
 
 const WORLD_WIDTH: number = 16;
 const WORLD_HEIGHT: number = 16;
@@ -97,11 +98,11 @@ export class GWorldArea extends GArea {
     private createRegions() {
         // Create regions in order of how restrictive their geographical zones are;
         // return lists of their border walls, so we can use them when creating gateways
-        const tundraBorders: BorderWall[] = this.createRegion(REGION_TUNDRA, 0, 2);
-        const desertBorders: BorderWall[] = this.createRegion(REGION_DESERT, 13, 15);
-        const swampBorders: BorderWall[] = this.createRegion(REGION_SWAMP, 9, 13);
-        const forestBorders: BorderWall[] = this.createRegion(REGION_FOREST, 3, 10);
-        const mountBorders: BorderWall[] = this.createRegion(REGION_MOUNT, 1, 13);
+        const tundraBorders: RoomBorder[] = this.createRegion(REGION_TUNDRA, 0, 2);
+        const desertBorders: RoomBorder[] = this.createRegion(REGION_DESERT, 13, 15);
+        const swampBorders: RoomBorder[] = this.createRegion(REGION_SWAMP, 9, 13);
+        const forestBorders: RoomBorder[] = this.createRegion(REGION_FOREST, 3, 10);
+        const mountBorders: RoomBorder[] = this.createRegion(REGION_MOUNT, 1, 13);
 
         // Create plains regions in leftover areas
         this.createPlainRegions();
@@ -146,7 +147,7 @@ export class GWorldArea extends GArea {
         }
     }
 
-    private createInitialRegionGateways(region: GRegion, borderWall: BorderWall[]) {
+    private createInitialRegionGateways(region: GRegion, borderWall: RoomBorder[]) {
         const otherRegions: GRegion[] = [];
         RANDOM.shuffle(borderWall);
         for (let b of borderWall) {
@@ -155,28 +156,28 @@ export class GWorldArea extends GArea {
                 if (!otherRegions.includes(outerNeighbor.getRegion())) {
                     otherRegions.push(outerNeighbor.getRegion());
                     this.setWallByRoom(b.room, b.dir, false);
-                    GFF.log(`Initial Gateway: ${b.room.getX()}, ${b.room.getY()} : ${DIRECTION.dir9Texts()[b.dir]}`);
+                    GFF.genLog(`Initial Gateway: ${b.room.getX()}, ${b.room.getY()} : ${DIRECTION.dir9Texts()[b.dir]}`);
                 }
             }
         }
     }
 
-    private createExtraRegionGateways(region: GRegion, borderWall: BorderWall[]) {
+    private createExtraRegionGateways(region: GRegion, borderWall: RoomBorder[]) {
         for (let b of borderWall) {
             const outerNeighbor: GRoom|null = b.room.getNeighbor(b.dir);
             if (outerNeighbor && !outerNeighbor.isDiscovered()) {
                 this.setWallByRoom(b.room, b.dir, false);
-                GFF.log(`Extra Gateway: ${b.room.getX()}, ${b.room.getY()} : ${DIRECTION.dir9Texts()[b.dir]}`);
+                GFF.genLog(`Extra Gateway: ${b.room.getX()}, ${b.room.getY()} : ${DIRECTION.dir9Texts()[b.dir]}`);
                 this.exploreContiguous(outerNeighbor);
             }
         }
     }
 
-    private createRegion(region: GRegion, minY: number, maxY: number): BorderWall[] {
-        GFF.log(`Creating region: ${region.getName()}...`);
+    private createRegion(region: GRegion, minY: number, maxY: number): RoomBorder[] {
+        GFF.genLog(`Creating region: ${region.getName()}...`);
         let centerRoom: GRoom|null = this.findValidRegionCenter(minY, maxY);
         if (!centerRoom) {
-            GFF.genLog(`Could not find valid center for region: ${region.getName()}`);
+            GFF.genLog(`Could not find valid center for region: ${region.getName()}`, true);
             return [];
         }
         region.setCenter(centerRoom);
@@ -208,8 +209,8 @@ export class GWorldArea extends GArea {
         return this.borderRegion(region);
     }
 
-    private borderRegion(region: GRegion): BorderWall[] {
-        const borderWalls: BorderWall[] = [];
+    private borderRegion(region: GRegion): RoomBorder[] {
+        const borderWalls: RoomBorder[] = [];
         for (let room of region.getRooms()) {
             let neighbor: GRoom|null = room.getNeighbor(Dir9.N);
             if (neighbor && neighbor.getRegion() !== room.getRegion()) {
@@ -237,7 +238,7 @@ export class GWorldArea extends GArea {
 
     private findValidRegionCenter(minY: number, maxY: number): GRoom|null {
         // Get all un-regioned rooms from the map within the required zone:
-        const eligibleRooms: GRoom[] = this.getRoomsWithCondition(r => {
+        const eligibleRooms: GRoom[] = this.getRooms(r => {
             return r.getY() >= minY && r.getY() <= maxY && r.getRegion() === undefined;
         });
 
@@ -247,7 +248,7 @@ export class GWorldArea extends GArea {
         // Proceed through the list until we find one far enough away from other centers:
         for (let room of eligibleRooms) {
             if (this.isFarEnoughFromOtherCenters(room, this.regionCenters, MIN_DIST_REGION_CENTERS)) {
-                GFF.log(`Created region center @: ${room.getX()}, ${room.getY()}`);
+                GFF.genLog(`Created region center @: ${room.getX()}, ${room.getY()}`);
                 this.regionCenters.push(room);
                 return room;
             }
@@ -313,15 +314,32 @@ export class GWorldArea extends GArea {
         RANDOM.shuffle(people);
         RANDOM.shuffle(towns);
 
-        // Reserve some people who will be "captured":
-        const capturedPeople: number = RANDOM.randInt(3, 7);
-        for (let p: number = 0; p < capturedPeople; p++) {
-            PEOPLE.addCapturedPerson(people[p]);
-        }
+        // Assign captives to stronghold cells:
+        let captiveIndex: number = 0;
+        AREA.TOWER_AREA.getCellRooms().forEach(room => {
+            room.setPrisoner(people[captiveIndex]);
+            captiveIndex++;
+        });
+        AREA.DUNGEON_AREA.getCellRooms().forEach(room => {
+            room.setPrisoner(people[captiveIndex]);
+            captiveIndex++;
+        });
+        AREA.KEEP_AREA.getCellRooms().forEach(room => {
+            room.setPrisoner(people[captiveIndex]);
+            captiveIndex++;
+        });
+        AREA.FORTRESS_AREA.getCellRooms().forEach(room => {
+            room.setPrisoner(people[captiveIndex]);
+            captiveIndex++;
+        });
+        AREA.CASTLE_AREA.getCellRooms().forEach(room => {
+            room.setPrisoner(people[captiveIndex]);
+            captiveIndex++;
+        });
 
         // Distribute the rest of people into the towns:
         let t: number = 0;
-        for (let p: number = capturedPeople; p < people.length; p++) {
+        for (let p: number = captiveIndex; p < people.length; p++) {
             towns[t].addPerson(people[p]);
             t++;
             if (t >= towns.length) {
@@ -390,7 +408,7 @@ export class GWorldArea extends GArea {
         for (let t: number = this.regionCenters.length; t < numTowns; t++) {
             center = this.findValidTownCenter();
             if (!center) {
-                GFF.genLog(`Couldn't find enough town centers!`);
+                GFF.genLog(`Couldn't find enough town centers!`, true);
                 return false;
             }
         }
@@ -399,7 +417,7 @@ export class GWorldArea extends GArea {
         for (let t: number = 0; t < TOWN.TOWN_COUNT; t++) {
             GFF.genLog(`Creating town #${t}`);
             if (!this.createTown(this.townCenters[t], towns[t])) {
-                GFF.genLog(`Couldn't expand town enough!`);
+                GFF.genLog(`Couldn't expand town enough!`, true);
                 return false;
             }
         }
@@ -414,7 +432,7 @@ export class GWorldArea extends GArea {
         // Proceed through the list until we find one far enough away from other centers:
         for (let room of rooms) {
             if (this.isFarEnoughFromOtherCenters(room, this.townCenters, MIN_DIST_TOWN_CENTERS)) {
-                GFF.log(`Created town center @: ${room.getX()}, ${room.getY()}`);
+                GFF.genLog(`Created town center @: ${room.getX()}, ${room.getY()}`);
                 this.townCenters.push(room);
                 return room;
             }
@@ -443,7 +461,7 @@ export class GWorldArea extends GArea {
             );
         });
         if (travelRooms.length === 0) {
-            GFF.genLog(`Couldn't find suitable travel agency location!`);
+            GFF.genLog(`Couldn't find suitable travel agency location!`, true);
             return false;
         } else {
             const travelRoom: GRoom = RANDOM.randElement(travelRooms);
@@ -517,13 +535,13 @@ export class GWorldArea extends GArea {
     }
 
     private createStrongholds() {
-        const strongholds: GStronghold[] = [
-            new GStrongholdTower(),    // Boss: Mammon     // Treasure: Girdle of Truth
-            new GStrongholdDungeon(),  // Boss: Apollyon   // Treasure: Shield of Faith
-            new GStrongholdFortress(), // Boss: Legion     // Treasure: Preparation of Peace
-            new GStrongholdKeep(),     // Boss: Belial     // Treasure: Breastplate of Righteousness
-            new GStrongholdCastle(),   // Boss: Beelzebub  // Treasure: Helmet of Salvation
-        ];
+        STRONGHOLD.addStronghold(new GStrongholdTower());    // Boss: Mammon     // Treasure: Girdle of Truth
+        STRONGHOLD.addStronghold(new GStrongholdDungeon());  // Boss: Apollyon   // Treasure: Shield of Faith
+        STRONGHOLD.addStronghold(new GStrongholdKeep());     // Boss: Belial     // Treasure: Breastplate of Righteousness
+        STRONGHOLD.addStronghold(new GStrongholdFortress()); // Boss: Legion     // Treasure: Preparation of Peace
+        STRONGHOLD.addStronghold(new GStrongholdCastle());   // Boss: Beelzebub  // Treasure: Helmet of Salvation
+
+        const strongholds: GStronghold[] = [...STRONGHOLD.getStrongholds()];
         RANDOM.shuffle(strongholds);
 
         this.createStronghold(REGION_FOREST, strongholds[0]);
@@ -554,7 +572,7 @@ export class GWorldArea extends GArea {
             }
         }
 
-        GFF.genLog(`Couldn't find a suitable location for ${stronghold.getName()} in ${region.getName()}!`);
+        GFF.genLog(`Couldn't find a suitable location for ${stronghold.getName()} in ${region.getName()}!`, true);
     }
 
     private createShrines(): void {

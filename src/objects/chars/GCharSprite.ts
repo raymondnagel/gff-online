@@ -141,7 +141,20 @@ export abstract class GCharSprite extends Phaser.Physics.Arcade.Sprite {
         return this.busyTalking;
     }
 
-    public showFloatingText(text: string) {
+    public showFloatingText(text: string, timeScope: 'info'|'word'|'phrase' = 'info') {
+        let appearTime: number;
+        switch (timeScope) {
+            case 'info':
+                appearTime = 300;
+                break;
+            case 'word':
+                appearTime = 400;
+                break;
+            case 'phrase':
+                appearTime = 1000;
+                break;
+        }
+
         const point: GPoint2D = this.getTopCenter();
         this.floatText = GFF.AdventureContent.add.text(point.x, point.y - FLOAT_TEXT_SPACE, text, {
             fontFamily: 'oxygen',
@@ -159,7 +172,7 @@ export abstract class GCharSprite extends Phaser.Physics.Arcade.Sprite {
             targets: this.floatText,
             tweens: [
                 {
-                    duration: 200,
+                    duration: appearTime,
                     scaleX: 1,
                     scaleY: 1,
                     alpha: 1,

@@ -24,6 +24,8 @@ import { GChurch } from "./GChurch";
 import { CHURCH } from "./church";
 import { TOWN } from "./town";
 import { REGISTRY } from "./registry";
+import { GStrongholdArea } from "./areas/GStrongholdArea";
+import { STRONGHOLD } from "./stronghold";
 
 const CMD_FUNCTIONS: Record<string, (...args: any[]) => any> = {
     /**
@@ -100,8 +102,28 @@ const CMD_FUNCTIONS: Record<string, (...args: any[]) => any> = {
             });
         });
     },
+    deliveranceMiracle: (_player: GPlayerSprite, someone: GCharSprite) => {
+        STATS.changeInt('CaptivesRescued', 1);
+        const convert: GPerson = someone.getPerson();
+        const room: GRoom = GFF.AdventureContent.getCurrentRoom() as GRoom;
+        const area: GStrongholdArea = room.getArea() as GStrongholdArea;
+        const entranceRoom: GRoom = area.getEntranceRoom().getPortalRoom() as GRoom;
+        const churchRoom: GRoom = entranceRoom.getArea().findNearestRoomWith(entranceRoom, r => r.getChurch() !== null) as GRoom;
+        const church: GChurch = churchRoom.getChurch() as GChurch;
+        const town: GTown = church.getTown();
+        town.addPerson(convert);
+        town.transferPersonToChurch(convert);
+        convert.preferredName = PEOPLE.getSaintName(convert);
+        (someone as GPersonSprite).generateBio(true);
+        (someone as GPersonSprite).setNewConvert();
+        (someone as GPersonSprite).setReadyToTalk(true);
+        GFF.AdventureContent.getSound().playSound('hallelujah');
+        GFF.AdventureContent.fadeOut(500, COLOR.WHITE.num(), () => {
+            GFF.AdventureContent.fadeIn(500, COLOR.WHITE.num());
+        });
+    },
     useSeed: (player: GPlayerSprite, _someone: GCharSprite) => {
-        player.showFloatingText('-1 seed');
+        player.showFloatingText('-1 seed', 'info');
         PLAYER.changeSeeds(-1);
         PLAYER.giveGrace('minor');
         STATS.changeInt('SeedsPlanted', 1);
@@ -157,6 +179,23 @@ const CMD_FUNCTIONS: Record<string, (...args: any[]) => any> = {
     },
     doSaveGame: (_player: GPlayerSprite, _someone: GCharSprite) => {
         GFF.AdventureContent.saveGame();
+    },
+    restoreFaith: (_player: GPlayerSprite, _someone: GCharSprite) => {
+        const faithWrapper: {value: number} = {value: PLAYER.getFaith()};
+        const newFaith: number = PLAYER.getMaxFaith();
+        GFF.AdventureContent.tweens.add({
+            targets: [faithWrapper],
+            duration: 1000,
+            value: newFaith,
+            onUpdate: () => {
+                PLAYER.setFaith(Math.floor(faithWrapper.value));
+            }
+        });
+        GFF.AdventureContent.fadeOut(800, COLOR.WHITE.num(), () => {
+            GFF.AdventureContent.fadeIn(500, COLOR.BLACK.num(), () => {
+                GFF.AdventureContent.updateFidelityMode();
+            });
+        });
     },
 
 
@@ -218,6 +257,12 @@ const CMD_FUNCTIONS: Record<string, (...args: any[]) => any> = {
     },
     personCasual: (_player: GPlayerSprite, someone: GCharSprite, casualId: string, formalId: string): string => {
         return someone.getPerson().nameLevel > 1 ? casualId : formalId;
+    },
+    needsFaith: (_player: GPlayerSprite, _someone: GCharSprite, needsId: string, noNeedsId: string): string => {
+        return PLAYER.getFaith() < PLAYER.getMaxFaith() ? needsId : noNeedsId;
+    },
+    isEnemyPresent: (_player: GPlayerSprite, _someone: GCharSprite, enemyId: string, noEnemyId: string): string => {
+        return GFF.AdventureContent.getEnemies().length > 0 ? enemyId : noEnemyId;
     },
 
     /**
@@ -336,6 +381,29 @@ const CMD_FUNCTIONS: Record<string, (...args: any[]) => any> = {
         const churchRoom: GRoom = GFF.AdventureContent.getCurrentRoom() as GRoom;
         const churchName: string = ((churchRoom.getPortalRoom() as GRoom).getTown() as GTown).getName();
         return `...wait! One more thing!\n\nYour travels will take you throughout the land of Allegoria, and the saints of ${churchName} would like to assist you with this gift.`;
+    },
+    informStronghold: (_player: GPlayerSprite, _someone: GCharSprite): string => {
+        const room: GRoom = GFF.AdventureContent.getCurrentRoom() as GRoom;
+        const strongholdIndex: number = (room.getArea() as GStrongholdArea).getStrongholdIndex();
+        const stronghold: GStronghold = STRONGHOLD.getStrongholds()[strongholdIndex];
+        return stronghold.getProphetThemeText();
+    },
+    informArmour: (_player: GPlayerSprite, _someone: GCharSprite): string => {
+        const room: GRoom = GFF.AdventureContent.getCurrentRoom() as GRoom;
+        const strongholdIndex: number = (room.getArea() as GStrongholdArea).getStrongholdIndex();
+        const stronghold: GStronghold = STRONGHOLD.getStrongholds()[strongholdIndex];
+        return stronghold.getProphetArmourText();
+    },
+    informBoss: (_player: GPlayerSprite, _someone: GCharSprite): string => {
+        const room: GRoom = GFF.AdventureContent.getCurrentRoom() as GRoom;
+        const strongholdIndex: number = (room.getArea() as GStrongholdArea).getStrongholdIndex();
+        const stronghold: GStronghold = STRONGHOLD.getStrongholds()[strongholdIndex];
+        return stronghold.getProphetBossText();
+    },
+    informTreasures: (_player: GPlayerSprite, _someone: GCharSprite): string => {
+        const room: GRoom = GFF.AdventureContent.getCurrentRoom() as GRoom;
+        const strongholdArea: GStrongholdArea = (room.getArea() as GStrongholdArea);
+        return strongholdArea.getProphetTreasureText();
     },
 
     /**

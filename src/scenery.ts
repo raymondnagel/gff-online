@@ -18,6 +18,7 @@ import { GFalseStaircaseThreshold } from './objects/touchables/GFalseStaircaseTh
 import { GIllusionaryBlock } from './objects/touchables/GIllusionaryBlock';
 import { GDevilStatue } from './objects/obstacles/GDevilStatue';
 import { GTeleporter } from './objects/touchables/GTeleporter';
+import { GCellLockedDoor } from './objects/touchables/GCellLockedDoor';
 
 export namespace SCENERY {
     const WALL_N_BODY: GRect = {x: 0, y: 0, width: 1024, height: 64};
@@ -161,6 +162,8 @@ export namespace SCENERY {
             { key: 'palm_tree', type: 'static', body: {x: 95, y: 179, width: 30, height: 22} },
             { key: 'peak', type: 'static', body: {x: 0, y: 167, width: 300, height: 116} },
             { key: 'pine_tree', type: 'static', body: {x: 70, y: 264, width: 78, height: 36} },
+            { key: 'prophet_bed', type: 'static', body: {x: 0, y: 49, width: 141, height: 46} },
+            { key: 'prophet_table', type: 'static', body: {x: 0, y: 58, width: 104, height: 36} },
             { key: 'rock_column', type: 'static', body: {x: 0, y: 240, width: 159, height: 40} },
             { key: 'shrine_pillar', type: 'static', body: {x: 0, y: 119, width: 64, height: 21} },
             { key: 'shrub', type: 'static', body: {x: 0, y: 41, width: 64, height: 16} },
@@ -172,11 +175,16 @@ export namespace SCENERY {
             { key: 'snowy_tree_stump', type: 'static', body: {x: 0, y: 39, width: 90, height: 31} },
             { key: 'spines_rocks', type: 'static', body: {x: 0, y: 38, width: 70, height: 14} },
             { key: 'standard', type: 'static', body: {x: 27, y: 110, width: 8, height: 10} },
+            { key: 'stone_block', type: 'static', body: {x: 0, y: 38, width: 64, height: 64} },
             { key: 'tall_cactus', type: 'static', body: {x: 46, y: 195, width: 32, height: 24} },
             { key: 'tree_stump', type: 'static', body: {x: 0, y: 20, width: 115, height: 36} },
             { key: 'willow_tree', type: 'static', body: {x: 44, y: 209, width: 131, height: 21} },
             { key: 'wonky_tree', type: 'static', body: {x: 54, y: 130, width: 64, height: 30} },
-            { key: 'stone_block', type: 'static', body: {x: 0, y: 38, width: 64, height: 64} },
+            { key: 'cell_back', type: 'static', body: {x: 0, y: 98, width: 140, height: 7} },
+            { key: 'cell_right', type: 'static', body: {x: 0, y: 100, width: 19, height: 29} },
+            { key: 'cell_left', type: 'static', body: {x: 0, y: 100, width: 19, height: 29} },
+            { key: 'cell_front_left', type: 'static', body: {x: 0, y: 98, width: 52, height: 7} },
+            { key: 'cell_front_right', type: 'static', body: {x: 0, y: 98, width: 54, height: 7} },
             // Town Objects:
             { key: 'apartments_front', type: 'static', body: {x: 0, y: 250, width: 330, height: 214} },
             { key: 'bench', type: 'static', body: {x: 0, y: 41, width: 100, height: 22} },
@@ -270,6 +278,7 @@ export namespace SCENERY {
             { key: 'field_grass', type: 'fg_decor', body: {x: 0, y: 0, width: 64, height: 46} },
             { key: 'grass_tuft', type: 'fg_decor', body: {x: 0, y: 0, width: 64, height: 43} },
             { key: 'mushrooms', type: 'fg_decor', body: {x: 0, y: 0, width: 60, height: 62} },
+            { key: 'cell_front_bottom', type: 'fg_decor', body: {x: 0, y: 0, width: 57, height: 8} },
             // Background Decorations:
             { key: 'curb_bend_ne', type: 'bg_decor', body: {x: 0, y: 0, width: 74, height: 82} },
             { key: 'curb_bend_nw', type: 'bg_decor', body: {x: 0, y: 0, width: 74, height: 82} },
@@ -326,6 +335,7 @@ export namespace SCENERY {
             { key: 'shrine_curtain_ctr_gold', type: 'oh_decor', body: {x: 0, y: 0, width: 86, height: 48} },
             { key: 'shrine_curtain_left_gold', type: 'oh_decor', body: {x: 0, y: 0, width: 86, height: 48} },
             { key: 'shrine_curtain_right_gold', type: 'oh_decor', body: {x: 0, y: 0, width: 44, height: 122} },
+            { key: 'cell_front_top', type: 'oh_decor', body: {x: 0, y: 0, width: 57, height: 9} },
             // Touchables:
             { key: 'black_chest', type: 'custom', body: {x: 0, y: 20, width: 48, height: 20} },
             { key: 'blue_chest', type: 'custom', body: {x: 0, y: 20, width: 48, height: 20} },
@@ -338,6 +348,7 @@ export namespace SCENERY {
             { key: 'vert_locked_door', type: 'custom', body: {x: 0, y: 13, width: 54, height: 43} },
             { key: 'west_locked_door', type: 'custom', body: {x: 0, y: 0, width: 14, height: 122} },
             { key: 'east_locked_door', type: 'custom', body: {x: 0, y: 0, width: 14, height: 122} },
+            { key: 'cell_locked_door', type: 'custom', body: {x: 0, y: 91, width: 58, height: 6} },
             { key: 'teleporter', type: 'custom', body: {x: 0, y: 0, width: 59, height: 30} },
             // Interactables:
             { key: 'church_piano', type: 'custom', body: {x: 0, y: 50, width: 128, height: 50} },
@@ -375,7 +386,8 @@ export namespace SCENERY {
                 break;
             default:
                 // If not decor or static obstacle, it is "custom": look it up specifically by key.
-                // These require additional info not in the scenery def, possibly even their own class.
+                // These require additional info not in the scenery def, possibly even their own class,
+                // accompanying objects, or other special setup.
                 switch(plan.key) {
                     case 'campfire':
                         sceneryObj = new GObstacleSprite(def('campfire') as GSceneryDef, plan.x, plan.y, 7, 10);
@@ -443,6 +455,10 @@ export namespace SCENERY {
                         break;
                     case 'teleporter':
                         sceneryObj = new GTeleporter(plan.x, plan.y);
+                        break;
+                    case 'cell_locked_door':
+                        console.log('Creating cell locked door at', plan.x, plan.y);
+                        sceneryObj = new GCellLockedDoor(plan.x, plan.y);
                         break;
                 }
             break;

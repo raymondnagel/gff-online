@@ -1,6 +1,10 @@
+import { GStrongholdArea } from "../../areas/GStrongholdArea";
+import { BIBLE } from "../../bible";
 import { BOOKS } from "../../books";
 import { GLOSSARY } from "../../glossary";
+import { GRoom } from "../../GRoom";
 import { GFF } from "../../main";
+import { PLAYER } from "../../player";
 import { GActionableOption, GBookEntry, GGlossaryEntry, GPoint2D } from "../../types";
 import { GDistributionContainer } from "./GDistributionContainer";
 import { GDynamicPositioner } from "./GDynamicPositioner";
@@ -14,6 +18,12 @@ const MAX_HEIGHT = 300;
 
 const LIGHT_GREY: number = 0xaaaaaa;
 
+const PUNCTUATION = new Set([
+  ',', '.', ':', ';', '-', '—', '?', '!', '"', "'", '(', ')', '[', ']'
+]);
+
+type TextLine = Phaser.GameObjects.Text[];
+
 export class GPopup extends Phaser.GameObjects.Image {
 
     private components: Phaser.GameObjects.GameObject[] = [];
@@ -21,12 +31,23 @@ export class GPopup extends Phaser.GameObjects.Image {
     private titleText: Phaser.GameObjects.Text;
     private bodyText: Phaser.GameObjects.Text;
     private itemImage: Phaser.GameObjects.Image;
-
     private buttons: GTextButton[] = [];
     private defaultButton: GTextButton|null = null;
     private buttonDistributor: GDistributionContainer;
     private positioner: GDynamicPositioner;
     private closeFunction: Function;
+
+    private lockFgImage: Phaser.GameObjects.Image;
+    private lockBgImage: Phaser.GameObjects.Image;
+    private keyHandleImage: Phaser.GameObjects.Image;
+    private keyShaftImage: Phaser.GameObjects.Image;
+    private keyTeethImage: Phaser.GameObjects.Image;
+    private unlockTextBox: Phaser.GameObjects.Rectangle;
+    private unlockLines: TextLine[] = [];
+    private unlockCharacters: Phaser.GameObjects.Text[] = [];
+    private unlockCursor: Phaser.GameObjects.Image;
+    private unlockCursorIndex: number = 0;
+    private hasKey: boolean = false;
 
     // Add to these to grow the popup as more components are added:
     private minWidth: number = MARGIN;
@@ -209,6 +230,138 @@ export class GPopup extends Phaser.GameObjects.Image {
         this.minHeight += this.bodyText.height + CONTENT_SPACER;
     }
 
+    private createUnlockImages() {
+        this.lockBgImage = this.scene.add.image(0, 0, 'lock_bg').setOrigin(0, 0);
+        this.keyTeethImage = this.scene.add.image(0, 0, 'key_teeth').setOrigin(.5, .18).setVisible(this.hasKey);
+        this.keyShaftImage = this.scene.add.image(0, 0, 'key_shaft').setOrigin(0, 0).setVisible(this.hasKey);
+        this.lockFgImage = this.scene.add.image(0, 0, 'lock_fg').setOrigin(0, 0);
+        this.keyHandleImage = this.scene.add.image(0, 0, 'key_handle').setOrigin(.5, .5).setVisible(this.hasKey);
+        this.components.push(this.lockBgImage, this.keyTeethImage, this.keyShaftImage, this.lockFgImage, this.keyHandleImage);
+
+        this.positioner.addRule(this.lockBgImage, 'left', this, 'left', MARGIN);
+        this.positioner.addRule(this.lockBgImage, 'top', this.miniTitleText, 'bottom', CONTENT_SPACER);
+        this.positioner.addRule(this.lockFgImage, 'left', this.lockBgImage, 'left');
+        this.positioner.addRule(this.lockFgImage, 'top', this.lockBgImage, 'top');
+        this.positioner.addRule(this.keyTeethImage, 'left', this.lockBgImage, 'left', 65);
+        this.positioner.addRule(this.keyTeethImage, 'top', this.lockBgImage, 'top', 64);
+        this.positioner.addRule(this.keyShaftImage, 'left', this.lockBgImage, 'left', 62);
+        this.positioner.addRule(this.keyShaftImage, 'top', this.lockBgImage, 'top', 47);
+        this.positioner.addRule(this.keyHandleImage, 'left', this.lockBgImage, 'left', 85);
+        this.positioner.addRule(this.keyHandleImage, 'top', this.lockBgImage, 'top', 67);
+    }
+
+    private createUnlockTitle(text: string) {
+        this.titleText = this.scene.add.text(0, 0, text, {
+            color: '#aaaaaa',
+            fontFamily: 'dyonisius',
+            fontSize: '32px'
+        }).setOrigin(0, 0);
+        this.components.push(this.titleText);
+        this.positioner.addRule(this.titleText, 'top', this.miniTitleText, 'bottom', CONTENT_SPACER);
+        this.positioner.addRule(this.titleText, 'left', this.lockBgImage, 'right', MARGIN);
+    }
+
+    private createUnlockTextBox() {
+        const textBoxHeight = this.lockBgImage.height - (MARGIN + this.titleText.height);
+        this.unlockTextBox = this.scene.add.rectangle(0, 0, 400, textBoxHeight, 0x000000).setOrigin(0, 0).setVisible(false);
+        this.components.push(this.unlockTextBox);
+        this.positioner.addRule(this.unlockTextBox, 'top', this.titleText, 'bottom', MARGIN);
+        this.positioner.addRule(this.unlockTextBox, 'left', this.lockBgImage, 'right', MARGIN);
+    }
+
+    private createUnlockCancelButton() {
+        const cancelButton: GTextButton = new GTextButton(this.scene, 0, 0, 'Cancel', () => {
+            this.close();
+        });
+        this.defaultButton = cancelButton;
+        this.buttons.push(cancelButton);
+        this.components.push(cancelButton);
+        this.positioner.addRule(cancelButton, 'top', this.unlockTextBox, 'bottom', CONTENT_SPACER);
+        this.positioner.addRule(cancelButton, 'ctrX', this, 'ctrX');
+    }
+
+    private createUnlockText(verseText: string) {
+        const maxWidth: number = this.unlockTextBox.width;
+        const lineSpacing: number = 18;
+        const charSpacing: number = 1;
+
+        const chars: string[] = verseText.split('');
+        // Create a text object for each character:
+        chars.forEach((char: string) => {
+            const charText: Phaser.GameObjects.Text = this.scene.add.text(0, 0, char, {
+                color: '#ffffff',
+                fontFamily: 'averia_serif',
+                fontSize: '16px'
+            }).setOrigin(0, 0);
+            this.unlockCharacters.push(charText);
+            this.components.push(charText);
+        });
+
+        // Arrange the characters into lines
+        let lineWidth: number = 0;
+        let wordWidth: number = 0;
+        let currentLine: TextLine = [];
+        let currentWord: TextLine = [];
+        for (const charText of this.unlockCharacters) {
+            // Add character to current word
+            currentWord.push(charText);
+            wordWidth += (charText.width + charSpacing);
+            console.log(`Word: "${currentWord.map(c => c.text).join('')}", wordWidth: ${wordWidth}`);
+
+            // If we encounter a space, we finalize the current word
+            if (charText.text === ' ') {
+                console.log(`Line width: ${lineWidth} + word width: ${wordWidth} = ${lineWidth + wordWidth}`);
+                if (lineWidth + wordWidth > maxWidth) {
+                    // If adding the word exceeds max width, finalize the current line
+                    this.unlockLines.push(currentLine);
+                    lineWidth = 0;
+                    currentLine = [];
+                }
+
+                // Add the current word to the line
+                currentLine = currentLine.concat(currentWord);
+                lineWidth += wordWidth;
+
+                // Reset current word
+                wordWidth = 0;
+                currentWord = [];
+            }
+        }
+
+        // Add any remaining word to the line
+        if (currentWord.length > 0) {
+            if (lineWidth + wordWidth > maxWidth) {
+                this.unlockLines.push(currentLine);
+                currentLine = currentWord;
+            } else {
+                currentLine = currentLine.concat(currentWord);
+            }
+        }
+        if (currentLine.length > 0) {
+            this.unlockLines.push(currentLine);
+        }
+
+        // Get total height of all lines for vertical centering
+        const totalTextHeight: number = this.unlockLines.length * lineSpacing;
+        console.log(`Total text height: ${totalTextHeight}`);
+        const excessGap: number =  (this.unlockTextBox.height - totalTextHeight) / 2;
+        console.log(`Excess gap: ${excessGap}, Margin: ${MARGIN}`);
+        const offsetY: number = Math.max(MARGIN, excessGap);
+
+        // Position the characters
+        let cursorY: number = this.titleText.getBottomCenter().y + offsetY;
+        this.unlockLines.forEach(line => {
+            let cursorX: number = this.unlockTextBox.x;
+            line.forEach(charText => {
+                charText.setPosition(cursorX, cursorY);
+                cursorX += charText.width + charSpacing;
+            });
+            cursorY += lineSpacing;
+        });
+
+        this.unlockCharacters.forEach(c => c.setAlpha(0));
+    }
+
     public sendKey(key: string) {
         switch(key) {
             case 'Enter':
@@ -217,14 +370,84 @@ export class GPopup extends Phaser.GameObjects.Image {
                 }
                 break;
             default:
-                this.buttons.forEach(b => {
-                    const hotkey: string|undefined = b.getHotkey();
-                    if (hotkey !== undefined && hotkey === key) {
-                        b.onClick();
-                        return;
+                // If there is a lock image and player has a key, keypresses will be used to enter the verse text.
+                if (this.lockBgImage && this.unlockCursorIndex < this.unlockCharacters.length) {
+                    if (this.hasKey && this.enterUnlockCharacter(key)) {
+                        // Verse complete: use a key and close the popup
+                        const room: GRoom = GFF.AdventureContent.getCurrentRoom() as GRoom;
+                        const area: GStrongholdArea = room.getArea() as GStrongholdArea;
+                        PLAYER.changeKeys(area.getStrongholdIndex(), -1);
+                        // Close the popup after 1 second delay to let the player see the completed verse
+                        this.scene.time.delayedCall(1000, () => {
+                            this.close();
+                        });
                     }
-                });
+                } else {
+                    // Otherwise, see if any button has this hotkey:
+                    this.buttons.forEach(b => {
+                        const hotkey: string|undefined = b.getHotkey();
+                        if (hotkey !== undefined && hotkey === key) {
+                            b.onClick();
+                            return;
+                        }
+                    });
+                }
         }
+    }
+
+    private positionUnlockCursor() {
+        const charText: Phaser.GameObjects.Text = this.unlockCharacters[this.unlockCursorIndex];
+        this.unlockCursor.setPosition(
+            charText.x + (charText.width / 2),
+            charText.y + charText.height + 2
+        );
+    }
+
+    private rotateKey() {
+        const startX: number = 320.5;
+        const pct = this.unlockCursorIndex / this.unlockCharacters.length;
+        const angle = pct * 90;
+        this.keyHandleImage.setAngle(angle);
+        this.keyTeethImage.setAngle(angle);
+
+        this.keyHandleImage.setX(startX - (pct * 20));
+    }
+
+    private enterUnlockCharacter(char: string): boolean {
+        let charText: Phaser.GameObjects.Text = this.unlockCharacters[this.unlockCursorIndex];
+        do {
+            // Determine if the character at the current cursor position matches the input character
+            // Don't be case-sensitive
+            if (charText.text.toUpperCase() !== char.toUpperCase()) {
+                // Incorrect character; do nothing
+                return false;
+            }
+
+            // Reveal the character at the current cursor position
+            this.scene.tweens.add({
+                targets: charText,
+                alpha: 1,
+                duration: 100
+            });
+
+            // Advance to next character position
+            this.unlockCursorIndex++;
+            if (this.unlockCursorIndex >= this.unlockCharacters.length) {
+                // All characters have been entered - unlock complete!
+                this.scene.sound.play('success');
+                return true;
+            }
+            this.positionUnlockCursor();
+            this.rotateKey();
+
+            // Get the next character; if it's punctuation, fill it in automatically
+            charText = this.unlockCharacters[this.unlockCursorIndex];
+            char = charText.text;
+        } while (PUNCTUATION.has(char));
+
+        // Play sound effect
+        this.scene.sound.play('type_key');
+        return false;
     }
 
     public onClose(closeFunction: Function) {
@@ -323,22 +546,57 @@ export class GPopup extends Phaser.GameObjects.Image {
      *
      * @param bookName name of the book entry to be pulled from BOOKS list
      */
-        public static createBookPopup(bookName: string): GPopup {
-            const entry: GBookEntry = BOOKS.lookupEntry(bookName) as GBookEntry;
-            const popup: GPopup = new GPopup();
-            GFF.AdventureUI.add.existing(popup);
-            popup.createMiniTitle('God hath been gracious unto thee, for thou hast obtained:');
-            popup.createItemImage('book');
-            popup.createItemTitle(entry.name);
-            popup.createItemBody(entry.title); // TODO: Should be replaced with description when available
-            popup.createAmenButton();
-            popup.sizeAndCenter(popup.minWidth, popup.minHeight);
-            popup.createBorder();
-            popup.positioner.arrangeAll();
+    public static createBookPopup(bookName: string): GPopup {
+        const entry: GBookEntry = BOOKS.lookupEntry(bookName) as GBookEntry;
+        const popup: GPopup = new GPopup();
+        GFF.AdventureUI.add.existing(popup);
+        popup.createMiniTitle('God hath been gracious unto thee, for thou hast obtained:');
+        popup.createItemImage('book');
+        popup.createItemTitle(entry.name);
+        popup.createItemBody(entry.title); // TODO: Should be replaced with description when available
+        popup.createAmenButton();
+        popup.sizeAndCenter(popup.minWidth, popup.minHeight);
+        popup.createBorder();
+        popup.positioner.arrangeAll();
 
-            // Play a fanfare when we get a book!
-            GFF.AdventureUI.getSound().playSound('fanfare');
-            return popup;
-        }
+        // Play a fanfare when we get a book!
+        GFF.AdventureUI.getSound().playSound('fanfare');
+        return popup;
+    }
+
+    /**
+     * An unlock popup is used for the key verse minigame.
+     * It has a title, an verse text body, animated key/lock image,
+     * and a Cancel button.
+     */
+    public static createUnlockPopup(verseRef: string, hasKey: boolean): GPopup {
+        const verseText: string = BIBLE.getVerseTextByRef(verseRef)!;
+        const popup: GPopup = new GPopup();
+        GFF.AdventureUI.add.existing(popup);
+        popup.hasKey = hasKey;
+        popup.createMiniTitle('Enter verse text to open the lock:');
+        popup.createUnlockImages();
+        popup.createUnlockTitle(verseRef);
+        popup.createUnlockTextBox();
+        popup.createUnlockCancelButton();
+
+        popup.minWidth = (MARGIN * 3) + popup.lockBgImage.width + 400;
+        popup.minHeight = (MARGIN * 2) + (CONTENT_SPACER * 2) + popup.miniTitleText.height + popup.lockBgImage.height + popup.buttons[0].height;
+
+        popup.sizeAndCenter(popup.minWidth, popup.minHeight);
+        popup.createBorder();
+        popup.positioner.arrangeAll();
+
+        // Do this at the end, since it needs the final unlockTextBox position
+        // (otherwise we would need to position every character)
+        popup.createUnlockText(verseText);
+
+        // Add the unlock cursor:
+        popup.unlockCursor = popup.scene.add.image(0, 0, 'char_entry_cursor').setOrigin(0.5, 1).setVisible(popup.hasKey);
+        popup.components.push(popup.unlockCursor);
+        popup.positionUnlockCursor();
+
+        return popup;
+    }
 
 }

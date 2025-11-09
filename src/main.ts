@@ -121,6 +121,7 @@ export namespace GFF {
     export const OPTIONS_MODE: GOptionsMode = new GOptionsMode();
 
     export const DIFFICULTY_BABE: GDifficulty = {
+        level: 1,
         levelName: 'Babe',
         enemyBaseAttack: 5,
         enemyAttackPerLevel: 2,
@@ -134,6 +135,7 @@ export namespace GFF {
         neededXpModifier: 0.75
     };
     export const DIFFICULTY_DISCIPLE: GDifficulty = {
+        level: 2,
         levelName: 'Disciple',
         enemyBaseAttack: 10,
         enemyAttackPerLevel: 3,
@@ -147,6 +149,7 @@ export namespace GFF {
         neededXpModifier: 1.0
     };
     export const DIFFICULTY_SOLDIER: GDifficulty = {
+        level: 3,
         levelName: 'Soldier',
         enemyBaseAttack: 15,
         enemyAttackPerLevel: 4,
@@ -190,8 +193,12 @@ export namespace GFF {
         }
     }
 
-    export function genLog(something: any) {
+    export function genLog(something: any, error: boolean = false) {
         if (REGISTRY.getBoolean('isGenLog')) {
+            if (error) {
+                console.error(something);
+                return;
+            }
             console.log(something);
         }
     }

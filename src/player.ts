@@ -1,3 +1,4 @@
+import { GStrongholdArea } from "./areas/GStrongholdArea";
 import { ARMORS } from "./armors";
 import { BOOKS } from "./books";
 import { COMMANDMENTS } from "./commandments";
@@ -10,6 +11,8 @@ import { GPerson } from "./types";
 export namespace PLAYER {
     const START_FAITH: number = 40;
     const MAX_LEVEL: number = 50;
+
+    let keysByStronghold: number[] = [0, 0, 0, 0, 0]
     let sprite: GPlayerSprite;
     let level: number;
     let xp: number;
@@ -22,6 +25,7 @@ export namespace PLAYER {
     let standards: number;
     let markedChestRoom: GRoom|null;
     let companion: GPerson|null;
+
 
     export function init() {
         level = 0;
@@ -202,6 +206,16 @@ export namespace PLAYER {
         if (standards > 99) {
             standards = 99; // Cap standards at 99
         }
+    }
+
+    // Keys are tracked per-stronghold; we'll always report keys for the stronghold the player is currently in.
+    export function getKeys(strongholdIndex: number): number {
+        return keysByStronghold[strongholdIndex];
+    }
+
+    // Change keys for the stronghold the player is currently in.
+    export function changeKeys(strongholdIndex: number, byAmount: number): void {
+        keysByStronghold[strongholdIndex] += byAmount;
     }
 
     export function getMarkedChestRoom(): GRoom|null {

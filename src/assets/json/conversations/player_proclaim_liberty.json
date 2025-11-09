@@ -1,0 +1,9 @@
+[
+  {
+    "id": "start",
+    "speaker": "player",
+    "hearer": "other",
+    "text": "The Lord hath sent me to proclaim liberty to the captives, and the opening of the prison to them that are bound.",
+    "postCmd": "deliveranceMiracle()"
+  }
+]
