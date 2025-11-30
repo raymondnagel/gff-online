@@ -44,6 +44,9 @@ export class GCellLockedDoor extends GTouchable {
                 // Show floating text to indicate the key verse was used:
                 PLAYER.getSprite().showFloatingText('-1 key verse', 'info');
 
+                // Give a large grace boost for freeing the captive:
+                PLAYER.giveGrace('major');
+
                 // Fade out the door and destroy it once fully transparent:
                 GFF.AdventureContent.getSound().playSound('stronghold_open');
                 GFF.AdventureContent.tweens.add({

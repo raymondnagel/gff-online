@@ -132,7 +132,8 @@ export namespace GFF {
         minorGraceIncrease: .06,
         majorGraceIncrease: .12,
         maxRandomEnemies: 1,
-        neededXpModifier: 0.75
+        neededXpModifier: 0.75,
+        trapStrengthPct: .05
     };
     export const DIFFICULTY_DISCIPLE: GDifficulty = {
         level: 2,
@@ -146,7 +147,8 @@ export namespace GFF {
         minorGraceIncrease: .04,
         majorGraceIncrease: .08,
         maxRandomEnemies: 2,
-        neededXpModifier: 1.0
+        neededXpModifier: 1.0,
+        trapStrengthPct: .1
     };
     export const DIFFICULTY_SOLDIER: GDifficulty = {
         level: 3,
@@ -160,7 +162,8 @@ export namespace GFF {
         minorGraceIncrease: .02,
         majorGraceIncrease: .04,
         maxRandomEnemies: 3,
-        neededXpModifier: 1.25
+        neededXpModifier: 1.25,
+        trapStrengthPct: .2
     };
 
     /**
@@ -207,13 +210,13 @@ export namespace GFF {
         let objs: Phaser.GameObjects.GameObject[] = scene.children.getChildren();
         objs.forEach(n => {
             let body = n.body ?? '';
-            console.log(`${n.type} = "${n.name}"; body: ${body}; active: ${n.active}`);
+            GFF.log(`${n.type} = "${n.name}"; body: ${body}; active: ${n.active}`);
         });
     }
 
     export function setMouseVisible(show: boolean) {
         if (show) {
-            GFF.GAME.scale.parent.style.cursor = "url('./assets/images/cursor.png'), auto";
+            GFF.GAME.scale.parent.style.cursor = "url('./assets/images/interface/cursor.png'), auto";
         } else {
             GFF.GAME.scale.parent.style.cursor = 'none';
         }

@@ -28,6 +28,8 @@ export abstract class GStronghold {
         return this.index;
     }
 
+    public abstract getStoneTint(): number;
+
     public abstract getProphetThemeText(): string;
     public abstract getProphetArmourText(): string;
     public abstract getProphetBossText(): string;

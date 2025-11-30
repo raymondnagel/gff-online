@@ -29,7 +29,7 @@ export class GBossTrigger extends GEventTrigger {
     protected condition(): boolean {
         return !this.alreadyTriggered
             && (REGISTRY.get('bossDefeated_' + this.bossSpirit.name) !== true)
-            && Phaser.Math.Distance.BetweenPoints(this.triggerPoint, PLAYER.getSprite().getPhysicalCenter()) < 100;
+            && Phaser.Math.Distance.BetweenPoints(this.triggerPoint, PLAYER.getSprite().getPhysicalCenter()) < 70;
     }
 
     protected action(): void {

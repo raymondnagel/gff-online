@@ -28,4 +28,9 @@ export class GStrongholdTower extends GStronghold {
     public getProphetBossText(): string {
         return `The prince of this stronghold is Mammon, spirit of greed and the love of money. He ensnareth souls through the deceitfulness of riches, desiring to choke the word. My brother, thou canst not serve both God and Mammon; choose thou this day whom thou wilt serve!`;
     }
+
+    public getStoneTint(): number {
+        // A dingy yellow tint, like filthy lucre.
+        return 0xEEE999;
+    }
 }

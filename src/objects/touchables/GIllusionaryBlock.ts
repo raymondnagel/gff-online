@@ -6,7 +6,7 @@ export class GIllusionaryBlock extends GTouchable {
     private illusionActive: boolean = true;
 
     constructor(x: number, y: number) {
-        super(SCENERY.def('illusionary_block'), x, y);
+        super(SCENERY.def('wall_block'), x, y);
         this.setOrigin(0, 0);
     }
 

@@ -281,6 +281,23 @@ export class GPopup extends Phaser.GameObjects.Image {
     }
 
     private createUnlockText(verseText: string) {
+        if (!this.hasKey) {
+            // If the player doesn't have a key, we'll create a message instead of the verse text.
+            this.bodyText = this.scene.add.text(0, 0, 'You need a key verse to open the lock', {
+                color: '#ff5555',
+                fontFamily: 'dyonisius',
+                fontSize: '22px',
+            }).setOrigin(0, 0);
+            this.components.push(this.bodyText);
+
+            // The positioner can't be used here because this is called after arrangement.
+            this.bodyText.setPosition(
+                this.unlockTextBox.x,
+                this.lockFgImage.y + (this.lockFgImage.height / 2) - (this.bodyText.height / 2)
+            );
+            return;
+        }
+
         const maxWidth: number = this.unlockTextBox.width;
         const lineSpacing: number = 18;
         const charSpacing: number = 1;
@@ -306,11 +323,11 @@ export class GPopup extends Phaser.GameObjects.Image {
             // Add character to current word
             currentWord.push(charText);
             wordWidth += (charText.width + charSpacing);
-            console.log(`Word: "${currentWord.map(c => c.text).join('')}", wordWidth: ${wordWidth}`);
+            // console.log(`Word: "${currentWord.map(c => c.text).join('')}", wordWidth: ${wordWidth}`);
 
             // If we encounter a space, we finalize the current word
             if (charText.text === ' ') {
-                console.log(`Line width: ${lineWidth} + word width: ${wordWidth} = ${lineWidth + wordWidth}`);
+                // console.log(`Line width: ${lineWidth} + word width: ${wordWidth} = ${lineWidth + wordWidth}`);
                 if (lineWidth + wordWidth > maxWidth) {
                     // If adding the word exceeds max width, finalize the current line
                     this.unlockLines.push(currentLine);
@@ -343,9 +360,7 @@ export class GPopup extends Phaser.GameObjects.Image {
 
         // Get total height of all lines for vertical centering
         const totalTextHeight: number = this.unlockLines.length * lineSpacing;
-        console.log(`Total text height: ${totalTextHeight}`);
         const excessGap: number =  (this.unlockTextBox.height - totalTextHeight) / 2;
-        console.log(`Excess gap: ${excessGap}, Margin: ${MARGIN}`);
         const offsetY: number = Math.max(MARGIN, excessGap);
 
         // Position the characters
@@ -377,6 +392,7 @@ export class GPopup extends Phaser.GameObjects.Image {
                         const room: GRoom = GFF.AdventureContent.getCurrentRoom() as GRoom;
                         const area: GStrongholdArea = room.getArea() as GStrongholdArea;
                         PLAYER.changeKeys(area.getStrongholdIndex(), -1);
+                        PLAYER.giveGrace('minor');
                         // Close the popup after 1 second delay to let the player see the completed verse
                         this.scene.time.delayedCall(1000, () => {
                             this.close();
@@ -396,6 +412,9 @@ export class GPopup extends Phaser.GameObjects.Image {
     }
 
     private positionUnlockCursor() {
+        if (!this.hasKey) {
+            return;
+        }
         const charText: Phaser.GameObjects.Text = this.unlockCharacters[this.unlockCursorIndex];
         this.unlockCursor.setPosition(
             charText.x + (charText.width / 2),
@@ -417,8 +436,10 @@ export class GPopup extends Phaser.GameObjects.Image {
         let charText: Phaser.GameObjects.Text = this.unlockCharacters[this.unlockCursorIndex];
         do {
             // Determine if the character at the current cursor position matches the input character
-            // Don't be case-sensitive
-            if (charText.text.toUpperCase() !== char.toUpperCase()) {
+            // Don't be case-sensitive.
+            // Also, allow '*' as a wildcard character; this can help to prevent frustration
+            // for players who cannot type well.
+            if (char !== '*' && charText.text.toUpperCase() !== char.toUpperCase()) {
                 // Incorrect character; do nothing
                 return false;
             }

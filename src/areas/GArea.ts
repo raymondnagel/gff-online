@@ -81,7 +81,7 @@ export class GArea {
 
     public getPerceivedFloor(floor: number): number {
         const perceivedFloor = floor - this.groundFloor;
-        console.log(`actualFloor=${floor} groundFloor=${this.groundFloor} perceivedFloor=${perceivedFloor}`);
+        GFF.log(`actualFloor=${floor} groundFloor=${this.groundFloor} perceivedFloor=${perceivedFloor}`);
         return perceivedFloor >= 0 ? perceivedFloor + 1 : perceivedFloor;
     }
 

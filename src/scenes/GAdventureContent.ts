@@ -53,6 +53,8 @@ import { GImpSprite } from '../objects/chars/GImpSprite';
 import { GDevilSprite } from '../objects/chars/GDevilSprite';
 import { SCENERY } from '../scenery';
 import { GProphetSprite } from '../objects/chars/GProphetSprite';
+import { GOverheadAnimatedDecoration } from '../objects/decorations/GOverheadAnimatedDecoration';
+import { GHiddenTrap } from '../objects/touchables/GHiddenTrap';
 
 const MOUSE_UI_BUTTON: string = 'MOUSE_UI_BUTTON';
 
@@ -151,7 +153,7 @@ export class GAdventureContent extends GContentScene {
 
         // Init grayscale shader:
         (this.renderer as Phaser.Renderer.WebGL.WebGLRenderer).pipelines.addPostPipeline('GrayscalePostFxPipeline', GrayscalePostFxPipeline);
-        this.updateFidelityMode();
+        this.setVisualsByFaith();
 
         // Init input modes:
         this.initInputModes();
@@ -192,7 +194,7 @@ export class GAdventureContent extends GContentScene {
                 case '=':
                     // Can be used for testing purposes
                     const physCtr = this.player.getPhysicalCenter();
-                    console.log(`Player @ ${physCtr.x},${physCtr.y} in room (${this.getCurrentRoom()!.getX()},${this.getCurrentRoom()!.getY()}) floor ${this.getCurrentRoom()!.getFloor()}`);
+                    GFF.log(`Player @ ${physCtr.x},${physCtr.y} in room (${this.getCurrentRoom()!.getX()},${this.getCurrentRoom()!.getY()}) floor ${this.getCurrentRoom()!.getFloor()}`);
                     break;
                 case '`':
                     if (keyEvent.ctrlKey) {
@@ -399,7 +401,13 @@ export class GAdventureContent extends GContentScene {
                 const newPlayerY: number = entrance.y + (GFF.CHAR_BODY_H / 2) + 1;
                 this.player.centerPhysically({x: newPlayerX, y: newPlayerY});
 
-                // Set player to be visible if he is faithless, since the door-open trigger won't run:
+                // Make sure he's facing south (he may have entered a teleporter facing another direction):
+                this.player.faceDirection(Dir9.S, true);
+
+                // Ensure the player's alpha is reset (he may have entered a teleporter that faded him out):
+                this.player.setAlpha(1);
+
+                // If the player is faithless, make him visible now, since the door-open trigger won't do it later:
                 if (PLAYER.getFaith() <= 0) {
                     this.player.setVisible(true);
                 }
@@ -598,6 +606,9 @@ export class GAdventureContent extends GContentScene {
             this.physics.world.debugGraphic.clear();
             GFF.log('Physics debug: ' + this.physics.world.drawDebug);
         });
+        this.input.keyboard?.on('keydown-F3', (_event: KeyboardEvent) => {
+            this.add.image(0, 0, 'tile_overlay').setOrigin(0, 0).setDepth(DEPTH.TRANSITION);
+        });
     }
 
     private createBottomBound() {
@@ -646,7 +657,7 @@ export class GAdventureContent extends GContentScene {
             this.player.stop();
             this.transitionToRoom(newRoomX, newRoomY, this.playerFloor, this.currentArea, () => {
                 // Re-position player:
-                let newEdge: Dir9 = DIRECTION.getOpposite(dir);
+                let newEdge: Dir9 = DIRECTION.getOpposite(dir) as Dir9;
                 let newPlayerX: number =
                     (newEdge === Dir9.W || newEdge === Dir9.E)
                     ? DIRECTION.getCharPosForEdge(newEdge)
@@ -700,9 +711,9 @@ export class GAdventureContent extends GContentScene {
     }
 
     public setCurrentRoom(roomX: number, roomY: number, floor: number, area?: GArea) {
-        // Unload the current room if there is one:
-        let currentRoom: GRoom|null = this.getCurrentRoom();
-        currentRoom?.unload();
+        // Unload the previous room if there is one:
+        const prevRoom: GRoom|null = this.getCurrentRoom();
+        prevRoom?.unload();
 
         // If an area was specified, set it:
         if (area !== undefined && area !== this.currentArea) {
@@ -715,7 +726,7 @@ export class GAdventureContent extends GContentScene {
         this.playerFloor = floor;
 
         // Load the new room:
-        currentRoom = this.getCurrentRoom() as GRoom;
+        const currentRoom = this.getCurrentRoom() as GRoom;
         currentRoom.discover();
         currentRoom.load();
         // Certain things may appear differently, depending on area and current faith:
@@ -730,6 +741,8 @@ export class GAdventureContent extends GContentScene {
                 this.resetUniqueRoomsFlags();
             }
         }
+
+        GFF.AdventureUI.showRegionTitle(prevRoom, currentRoom)
     }
 
     public getCurrentRoom(): GRoom|null {
@@ -762,6 +775,11 @@ export class GAdventureContent extends GContentScene {
                 // 33% chance to spawn a common chest:
                 if (RANDOM.randPct() <= .33) {
                     this.spawnCommonChest();
+                }
+
+                // If this is a stronghold, 33% chance to spawn a hidden trap:
+                if (this.getCurrentArea() instanceof GStrongholdArea && RANDOM.randPct() <= .33) {
+                    this.spawnHiddenTrap();
                 }
             }
             this.fadeIn(500, undefined, meanwhile, () => {
@@ -847,7 +865,7 @@ export class GAdventureContent extends GContentScene {
     }
 
     private resetUniqueRoomsFlags() {
-        REGISTRY.set('canGiftSeed', true);
+        REGISTRY.set('canSaintGift', true);
     }
 
     public getSpawnPointForTransient(transient: BoundedGameObject, body: GRect, essential: boolean): GPoint2D|null {
@@ -1039,7 +1057,23 @@ export class GAdventureContent extends GContentScene {
         }
     }
 
-    private setVisualsByFaith() {
+    public spawnHiddenTrap(): boolean {
+        const trap: GHiddenTrap = new GHiddenTrap(0, 0, this.getCurrentRoom()!.getStoneTint());
+        trap.setVisible(false);
+        const body: GRect = trap.getBody();
+        const spawnPoint: GPoint2D|null = this.getSpawnPointForTransient(trap, body, false);
+        if (!spawnPoint) {
+            trap.destroy();
+            return false;
+        } else {
+            trap.setVisible(true);
+            trap.setPosition(spawnPoint.x, spawnPoint.y);
+            return true;
+        }
+    }
+
+    public setVisualsByFaith() {
+        // Depending on the area, flip certain objects can appear differently based on current faith:
         if (this.getCurrentArea() === AREA.TOWER_AREA) {
             this.flipStaircases();
         } else if (this.getCurrentArea() === AREA.DUNGEON_AREA) {
@@ -1047,9 +1081,17 @@ export class GAdventureContent extends GContentScene {
         } else if (this.getCurrentArea() === AREA.KEEP_AREA) {
             this.flipCommonChests();
         }
+
+        // Apply grayscale effect if faith is zero:
+        this.cameras.main.resetPostPipeline();
+        if (PLAYER.getFaith() <= 0) {
+            this.cameras.main.setPostPipeline(GrayscalePostFxPipeline);
+            this.getSound().stopMusic();
+        }
     }
 
     private flipCommonChests() {
+        console.log('Flipping common chests by faith');
         const faithMax: boolean = PLAYER.getFaith() >= PLAYER.getMaxFaith();
         for (let obj of this.touchablesGroup.getChildren()) {
             if (obj instanceof GTreasureChest) {
@@ -1073,14 +1115,9 @@ export class GAdventureContent extends GContentScene {
 
     private flipStaircases() {
         const faithMax: boolean = PLAYER.getFaith() >= PLAYER.getMaxFaith();
-        for (let obj of this.obstaclesGroup.getChildren()) {
-            if (obj.name.includes('stairs_up')) {
-                const stairs: GObstacleStatic = obj as GObstacleStatic;
-                if (obj.name === 'stairs_up') {
-                    stairs.setTexture(faithMax ? 'stairs_up_true' : 'stairs_up');
-                } else if (obj.name === 'stairs_up_false') {
-                    stairs.setTexture(faithMax ? 'stairs_up_false' : 'stairs_up');
-                }
+        for (let obj of this.children.list) {
+            if (obj.name.includes('_hint')) {
+                (obj as GOverheadAnimatedDecoration).setVisible(faithMax)
             }
         }
     }
@@ -1322,7 +1359,8 @@ export class GAdventureContent extends GContentScene {
             this.getSound().stopMusic();
             ENEMY.init(enemy, enemy.getSpirit(), enemy.getPortraitKey(), enemy.getAvatarKey());
             STATS.changeInt('Battles', 1);
-            GFF.AdventureUI.transitionToBattle(this.player.getCenter(), (this.getCurrentRoom() as GRoom).getEncounterBg());
+            const room = this.getCurrentRoom() as GRoom;
+            GFF.AdventureUI.transitionToBattle(this.player.getCenter(), room.getEncounterBg(), room.getStoneTint());
         }
     }
 
@@ -1334,7 +1372,8 @@ export class GAdventureContent extends GContentScene {
         this.getSound().stopMusic();
         ENEMY.initBoss(bossSpirit);
         STATS.changeInt('Battles', 1);
-        GFF.AdventureUI.transitionToBattle(this.player.getCenter(), (this.getCurrentRoom() as GRoom).getEncounterBg());
+        const room = this.getCurrentRoom() as GRoom;
+        GFF.AdventureUI.transitionToBattle(this.player.getCenter(), room.getEncounterBg(), room.getStoneTint());
     }
 
     public destroyEnemy(enemy: GEnemySprite|null) {
@@ -1355,6 +1394,8 @@ export class GAdventureContent extends GContentScene {
     }
 
     public resumeAfterBattlePreFadeIn(victory: boolean) {
+        // Update visuals based on faith, which may have changed during battle:
+        this.setVisualsByFaith();
         this.stopChars();
         REGISTRY.set('isNametags', false);
         ENEMY.levelUp();
@@ -1365,9 +1406,8 @@ export class GAdventureContent extends GContentScene {
                 REGISTRY.set(`bossDefeated_${ENEMY.getCurrentSpirit().name}`, true);
             }
         } else {
-            // It wasn't a victory... faith is probably at 0
+            // It wasn't a victory...
             STATS.changeInt('Defeats', 1);
-            this.updateFidelityMode();
         }
     }
 
@@ -1389,7 +1429,7 @@ export class GAdventureContent extends GContentScene {
         });
     }
 
-    private startFaithlessMode() {
+    public startFaithlessMode() {
         PLAYER.setGrace(0);
         GPopup.createSimplePopup('While you have no faith, enemies will not attack you; however, you cannot open treasure chests or obtain new items.\n\nYou must seek out other believers who can restore you in the spirit of meekness.\n\nBe not faithless, but believing!', 'Where is your faith?').onClose(() => {
             // If the player loses all faith in a stronghold, he'll be expelled from it:
@@ -1664,7 +1704,7 @@ export class GAdventureContent extends GContentScene {
         const ctrX: number = 256;
         const plan: GSceneryPlan|null = room.planSceneryDuringGameplay(telDef, ctrX - telDef.body.width / 2, baseY - telDef.body.height, 0, 0);
         if (plan !== null) {
-            SCENERY.create(plan);
+            SCENERY.create(plan, room);
         }
     }
 
@@ -1710,16 +1750,6 @@ export class GAdventureContent extends GContentScene {
         }
     }
 
-    public updateFidelityMode() {
-        this.cameras.main.resetPostPipeline();
-        if (PLAYER.getFaith() <= 0) {
-            this.cameras.main.setPostPipeline(GrayscalePostFxPipeline);
-            this.getSound().stopMusic();
-        }
-        // Certain objects' appearance may depend on the player's faith:
-        this.setVisualsByFaith();
-    }
-
     private updateVision() {
         const playerCtr: GPoint2D = this.player.getCenter();
         this.visionRadiusImage.setPosition(playerCtr.x, playerCtr.y);
@@ -1751,7 +1781,7 @@ export class GAdventureContent extends GContentScene {
 
     public update(_time: number, delta: number): void {
         // Only process user controls for the player if in adventuring input mode:
-        if (this.getInputMode() === INPUT_ADVENTURING) {
+        if (this.getInputMode() === INPUT_ADVENTURING && !this.player.isTrapped()) {
             const polledKeys: GKeyList = INPUT_ADVENTURING.getPollKeys();
             let direction: Dir9 = DIRECTION.getDirectionForKeys(polledKeys);
             if (polledKeys['Shift'].isDown) {
@@ -1788,10 +1818,12 @@ export class GAdventureContent extends GContentScene {
         this.conversation?.update();
 
         // Update play timer:
-        this.playTimerTick += delta;
-        while (this.playTimerTick >= 1000) {
-            this.playTimerTick -= 1000;
-            this.doPlayTimerTickEvents();
+        if (this.getInputMode() === INPUT_ADVENTURING) {
+            this.playTimerTick += delta;
+            while (this.playTimerTick >= 1000) {
+                this.playTimerTick -= 1000;
+                this.doPlayTimerTickEvents();
+            }
         }
     }
 
@@ -1802,7 +1834,7 @@ export class GAdventureContent extends GContentScene {
         if (PLAYER.getFaith() > 0 && PLAYER.getFaith() < PLAYER.getMaxFaith() && this.getCurrentArea() === AREA.CASTLE_AREA) {
             PLAYER.changeFaith(-1);
             if (PLAYER.getFaith() === 0) {
-                this.updateFidelityMode();
+                this.setVisualsByFaith();
                 this.startFaithlessMode();
             }
         }

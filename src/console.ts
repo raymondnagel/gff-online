@@ -13,6 +13,8 @@ import { PHYSICS } from "./physics";
 import { PLAYER } from "./player";
 import { REGISTRY } from "./registry";
 import { IntegerStatName, STATS } from "./stats";
+import { STRONGHOLD } from "./stronghold";
+import { TOWN } from "./town";
 import { NINE, SIX, TEN } from "./types";
 
 export namespace CONSOLE {
@@ -45,11 +47,13 @@ export namespace CONSOLE {
             }
             PLAYER.setFaith(PLAYER.getMaxFaith());
             PLAYER.setGrace(PLAYER.getMaxGrace());
+            GFF.AdventureContent.setVisualsByFaith();
             playSuccess();
             return 'Ok';
         },
         cheatFaith: (amount: number) => {
             PLAYER.setFaith(amount);
+            GFF.AdventureContent.setVisualsByFaith();
             playSuccess();
             return 'Ok';
         },
@@ -110,7 +114,7 @@ export namespace CONSOLE {
             return 'Ok';
         },
         cheatKeys: (amount: number) => {
-            for (let i = 0; i < 4; i++) {
+            for (let i = 0; i < 5; i++) {
                 PLAYER.changeKeys(i, amount);
             }
             playSuccess();
@@ -304,6 +308,32 @@ export namespace CONSOLE {
             } else {
                 playError();
                 return `Invalid stronghold number: ${cellNum}`;
+            }
+        },
+        hold(holdNum: number) {
+            const room = STRONGHOLD.getStrongholds()[holdNum - 1].getWorldRoom();
+            if (room) {
+                GFF.AdventureContent.hideTestConsole();
+                GFF.AdventureContent.warpToRoom(room);
+                playSuccess();
+                return 'Ok';
+            } else {
+                playError();
+                return `Invalid stronghold number: ${holdNum}`;
+            }
+        },
+        church(name: string) {
+            const town = TOWN.getTowns().find(t => t.getName().toLowerCase() === name.toLowerCase());
+            const church = town ? town.getChurch() : null;
+            if (church) {
+                const room = church.getWorldRoom();
+                GFF.AdventureContent.hideTestConsole();
+                GFF.AdventureContent.warpToRoom(room);
+                playSuccess();
+                return 'Ok';
+            } else {
+                playError();
+                return `Church not found: ${name}`;
             }
         },
         listObjects() {

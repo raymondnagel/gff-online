@@ -7,7 +7,7 @@ export class GStrongholdCastle extends GStronghold {
     /**
      * Stronghold: Castle of Perdition
      * Armor: Helmet of Salvation
-     * Boss: Beelzebub
+     * Boss: Apollyon
      * Challenge: The player's faith slowly drains while inside the stronghold,
      * at the rate of 1 every second. At 100% faith, this effect is negated.
      */
@@ -21,10 +21,15 @@ export class GStrongholdCastle extends GStronghold {
     }
 
     public getProphetArmourText(): string {
-        return `May thou find herein the Helmet of Salvation: for by grace are ye saved through faith; and that not of yourselves: it is the gift of God.`;
+        return `May thou find herein the Helmet of Salvation: for GOD the Lord, the strength of thy salvation, shall cover thy head in the day of battle.`;
     }
 
     public getProphetBossText(): string {
-        return `Beelzebub, prince of devils, lord of the flies, doth spread his corruption from this dark stronghold. But we are not of them who draw back unto perdition; but of them that believe to the saving of the soul.`;
+        return `This stronghold is ruled by Apollyon the Destroyer, a powerful foe. He seeketh to drag thee down into the bottomless pit from whence he came, where he drowneth men in destruction and perdition. Trust in the LORD, who redeemeth thy life from destruction: salvation is of the LORD!`;
+    }
+
+    public getStoneTint(): number {
+        // A dark red tint, like corruption and perdition.
+        return 0xEE9999;
     }
 }

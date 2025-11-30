@@ -38,7 +38,7 @@ export class GRaiseStandardCutscene extends GCutscene {
         const room: GRoom = GFF.AdventureContent.getCurrentRoom() as GRoom;
         const plan: GSceneryPlan|null = room.planSceneryDuringGameplay(standardDef, stdX, stdY, 0, 0);
         if (plan !== null) {
-            SCENERY.create(plan);
+            SCENERY.create(plan, room);
         }
     }
 

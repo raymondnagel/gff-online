@@ -1,4 +1,7 @@
 import { GRoom } from "../GRoom";
+import { GTown } from "../GTown";
+import { RANDOM } from "../random";
+import { STRING } from "../string";
 
 /**
  * GRegion represents part of a GArea that should
@@ -16,6 +19,7 @@ import { GRoom } from "../GRoom";
  */
 export abstract class GRegion {
     private name: string;
+    private fullName: string;
     private bgImage: string;
     private encBgImage: string;
     private terrainImage: string;
@@ -29,9 +33,18 @@ export abstract class GRegion {
         terrainImageName: string
     ) {
         this.name = regionName;
+        this.fullName = STRING.capitalize(regionName);
         this.bgImage = bgImageName;
         this.encBgImage = encBgImageName;
         this.terrainImage = terrainImageName;
+    }
+
+    public setFullName(fullName: string) {
+        this.fullName = fullName;
+    }
+
+    public getFullName(): string {
+        return this.fullName;
     }
 
     public getName(): string {
@@ -77,13 +90,19 @@ export abstract class GRegion {
             room.planStronghold();
         }
 
-        // Temporarily disable scenery planning for town rooms
-        if (room.getTown() === null) {
-            this._furnishRoom(room);
-        }
+        const addInternalObjects =
+            room.getChurch() === null
+            && room.getTown() === null
+            && room.getStronghold() === null;
+
+        // Now call the region-specific furnishing method
+        this._furnishRoom(room, true, addInternalObjects);
+
+        // Room furnishing is done; but some plans may require post-processing
+        room.finalizeSceneryPlans();
     }
 
-    protected abstract _furnishRoom(room: GRoom): void;
+    protected abstract _furnishRoom(room: GRoom, partialWalls?: boolean, internalObjects?: boolean): void;
 
     public abstract isInterior(): boolean;
 

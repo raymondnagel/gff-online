@@ -93,7 +93,6 @@ enum BattleStage {
 
 export class GBattleContent extends GContentScene {
 
-    private bgImage: Phaser.GameObjects.Image;
     private enemyPortraitImage: Phaser.GameObjects.Image;
     private playerMeterImage: Phaser.GameObjects.Image;
     private enemyMeterImage: Phaser.GameObjects.Image;
@@ -161,6 +160,7 @@ export class GBattleContent extends GContentScene {
     private enemyAttackSlashSprite: Phaser.GameObjects.Sprite;
 
     private playerBooks: string[];
+    private bookWheelRepeats: number = 0;
 
     constructor() {
         super("BattleContent");
@@ -176,7 +176,7 @@ export class GBattleContent extends GContentScene {
         this.playerBooks = BOOKS.getEnabledBooks();
 
         // Background image:
-        this.bgImage = this.add.image(0, 0, GFF.BATTLE_MODE.getBgImage()).setOrigin(0, 0);
+        this.add.image(0, 0, GFF.BATTLE_MODE.getBgImage()).setOrigin(0, 0).setTint(GFF.BATTLE_MODE.getBgStoneTint());
 
         // Player and Enemy avatars:
         this.createAvatars(ENEMY.getAvatar());
@@ -370,12 +370,13 @@ export class GBattleContent extends GContentScene {
         INPUT_REFBOOK.setScene(this);
         INPUT_REFBOOK.allowRepeats(['ArrowUp', 'ArrowDown']);
         INPUT_REFBOOK.onKeyDown((keyEvent: KeyboardEvent) => {
+            this.bookWheelRepeats = keyEvent.repeat ? this.bookWheelRepeats + 1 : 0;
             switch(keyEvent.key) {
                 case 'ArrowUp':
-                    this.bookWheel.scrollUp(0);
+                    this.bookWheel.scrollUp(this.bookWheelRepeats);
                     break;
                 case 'ArrowDown':
-                    this.bookWheel.scrollDown(0);
+                    this.bookWheel.scrollDown(this.bookWheelRepeats);
                     break;
                 case 'Enter':
                     this.completeCurrentPart();
@@ -500,7 +501,7 @@ export class GBattleContent extends GContentScene {
         const ENEMY_ATTACKS: GEnemyAttack[] = [
             {
                 attackName: 'basic attack',
-                enemies: ['minion', 'Mammon', 'Apollyon', 'Belial', 'Legion', 'Beelzebub', 'Lucifer', 'Dragon'],
+                enemies: ['minion', 'Mammon', 'Beelzebub', 'Belial', 'Legion', 'Apollyon', 'Lucifer', 'Dragon'],
                 minLevel: 0,
                 weight: 3,
                 text: '_ attacks!',

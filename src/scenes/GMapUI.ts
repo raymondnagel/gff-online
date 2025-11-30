@@ -165,7 +165,7 @@ export class GMapUI extends GUIScene {
                     }
 
                     // Draw sector shade, if applicable:
-                    if (REGISTRY.getBoolean('isDebug') && this.area instanceof GStrongholdArea) {
+                    if (REGISTRY.getBoolean('isSectors') && this.area instanceof GStrongholdArea) {
                         const sector = room.getSector();
                         if (sector) {
                             this.lowerTexture.fill(sector.getColor().num(), 0.25, cellX, cellY, CELL_WIDTH, CELL_HEIGHT);

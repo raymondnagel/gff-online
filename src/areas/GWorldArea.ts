@@ -36,6 +36,7 @@ import { GStrongholdFortress } from "../strongholds/GStrongholdFortress";
 import { GStrongholdKeep } from "../strongholds/GStrongholdKeep";
 import { GStrongholdTower } from "../strongholds/GStrongholdTower";
 import { STRONGHOLD } from "../stronghold";
+import { GOutsideRegion } from "../regions/GOutsideRegion";
 
 const WORLD_WIDTH: number = 16;
 const WORLD_HEIGHT: number = 16;
@@ -47,12 +48,12 @@ const MIN_DIST_REGION_CENTERS: number = 5;
 const MIN_DIST_TOWN_CENTERS: number = 4;
 const START_DIST_HOLDS_TO_TOWNS: number = 5;
 
-const REGION_FOREST: GRegion = new GForestRegion();
-const REGION_DESERT: GRegion = new GDesertRegion();
-const REGION_SWAMP: GRegion = new GSwampRegion();
-const REGION_TUNDRA: GRegion = new GTundraRegion();
-const REGION_MOUNT: GRegion = new GMountRegion();
-const PlainRegions: GRegion[] = [];
+const REGION_FOREST: GOutsideRegion = new GForestRegion();
+const REGION_DESERT: GOutsideRegion = new GDesertRegion();
+const REGION_SWAMP: GOutsideRegion = new GSwampRegion();
+const REGION_TUNDRA: GOutsideRegion = new GTundraRegion();
+const REGION_MOUNT: GOutsideRegion = new GMountRegion();
+const PlainRegions: GOutsideRegion[] = [];
 
 const DISTRICT_CITY_RES_MONO: GTownDistrict = new GCityResMonoDistrict();
 const DISTRICT_CITY_RES_DIVERSE: GTownDistrict = new GCityResDiverseDistrict();
@@ -129,7 +130,7 @@ export class GWorldArea extends GArea {
         const allRooms: GRoom[] = this.getRoomsByFloor(0);
         allRooms.forEach(r => {
             if (!r.getRegion()) {
-                const newRegion: GRegion = new GPlainRegion();
+                const newRegion: GPlainRegion = new GPlainRegion();
                 PlainRegions.push(newRegion);
                 this.expandContiguous(r, newRegion);
             }
@@ -304,6 +305,8 @@ export class GWorldArea extends GArea {
         //     GFF.genLog(`${towns[t].getChurch().getName()}, saints: ${towns[t].getChurch().getPeople().length}`);
         //     // console.dir(towns[t].getChurch().getPeople());
         // }
+
+        this.finalizeRegions();
     }
 
     private addPopulation() {
@@ -534,12 +537,28 @@ export class GWorldArea extends GArea {
         }
     }
 
+    private finalizeRegions() {
+        const regions: GOutsideRegion[] = PlainRegions.concat([
+            REGION_FOREST,
+            REGION_DESERT,
+            REGION_SWAMP,
+            REGION_TUNDRA,
+            REGION_MOUNT
+        ]);
+        for (let region of regions) {
+            // For each region, determine whether it has at least one town:
+            const town = region.getRooms().map(r => r.getTown()).find(t => t !== null);
+            // Generate full name of the region (possibly derived from town name):
+            region.generateFullName(town);
+        }
+    }
+
     private createStrongholds() {
         STRONGHOLD.addStronghold(new GStrongholdTower());    // Boss: Mammon     // Treasure: Girdle of Truth
-        STRONGHOLD.addStronghold(new GStrongholdDungeon());  // Boss: Apollyon   // Treasure: Shield of Faith
+        STRONGHOLD.addStronghold(new GStrongholdDungeon());  // Boss: Beelzebub  // Treasure: Shield of Faith
         STRONGHOLD.addStronghold(new GStrongholdKeep());     // Boss: Belial     // Treasure: Breastplate of Righteousness
         STRONGHOLD.addStronghold(new GStrongholdFortress()); // Boss: Legion     // Treasure: Preparation of Peace
-        STRONGHOLD.addStronghold(new GStrongholdCastle());   // Boss: Beelzebub  // Treasure: Helmet of Salvation
+        STRONGHOLD.addStronghold(new GStrongholdCastle());   // Boss: Apollyon   // Treasure: Helmet of Salvation
 
         const strongholds: GStronghold[] = [...STRONGHOLD.getStrongholds()];
         RANDOM.shuffle(strongholds);

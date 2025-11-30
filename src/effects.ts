@@ -164,7 +164,19 @@ export namespace EFFECTS {
                 soundKey: null, // No sound; the sound is played separately when the teleporter is created
                 hideOnFinish: false
             },
-
+            {
+                spriteConfig: {
+                    key: 'trap_shut',
+                    frames: GFF.GAME.anims.generateFrameNumbers(
+                        'trap_shut',
+                        { start: 0, end: 6 }
+                    ),
+                    frameRate: 20,
+                    repeat: 0
+                },
+                soundKey: 'trap',
+                hideOnFinish: false
+            },
         ].forEach(s => {
             SPRITE_EFFECTS.set(s.spriteConfig.key, s as SpriteEffect);
         });

@@ -7,12 +7,13 @@ import { ENEMY } from "../enemy";
 import { GRoom } from "../GRoom";
 import { KEYS } from "../keys";
 import { GFF } from "../main";
+import { NUMBER } from "../number";
 import { PEOPLE } from "../people";
 import { RANDOM } from "../random";
 import { GSector } from "../regions/GSector";
 import { GStrongholdRegion } from "../regions/GStrongholdRegion";
 import { REGISTRY } from "../registry";
-import { RoomBorder, CardDir, Dir9, GPoint3D, GSpirit, GPerson } from "../types";
+import { RoomBorder, CardDir, Dir9, GPoint3D, GSpirit, GPerson, TEN } from "../types";
 import { GBuildingArea } from "./GBuildingArea";
 
 const EMPTY_C = '0,0,0';
@@ -49,9 +50,10 @@ export class GStrongholdArea extends GBuildingArea {
             height
         );
         GFF.genLog(`----------------- Creating stronghold interior: ${strongholdName}`);
-        this.region = region;
         this.bossIndex = bossIndex;
         this.armorKey = armorKey;
+        this.region = region;
+        this.region.setFullName(strongholdName);
         this.setGroundFloor(groundFloor);
         this.loadFloors(floorImageKeys);
         this.createSectors();
@@ -182,6 +184,10 @@ export class GStrongholdArea extends GBuildingArea {
         }
     }
 
+    /**
+     * Expands a sector starting from the given room, until it reaches
+     * the target size.
+     */
     private createSector(sector: GSector, startRoom: GRoom) {
         const targetSize: number = RANDOM.randInt(SECTOR_MIN, SECTOR_MAX);
         const candidates: GRoom[] = [startRoom];
@@ -206,13 +212,19 @@ export class GStrongholdArea extends GBuildingArea {
         }
     }
 
+    /**
+     * Merges any sectors that are smaller than the minimum size
+     * into a neighboring sector. This ensures that we don't end up
+     * with tons of tiny sectors, which would make placing keys and
+     * other special rooms difficult or impossible.
+     */
     private mergeSmallSectors() {
         for (let i = this.sectors.length - 1; i >= 0; i--) {
             const sector = this.sectors[i];
             if (sector.getRooms().length < SECTOR_MIN) {
                 GFF.genLog(`Merging small sector: ${sector.getRooms().length} rooms...`);
-                // Get a random room on the border of this sector
-                const anyRoom = RANDOM.randElement(sector.getRooms().filter(r => r.getNeighbors().some(n => n.getSector() !== sector))) as GRoom|undefined;
+                // Get a random room on the border of this sector, on the same floor
+                const anyRoom = RANDOM.randElement(sector.getRooms().filter(r => r.getNeighbors(n => n.getFloor() === r.getFloor()).some(n => n.getSector() !== sector))) as GRoom|undefined;
                 if (anyRoom) {
                     GFF.genLog(`Border room: (${anyRoom.getX()},${anyRoom.getY()},${anyRoom.getFloor()})`);
                     // Find a neighboring sector to merge with
@@ -229,6 +241,9 @@ export class GStrongholdArea extends GBuildingArea {
         this.sectors = this.sectors.filter(s => s.getRooms().length > 0);
     }
 
+    /**
+     * Merges sectors that are connected via staircases between floors.
+     */
     private mergeSectorsAcrossFloors() {
         for (let i = this.sectors.length - 1; i >= 0; i--) {
             const sector = this.sectors[i];
@@ -244,6 +259,9 @@ export class GStrongholdArea extends GBuildingArea {
         this.sectors = this.sectors.filter(s => s.getRooms().length > 0);
     }
 
+    /**
+     * Creates a wall around the border of the given sector.
+     */
     private borderSector(sector: GSector) {
         const borderWalls: RoomBorder[] = [];
         for (let room of sector.getRooms()) {
@@ -271,6 +289,11 @@ export class GStrongholdArea extends GBuildingArea {
         this.sectorBorders.set(sector, borderWalls);
     }
 
+    /**
+     * Joins a sector to one or more neighboring sectors by creating locked doors
+     * between them. If allowMultiple is false, only creates a gateway if the sectors
+     * are not already connected.
+     */
     private createSectorGateways(sector: GSector, allowMultiple: boolean = false) {
         const borderWall = this.sectorBorders.get(sector) as RoomBorder[];
         RANDOM.shuffle(borderWall);
@@ -370,32 +393,50 @@ export class GStrongholdArea extends GBuildingArea {
         }
     }
 
+    protected computeDepths(entrance: GRoom): GRoom[] {
+        const visited = new Set<GRoom>();
+        const queue: [GRoom, number][] = [[entrance, 0]];
+
+        while (queue.length > 0) {
+            const [room, depth] = queue.shift()!;
+            if (visited.has(room)) continue;
+            visited.add(room);
+
+            room.setDepthDistance(depth);
+
+            const neighbors = room.getAccessibleNeighbors(true);
+            for (const next of neighbors) {
+                if (!visited.has(next)) {
+                    queue.push([next, depth + 1]);
+                }
+            }
+        }
+        return [...visited].sort((a, b) => a.getDepthDistance() - b.getDepthDistance());
+    }
+
     /**
      * Determines the "depth" of each room in the stronghold, based on its
      * distance from the entrance room; and then creates certain special rooms
      * that should be placed at specific depths.
      */
     protected createDepthRooms(): void {
-        const roomsByDepth: GRoom[] = [];
-        this.getRooms().forEach(room => {
-            const deltaX = room.getX() - this.entranceRoom.getX();
-            const deltaY = room.getY() - this.entranceRoom.getY();
-            const deltaF = room.getFloor() - this.entranceRoom.getFloor();
-            const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY + (deltaF * 1.2) * (deltaF * 1.2));
-            room.setDepthDistance(distance);
-            roomsByDepth.push(room);
-        });
+        // First, compute depths of all rooms from the entrance:
+        const roomsByDepth: GRoom[] = this.computeDepths(this.entranceRoom);
 
-        roomsByDepth.sort((a, b) => a.getDepthDistance() - b.getDepthDistance());
+        // roomsByDepth contains all rooms reachable from the entrance, so now is a good
+        // time to make sure all rooms are connected:
+        if (roomsByDepth.length < this.getRooms().length) {
+            GFF.genLog(`WARNING: ${this.getRooms().length - roomsByDepth.length} rooms are not reachable!`, true);
+        }
 
         // Create the prophet's chamber: he will help guide the player through the stronghold.
-        const prophetRoom = this.chooseRoomAtDepth(RANDOM.randFloat(0.2, 0.4), roomsByDepth);
+        const prophetRoom = this.chooseRoomAtDepth(RANDOM.randFloat(0.1, 0.2), roomsByDepth);
         if (prophetRoom) {
             prophetRoom.planProphetChamber();
             prophetRoom.setProphetChamber();
             GFF.genLog(`Prophet chamber placed at ${prophetRoom.getX()},${prophetRoom.getY()},${prophetRoom.getFloor()}`);
         } else {
-            GFF.genLog(`No suitable room found for prophet chamber.`, true);
+            GFF.genLog(`WARNING: No suitable room found for prophet chamber.`, true);
         }
 
         /**
@@ -548,7 +589,34 @@ export class GStrongholdArea extends GBuildingArea {
     }
 
     public getProphetTreasureText(): string {
-        // TODO: Construct a message based on actual treasures in the stronghold
-        return `Someday Brother Ray will give me the ability to divine the presence of special treasures within strongholds. Alas, until that day, I'm as clueless as you are. ¯\\_(ツ)_/¯`;
+        // Get rooms that have a book of the Bible:
+        const bookRooms: TEN|0 = this.getRooms(r => r.hasPlanKey('red_chest')).length as TEN|0;
+        // Get rooms that have a commandment:
+        const commandmentRooms: TEN|0 = this.getRooms(r => r.hasPlanKey('purple_chest')).length as TEN|0;
+        // Get rooms that have an armor piece:
+        const armorRooms: TEN|0 = this.getRooms(r => r.hasPlanKey('gold_chest')).length as TEN|0;
+        // Get rooms that have a prisoner:
+        const prisonerRooms: TEN|0 = this.getRooms(r => r.getPrisoner() !== null && r.getPrisoner() !== undefined).length as TEN|0;
+
+        // Get the total number of treasure rooms:
+        const totalRooms: number =  bookRooms + commandmentRooms + armorRooms + prisonerRooms;
+
+        if (totalRooms === 0) {
+            return 'No treasures remain in this place. Make haste and depart; and let us pull down this stronghold in the name of the Lord!';
+        }
+
+        const bookText = bookRooms === 1 ? `${NUMBER.toString(bookRooms)} book of the Bible` : `${NUMBER.toString(bookRooms)} books of the Bible`;
+        const commandmentText = commandmentRooms === 1 ? `${NUMBER.toString(commandmentRooms)} commandment` : `${NUMBER.toString(commandmentRooms)} commandments`;
+        const armorText = armorRooms === 1 ? `${NUMBER.toString(armorRooms)} piece of armor` : `${NUMBER.toString(armorRooms)} pieces of armor`;
+        const prisonerText = prisonerRooms === 1 ? `${NUMBER.toString(prisonerRooms)} precious captive soul` : `${NUMBER.toString(prisonerRooms)} precious captive souls`;
+
+        const text: string = `Within this stronghold, there remaineth yet ` +
+            (bookRooms > 0 ? bookText : '') +
+            (commandmentRooms > 0 ? (bookRooms > 0 ? ', ' : '') + commandmentText : '') +
+            (armorRooms > 0 ? ((bookRooms > 0 || commandmentRooms > 0) ? ', ' : '') + armorText : '') +
+            (prisonerRooms > 0 ? ((bookRooms > 0 || commandmentRooms > 0 || armorRooms > 0) ? ', and ' : '') + prisonerText : '') +
+            `. Recover all, that we may leave this place forever!`;
+
+        return text;
     }
 }

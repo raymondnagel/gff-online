@@ -121,7 +121,7 @@ export class GRestorationCutscene extends GCutscene {
                     PLAYER.setFaith(1);
                     const faithWrapper: {value: number} = {value: PLAYER.getFaith()};
                     const newFaith: number = PLAYER.getMaxFaith() / 2;
-                    GFF.AdventureContent.updateFidelityMode();
+                    GFF.AdventureContent.setVisualsByFaith();
                     GFF.AdventureContent.tweens.add({
                         targets: [faithWrapper],
                         duration: 1000,

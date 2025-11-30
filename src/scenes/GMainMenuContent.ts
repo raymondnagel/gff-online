@@ -300,7 +300,7 @@ export class GMainMenuContent extends GContentScene {
         GFF.log(`Books Order: ${REGISTRY.get('booksOrder')}`);
 
         // Init some registry values:
-        REGISTRY.set('canGiftSeed', true);
+        REGISTRY.set('canSaintGift', true);
 
         // Init Bible books:
         BOOKS.initBooks();

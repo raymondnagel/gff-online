@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "development": "webpack serve --open --config webpack.development.js",
-    "distribution": "webpack --config webpack.distribution.js"
+    "development": "node ./tools/create-asset-manifest.mjs && webpack serve --open --config webpack.development.js",
+    "distribution": "node ./tools/create-asset-manifest.mjs && webpack --config webpack.distribution.js"
   },
   "keywords": [],
   "author": "",

@@ -126,7 +126,7 @@ export class GOpeningCutscene extends GCutscene {
         });
         GFF.AdventureContent.fadeOut(500, COLOR.WHITE.num(), () => {
             GFF.AdventureContent.fadeIn(500, COLOR.WHITE.num(), () => {
-                GFF.AdventureContent.updateFidelityMode();
+                GFF.AdventureContent.setVisualsByFaith();
             });
         });
     }
@@ -194,7 +194,7 @@ export class GOpeningCutscene extends GCutscene {
 
         // Start with a black screen, and update the fidelity mode:
         GFF.AdventureContent.shroud();
-        GFF.AdventureContent.updateFidelityMode();
+        GFF.AdventureContent.setVisualsByFaith();
 
         // Disable bottom bound and exit so the player can enter from off the screen:
         GFF.AdventureContent.setBottomBoundEnabled(false);
@@ -240,7 +240,7 @@ export class GOpeningCutscene extends GCutscene {
                 eventCode: () => {
                     GFF.AdventureContent.shroud();
                     PLAYER.beBornAgain();
-                    GFF.AdventureContent.updateFidelityMode();
+                    GFF.AdventureContent.setVisualsByFaith();
                     GFF.AdventureContent.getSound().fadeInMusic(1000, 'amazing');
                 },
                 after: 'playerSpawn',

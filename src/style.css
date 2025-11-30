@@ -13,5 +13,5 @@ body {
 }
 
 #thegame {
-    cursor: url('./assets/images/cursor.png'), auto;
+    cursor: url('./assets/images/interface/cursor.png'), auto;
 }

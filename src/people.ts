@@ -16,6 +16,8 @@ const PREACHER_PERSON: GPerson = {
     familiarity: 0,
     nameLevel: 2,
     reprobate: false,
+    convert: false,
+    captive: false,
     homeTown: null,
     bio1: null,
     bio2: null,

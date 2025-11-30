@@ -40,6 +40,8 @@ import { GStrongholdArea } from "./areas/GStrongholdArea";
 import { GLockedDoor } from "./objects/touchables/GLockedDoor";
 import { KEYS } from "./keys";
 import { GProphetTrigger } from "./triggers/GProphetTrigger";
+import { STRONGHOLD } from "./stronghold";
+import { GChurchArea } from "./areas/GChurchArea";
 
 const WALL_GUARD_THICK: number = 10;
 const WALL_CTRS: number[] = [
@@ -139,6 +141,18 @@ export class GRoom {
         };
     }
 
+    public getTitle(): string {
+        if (this.getChurch() !== null) {
+            return this.getChurch()!.getName();
+        } else if (this.getArea() instanceof GChurchArea) {
+            return this.getPortalRoom()!.getChurch()!.getName();
+        } else if (this.getTown() !== null) {
+            return this.getTown()!.getFullName();
+        } else {
+            return this.getRegion().getFullName();
+        }
+    }
+
     public setDepthDistance(distance: number) {
         this.depthDistance = distance;
     }
@@ -158,6 +172,7 @@ export class GRoom {
             || this.town !== null
             || this.stronghold !== null
             || this.portalRoom !== null
+            || (this.getArea() instanceof GStrongholdArea && (this.getArea() as GStrongholdArea).getEntranceRoom() === this)
         );
     }
 
@@ -321,6 +336,16 @@ export class GRoom {
             return 'map_blue_chest';
         } else if (this.hasPlanKey('gold_chest')) {
             return 'map_gold_chest';
+        } else if (this.isProphetChamber()) {
+            return 'map_prophet';
+        } else if (this.getPrisoner() !== undefined) {
+            return 'map_prison';
+        } else if (this.hasPlanKey('stairs_up')) {
+            return 'map_up';
+        } else if (this.hasPlanKey('stairs_down')) {
+            return 'map_down';
+        } else if (this.getArea() instanceof GStrongholdArea && (this.getArea() as GStrongholdArea).getEntranceRoom() === this) {
+            return 'map_entrance';
         }
         return null;
     }
@@ -372,10 +397,13 @@ export class GRoom {
             && this.walls[dir].every(section => section === true);
     }
 
-    public isAccessible(dir: CubeDir): boolean {
+    /**
+     * The direction is "accessible" if there's a unlocked door or staircase in that direction.
+     */
+    public isAccessible(dir: CubeDir, ignoreLocks: boolean = false): boolean {
         return (dir === DirVert.UP && this.getUpstairsRoom() !== null)
             || (dir === DirVert.DOWN && this.getDownstairsRoom() !== null)
-            || (dir !== DirVert.UP && dir !== DirVert.DOWN && !this.hasFullWall(dir) && !this.hasLockedDoor(dir));
+            || (dir !== DirVert.UP && dir !== DirVert.DOWN && !this.hasFullWall(dir) && (ignoreLocks || !this.hasLockedDoor(dir)));
     }
 
     public getNearestWallCenter(wallDir: CardDir, point: GPoint2D): GPoint2D {
@@ -424,6 +452,10 @@ export class GRoom {
         return this.doorways[dir];
     }
 
+    public getDoorways(): GDoorways {
+        return this.doorways;
+    }
+
     public setLockedDoor(dir: CardDir, keyRef: string|null) {
         this.lockedDoors[dir] = keyRef;
     }
@@ -461,6 +493,20 @@ export class GRoom {
         for (let d: number = 0; d < 6; d++) {
             const neighbor: GRoom|null = this.getNeighbor(DIRECTION.cubeDirFrom6(d as 0|1|2|3|4|5));
             if (neighbor) {
+                if (condition === undefined || condition(neighbor)) {
+                    neighbors.push(neighbor);
+                }
+            }
+        }
+        return neighbors;
+    }
+
+    public getAccessibleNeighbors(ignoreLocks: boolean = false, condition?: (n: GRoom) => boolean): GRoom[] {
+        const neighbors: GRoom[] = [];
+        for (let d: number = 0; d < 6; d++) {
+            const dir = DIRECTION.cubeDirFrom6(d as 0|1|2|3|4|5)
+            const neighbor: GRoom|null = this.getNeighbor(dir);
+            if (neighbor && neighbor.isAccessible(DIRECTION.getOpposite(dir) as CubeDir, ignoreLocks)) {
                 if (condition === undefined || condition(neighbor)) {
                     neighbors.push(neighbor);
                 }
@@ -551,9 +597,13 @@ export class GRoom {
     }
 
     public load() {
-        // Set background image from region:
+        // Set background image from region;
+        // if a tint is available (i.e. for stronghold interiors), apply it.
         if (this.region !== undefined) {
-            GFF.AdventureContent.add.image(0, 0, this.region.getBgImageName()).setOrigin(0, 0).setDepth(DEPTH.BACKGROUND);
+            GFF.AdventureContent.add.image(0, 0, this.region.getBgImageName())
+            .setOrigin(0, 0)
+            .setDepth(DEPTH.BACKGROUND)
+            .setTint(this.getStoneTint());
         }
 
         // Create terrain fade images, if applicable, based on neighbors:
@@ -591,7 +641,7 @@ export class GRoom {
 
         // Create scenery objects from plan:
         this.plans.forEach((plan) => {
-            SCENERY.create(plan, decorRenderer);
+            SCENERY.create(plan, this, decorRenderer);
         });
     }
 
@@ -685,6 +735,8 @@ export class GRoom {
         const eastWall: boolean = this.hasFullWall(Dir9.E);
         const southWall: boolean = this.hasFullWall(Dir9.S);
 
+        const stoneTint: number|undefined = this.getStoneTint();
+
         // Walls:
 
         // NORTH:
@@ -695,31 +747,37 @@ export class GRoom {
             if (nLeftWall) {
                 new GObstacleStatic(nLeftWall, GFF.LEFT_BOUND, GFF.TOP_BOUND)
                     .setOrigin(0, 0)
-                    .setDepth(DEPTH.WALL_NORTH);
+                    .setDepth(DEPTH.WALL_NORTH)
+                    .setTint(stoneTint);
             }
             if (nRightWall) {
                 new GObstacleStatic(nRightWall, GFF.RIGHT_BOUND, GFF.TOP_BOUND)
                     .setOrigin(1, 0)
-                    .setDepth(DEPTH.WALL_NORTH);
+                    .setDepth(DEPTH.WALL_NORTH)
+                    .setTint(stoneTint);
             }
             // Center:
             if (this.doorways[Dir9.N]) {
                 const nDoorLower: GSceneryDef|undefined = region.getWallPiece('n_door_lower');
                 if (nDoorLower) {
                     new GForegroundDecoration(nDoorLower, SOUTH_DOOR_X, GFF.TOP_BOUND)
-                        .setOrigin(0, 0);
+                        .setOrigin(0, 0)
+                        .setTint(stoneTint);
                 }
                 const nDoorUpper: GSceneryDef|undefined = region.getWallPiece('n_door_upper');
                 if (nDoorUpper) {
                     const arch = new GOverheadDecoration(nDoorUpper, NORTH_DOOR_X, GFF.TOP_BOUND)
-                        .setOrigin(0, 0);
+                        .setOrigin(0, 0)
+                        .setTint(stoneTint)
+                        .setDepth(DEPTH.WALL_NORTH);
                     this.addPermanentEventTrigger(new GStrongholdNorthArchTrigger(arch));
                 }
             } else {
                 const nMidWall: GSceneryDef|undefined = region.getWallPiece('n_mid');
                 if (nMidWall) {
                     new GObstacleStatic(nMidWall, VERT_MID_X, GFF.TOP_BOUND)
-                        .setOrigin(0, 0);
+                        .setOrigin(0, 0)
+                        .setTint(stoneTint);
                 }
             }
         }
@@ -732,12 +790,14 @@ export class GRoom {
             if (wTopWall) {
                 new GObstacleStatic(wTopWall, GFF.LEFT_BOUND, GFF.TOP_BOUND)
                     .setOrigin(0, 0)
-                    .setDepth(DEPTH.WALL_SIDE);
+                    .setDepth(DEPTH.WALL_SIDE)
+                    .setTint(stoneTint);
             }
             if (wBottomWall) {
                 new GObstacleStatic(wBottomWall, GFF.LEFT_BOUND, GFF.BOTTOM_BOUND)
                     .setOrigin(0, 1)
-                    .setDepth(DEPTH.WALL_SIDE);
+                    .setDepth(DEPTH.WALL_SIDE)
+                    .setTint(stoneTint);
             }
             // Center:
             if (this.doorways[Dir9.W]) {
@@ -745,18 +805,21 @@ export class GRoom {
                 if (wDoorLower) {
                     new GObstacleStatic(wDoorLower, GFF.LEFT_BOUND, HORZ_DOOR_Y)
                         .setOrigin(0, 0)
-                        .setDepth(DEPTH.DOORWAY);
+                        .setDepth(DEPTH.DOORWAY)
+                        .setTint(stoneTint);
                 }
                 const wDoorUpper: GSceneryDef|undefined = region.getWallPiece('w_door_upper');
                 if (wDoorUpper) {
                     new GOverheadDecoration(wDoorUpper, GFF.LEFT_BOUND, HORZ_DOOR_Y)
-                        .setOrigin(0, 0);
+                        .setOrigin(0, 0)
+                        .setTint(stoneTint);
                 }
             } else {
                 const wMidWall: GSceneryDef|undefined = region.getWallPiece('w_mid');
                 if (wMidWall) {
                     new GObstacleStatic(wMidWall, GFF.LEFT_BOUND, HORZ_DOOR_Y)
-                        .setOrigin(0, 0);
+                        .setOrigin(0, 0)
+                        .setTint(stoneTint);
                 }
             }
         }
@@ -769,12 +832,14 @@ export class GRoom {
             if (eTopWall) {
                 new GObstacleStatic(eTopWall, GFF.RIGHT_BOUND, GFF.TOP_BOUND)
                     .setOrigin(1, 0)
-                    .setDepth(DEPTH.WALL_SIDE);
+                    .setDepth(DEPTH.WALL_SIDE)
+                    .setTint(stoneTint);
             }
             if (eBottomWall) {
                 new GObstacleStatic(eBottomWall, GFF.RIGHT_BOUND, GFF.BOTTOM_BOUND)
                     .setOrigin(1, 1)
-                    .setDepth(DEPTH.WALL_SIDE);
+                    .setDepth(DEPTH.WALL_SIDE)
+                    .setTint(stoneTint);
             }
             // Center:
             if (this.doorways[Dir9.E]) {
@@ -782,18 +847,21 @@ export class GRoom {
                 if (eDoorLower) {
                     new GObstacleStatic(eDoorLower, GFF.RIGHT_BOUND, HORZ_DOOR_Y)
                         .setOrigin(1, 0)
-                        .setDepth(DEPTH.DOORWAY);
+                        .setDepth(DEPTH.DOORWAY)
+                        .setTint(stoneTint);
                 }
                 const eDoorUpper: GSceneryDef|undefined = region.getWallPiece('e_door_upper');
                 if (eDoorUpper) {
                     new GOverheadDecoration(eDoorUpper, GFF.RIGHT_BOUND, HORZ_DOOR_Y)
-                        .setOrigin(1, 0);
+                        .setOrigin(1, 0)
+                        .setTint(stoneTint);
                 }
             } else {
                 const eMidWall: GSceneryDef|undefined = region.getWallPiece('e_mid');
                 if (eMidWall) {
                     new GObstacleStatic(eMidWall, GFF.RIGHT_BOUND, HORZ_DOOR_Y)
-                        .setOrigin(1, 0);
+                        .setOrigin(1, 0)
+                        .setTint(stoneTint);
                 }
             }
         }
@@ -806,12 +874,14 @@ export class GRoom {
             if (sLeftWall) {
                 new GObstacleStatic(sLeftWall, GFF.LEFT_BOUND, GFF.BOTTOM_BOUND)
                     .setOrigin(0, 1)
-                    .setDepth(DEPTH.WALL_SOUTH);
+                    .setDepth(DEPTH.WALL_SOUTH)
+                    .setTint(stoneTint);
             }
             if (sRightWall) {
                 new GObstacleStatic(sRightWall, GFF.RIGHT_BOUND, GFF.BOTTOM_BOUND)
                     .setOrigin(1, 1)
-                    .setDepth(DEPTH.WALL_SOUTH);
+                    .setDepth(DEPTH.WALL_SOUTH)
+                    .setTint(stoneTint);
             }
             // Center:
             const hasOutsidePortal: boolean = this.portalRoom?.getArea() === AREA.WORLD_AREA;
@@ -825,13 +895,15 @@ export class GRoom {
                 const sDoor: GSceneryDef|undefined = region.getWallPiece('s_door');
                 if (sDoor) {
                     new GOverheadDecoration(sDoor, SOUTH_DOOR_X, GFF.BOTTOM_BOUND)
-                        .setOrigin(0, 1);
+                        .setOrigin(0, 1)
+                        .setTint(stoneTint);
                 }
             } else {
                 const sMidWall: GSceneryDef|undefined = region.getWallPiece('s_mid');
                 if (sMidWall) {
                     new GObstacleStatic(sMidWall, VERT_MID_X, GFF.BOTTOM_BOUND)
-                        .setOrigin(0, 1);
+                        .setOrigin(0, 1)
+                        .setTint(stoneTint);
                 }
             }
         }
@@ -842,7 +914,8 @@ export class GRoom {
             if (nwCorner) {
                 new GObstacleStatic(nwCorner, GFF.LEFT_BOUND, GFF.TOP_BOUND)
                     .setOrigin(0, 0)
-                    .setDepth(DEPTH.WALL_N_CORNER);
+                    .setDepth(DEPTH.WALL_N_CORNER)
+                    .setTint(stoneTint);
             }
         }
         if (northWall && eastWall) {
@@ -850,7 +923,8 @@ export class GRoom {
             if (neCorner) {
                 new GObstacleStatic(neCorner, GFF.RIGHT_BOUND, GFF.TOP_BOUND)
                     .setOrigin(1, 0)
-                    .setDepth(DEPTH.WALL_N_CORNER);
+                    .setDepth(DEPTH.WALL_N_CORNER)
+                    .setTint(stoneTint);
             }
         }
         if (southWall && westWall) {
@@ -858,7 +932,8 @@ export class GRoom {
             if (swCorner) {
                 new GObstacleStatic(swCorner, GFF.LEFT_BOUND, GFF.BOTTOM_BOUND)
                     .setOrigin(0, 1)
-                    .setDepth(DEPTH.WALL_S_CORNER);
+                    .setDepth(DEPTH.WALL_S_CORNER)
+                    .setTint(stoneTint);
             }
         }
         if (southWall && eastWall) {
@@ -866,7 +941,8 @@ export class GRoom {
             if (seCorner) {
                 new GObstacleStatic(seCorner, GFF.RIGHT_BOUND, GFF.BOTTOM_BOUND)
                     .setOrigin(1, 1)
-                    .setDepth(DEPTH.WALL_S_CORNER);
+                    .setDepth(DEPTH.WALL_S_CORNER)
+                    .setTint(stoneTint);
             }
         }
 
@@ -1021,6 +1097,10 @@ export class GRoom {
         const plan: GSceneryPlan = { key, x, y, id: this.plans.length };
         this.plans.push(plan);
         return plan;
+    }
+
+    public clearSceneryPlans() {
+        this.plans = [];
     }
 
     public planPartialWallScenery(sceneryDefs: GSceneryDef[]) {
@@ -1254,7 +1334,7 @@ export class GRoom {
                     object.y + object.height <= otherObject.y ||
                     object.y >= otherObject.y + otherObject.height
             )) {
-                console.log(`Scenery ${sceneryDef.key} at ${x},${y} intersects with object: ${otherObject.x},${otherObject.y} ${otherObject.width}x${otherObject.height}`);
+                GFF.log(`Scenery ${sceneryDef.key} at ${x},${y} intersects with object: ${otherObject.x},${otherObject.y} ${otherObject.width}x${otherObject.height}`);
                 return null;
             }
         }
@@ -2119,9 +2199,17 @@ export class GRoom {
         return false;
     }
 
-    public planTileScenery(key: string, x: number, y: number) {
+    public planTileScenery(key: string, x: number, y: number, centered: boolean = false) {
         const def: GSceneryDef = SCENERY.def(key);
-        this.addSceneryPlan(key, GFF.ROOM_X + (x * GFF.TILE_W) - def.body.x, GFF.ROOM_Y + (y * GFF.TILE_H) - def.body.y);
+
+        const tileX = GFF.ROOM_X + (x * GFF.TILE_W) + (centered ? (GFF.TILE_W / 2) : 0);
+        const tileY = GFF.ROOM_Y + (y * GFF.TILE_H) + (centered ? (GFF.TILE_H / 2) : 0);
+
+        this.addSceneryPlan(
+            key,
+            tileX - (centered ? def.body.width / 2 : 0) - def.body.x,
+            tileY - (centered ? def.body.height / 2 : 0) - def.body.y
+        );
     }
 
     public getTileArea(x: number, y: number, w: number, h: number): GRect {
@@ -2133,6 +2221,46 @@ export class GRoom {
         };
     }
 
+    public finalizeSceneryPlans() {
+        // Implement any post-processing needed for scenery plans here
+        this.joinTiles();
+    }
+
+    /**
+     * Some tile objects that have similar objects on adjacent tiles need
+     * additional objects added to join them together seamlessly; for example,
+     * two chasm tiles should have borders around them, but not between them.
+     *
+     * Since we store the joins in the plan, the actual joining objects can be
+     * added later during scenery instantiation.
+     */
+    private joinTiles() {
+        // Get a list of all plans that are tile-based:
+        const tilePlans: GSceneryPlan[] = this.plans.filter(p => p.x % GFF.TILE_W === 0 && p.y % GFF.TILE_H === 0);
+
+        // For each tile plan, check adjacent tiles for similar tiles:
+        for (let plan of tilePlans) {
+            plan.joins = {};
+            const tileX: number = (plan.x - GFF.ROOM_X) / GFF.TILE_W;
+            const tileY: number = (plan.y - GFF.ROOM_Y) / GFF.TILE_H;
+            for (let dir of DIRECTION.dir8Values()) {
+                const vel = DIRECTION.getVelocity(dir);
+                const neighborX: number = tileX + vel.x;
+                const neighborY: number = tileY + vel.y;
+                const hasNeighbor: boolean = tilePlans.some(p2 => {
+                    const p2TileX: number = (p2.x - GFF.ROOM_X) / GFF.TILE_W;
+                    const p2TileY: number = (p2.y - GFF.ROOM_Y) / GFF.TILE_H;
+                    // endsWith is used to allow joining to variants of the same base tile (e.g. lava -> grated_lava)
+                    return p2TileX === neighborX && p2TileY === neighborY && p2.key.endsWith(plan.key);
+                });
+                // If the neighbor tile has the same scenery, mark this tile as joined in that direction
+                if (hasNeighbor) {
+                    plan.joins[dir] = true;
+                }
+            }
+        }
+    }
+
     public addRoomLogEntry(entry: string) {
         this.roomLog.push(entry);
     }
@@ -2140,12 +2268,21 @@ export class GRoom {
     public logRoomInfo() {
         // Print out room log (for testing room generation):
         this.roomLog.forEach(s => {
-            console.log(s);
+            GFF.log(s);
         });
 
         // Log scenery plans:
-        console.log('Scenery Plans:');
-        console.dir(this.plans);
+        GFF.log('Scenery Plans:');
+        GFF.log(this.plans);
+    }
+
+    public getStoneTint(): number|undefined {
+        if (this.getArea() instanceof GStrongholdArea) {
+            const area = this.getArea() as GStrongholdArea;
+            const stronghold: GStronghold = STRONGHOLD.getStrongholds()[area.getStrongholdIndex()];
+            return stronghold.getStoneTint();
+        }
+        return undefined;
     }
 
     public static createPortal(room1: GRoom, room2: GRoom) {

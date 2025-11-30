@@ -69,9 +69,9 @@ export abstract class GCutscene {
 
 
     private logCast() {
-        console.log(`Starring...`);
+        GFF.log(`Starring...`);
         this.actors.forEach(a => {
-            console.log(`${a.char.getName()} as ${a.label}`);
+            GFF.log(`${a.char.getName()} as ${a.label}`);
         });
     }
 
@@ -171,7 +171,7 @@ export abstract class GCutscene {
         this.sceneEvents.filter(
             e => e.after === afterEventId
         ).forEach(e => {
-            console.log(`Beginning event "${e.eventId}"...`);
+            GFF.log(`Beginning event "${e.eventId}"...`);
             if ('actor' in e) {
                 // Processing an actor event will execute it:
                 this.processActorEvent(e as GActorEvent);
@@ -186,7 +186,7 @@ export abstract class GCutscene {
     }
 
     private processActorEvent(actorEvent: GActorEvent): void {
-        console.log(`Processing ${actorEvent.actor}'s "${actorEvent.command}"`);
+        GFF.log(`Processing ${actorEvent.actor}'s "${actorEvent.command}"`);
         const actor: GCharSprite = this.getSpecificActor(actorEvent.actor) as GCharSprite;
         const goal: GGoal|Function = this.createActorGoalOrEvent(actor, actorEvent);
         // Determine whether to finish instantly, or after a delay:

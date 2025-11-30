@@ -1,3 +1,4 @@
+import { DIRECTION } from "./direction";
 import { GRoom } from "./GRoom";
 import { GTown } from "./GTown";
 import { GCharSprite } from "./objects/chars/GCharSprite";
@@ -78,6 +79,7 @@ export type GDifficulty = {
     majorGraceIncrease: number;
     maxRandomEnemies: number;
     neededXpModifier: number;
+    trapStrengthPct: number;
 };
 
 // Represents an attack that the enemy can perform:
@@ -162,6 +164,9 @@ export interface GPerson {
     familiarity: number; // +1 for each conversation; +1 for each small-talk
     nameLevel: 0|1|2; // 0 = unknown; 1 = formal name; 2 = informal name
     reprobate: boolean; // if true, faith decreases instead of increasing
+    convert: boolean; // if true, this person has been converted by the player
+    captive: boolean; // if true, this person was rescued from captivity by the player
+    specialGift?: 'sermon'|'standard'; // if present, the gift this person can give when talked to
     homeTown: GTown|null; // need this so they can join the town's church when converted
     bio1: string|null; // Bio part 1: intro, town, background
     bio2: string|null; // Bio part 2: grace, conversion, current
@@ -197,6 +202,8 @@ export enum Dir9 {
     NW   = 8
 };
 
+export type Dir8 = Dir9.N|Dir9.NE|Dir9.E|Dir9.SE|Dir9.S|Dir9.SW|Dir9.W|Dir9.NW;
+
 export type CardDir = Dir9.N|Dir9.E|Dir9.S|Dir9.W;
 
 export type CubeDir = Dir9.N|Dir9.E|Dir9.S|Dir9.W|DirVert.UP|DirVert.DOWN;
@@ -226,6 +233,9 @@ export interface GRect extends GPoint2D {
 export interface GSceneryPlan extends GPoint2D {
     key: string;
     id: number;
+    joins?: {
+        [key in Dir8]?: boolean;
+    };
 }
 
 // Structure for pre-defining a scenery object
@@ -235,6 +245,7 @@ export interface GSceneryDef {
     key: string;
     type: 'bg_decor'|'fg_decor'|'oh_decor'|'static'|'custom';
     body: GRect;
+    tint?: boolean;
 }
 
 export type GFloor = GRoom[][];

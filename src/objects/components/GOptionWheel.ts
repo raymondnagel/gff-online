@@ -3,9 +3,9 @@ import { GBaseScene } from "../../scenes/GBaseScene";
 import { GTextEntryControl } from "./GTextEntryControl";
 
 const DEFAULT_SCROLL_SPEED: number = 0.1;
-const SLOW_SCROLL_SPEED: number = 0.1;
-const MED_SCROLL_SPEED: number = 0.2;
-const FAST_SCROLL_SPEED: number = 0.3;
+const SLOW_SCROLL_SPEED: number = 0.12;
+const MED_SCROLL_SPEED: number = 0.15;
+const FAST_SCROLL_SPEED: number = 0.19;
 const SLOW_SCROLL_THRESH: number = 1;
 const MED_SCROLL_THRESH: number = 20;
 const FAST_SCROLL_THRESH: number = 50;
@@ -43,7 +43,7 @@ export class GOptionWheel extends GTextEntryControl {
         for (let i = 0; i < this.maxVisibleOptions; i++) {
             const text = scene.add.text(0, 0, "", {
                 fontFamily: 'averia_serif',
-                fontSize: '20px',
+                fontSize: '17px',
                 color: '#000000'
            });
             text.setOrigin(0.5);
@@ -99,6 +99,7 @@ export class GOptionWheel extends GTextEntryControl {
 
                 text.setText(this.options[optionIndex]);
                 text.setPosition(0, targetY);
+
                 text.setScale(1, currentScale);
                 text.setVisible(true);
             }

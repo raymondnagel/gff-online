@@ -72,6 +72,9 @@ export class GTreasureChest extends GTouchable {
                 this.color = 'black';
             }
             this.setTexture(`${this.color}_chest_open`);
+
+            // Faith may have changed when collecting the item
+            GFF.AdventureContent.setVisualsByFaith();
         });
     }
 
@@ -148,6 +151,9 @@ export class GTreasureChest extends GTouchable {
 
         const item: GItem = RANDOM.randElementWeighted(itemList) as GItem;
 
+        // When a common chest is opened (and it's not wicked), give a minor grace boost:
+        PLAYER.giveGrace('minor');
+
         return item;
     }
 
@@ -215,6 +221,12 @@ export class GTreasureChest extends GTouchable {
                 onCollect: () => {
                     const area = room.getArea() as GStrongholdArea;
                     PLAYER.changeKeys(area.getStrongholdIndex(), 1);
+
+                    // Other premium chest items give a major grace boost;
+                    // keys are lesser, though, and only give a minor boost.
+                    // However, keys also give grace when they are used:
+                    // minor for a locked door, major for freeing a prisoner.
+                    PLAYER.giveGrace('minor');
                 }
             };
         }

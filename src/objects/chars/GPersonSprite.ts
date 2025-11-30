@@ -19,7 +19,6 @@ import { GRoom } from '../../GRoom';
 import { STATS } from '../../stats';
 import { REGISTRY } from '../../registry';
 import { AREA } from '../../area';
-import { GStrongholdArea } from '../../areas/GStrongholdArea';
 
 const GENDER     = ['m', 'f'] as const;
 const SKIN_COLOR = ['w', 'y', 't', 'b'] as const;
@@ -84,14 +83,32 @@ export class GPersonSprite extends GCharSprite implements GInteractable {
 
     public setNewConvert() {
         this.justConverted = true;
+        this.person.convert = true;
     }
 
     public setPrisoner(isPrisoner: boolean) {
         this.prisoner = isPrisoner;
+        if (isPrisoner) {
+            this.person.captive = true;
+        }
     }
 
     public isPrisoner(): boolean {
         return this.prisoner;
+    }
+
+    public setSpecialGift(gift: 'sermon'|'standard') {
+        this.person.specialGift = gift;
+    }
+
+    public hasSpecialGift(): boolean {
+        return this.person.specialGift !== undefined;
+    }
+
+    public giveSpecialGift(): 'sermon'|'standard'|undefined {
+        const gift = this.person.specialGift;
+        this.person.specialGift = undefined;
+        return gift;
     }
 
     public setReadyToTalk(ready: boolean) {
@@ -120,9 +137,15 @@ export class GPersonSprite extends GCharSprite implements GInteractable {
         if (this.isPrisoner()) {
             if (RANDOM.flipCoin()) {
                 this.showFloatingText(RANDOM.randElement([
-                    'Help!',
-                    'Please, help me!',
-                    'Have mercy on me!',
+                    `Help!`,
+                    `Please help!`,
+                    `I'm trapped!`,
+                    `I can't escape!`,
+                    `Please, help me!`,
+                    `Have mercy on me!`,
+                    `Help me, Lord!`,
+                    `Lord... save me!`,
+                    `Lord, please send someone!`,
                 ]), 'phrase');
                 return new GRestGoal(RANDOM.randInt(3000, 7000));
             } else {
@@ -220,6 +243,8 @@ export class GPersonSprite extends GCharSprite implements GInteractable {
             familiarity: 0,
             nameLevel: 0,
             reprobate: RANDOM.flipCoin(),
+            convert: false,
+            captive: false,
             homeTown: null,
             bio1: null,
             bio2: null,
@@ -253,7 +278,7 @@ export class GPersonSprite extends GCharSprite implements GInteractable {
                 .replaceAll('RANDOM_TOWN', randomTown.getName());
         };
 
-        const bgClass: string = RANDOM.randElement(bgClasses) as string;
+        const bgClass: string = this.isPrisoner() ? 'captive' : RANDOM.randElement(bgClasses) as string;
         const cvClass: string = isPlayerConvert ? 'player' : bgClass;
 
         const introBlurb: string = replaceLabels(RANDOM.randElement(GFF.GAME.cache.json.get('saint_bio_intro')));

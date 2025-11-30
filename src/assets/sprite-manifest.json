@@ -4212,5 +4212,11 @@
   "sprites/effects/statue_burst-120x120.png",
   "sprites/effects/teleport_aura-67x106.png",
   "sprites/effects/tower_door-176x158.png",
-  "sprites/scenery/campfire-116x150.png"
+  "sprites/scenery/abyss-64x64.png",
+  "sprites/scenery/campfire-116x150.png",
+  "sprites/scenery/down_hint-29x49.png",
+  "sprites/scenery/lava-64x64.png",
+  "sprites/scenery/torch_flame-48x72.png",
+  "sprites/scenery/trap_shut-64x64.png",
+  "sprites/scenery/up_hint-29x49.png"
 ]

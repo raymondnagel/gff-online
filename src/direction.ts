@@ -11,7 +11,7 @@
 
 import { RANDOM } from "./random";
 import { GFF } from "./main";
-import { CardDir, CubeDir, Dir9, DirVert, GKeyList, GPoint2D, GPoint3D } from "./types";
+import { CardDir, CubeDir, Dir8, Dir9, DirVert, GKeyList, GPoint2D, GPoint3D } from "./types";
 
 export namespace DIRECTION {
 
@@ -46,7 +46,7 @@ export namespace DIRECTION {
         Dir9.SW,
         Dir9.W,
         Dir9.NW
-    ];
+    ] as Dir8[];
 
     const DIR9_TEXTS = [
         '',
@@ -207,7 +207,7 @@ export namespace DIRECTION {
         return getDirectionForIncs(x, y);
     }
 
-    export function getOpposite(direction: Dir9): Dir9 {
+    export function getOpposite(direction: Dir9|DirVert): Dir9|DirVert {
         switch (direction) {
             case Dir9.N: return Dir9.S;
             case Dir9.NE: return Dir9.SW;
@@ -217,6 +217,8 @@ export namespace DIRECTION {
             case Dir9.SW: return Dir9.NE;
             case Dir9.W: return Dir9.E;
             case Dir9.NW: return Dir9.SE;
+            case DirVert.UP: return DirVert.DOWN;
+            case DirVert.DOWN: return DirVert.UP;
             default: return Dir9.NONE;
         }
     }

@@ -5,6 +5,13 @@ import { GStrongholdRegion } from "./GStrongholdRegion";
 
 export class GTowerRegion extends GStrongholdRegion{
 
+    protected furnishEntranceRoom(room: GRoom): void {
+        // First call the base method to place the entrance mat:
+        super.furnishEntranceRoom(room);
+        // Place the emblem of deception in the center of the mat:
+        room.planPositionedScenery(SCENERY.def('emblem_deception'), 512, 576, .5, 1);
+    }
+
     protected furnishStairsRoom(room: GRoom, stairsKey: string): void {
         if (stairsKey === 'stairs_down') {
             super.furnishStairsRoom(room, stairsKey);
@@ -14,13 +21,19 @@ export class GTowerRegion extends GStrongholdRegion{
         // and the others will be "false" staircases that take the player back down.
         const trueStairsIndex = RANDOM.randInt(0, 3);
 
+        // Get scenery defs:
+        const trueDef = SCENERY.def('stairs_up');
+        // The false staircase uses the same graphics as the true one, but the key must be set for planning:
+        const falseDef = structuredClone(trueDef);
+        falseDef.key = 'stairs_up_false';
+
         // #1
-        room.planPositionedScenery(SCENERY.def(trueStairsIndex === 0 ? 'stairs_up' : 'stairs_up_false'), 356, 276, .5, .5);
+        room.planPositionedScenery(trueStairsIndex === 0 ? trueDef : falseDef, 356, 276, .5, .5);
         // #2
-        room.planPositionedScenery(SCENERY.def(trueStairsIndex === 1 ? 'stairs_up' : 'stairs_up_false'), 668, 276, .5, .5);
+        room.planPositionedScenery(trueStairsIndex === 1 ? trueDef : falseDef, 668, 276, .5, .5);
         // #3
-        room.planPositionedScenery(SCENERY.def(trueStairsIndex === 2 ? 'stairs_up' : 'stairs_up_false'), 356, 428, .5, .5);
+        room.planPositionedScenery(trueStairsIndex === 2 ? trueDef : falseDef, 356, 428, .5, .5);
         // #4
-        room.planPositionedScenery(SCENERY.def(trueStairsIndex === 3 ? 'stairs_up' : 'stairs_up_false'), 668, 428, .5, .5);
+        room.planPositionedScenery(trueStairsIndex === 3 ? trueDef : falseDef, 668, 428, .5, .5);
     }
 }

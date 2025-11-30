@@ -262,8 +262,10 @@ export class GQuickTravelCutscene extends GCutscene {
         this.addCutsceneEvent({
             eventId: 'transitionToDestination',
             eventCode: () => {
-                // Fade in the background music again:
-                GFF.AdventureContent.getSound().fadeInMusic(1000);
+                // Fade in the background music again (as long as player isn't faithless):
+                if (PLAYER.getFaith() > 0) {
+                    GFF.AdventureContent.getSound().fadeInMusic(1000);
+                }
 
                 // Transition to the destination room:
                 GFF.AdventureContent.transitionRoomDuringCutscene(this.destination.getTravelAgencyLocation());

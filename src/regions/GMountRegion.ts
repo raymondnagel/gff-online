@@ -4,15 +4,49 @@ import { SCENERY } from "../scenery";
 import { Dir9, GRect, GSceneryDef } from "../types";
 import { GOutsideRegion } from "./GOutsideRegion";
 
+const STOCK_REGIONS = [
+    { name: 'Golan', adjective: 'Golanite' },
+    { name: 'Hermon', adjective: 'Hermonian' },
+    { name: 'Abarim', adjective: 'Abarimite' },
+    { name: 'Carmel', adjective: 'Carmelite' },
+    { name: 'Sinai', adjective: 'Sinaitic' },
+    { name: 'Ephraim', adjective: 'Ephraimite' },
+    { name: 'Seir', adjective: 'Seirite' },
+    { name: 'Hor', adjective: 'Horite' },
+    { name: 'Moriah', adjective: 'Moriahite' },
+    { name: 'Ararat', adjective: 'Araratian' },
+    { name: 'Gerizim', adjective: 'Gerizimite' },
+    { name: 'Ebal', adjective: 'Ebalite' },
+];
+
 export class GMountRegion extends GOutsideRegion{
 
-    constructor(){
+    constructor() {
         super(
-            'Mountain',
+            'mountains',
             'mount_bg',
             'mount_enc_bg',
             'map_mountain'
         );
+    }
+
+    protected getGenericNounForName(): string {
+        return RANDOM.randElement([
+            'Mountains',
+            'Highlands',
+            'Heights',
+            'Range',
+            'Peaks',
+            'Ridges',
+            'Cliffs',
+        ]);
+    }
+
+    protected getStockRegionName(): string {
+        return RANDOM.randElement(STOCK_REGIONS).name;
+    }
+    protected getStockRegionAdjective(): string {
+        return RANDOM.randElement(STOCK_REGIONS).adjective;
     }
 
     public getWalls(): Record<Dir9, GSceneryDef|null> {
@@ -33,12 +67,7 @@ export class GMountRegion extends GOutsideRegion{
         return RANDOM.randInt(-10, 10); // Mountains are cold, especially at higher elevations.
     }
 
-    protected _furnishRoom(room: GRoom) {
-        // If room contains a stronghold, we don't want to add random scenery
-        if (room.getStronghold() !== null) {
-            return;
-        }
-
+    protected _furnishRoom(room: GRoom, partialWalls: boolean = true, internalObjects: boolean = true) {
         // Essential objects, like shrines and entrances, should be placed first.
 
         // Get a zone to use:
@@ -51,12 +80,16 @@ export class GMountRegion extends GOutsideRegion{
         // Call methods to add any quantity of any desired scenery:
 
         // Walls:
-        room.planPartialWallScenery([
-            SCENERY.def('boulder'),
-            SCENERY.def('pine_tree')
-        ]);
+        if (partialWalls) {
+            room.planPartialWallScenery([
+                SCENERY.def('boulder'),
+                SCENERY.def('pine_tree')
+            ]);
+        }
 
-        // Peak: 100% chance to add 1-7
-        room.planSceneryChanceForBatch(SCENERY.def('peak'), 1.0, 1, 7, objectBounds, zoneRects);
+        if (internalObjects) {
+            // Peak: 100% chance to add 1-7
+            room.planSceneryChanceForBatch(SCENERY.def('peak'), 1.0, 1, 7, objectBounds, zoneRects);
+        }
     }
 }

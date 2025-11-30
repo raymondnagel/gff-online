@@ -26,7 +26,7 @@
       "title": "Faith",
       "type": "concept",
       "text": "Now faith is the substance of things hoped for, the evidence of things not seen. (...) By faith, Noah, being warned of God of things not seen as yet, moved with fear, prepared an ark to the saving of his house; by the which he condemned the world, and became heir of the righteousness which is by faith.\" (Hebrews 11:1, 7)",
-      "image": "cross",
+      "image": "faith_entry",
       "inspiration": "Faith is one of the central themes of Christianity. Faith is believing in what is not seen, on the basis of what is revealed; it is the only way for us to have a relationship with the invisible God, who reveals himself by his Word. (1 Sam. 3:21; Col. 1:15; John 1:1-18) It is through faith that Christ dwells in our hearts (Eph. 3:17); it is the way of God's righteousness (Rom. 1:17; 10:10; Phil. 3:9); and it is the means by which we have access into God's grace (Rom. 5:1-2), the only thing that can save us (Eph. 2:8)."
     },
     {
@@ -36,28 +36,98 @@
       "title": "Grace",
       "type": "concept",
       "text": "\"And he said unto me, My grace is sufficient for thee: for my strength is made perfect in weakness. Most gladly therefore will I rather glory in my infirmities, that the power of Christ may rest upon me.\" (2 Corinthians 12:9)",
-      "image": "grace",
+      "image": "grace_entry",
       "inspiration": "God's grace is his favor, kindness, and goodwill toward man, and specially toward those who are righteous before him (Gen. 6:8-9; 7:1). It is God being \"for us\" (Rom. 8:31), shewing himself strong on our behalf (2 Chron. 16:9). The scripture says that God's grace is accessed by faith (Rom. 5:2); that we must grow in it (2 Pet. 3:18); and that he gives grace to those who walk in humility and uprightness (Mic. 6:8; Jas. 4:6; Ps. 84:11). There is no greater power, or more precious gift, than the true grace of God in Jesus Christ."
     },
     {
-      "name": "church",
+      "name": "treasure_chest",
       "index": "1_concept_5",
+      "entry": "Concept: Treasure Chest",
+      "title": "Treasure Chest",
+      "type": "concept",
+      "text": "\"That their hearts might be comforted, being knit together in love, and unto all riches of the full assurance of understanding, to the acknowledgement of the mystery of God, and of the Father, and of Christ; In whom are hid all the treasures of wisdom and knowledge.\" (Colossians 2:2-3)",
+      "image": "chest_entry",
+      "inspiration": "Throughout the Land of Allegoria, Adam will find treasure chests containing valuable items and bonuses. These treasures represent spiritual riches that a Christian can discover and grow into in Christ: receiving daily bread, keeping his commandments, understanding of the scriptures, and equipping the whole armour of God (Prov. 8:20-21; Is. 33:6; Matt. 6:19-21)."
+    },
+    {
+      "name": "church",
+      "index": "1_concept_6",
       "entry": "Concept: Church",
       "title": "Church",
       "type": "concept",
       "text": "\"And they, continuing daily with one accord in the temple, and breaking bread from house to house, did eat their meat with gladness and singleness of heart, praising God, and having favour with all the people. And the Lord added to the church daily such as should be saved.\" (Acts 2:46-47)",
-      "image": "true_church",
+      "image": "church_entry",
       "inspiration": "The church of God is his greatest work upon this earth: men redeemed from sin and the powers of darkness (Isa. 44:22; Acts 26:18), renewed in Christ by the power of the Holy Ghost (Col. 3:10; Tit. 3:5-7), and builded together into an holy temple for God to dwell in (Eph. 2:19-22; 4:1-16). With Christ as the head (Eph. 1:22; 5:23; Col. 1:18), the church is called to be his body, carrying on the ministry of reconciliation upon the earth in his stead (2 Cor. 5:18-20)."
     },
     {
+      "name": "town",
+      "index": "1_concept_7",
+      "entry": "Concept: Town",
+      "title": "Town",
+      "type": "concept",
+      "text": "\"And he said unto them, Let us go into the next towns, that I may preach there also: for therefore came I forth.\" (Mark 1:38)",
+      "image": "town_entry",
+      "inspiration": "There are 10 towns in the Land of Allegoria, each a bustling community of precious souls who have a need for the light of God's word and the gospel of Christ. In each town, you will also find an assembly of believers (church), and a Spirit Travel location, which can be used to quick-travel to other towns."
+    },
+    {
       "name": "spirit_travel",
-      "index": "1_concept_6",
+      "index": "1_concept_8",
       "entry": "Concept: Spirit Travel",
       "title": "Spirit Travel",
       "type": "concept",
       "text": "\"And when they were come up out of the water, the Spirit of the Lord caught away Philip, that the eunuch saw him no more: and he went on his way rejoicing. But Philip was found at Azotus: and passing through he preached in all the cities, till he came to Caesarea.\" (Acts 8:39-40)",
-      "image": "spirit_travel",
+      "image": "agency_entry",
       "inspiration": "'Spirit Travel' is a fictional organization that doubles as both a travel agency and an airline. Inspired by 1 Kings 18:12 and Acts 8:39, in which the Spirit of the Lord carries Elijah and Philip to distant places, Spirit Travel allows Adam to quickly travel between towns using an unlimited travel pass item. (NOTE: Spirit Travel is not affiliated with or representative of Spirit Airlines®, a real-world airline company.)"
+    },
+    {
+      "name": "prophet",
+      "index": "1_concept_9",
+      "entry": "Concept: Prophet",
+      "title": "Prophet",
+      "type": "concept",
+      "text": "\"Then Jeremiah the prophet said unto them, I have heard you; behold, I will pray unto the LORD your God according to your words; and it shall come to pass, that whatsoever thing the LORD shall answer you, I will declare it unto you; I will keep nothing back from you.\" (Jeremiah 42:4)",
+      "image": "prophet_entry",
+      "inspiration": "Prophets are holy men of God who speak his word as they are moved by the Holy Ghost (2 Pet. 1:21). They are sent by God to deliver messages of warning, instruction, and encouragement to his people (Deut. 34:10-12; 1 Sam. 3:19-21; Jer. 7:25; Amos 3:7). In GFF, prophets are important allies who will give Adam guidance and strengthen him to face the challenges ahead."
+    },
+    {
+      "name": "captive",
+      "index": "1_concept_10",
+      "entry": "Concept: Captive",
+      "title": "Captive",
+      "type": "concept",
+      "text": "\"The Spirit of the Lord GOD is upon me; because the LORD hath anointed me to preach good tidings unto the meek; he hath sent me to bind up the brokenhearted, to proclaim liberty to the captives, and the opening of the prison to them that are bound;\" (Isaiah 61:1)",
+      "image": "captive_entry",
+      "inspiration": "Captives represent precious souls who are held in bondage by the enemy, bound fast by sins, addictions, false doctrines, or other infirmity. Held deep within enemy strongholds, they cry out to God for deliverance; and he raises up faithful servants to storm the gates of hell, war against the powers of darkness, and set the captives free by the Spirit of Christ (Ps. 107:10-16; Isa. 49:7-9)."
+    },
+    {
+      "name": "enemies",
+      "index": "1_concept_11",
+      "entry": "Concept: Enemies",
+      "title": "Enemies",
+      "type": "concept",
+      "text": "\"And there was war in heaven: Michael and his angels fought against the dragon; and the dragon fought and his angels,\" (Revelation 12:7) \"For we wrestle not against flesh and blood, but against principalities, against powers, against the rulers of the darkness of this world, against spiritual wickedness in high places.\" (Ephesians 6:12)",
+      "image": "enemies_entry",
+      "inspiration": "Satan and his devils are the spiritual enemies of God and his children. They seek to deceive, tempt, and destroy precious souls; to hinder the work of God's Spirit and the advancement of his kingdom (John 10:10; Acts 26:18; Col. 1:13; 1 Pet. 5:8). As a soldier of Christ, Adam must stand firm against these wicked spirits, wielding the sword of the Spirit, resisting them by the power of God until they flee (Eph. 6:10-18; Jas. 4:7)."
+    },
+    {
+      "name": "trap",
+      "index": "1_concept_12",
+      "entry": "Concept: Trap",
+      "title": "Trap",
+      "type": "concept",
+      "text": "\"For among my people are found wicked men: they lay wait, as he that setteth snares; they set a trap, they catch men.\" (Jeremiah 5:26)",
+      "image": "trap_entry",
+      "inspiration": "Within strongholds, Adam may sometimes encounter traps set by the enemy. These represent the various temptations, idols, and vices which men may fall into, diverting them from the path of righteousness (Ex. 23:33; 1 Tim. 3:7; Heb. 12:1). If Adam should stumble into a trap, his faith will be damaged and he will be stunned for a moment, making him an easy target for enemies. See then that ye walk circumspectly, not as fools, but as wise."
+    },
+    {
+      "name": "stronghold",
+      "index": "1_concept_13",
+      "entry": "Concept: Stronghold",
+      "title": "Stronghold",
+      "type": "concept",
+      "text": "\"For though we walk in the flesh, we do not war after the flesh: (For the weapons of our warfare are not carnal, but mighty through God to the pulling down of strong holds;) Casting down imaginations, and every high thing that exalteth itself against the knowledge of God, and bringing into captivity every thought to the obedience of Christ; And having in a readiness to revenge all disobedience, when your obedience is fulfilled.\" (2 Corinthians 10:3-6)",
+      "image": "stronghold_entry",
+      "inspiration": "Strongholds represent fortified positions of the enemy, where devils and spirits hold out against the advance of God's kingdom and power. They are evil places, filled with traps, enemies, and dangers; but it is the duty of every Christian soldier to assault these bastions of spiritual wickedness in the name of the Lord, to loose those who are bound therein, and to claim victory over the powers of darkness through our Lord Jesus Christ (2 Sam. 5:6-7; Psalm 18; 1 Cor. 15:57; 1 John 3:8)."
     },
     {
       "name": "pray",
@@ -66,7 +136,7 @@
       "title": "Pray",
       "type": "concept",
       "text": "\"Be careful for nothing; but in every thing by prayer and supplication with thanksgiving let your requests be made known unto God.\" (Philippians 4:6)",
-      "image": "pray",
+      "image": "pray_entry",
       "inspiration": "Praying is a vital aspect of our two-way relationship with God. It is through prayer that we talk to our Father, expressing our worship, needs, desires, concerns, and thanks; and we have confidence that he hears us, cares for us, and answers for our good according to his will. (1 John 5:14-15.) In GFF, Adam can use the 'Pray' ability to find grace in time of need, building up his most holy faith as he prays in the Holy Ghost (Heb. 4:16; Jude 1:20)."
     },
     {
@@ -115,7 +185,7 @@
       "entry": "Armour 5: Helmet of Salvation",
       "title": "Helmet of Salvation",
       "type": "item",
-      "text": "\"But let us, who are of the day, be sober, putting on the breastplate of faith and love; and for an helmet, the hope of salvation.\" (1 Thessalonians 5:8)",
+      "text": "\"O GOD the Lord, the strength of my salvation, thou hast covered my head in the day of battle.\" (Psalm 140:7)",
       "image": "arm2",
       "inspiration": "In Ephesians 6:10, Paul says, \"Put on the whole armour of God, that ye may be able to stand against the wiles of the devil.\" Each piece of this armour will help protect the Christian soldier against the attacks of the enemy."
     },

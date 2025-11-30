@@ -18,17 +18,19 @@ export class GBackgroundDecoration {
     private imageKey: string;
     private x: number;
     private y: number;
+    private stoneTint?: number;
 
-    constructor(imageKey: string, x: number, y: number, renderer: Phaser.GameObjects.RenderTexture) {
+    constructor(imageKey: string, x: number, y: number, renderer: Phaser.GameObjects.RenderTexture, stoneTint?: number) {
         this.imageKey = imageKey;
         this.x = x;
         this.y = y;
+        this.stoneTint = stoneTint;
 
         this.render(renderer);
     }
 
     public render(texture: Phaser.GameObjects.RenderTexture) {
-        texture.draw(this.imageKey, this.x, this.y);
+        texture.draw(this.imageKey, this.x, this.y, 1, this.stoneTint);
     }
 
     public toString() {

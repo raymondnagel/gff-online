@@ -34,7 +34,8 @@ export namespace DEPTH {
 
 
     // Background should always be behind everything else
-    export const BG_DECOR = -99997;
+    export const BG_DECOR = -99996;
+    export const BG_SUBDECOR = -99997;
     export const FADE_IMAGE = -99998;
     export const BACKGROUND = -99999;
 }

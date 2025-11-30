@@ -28,4 +28,9 @@ export class GStrongholdKeep extends GStronghold {
     public getProphetBossText(): string {
         return `Wicked Belial reigneth within this stronghold, the enemy of all righteousness, whose sons have long perverted the right ways of the Lord. Therefore love righteousness, and hate wickedness: for what concord hath Christ with Belial?`;
     }
+
+    public getStoneTint(): number {
+        // A dark gray tint, representative of darkness.
+        return 0x999999;
+    }
 }

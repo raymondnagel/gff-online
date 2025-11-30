@@ -17,12 +17,12 @@ export namespace ENEMY {
             avatarKey: 'battle_mammon',
         },
         {
-            type: 'Apollyon',
-            name: 'Apollyon',
+            type: 'Beelzebub',
+            name: 'Beelzebub',
             level: 0,
             introduced: false,
-            portraitKey: 'apollyon_circle',
-            avatarKey: 'battle_apollyon',
+            portraitKey: 'beelzebub_circle',
+            avatarKey: 'battle_beelzebub',
         },
         {
             type: 'Belial',
@@ -41,12 +41,12 @@ export namespace ENEMY {
             avatarKey: 'battle_legion',
         },
         {
-            type: 'Beelzebub',
-            name: 'Beelzebub',
+            type: 'Apollyon',
+            name: 'Apollyon',
             level: 0,
             introduced: false,
-            portraitKey: 'beelzebub_circle',
-            avatarKey: 'battle_beelzebub',
+            portraitKey: 'apollyon_circle',
+            avatarKey: 'battle_apollyon',
         },
         {
             type: 'Lucifer',

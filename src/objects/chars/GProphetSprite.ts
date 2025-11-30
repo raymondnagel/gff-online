@@ -23,6 +23,7 @@ const PROPHET_NAME = RANDOM.randElement([
     'Habakkuk',
     'Haggai',
     'Hosea',
+    'Iddo',
     'Isaiah',
     'Jeremiah',
     'Joel',
@@ -53,6 +54,8 @@ export class GProphetSprite extends GPersonSprite {
         familiarity: 0,
         nameLevel: 1,
         reprobate: false,
+        convert: false,
+        captive: false,
         homeTown: null, // The same prophet will appear in every stronghold
         bio1: null,
         bio2: null,

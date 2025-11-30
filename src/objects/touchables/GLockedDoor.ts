@@ -60,6 +60,9 @@ export class GLockedDoor extends GTouchable {
                 // Show floating text to indicate the key verse was used:
                 PLAYER.getSprite().showFloatingText('-1 key verse', 'info');
 
+                // Give a small grace boost for unlocking the door:
+                PLAYER.giveGrace('minor');
+
                 // Fade out the door and destroy it once fully transparent:
                 GFF.AdventureContent.getSound().playSound('stronghold_open');
                 GFF.AdventureContent.tweens.add({

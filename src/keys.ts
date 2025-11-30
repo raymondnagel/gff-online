@@ -71,7 +71,6 @@ export namespace KEYS {
      */
     export function getNextKeyVerse(): string {
         const key: string = allKeyVerses.pop() as string;
-        console.log(`Got key verse: ${key}, remaining: ${allKeyVerses.length}`);
         return key;
     }
 }

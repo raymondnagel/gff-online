@@ -7,7 +7,7 @@ export class GStrongholdDungeon extends GStronghold {
     /**
      * Stronghold: Dungeon of Doubt
      * Armor: Shield of Faith
-     * Boss: Apollyon
+     * Boss: Beelzebub
      * Challenge: Many illusory walls seem to block the way, but dissipate when
      * touched. At 100% faith, they do not appear at all.
      */
@@ -17,7 +17,7 @@ export class GStrongholdDungeon extends GStronghold {
     }
 
     public getProphetThemeText(): string {
-        return `This confusing place is none other than the Dungeon of Doubt. Many obstacles seem to block thy way; however, they are but illusions that the enemy hath placed to make thee doubt the way forward. Only by faith canst thou dissolve these doubts and proceed in confidence.`;
+        return `This confusing place is none other than the Dungeon of Doubt. Many obstacles seem to block thy way; however, they are but illusions which the enemy hath placed to make thee doubt the way forward. Only by faith canst thou dissolve these doubts and proceed in confidence.`;
     }
 
     public getProphetArmourText(): string {
@@ -25,6 +25,11 @@ export class GStrongholdDungeon extends GStronghold {
     }
 
     public getProphetBossText(): string {
-        return `This stronghold is ruled by Apollyon, angel of the bottomless pit. He seeks to instill doubt and fear in the hearts of men, dissuading them from trusting in God. Beloved, think it not strange concerning the fiery trial which is to try you, as though some strange thing happened unto you: but rejoice, inasmuch as ye are partakers of Christ's sufferings!`;
+        return `Beelzebub, prince of devils, would have thee doubt the work of Christ. But blessed are the pure in heart: for they shall see God, and not be confused by the enemy's delusions.`;
+    }
+
+    public getStoneTint(): number {
+        // A muted blue tint, like a shroud of doubt.
+        return 0x9999EE;
     }
 }

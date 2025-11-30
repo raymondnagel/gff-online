@@ -5,7 +5,7 @@ import { GChoiceBubble } from "./objects/GChoiceBubble";
 import { GSpeechBubble } from "./objects/GSpeechBubble";
 import { GThoughtBubble } from "./objects/GThoughtBubble";
 import { PLAYER } from "./player";
-import { CBlurb, CLabeledChar, ConversationType, COption, Dir9, GBubble, GGlossaryEntry, GPerson, LeveledDynamicBlurb, NINE } from "./types";
+import { CBlurb, CLabeledChar, ConversationType, COption, Dir9, GBubble, GGlossaryEntry, GPerson, GSpirit, LeveledDynamicBlurb, NINE } from "./types";
 import { GPlayerSprite } from "./objects/chars/GPlayerSprite";
 import { GPersonSprite } from "./objects/chars/GPersonSprite";
 import { FRUITS } from "./fruits";
@@ -95,6 +95,7 @@ const CMD_FUNCTIONS: Record<string, (...args: any[]) => any> = {
         (someone as GPersonSprite).generateBio(true);
         (someone as GPersonSprite).setNewConvert();
         (someone as GPersonSprite).setReadyToTalk(true);
+        (someone as GPersonSprite).setSpecialGift('sermon');
         GFF.AdventureContent.getSound().playSound('hallelujah');
         GFF.AdventureContent.fadeOut(500, COLOR.WHITE.num(), () => {
             GFF.AdventureContent.fadeIn(500, COLOR.WHITE.num(), () => {
@@ -114,9 +115,11 @@ const CMD_FUNCTIONS: Record<string, (...args: any[]) => any> = {
         town.addPerson(convert);
         town.transferPersonToChurch(convert);
         convert.preferredName = PEOPLE.getSaintName(convert);
+        convert.familiarity = 10;
         (someone as GPersonSprite).generateBio(true);
         (someone as GPersonSprite).setNewConvert();
         (someone as GPersonSprite).setReadyToTalk(true);
+        (someone as GPersonSprite).setSpecialGift('standard');
         GFF.AdventureContent.getSound().playSound('hallelujah');
         GFF.AdventureContent.fadeOut(500, COLOR.WHITE.num(), () => {
             GFF.AdventureContent.fadeIn(500, COLOR.WHITE.num());
@@ -129,10 +132,24 @@ const CMD_FUNCTIONS: Record<string, (...args: any[]) => any> = {
         STATS.changeInt('SeedsPlanted', 1);
     },
     giftSeed: (_player: GPlayerSprite, _someone: GCharSprite) => {
-        REGISTRY.set('canGiftSeed', false);
+        REGISTRY.set('canSaintGift', false);
         GFF.AdventureContent.forceAdventureInputMode();
         GPopup.createItemPopup('seed').onClose(() => {
             PLAYER.changeSeeds(1);
+        });
+    },
+    giftSermon: (_player: GPlayerSprite, _someone: GCharSprite) => {
+        REGISTRY.set('canSaintGift', false);
+        GFF.AdventureContent.forceAdventureInputMode();
+        GPopup.createItemPopup('sermon').onClose(() => {
+            PLAYER.changeSermons(1);
+        });
+    },
+    giftStandard: (_player: GPlayerSprite, _someone: GCharSprite) => {
+        REGISTRY.set('canSaintGift', false);
+        GFF.AdventureContent.forceAdventureInputMode();
+        GPopup.createItemPopup('standard').onClose(() => {
+            PLAYER.changeStandards(1);
         });
     },
     queueFruit: (_player: GPlayerSprite, _someone: GCharSprite) => {
@@ -193,7 +210,7 @@ const CMD_FUNCTIONS: Record<string, (...args: any[]) => any> = {
         });
         GFF.AdventureContent.fadeOut(800, COLOR.WHITE.num(), () => {
             GFF.AdventureContent.fadeIn(500, COLOR.BLACK.num(), () => {
-                GFF.AdventureContent.updateFidelityMode();
+                GFF.AdventureContent.setVisualsByFaith();
             });
         });
     },
@@ -233,11 +250,34 @@ const CMD_FUNCTIONS: Record<string, (...args: any[]) => any> = {
         }
         return failId;
     },
+    wasConverted: (_player: GPlayerSprite, someone: GCharSprite, passId: string, failId: string): string => {
+        if (someone.getPerson().convert) {
+            return passId;
+        }
+        return failId;
+    },
+    wasRescued: (_player: GPlayerSprite, someone: GCharSprite, passId: string, failId: string): string => {
+        if (someone.getPerson().captive) {
+            return passId;
+        }
+        return failId;
+    },
     seedCheck: (_player: GPlayerSprite, _someone: GCharSprite, passId: string, failId: string): string => {
         return PLAYER.getFaith() > 0 && PLAYER.getSeeds() > 0 ? passId : failId;
     },
-    canGiftSeed: (_player: GPlayerSprite, _someone: GCharSprite, passId: string, failId: string): string => {
-        return REGISTRY.getBoolean('canGiftSeed') ? passId : failId;
+    canSaintGift: (_player: GPlayerSprite, someone: GCharSprite, passId: string, failId: string): string => {
+        return REGISTRY.getBoolean('canSaintGift') || (someone as GPersonSprite).hasSpecialGift() ? passId : failId;
+    },
+    hasSpecialGift: (_player: GPlayerSprite, someone: GCharSprite, _passId: string, failId: string): string => {
+        const specialGift = (someone as GPersonSprite).giveSpecialGift();
+        switch (specialGift) {
+            case 'sermon':
+                return 'giftSermon';
+            case 'standard':
+                return 'giftStandard';
+            default:
+                return failId;
+        }
     },
     canGainFruit: (_player: GPlayerSprite, _someone: GCharSprite, passId: string, failId: string): string => {
         const room: GRoom = GFF.AdventureContent.getCurrentRoom() as GRoom;
@@ -326,11 +366,12 @@ const CMD_FUNCTIONS: Record<string, (...args: any[]) => any> = {
             if (chestRoom === PLAYER.getMarkedChestRoom()) {
                 markedText = `Hmm... I know of a treasure chest nearby, but you already have it marked on your map.`;
             } else {
+                const regionText: string = `in the ${chestRoom.getRegion().getName()}`;
                 const chestText: string = chestRoom.hasPlanKey('purple_chest')
                     ? 'one of the 10 commandments, which will help to enlighten your path'
                     : 'a book of the Bible, which will strengthen you to face the enemy';
                 const distText: string = AREA.describeDistanceBetweenRooms(originRoom, chestRoom);
-                markedText = `Okay, I've marked a treasure chest on your map, ${distText}. I think it's ${chestText}.`;
+                markedText = `Okay, I've marked a treasure chest on your map, ${distText} ${regionText}. I think it's ${chestText}.`;
                 const replaceMarkedChest: boolean = PLAYER.setMarkedChestRoom(chestRoom);
                 if (replaceMarkedChest) {
                     markedText = `${markedText}\n(I replaced the one that was already marked on your map, so you don't get confused.)`;
@@ -345,9 +386,10 @@ const CMD_FUNCTIONS: Record<string, (...args: any[]) => any> = {
             return room.getStronghold() !== null;
         });
         if (strongholdRoom !== null) {
+            const regionText: string = `in the ${strongholdRoom.getRegion().getName()}`;
             const strongholdName: string = (strongholdRoom.getStronghold() as GStronghold).getName();
             const distText: string = AREA.describeDistanceBetweenRooms(originRoom, strongholdRoom);
-            return `The nearest enemy stronghold is the ${strongholdName}. It lies ${distText}. The stronghold is a place of great evil and danger; but be of good courage: we are more than conquerors through him that loved us!`;
+            return `The nearest enemy stronghold is the ${strongholdName}. It lies ${distText} ${regionText}. The stronghold is a place of great evil and danger; but be of good courage: we are more than conquerors through him that loved us!`;
         }
         return `Hmm... there don't seem to be any strongholds. That's good, I suppose...?`;
     },
@@ -411,23 +453,28 @@ const CMD_FUNCTIONS: Record<string, (...args: any[]) => any> = {
      * JSON as 'condFunc', these check whether the condition is
      * met for a choice option (COption) to be included.
      */
-    canPray: (_player: GPlayerSprite, someone: GCharSprite): boolean => {
+    canPray: (_player: GPlayerSprite, _someone: GCharSprite): boolean => {
         return GFF.AdventureContent.canPray();
     },
-    canPreachSermon: (_player: GPlayerSprite, someone: GCharSprite): boolean => {
+    canPreachSermon: (_player: GPlayerSprite, _someone: GCharSprite): boolean => {
         return GFF.AdventureContent.canStreetPreach();
     },
-    canRaiseStandard: (_player: GPlayerSprite, someone: GCharSprite): boolean => {
+    canRaiseStandard: (_player: GPlayerSprite, _someone: GCharSprite): boolean => {
         return GFF.AdventureContent.canRaiseStandard();
     },
-
-    // Example functions:
-    // someFunc: (strParam: string, numParam: number) => {
-    // },
-    // anotherFunc: (num1: number, num2: number, num3: number) => {
-    // },
-    // noParamFunc: () => {
-    // }
+    canFindArmor: (_player: GPlayerSprite, _someone: GCharSprite): boolean => {
+        const room: GRoom = GFF.AdventureContent.getCurrentRoom() as GRoom;
+        const area: GStrongholdArea = room.getArea() as GStrongholdArea;
+        return area.getRooms(r => {
+            return r.hasPlanKey('gold_chest');
+        }).length > 0;
+    },
+    canMeetBoss: (_player: GPlayerSprite, _someone: GCharSprite): boolean => {
+        const room: GRoom = GFF.AdventureContent.getCurrentRoom() as GRoom;
+        const area: GStrongholdArea = room.getArea() as GStrongholdArea;
+        const boss: GSpirit = area.getBossSpirit();
+        return REGISTRY.get('bossDefeated_' + boss.name) !== true;
+    },
 };
 
 export class GConversation {

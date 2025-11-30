@@ -120,6 +120,9 @@ export class GPrayCutscene extends GCutscene {
                     value: newFaith,
                     onUpdate: () => {
                         PLAYER.setFaith(Math.floor(faithWrapper.value));
+                    },
+                    onComplete: () => {
+                        GFF.AdventureContent.setVisualsByFaith();
                     }
                 });
                 // Tween for decreasing grace:
@@ -148,7 +151,6 @@ export class GPrayCutscene extends GCutscene {
     }
 
     protected finalize(): void {
-        // Fade in the background music again:
         GFF.AdventureContent.getSound().fadeInMusic(1000);
         GFF.AdventureContent.startChars();
     }

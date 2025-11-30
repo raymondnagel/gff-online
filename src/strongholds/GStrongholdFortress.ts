@@ -28,4 +28,9 @@ export class GStrongholdFortress extends GStronghold {
     public getProphetBossText(): string {
         return `In this stronghold dwelleth Legion, a horde of vicious devils which tormenteth the souls of men as they sow discord and strife. Let therefore the peace of God, which passeth all understanding, keep thy heart and mind through Christ Jesus; and the God of peace shall bruise Satan under thy feet shortly.`;
     }
+
+    public getStoneTint(): number {
+        // An evil green tint, like envy and poison.
+        return 0x99EE99;
+    }
 }

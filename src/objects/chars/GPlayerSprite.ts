@@ -22,6 +22,8 @@ const person: GPerson = {
     familiarity: 0,
     nameLevel: 0,
     reprobate: false,
+    convert: false,
+    captive: false,
     homeTown: null,
     bio1: null,
     bio2: null,
@@ -30,6 +32,8 @@ const person: GPerson = {
 };
 
 export class GPlayerSprite extends GCharSprite {
+
+    private trapped: boolean = false;
 
     constructor(x:number, y: number) {
         super('adam', x, y);
@@ -67,6 +71,18 @@ export class GPlayerSprite extends GCharSprite {
     }
     public getPerson(): GPerson {
         return person;
+    }
+
+    public setTrapped(trapped: boolean) {
+        this.trapped = trapped;
+        if (trapped) {
+            this.showFloatingText('TRAPPED!', 'word');
+            this.walkDirection(Dir9.NONE);
+        }
+    }
+
+    public isTrapped(): boolean {
+        return this.trapped;
     }
 
     public runDirection(direction: Dir9) {

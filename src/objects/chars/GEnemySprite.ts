@@ -24,7 +24,9 @@ const person: GPerson = {
     faith: 0,
     familiarity: 0,
     nameLevel: 0,
-    reprobate: false,
+    reprobate: true, // Might as well make the devils reprobate :-p
+    convert: false,
+    captive: false,
     homeTown: null,
     bio1: null,
     bio2: null,

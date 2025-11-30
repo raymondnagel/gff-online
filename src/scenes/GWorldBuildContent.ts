@@ -166,6 +166,7 @@ export class GWorldBuildContent extends GBaseScene {
             { area: AREA.CASTLE_AREA, rooms: 113 },
             { area: AREA.WORLD_AREA, rooms: 256 },
         ];
+        // Total rooms: 10 + 63 + 70 + 81 + 83 + 113 + 256 = 676
 
         this.buildArea(0);
     }

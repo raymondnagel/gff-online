@@ -3,30 +3,32 @@ import { RANDOM } from "./random";
 import { GRoom } from "./GRoom";
 import { GPerson } from "./types";
 
-const TOWN_NAMES: string[] = [
-    'Ephesus',
-    'Smyrna',
-    'Pergamos',
-    'Thyatira',
-    'Sardis',
-    'Philadelphia',
-    'Laodicea',
-    'Jerusalem',
-    'Rome',
-    'Corinth',
-    'Colosse',
-    'Philippi',
-    'Thessalonica',
-    'Berea',
-    'Antioch',
-    'Babylon',
-    'Iconium',
-    'Lystra',
-    'Derbe'
+const TOWNS = [
+    { name: "Antioch", adjective: "Antiochene" },
+    { name: "Babylon", adjective: "Babylonian" },
+    { name: "Berea", adjective: "Berean" },
+    { name: "Cenchrea", adjective: "Cenchrean" },
+    { name: "Colosse", adjective: "Colossian" },
+    { name: "Corinth", adjective: "Corinthian" },
+    { name: "Derbe", adjective: "Derbean" },
+    { name: "Ephesus", adjective: "Ephesian" },
+    { name: "Iconium", adjective: "Iconian" },
+    { name: "Jerusalem", adjective: "Jerusalemite" },
+    { name: "Laodicea", adjective: "Laodicean" },
+    { name: "Lystra", adjective: "Lystran" },
+    { name: "Pergamos", adjective: "Pergamene" },
+    { name: "Philadelphia", adjective: "Philadelphian" },
+    { name: "Philippi", adjective: "Philippian" },
+    { name: "Rome", adjective: "Roman" },
+    { name: "Sardis", adjective: "Sardian" },
+    { name: "Smyrna", adjective: "Smyrnan" },
+    { name: "Thessalonica", adjective: "Thessalonian" },
+    { name: "Thyatira", adjective: "Thyatiran" },
 ];
 
 export class GTown {
     private name: string;
+    private adjective: string;
     private rooms: GRoom[] = [];
     private church: GChurch;
     private travelAgencyLocation: GRoom;
@@ -34,15 +36,34 @@ export class GTown {
     private people: GPerson[] = [];
 
     static {
-        RANDOM.shuffle(TOWN_NAMES);
+        RANDOM.shuffle(TOWNS);
     }
 
     constructor() {
-        this.name = TOWN_NAMES.pop() as string;
+        const town = TOWNS.pop() as { name: string; adjective: string };
+        this.name = town.name;
+        this.adjective = town.adjective;
     }
 
     public getName() {
         return this.name;
+    }
+
+    public getAdjective() {
+        return this.adjective;
+    }
+
+    public getFullName() {
+        if (this.rooms.length <= 3) {
+            return `Hamlet of ${this.name}`;
+        }
+        if (this.rooms.length <= 4) {
+            return `Village of ${this.name}`;
+        }
+        if (this.rooms.length <= 5) {
+            return `Town of ${this.name}`;
+        }
+        return `City of ${this.name}`;
     }
 
     public setChurch(church: GChurch) {

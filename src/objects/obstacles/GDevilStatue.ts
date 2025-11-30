@@ -7,6 +7,8 @@ import { GObstacleStatic } from "./GObstacleStatic";
 
 export class GDevilStatue extends GObstacleStatic {
 
+    private stoneTint: number|undefined = undefined;
+
     constructor(x: number, y: number) {
         const def = SCENERY.def('devil_statue');
         super(def, x, y);
@@ -21,13 +23,15 @@ export class GDevilStatue extends GObstacleStatic {
             this.body!.x + (this.body!.width / 2),
             this.body!.y + (this.body!.height / 2)
         );
-        GFF.AdventureContent.getCurrentRoom()!.addTemporaryEventTrigger(trigger);
+        const room = GFF.AdventureContent.getCurrentRoom()!;
+        room.addTemporaryEventTrigger(trigger);
+        this.stoneTint = room.getStoneTint();
     }
 
     public burst() {
         GFF.AdventureContent.addRandomDevil({x: this.x - 20, y: this.y - 9});
         const effectSprite: Phaser.Physics.Arcade.Sprite = EFFECTS.doEffect('statue_burst', GFF.AdventureContent, this.x - 30, this.y - 13);
-        effectSprite.setDepth(DEPTH.SPECIAL_EFFECT);
+        effectSprite.setDepth(DEPTH.SPECIAL_EFFECT).setTint(this.stoneTint);
         this.destroy();
     }
 }

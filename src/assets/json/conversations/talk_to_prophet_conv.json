@@ -41,9 +41,9 @@
     "hearer": "other",
     "choice": [
       { "choiceText": "Tell me about this stronghold.", "resultId": "aboutStronghold"},
-      { "choiceText": "What Armour of God can I find here?", "resultId": "aboutArmour"},
+      { "choiceText": "What Armour of God can I find here?", "condFunc": "canFindArmor()", "resultId": "aboutArmour"},
       { "choiceText": "Are there any other treasures in here?", "resultId": "aboutTreasures"},
-      { "choiceText": "I sense a powerful enemy nearby...", "resultId": "aboutBoss"},
+      { "choiceText": "I sense a powerful enemy nearby...", "condFunc": "canMeetBoss()", "resultId": "aboutBoss"},
       { "choiceText": "Farewell.", "resultId": "farewell"}
     ]
   },

@@ -5,11 +5,14 @@ import { GPoint2D } from '../types';
 import { DEPTH } from '../depths';
 import { COLOR } from '../colors';
 import { GTestConsole } from '../objects/components/GTestConsole';
+import { GRoom } from '../GRoom';
+import { GChurchArea } from '../areas/GChurchArea';
 
 const MOUSE_INACTIVE_INTERVAL: number = 2000;
 
 export class GAdventureUI extends GUIScene {
 
+    private regionTitleText: Phaser.GameObjects.Text;
     private promptBacker: Phaser.GameObjects.Image;
     private promptText: Phaser.GameObjects.Text;
     private testConsole: GTestConsole;
@@ -29,10 +32,54 @@ export class GAdventureUI extends GUIScene {
         this.createUIBar();
         this.createPrompt();
         this.createConsole();
+        this.createRegionTitleText();
         this.setMouseInactiveTimer();
 
         // this.createTileGuidelines();
         // this.initDesignMode();
+    }
+
+    private createRegionTitleText() {
+        this.regionTitleText = this.add.text(GFF.ROOM_W / 2, GFF.ROOM_H / 2, '', {
+            color: COLOR.WHITE.str(),
+            fontFamily: 'imposs',
+            fontSize: '48px',
+            stroke: COLOR.GREY_2.str(),
+            strokeThickness: 8
+        });
+        this.regionTitleText.setOrigin(0.5, .5);
+        this.regionTitleText.setDepth(DEPTH.FLOAT_TEXT);
+        this.regionTitleText.setVisible(false);
+    }
+
+    public showRegionTitle(prevRoom: GRoom|null, newRoom: GRoom) {
+        if (!this.regionTitleText) {
+            this.createRegionTitleText();
+        }
+        let title: string = '';
+
+        const prevTitle: string = prevRoom ? prevRoom.getTitle() : '';
+        const newTitle: string = newRoom.getTitle();
+
+        if (prevTitle === newTitle) {
+            return;
+        }
+        title = newTitle;
+
+        this.tweens.killTweensOf(this.regionTitleText);
+        this.regionTitleText.setText(title);
+        this.regionTitleText.setAlpha(0);
+        this.regionTitleText.setVisible(true);
+        this.tweens.add({
+            targets: this.regionTitleText,
+            alpha: 1,
+            duration: 500,
+            yoyo: true,
+            hold: 1000,
+            onComplete: () => {
+                this.regionTitleText.setVisible(false);
+            }
+        });
     }
 
     private createPrompt() {
@@ -194,7 +241,7 @@ export class GAdventureUI extends GUIScene {
         GFF.AdventureContent.getSound().unpauseMusic();
     }
 
-    public transitionToBattle(encounterPoint: GPoint2D, bgImageKey: string) {
+    public transitionToBattle(encounterPoint: GPoint2D, bgImageKey: string, bgStoneTint: number|undefined): void {
 
         this.getSound().playSound('encounter');
 
@@ -203,7 +250,8 @@ export class GAdventureUI extends GUIScene {
 
         // Create the background image
         GFF.BATTLE_MODE.setBgImage(bgImageKey);
-        const bgImage: Phaser.GameObjects.Image = this.add.image(encounterPoint.x, encounterPoint.y, bgImageKey).setDepth(DEPTH.TRANSITION);
+        GFF.BATTLE_MODE.setBgStoneTint(bgStoneTint);
+        const bgImage: Phaser.GameObjects.Image = this.add.image(encounterPoint.x, encounterPoint.y, bgImageKey).setDepth(DEPTH.TRANSITION).setTint(bgStoneTint);
 
         // Start with a very small size
         bgImage.setScale(0);

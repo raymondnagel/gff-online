@@ -31,7 +31,33 @@
     "speaker": "player",
     "hearer": "other",
     "dynamic": "player_greet_familiar",
-    "next": "saintGreetFamiliar"
+    "next": "saintCheckRescue"
+  },
+  {
+    "id": "saintCheckRescue",
+    "speaker": "player",
+    "hearer": "other",
+    "fork": "wasRescued('saintGreetRescue','saintCheckConvert')"
+  },
+  {
+    "id": "saintGreetRescue",
+    "speaker": "other",
+    "hearer": "player",
+    "dynamic": "saint_greet_rescue",
+    "next": "playerMenu"
+  },
+  {
+    "id": "saintCheckConvert",
+    "speaker": "player",
+    "hearer": "other",
+    "fork": "wasConverted('saintGreetConvert','saintGreetFamiliar')"
+  },
+  {
+    "id": "saintGreetConvert",
+    "speaker": "other",
+    "hearer": "player",
+    "dynamic": "saint_greet_convert",
+    "next": "playerMenu"
   },
   {
     "id": "saintGreetFamiliar",
@@ -72,7 +98,6 @@
       { "choiceText": "Can you help me find a treasure?", "resultId": "markChest"},
       { "choiceText": "What's your favorite book of the Bible?", "resultId": "favoriteBook"},
       { "choiceText": "Is there a stronghold nearby?", "resultId": "locateStronghold"},
-      { "choiceText": "Would you like to come with me?", "resultId": "inviteCompanion"},
       { "choiceText": "Grace be with you, HEARER_SAINT!", "resultId": "saintGoodbye"}
     ]
   },
@@ -240,7 +265,7 @@
     "id": "endConversation",
     "speaker": "player",
     "hearer": "other",
-    "fork": "canGainFruit('thinkAboutFruit','seedCheck')"
+    "fork": "canGainFruit('thinkAboutFruit','giftCheck')"
   },
   {
     "id": "thinkAboutFruit",
@@ -250,10 +275,32 @@
     "next": "end"
   },
   {
-    "id": "seedCheck",
+    "id": "giftCheck",
     "speaker": "player",
     "hearer": "other",
-    "fork": "canGiftSeed('giftSeed','end')"
+    "fork": "canSaintGift('whichGift','end')"
+  },
+  {
+    "id": "whichGift",
+    "speaker": "player",
+    "hearer": "other",
+    "fork": "hasSpecialGift('giftSpecial','giftSeed')"
+  },
+  {
+    "id": "giftSermon",
+    "speaker": "other",
+    "hearer": "player",
+    "text": "...wait, HEARER_SAINT! I want to thank you for preaching the gospel to me. Please accept this gift, and continue to proclaim the words of eternal life to others!",
+    "postCmd": "giftSermon()",
+    "next": "end"
+  },
+  {
+    "id": "giftStandard",
+    "speaker": "other",
+    "hearer": "player",
+    "text": "...wait, HEARER_SAINT! I want to thank you for helping me escape out of the hand of the enemy. Please accept this gift, and may God always cause us to triumph in Christ!",
+    "postCmd": "giftStandard()",
+    "next": "end"
   },
   {
     "id": "giftSeed",
