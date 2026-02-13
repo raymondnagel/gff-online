@@ -75,7 +75,7 @@ export class GAdventureUI extends GUIScene {
             alpha: 1,
             duration: 500,
             yoyo: true,
-            hold: 1000,
+            hold: 1300,
             onComplete: () => {
                 this.regionTitleText.setVisible(false);
             }

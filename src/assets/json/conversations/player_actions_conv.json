@@ -25,11 +25,6 @@
     "postCmd": "doRaiseStandard()"
   },
   {
-    "id": "doSaveGame",
-    "speaker": "player",
-    "postCmd": "doSaveGame()"
-  },
-  {
     "id": "cancel",
     "speaker": "player"
   }

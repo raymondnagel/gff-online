@@ -12,6 +12,16 @@ export namespace FRUITS {
         false, false, false, false, false, false, false, false, false, false
     ];
 
+    export function toSaveObject(): any {
+        return fruits;
+    }
+
+    export function fromSaveData(saveData: any) {
+        for (let i = 0; i < fruits.length; i++) {
+            fruits[i] = saveData[i] || false;
+        }
+    }
+
     export function lookupEntry(num: NINE): GGlossaryEntry {
         return GLOSSARY.lookupEntry(`fruit_${num}`) as GGlossaryEntry;
     }

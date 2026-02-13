@@ -28,6 +28,8 @@ import { GDifficulty } from './types';
 import { GWorldBuildMode } from './game_modes/GWorldBuildMode';
 import { GWorldBuildContent } from './scenes/GWorldBuildContent';
 import { REGISTRY } from './registry';
+import { GLoadGameMode } from './game_modes/GLoadGameMode';
+import { GLoadGameContent } from './scenes/GLoadGameContent';
 
 const gameWidth: number = 1024;
 const gameHeight: number = 768;
@@ -50,6 +52,7 @@ let configObject: Phaser.Types.Core.GameConfig = {
         GTitleContent,
         GMainMenuContent,
         GWorldBuildContent,
+        GLoadGameContent,
         GAdventureContent, GAdventureUI,
         GBattleContent,
         GStatusUI,
@@ -106,10 +109,16 @@ export namespace GFF {
      * which elements are displayed, how player input is interpreted and applied,
      * and what sequences of events happen. Only one mode at a time is active.
      * Modes may contain a content scene, a UI scene, or both.
+     *
+     * The concept of a Mode exists primarily because of Adventure Mode, which
+     * contains both a content scene (where the player walks around) and a UI scene
+     * (which contains the UI bar). Having a Mode lets us encapsulate the logic for
+     * both in a single unit.
      */
     export const TITLE_MODE: GTitleMode = new GTitleMode();
     export const MAINMENU_MODE: GMainMenuMode = new GMainMenuMode();
     export const WORLDBUILD_MODE: GWorldBuildMode = new GWorldBuildMode();
+    export const LOADGAME_MODE: GLoadGameMode = new GLoadGameMode();
     export const ADVENTURE_MODE: GAdventureMode = new GAdventureMode();
     export const BATTLE_MODE: GBattleMode = new GBattleMode();
     export const STATUS_MODE: GStatusMode = new GStatusMode();
@@ -121,6 +130,7 @@ export namespace GFF {
     export const OPTIONS_MODE: GOptionsMode = new GOptionsMode();
 
     export const DIFFICULTY_BABE: GDifficulty = {
+        index: 0,
         level: 1,
         levelName: 'Babe',
         enemyBaseAttack: 5,
@@ -136,6 +146,7 @@ export namespace GFF {
         trapStrengthPct: .05
     };
     export const DIFFICULTY_DISCIPLE: GDifficulty = {
+        index: 1,
         level: 2,
         levelName: 'Disciple',
         enemyBaseAttack: 10,
@@ -151,6 +162,7 @@ export namespace GFF {
         trapStrengthPct: .1
     };
     export const DIFFICULTY_SOLDIER: GDifficulty = {
+        index: 2,
         level: 3,
         levelName: 'Soldier',
         enemyBaseAttack: 15,
@@ -166,6 +178,12 @@ export namespace GFF {
         trapStrengthPct: .2
     };
 
+    export const Difficulties: GDifficulty[] = [
+        DIFFICULTY_BABE,
+        DIFFICULTY_DISCIPLE,
+        DIFFICULTY_SOLDIER
+    ];
+
     /**
      * For convenience, when we need to reference a particular Scene
      * that is used ALL the time, just assign it here and use GFF.TheScene
@@ -179,7 +197,9 @@ export namespace GFF {
      */
 
     export function getDifficulty(): GDifficulty {
-        return REGISTRY.get('difficulty') as GDifficulty;
+        // This lets us set just the index of the difficulty in the registry
+        // (instead of the whole object), which is easier to save and load.
+        return GFF.Difficulties[REGISTRY.getNumber('difficulty') ?? 1];
     }
 
     export function sleep(ms: number) {
@@ -190,8 +210,12 @@ export namespace GFF {
         } while(curDate - date < ms);
     }
 
-    export function log(something: any) {
+    export function log(something: any, error: boolean = false) {
         if (REGISTRY.getBoolean('isGameLog')) {
+            if (error) {
+                console.error(something);
+                return;
+            }
             console.log(something);
         }
     }

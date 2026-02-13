@@ -156,7 +156,7 @@ export type IntegerStatName =
 | 'Miss_Rev'
 ;
 
-type IntegerStats = Record<IntegerStatName, number>;
+export type IntegerStats = Record<IntegerStatName, number>;
 
 const integerStats: IntegerStats = {
     RoomsExplored: 0,
@@ -412,6 +412,27 @@ export namespace STATS {
 
     export function getIntegerStat(statName: IntegerStatName): number {
         return integerStats[statName];
+    }
+
+    export function toSaveObject(): IntegerStats {
+        // Most values can be saved directly.
+        // There is one exception: TimeStarted, which we want to save as the elapsed time
+        // rather than the absolute timestamp, so it won't be affected by when the game
+        // is saved and loaded. (We can convert it back to an absolute timestamp when loading
+        // by subtracting the elapsed time from the current time.)
+        const saveObject: IntegerStats = { ...integerStats };
+        saveObject.TimeStarted = Date.now() - integerStats.TimeStarted;
+        return saveObject;
+    }
+
+    export function fromSaveData(saveData: any) {
+        for (const key in saveData) {
+            if (key in integerStats) {
+                integerStats[key as IntegerStatName] = saveData[key];
+            }
+        }
+        // TimeStarted is loaded as elapsed time, so convert it back to an absolute timestamp
+        integerStats.TimeStarted = Date.now() - saveData.TimeStarted;
     }
 
     export function getAccuracyPct(): string {

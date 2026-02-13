@@ -14,7 +14,7 @@ export class GStrongholdKeep extends GStronghold {
      */
 
     constructor() {
-        super("Keep of Wickedness", 2, "keep_front", AREA.KEEP_AREA);
+        super("Keep of Wickedness", 2, "keep_front");
     }
 
     public getProphetThemeText(): string {

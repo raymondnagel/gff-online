@@ -3,7 +3,9 @@ import { RANDOM } from "../random";
 import { GRoom } from "../GRoom";
 import { GFF } from "../main";
 import { GRegion } from "../regions/GRegion";
-import { CardDir, CubeDir, Dir9, GFloor, GPoint2D, GPoint3D, ProgressCallback } from "../types";
+import { CardDir, CubeDir, Dir9, GFloor, GPoint2D, GPoint3D, GSaveable, ProgressCallback } from "../types";
+import { SAVE } from "../save";
+import { RefFunction } from "../scenes/GLoadGameContent";
 
 const HORZ_WALL_SECTIONS: number = 16;
 const VERT_WALL_SECTIONS: number = 11;
@@ -22,12 +24,15 @@ const VERT_WALL_SECTIONS: number = 11;
  * Within an area, there may also be regions (GRegion). A region
  * is added to a room to make it part of that region, giving it
  * access to properties shared with other rooms of the region.
+ * However, regions are added in subclasses, and they are
+ * stored in the rooms, not in the area itself.
  */
-export class GArea {
+export abstract class GArea implements GSaveable{
     private name: string;
     private bgMusic: string;
     private width: number;
     private height: number;
+    private numFloors: number;
     private floors: GFloor[] = [];
     private roomsByFloor: GRoom[][] = [];
     private groundFloor: number = 0;
@@ -35,7 +40,7 @@ export class GArea {
     constructor(
         name: string,
         bgMusic: string,
-        floors: number,
+        numFloors: number,
         width: number,
         height: number
     ) {
@@ -43,9 +48,16 @@ export class GArea {
         this.bgMusic = bgMusic;
         this.width = width;
         this.height = height;
+        this.numFloors = numFloors;
+    }
 
+    public generate(): void {
+        this.initFloors();
+    }
+
+    private initFloors() {
         // Create floors
-        for (let f: number = 0; f < floors; f++) {
+        for (let f: number = 0; f < this.numFloors; f++) {
             this.floors.push([]);
             this.roomsByFloor[f] = [];
         }
@@ -161,67 +173,74 @@ export class GArea {
         }
     }
 
-    protected mazeRegion(startRoom: GRoom, region: GRegion) {
-        region.getRooms().forEach(r => {
-            for (let d: number = 0; d < 4; d++) {
-                this.setWallByRoom(r, DIRECTION.cardDirFrom4(d as 0|1|2|3), true);
-            }
-        });
+    /**
+     * We didn't end up using recursive maze generation for any areas,
+     * but it's still a cool algorithm that we may want to use for
+     * something in the future.
+     * (Just commenting it out to show that it is unused.)
+     */
 
-        // Recursive maze algorithm:
-        this.recurseMazeRegion(startRoom);
+    // protected mazeRegion(startRoom: GRoom, region: GRegion) {
+    //     region.getRooms().forEach(r => {
+    //         for (let d: number = 0; d < 4; d++) {
+    //             this.setWallByRoom(r, DIRECTION.cardDirFrom4(d as 0|1|2|3), true);
+    //         }
+    //     });
 
-        // Re-conceal all rooms (they were "discovered" in the maze algorithm):
-        this.concealAllRooms(0);
-    }
+    //     // Recursive maze algorithm:
+    //     this.recurseMazeRegion(startRoom);
 
-    protected recurseMazeRegion(room: GRoom) {
-        room.discover();
-        let neighbor: GRoom|null;
-        do {
-            neighbor = room.connectToRandomUndiscoveredNeighborInRegion();
-            if (neighbor !== null) {
-                this.recurseMazeRegion(neighbor);
-            }
-        } while (neighbor !== null);
-    }
+    //     // Re-conceal all rooms (they were "discovered" in the maze algorithm):
+    //     this.concealAllRooms(0);
+    // }
 
-    protected makeMaze(floor: number, wallsToRemove: number, partialWalls: number) {
-        // Put 4 walls in each room (required for maze algorithm):
-        for (let x: number = 0; x < this.width; x++) {
-            for (let y: number = 0; y < this.height; y++) {
-                for (let d: number = 0; d < 4; d++) {
-                    this.setWallAt(floor, x, y, DIRECTION.cardDirFrom4(d as 0|1|2|3), true);
-                }
-            }
-        }
+    // protected recurseMazeRegion(room: GRoom) {
+    //     room.discover();
+    //     let neighbor: GRoom|null;
+    //     do {
+    //         neighbor = room.connectToRandomUndiscoveredNeighborInRegion();
+    //         if (neighbor !== null) {
+    //             this.recurseMazeRegion(neighbor);
+    //         }
+    //     } while (neighbor !== null);
+    // }
 
-        // Recursive maze algorithm:
-        this.recurseMaze(this.getRandomRoomByFloor(floor));
+    // protected makeMaze(floor: number, wallsToRemove: number, partialWalls: number) {
+    //     // Put 4 walls in each room (required for maze algorithm):
+    //     for (let x: number = 0; x < this.width; x++) {
+    //         for (let y: number = 0; y < this.height; y++) {
+    //             for (let d: number = 0; d < 4; d++) {
+    //                 this.setWallAt(floor, x, y, DIRECTION.cardDirFrom4(d as 0|1|2|3), true);
+    //             }
+    //         }
+    //     }
 
-        // Re-conceal all rooms (they were "discovered" in the maze algorithm):
-        this.concealAllRooms(floor);
+    //     // Recursive maze algorithm:
+    //     this.recurseMaze(this.getRandomRoomByFloor(floor));
 
-        // Remove some random walls to make it more "open", less like a structured maze:
-        for (let n: number = 0; n < wallsToRemove; n++) {
-            const dir: CardDir = DIRECTION.randomCardDir();
-            this.setWallByRoom(this.getRandomRoomByFloor(floor), dir, false);
-        }
-    }
+    //     // Re-conceal all rooms (they were "discovered" in the maze algorithm):
+    //     this.concealAllRooms(floor);
 
-    private recursions: number = 0;
-    private recurseMaze(room: GRoom) {
-        GFF.genLog(`Start recursion: ${++this.recursions}`);
-        room.discover();
-        let neighbor: GRoom|null;
-        do {
-            neighbor = room.connectToRandomUndiscoveredNeighbor();
-            if (neighbor !== null) {
-                this.recurseMaze(neighbor);
-            }
-        } while (neighbor !== null);
-        GFF.genLog(`End recursion (${--this.recursions})`);
-    }
+    //     // Remove some random walls to make it more "open", less like a structured maze:
+    //     for (let n: number = 0; n < wallsToRemove; n++) {
+    //         const dir: CardDir = DIRECTION.randomCardDir();
+    //         this.setWallByRoom(this.getRandomRoomByFloor(floor), dir, false);
+    //     }
+    // }
+
+    // private recursions: number = 0;
+    // private recurseMaze(room: GRoom) {
+    //     GFF.genLog(`Start recursion: ${++this.recursions}`);
+    //     room.discover();
+    //     let neighbor: GRoom|null;
+    //     do {
+    //         neighbor = room.connectToRandomUndiscoveredNeighbor();
+    //         if (neighbor !== null) {
+    //             this.recurseMaze(neighbor);
+    //         }
+    //     } while (neighbor !== null);
+    //     GFF.genLog(`End recursion (${--this.recursions})`);
+    // }
 
     protected addRandomWallSections(floor: number, replaceEmpty: boolean, replaceFull: boolean, partialWalls: number) {
         for (let p: number = 0; p < partialWalls; p++) {
@@ -442,4 +461,24 @@ export class GArea {
      * Override to define an initialization for every room in the area.
      */
     protected initRoom(_room: GRoom) {}
+
+    public toSaveObject(ids: Map<any, number>): object {
+        return {
+            name: this.name,
+            bgMusic: this.bgMusic,
+            width: this.width,
+            height: this.height,
+            numFloors: this.numFloors,
+            groundFloor: this.groundFloor,
+            rooms: this.getRooms().map(r => SAVE.idFor(r, ids)),
+        };
+    }
+
+    public hydrateLoadedObject(context: any, refObj: RefFunction): void {
+        this.initFloors();
+        context.rooms.forEach((roomId: string) => {
+            const room: GRoom = refObj(roomId) as GRoom;
+            this.setRoom(room.getFloor(), room.getX(), room.getY(), room);
+        });
+    }
 }

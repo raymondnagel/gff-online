@@ -6,6 +6,8 @@ import { FRUITS } from "./fruits";
 import { GRoom } from "./GRoom";
 import { GFF } from "./main";
 import { GPlayerSprite } from "./objects/chars/GPlayerSprite";
+import { SAVE } from "./save";
+import { RefFunction } from "./scenes/GLoadGameContent";
 import { GPerson } from "./types";
 
 export namespace PLAYER {
@@ -38,6 +40,37 @@ export namespace PLAYER {
         standards = 0; // Initial standards
         markedChestRoom = null; // No marked chest room initially
         companion = null; // No companion initially
+    }
+
+    export function toSaveObject(idRegistry: Map<any, number>): any {
+        // maxXp and maxFaith can be calculated from level and other data, so we don't need to save them.
+        return {
+            level,
+            xp,
+            faith,
+            grace,
+            seeds,
+            sermons,
+            standards,
+            keysByStronghold,
+            markedChestRoom: markedChestRoom ? SAVE.idFor(markedChestRoom, idRegistry) : null,
+            companion: companion ? SAVE.idFor(companion, idRegistry) : null
+        };
+    }
+
+    export function fromSaveData(saveData: any, objFor: RefFunction) {
+        level = saveData.level;
+        xp = saveData.xp;
+        maxXp = getXpNeededAtLevel(level);
+        faith = saveData.faith;
+        calcMaxFaith(false);
+        grace = saveData.grace;
+        seeds = saveData.seeds;
+        sermons = saveData.sermons;
+        standards = saveData.standards;
+        keysByStronghold = saveData.keysByStronghold || [0, 0, 0, 0, 0];
+        markedChestRoom = objFor(saveData.markedChestRoom);
+        companion = objFor(saveData.companion);
     }
 
     /**

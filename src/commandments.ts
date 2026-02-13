@@ -17,6 +17,16 @@ export namespace COMMANDMENTS {
         shuffleCommandmentsToFind();
     }
 
+    export function toSaveObject(): any {
+        return commandments;
+    }
+
+    export function fromSaveData(saveData: any) {
+        for (let i = 0; i < commandments.length; i++) {
+            commandments[i] = saveData[i] || false;
+        }
+    }
+
     export function lookupEntry(num: TEN): GGlossaryEntry {
         return GLOSSARY.lookupEntry(`cmd_${num}`) as GGlossaryEntry;
     }

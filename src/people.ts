@@ -1,8 +1,11 @@
 import { AREA } from "./area";
 import { GChurch } from "./GChurch";
+import { GTown } from "./GTown";
 import { GFF } from "./main";
 import { PLAYER } from "./player";
 import { RANDOM } from "./random";
+import { SAVE } from "./save";
+import { RefFunction } from "./scenes/GLoadGameContent";
 import { GPerson, LeveledDynamicBlurb } from "./types";
 
 const PREACHER_PERSON: GPerson = {
@@ -18,6 +21,7 @@ const PREACHER_PERSON: GPerson = {
     reprobate: false,
     convert: false,
     captive: false,
+    specialGift: null,
     homeTown: null,
     bio1: null,
     bio2: null,
@@ -34,6 +38,38 @@ export namespace PEOPLE {
 
     export function getPersons() {
         return people;
+    }
+
+    export function toSaveObject(person: GPerson, ids: Map<any, number>): object {
+        return {
+            firstName: person.firstName,
+            lastName: person.lastName,
+            preferredName: person.preferredName,
+            spriteKeyPrefix: person.spriteKeyPrefix,
+            gender: person.gender,
+            voice: person.voice,
+            faith: person.faith,
+            familiarity: person.familiarity,
+            nameLevel: person.nameLevel,
+            reprobate: person.reprobate,
+            convert: person.convert,
+            captive: person.captive,
+            specialGift: person.specialGift,
+            homeTown: SAVE.idFor(person.homeTown, ids),
+            bio1: person.bio1,
+            bio2: person.bio2,
+            favoriteBook: person.favoriteBook,
+            conversations: person.conversations,
+        };
+    }
+
+    export function hydratePerson(id: number, context: any, refObj: RefFunction): void {
+        const person: GPerson = refObj(id) as GPerson;
+        person.homeTown = refObj(context.homeTown) as GTown;
+    }
+
+    export function getPersonBySpriteKeyPrefix(prefix: string): GPerson|null {
+        return people.find(p => p.spriteKeyPrefix === prefix) ?? null;
     }
 
     export function createPreacher(church: GChurch) {

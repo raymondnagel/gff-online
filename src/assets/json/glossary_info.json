@@ -447,7 +447,7 @@
       "type": "item",
       "text": "\"As newborn babes, desire the sincere milk of the word, that ye may grow thereby:\" (1 Peter 2:2)",
       "image": "milk",
-      "inspiration": "Hebrews 5:12 describes the \"first principles of the oracles of God\" as \"milk\". 1 Peter 2:2 tells us that this \"sincere milk of the word\" is important for the growth of newborn babes in Christ."
+      "inspiration": "Hebrews 5:12 describes the \"first principles of the oracles of God\" as \"milk\". 1 Peter 2:2 tells us that this \"sincere milk of the word\" is important for the growth of newborn babes in Christ.\n\nIn GFF, milk is an item that can be found in treasure chests at any level; it restores 50 faith when consumed."
     },
     {
       "name": "meat",
@@ -457,7 +457,7 @@
       "type": "item",
       "text": "\"Jesus saith unto them, My meat is to do the will of him that sent me, and to finish his work.\" (John 4:34)",
       "image": "meat",
-      "inspiration": "Moving beyond the \"first principles\" of milk, Jesus teaches us in John 4:34 that the real diet of a Christian consists in doing the Father's will."
+      "inspiration": "Moving beyond the \"first principles\" of milk, Jesus teaches us in John 4:34 that the real diet of a Christian consists in doing the Father's will.\n\nIn GFF, meat is an item that can be found in treasure chests if Adam is at least Level 10; it restores 100 faith when consumed."
     },
     {
       "name": "strong_meat",
@@ -467,7 +467,7 @@
       "type": "item",
       "text": "\"But strong meat belongeth to them that are of full age, even those who by reason of use have their senses exercised to discern both good and evil.\" (Hebrews 5:14)",
       "image": "strong_meat",
-      "inspiration": "In Hebrews 5, Paul speaks of the perfection of Christ by the things which he suffered as \"strong meat\", reserved for those of \"full age\" who have grown to the measure of the stature of the fulness of Christ. (Ephesians 4:13)"
+      "inspiration": "In Hebrews 5, Paul speaks of the perfection of Christ by the things which he suffered as \"strong meat\", reserved for those of \"full age\" who have grown to the measure of the stature of the fulness of Christ. (Ephesians 4:13)\n\nIn GFF, strong meat is an item that can be found in treasure chests if Adam is at least Level 20; it restores 200 faith when consumed."
     },
     {
       "name": "exp_bonus",
@@ -477,7 +477,7 @@
       "type": "item",
       "text": "\"And not only so, but we glory in tribulations also: knowing that tribulation worketh patience; and patience, experience; and experience, hope:\" (Romans 5:3-4)",
       "image": "xp_medal",
-      "inspiration": "Experience plays a critical role in the Christian's spiritual growth. As you gain experience, you will level up, increasing your faith and making you stronger in Christ."
+      "inspiration": "Experience plays a critical role in the Christian's spiritual growth. As Adam gains experience, he will level up, increasing his faith and making him stronger in Christ."
     },
     {
       "name": "wicked_treasure",

@@ -1,3 +1,4 @@
+import { AREA } from "../area";
 import { ARRAY } from "../array";
 import { BOOKS } from "../books";
 import { COLOR } from "../colors";
@@ -13,6 +14,8 @@ import { RANDOM } from "../random";
 import { GSector } from "../regions/GSector";
 import { GStrongholdRegion } from "../regions/GStrongholdRegion";
 import { REGISTRY } from "../registry";
+import { SAVE } from "../save";
+import { RefFunction } from "../scenes/GLoadGameContent";
 import { RoomBorder, CardDir, Dir9, GPoint3D, GSpirit, GPerson, TEN } from "../types";
 import { GBuildingArea } from "./GBuildingArea";
 
@@ -35,7 +38,7 @@ export class GStrongholdArea extends GBuildingArea {
     private armorKey: string;
     private region: GStrongholdRegion;
     private bossIndex: 0|1|2|3|4|5|6;
-
+    private floorImageKeys: string[];
     private sectors: GSector[] = [];
     private sectorBorders: Map<GSector, RoomBorder[]> = new Map();
     private unconnectedRooms: GRoom[] = [];
@@ -49,13 +52,18 @@ export class GStrongholdArea extends GBuildingArea {
             width,
             height
         );
-        GFF.genLog(`----------------- Creating stronghold interior: ${strongholdName}`);
+        GFF.genLog(`Creating stronghold interior: ${strongholdName}`);
         this.bossIndex = bossIndex;
         this.armorKey = armorKey;
         this.region = region;
+        this.floorImageKeys = floorImageKeys;
         this.region.setFullName(strongholdName);
         this.setGroundFloor(groundFloor);
-        this.loadFloors(floorImageKeys);
+    }
+
+    public generate(): void {
+        super.generate();
+        this.loadFloors(this.floorImageKeys);
         this.createSectors();
         this.createKeys();
         this.createDepthRooms();
@@ -159,7 +167,7 @@ export class GStrongholdArea extends GBuildingArea {
             this.sectors.push(sector);
             const room = RANDOM.randElement(this.unconnectedRooms);
             this.createSector(sector, room);
-            this.unconnectedRooms = this.unconnectedRooms.filter(r => r.getSector() === undefined);
+            this.unconnectedRooms = this.unconnectedRooms.filter(r => r.getSector() === null);
         }
 
         this.mergeSectorsAcrossFloors();
@@ -192,7 +200,7 @@ export class GStrongholdArea extends GBuildingArea {
         const targetSize: number = RANDOM.randInt(SECTOR_MIN, SECTOR_MAX);
         const candidates: GRoom[] = [startRoom];
         const neighborCondition = (n: GRoom): boolean => {
-            return n.getSector() === undefined && n.getFloor() === startRoom.getFloor();
+            return n.getSector() === null && n.getFloor() === startRoom.getFloor();
         };
         startRoom.setSector(sector);
 
@@ -618,5 +626,32 @@ export class GStrongholdArea extends GBuildingArea {
             `. Recover all, that we may leave this place forever!`;
 
         return text;
+    }
+
+    public toSaveObject(ids: Map<any, number>): object {
+        const parentData = super.toSaveObject(ids);
+        return {
+            ...parentData,
+            strongholdIndex: this.strongholdIndex,
+            armorKey: this.armorKey,
+            bossIndex: this.bossIndex,
+            entranceRoom: SAVE.idFor(this.entranceRoom, ids),
+            bossRoom: SAVE.idFor(this.bossRoom, ids),
+            prophetChamber: SAVE.idFor(this.prophetChamber, ids),
+            region: SAVE.idFor(this.region, ids),
+            sectors: this.sectors.map(s => SAVE.idFor(s, ids)),
+        };
+    }
+
+    public hydrateLoadedObject(context: any, refObj: RefFunction): void {
+        super.hydrateLoadedObject(context, refObj);
+        this.strongholdIndex = context.strongholdIndex;
+        this.armorKey = context.armorKey;
+        this.bossIndex = context.bossIndex;
+        this.entranceRoom = refObj(context.entranceRoom);
+        this.bossRoom = refObj(context.bossRoom);
+        this.prophetChamber = refObj(context.prophetChamber);
+        this.region = refObj(context.region);
+        this.sectors = context.sectors.map((sId: string) => refObj(sId));
     }
 }

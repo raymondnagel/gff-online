@@ -19,6 +19,16 @@ export namespace ARMORS {
         false, false, false, false, false, false
     ];
 
+    export function toSaveObject(): any {
+        return armors;
+    }
+
+    export function fromSaveData(saveData: any) {
+        for (let i = 0; i < armors.length; i++) {
+            armors[i] = saveData[i] || false;
+        }
+    }
+
     export function lookupEntry(num: SIX): GGlossaryEntry {
         return GLOSSARY.lookupEntry(`armor_${num}`) as GGlossaryEntry;
     }

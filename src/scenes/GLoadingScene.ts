@@ -13,6 +13,7 @@ import { STATS } from '../stats';
 import { REGISTRY } from '../registry';
 import { GEnemySprite } from '../objects/chars/GEnemySprite';
 import { KEYS } from '../keys';
+import { BUILD_VERSION } from '../_generated/buildVersion';
 
 const LOAD_COLOR: number     = 0xffffff;
 const PROGRESS_COLOR: number = 0x00c220;
@@ -25,15 +26,19 @@ export class GLoadingScene extends GBaseScene {
 
     constructor() {
         super("LoadingScene");
+
+        // First thing: log the current version number from buildVersion.ts
+        // Use console.log instead of GFF.log since the registry isn't set up yet,
+        // and we want this to always show regardless of logging settings.
+        console.log(`GFF Online v${BUILD_VERSION}`);
     }
 
     public preload(): void {
         this.setRegistry();
         this.createObjects();
         this.setLoadEvents();
-        this.loadFontsIndividually();
+        this.loadFontsDirectly();
         this.load.json('json-manifest', 'assets/json-manifest.json');
-        // this.load.json('font-manifest', 'assets/font-manifest.json');
         this.load.json('image-manifest', 'assets/image-manifest.json');
         this.load.json('scenery-manifest', 'assets/scenery-manifest.json');
         this.load.json('sprite-manifest', 'assets/sprite-manifest.json');
@@ -42,7 +47,12 @@ export class GLoadingScene extends GBaseScene {
         this.load.glsl('grayscale', 'assets/shaders/grayscale.frag');
     }
 
-    private loadFontsIndividually() {
+    /**
+     * Font loading from a manifest didn't work, possibly because one of the
+     * fonts needs to be loaded before standard loading progress can be shown.
+     * That's fine; we can just load them directly here.
+     */
+    private loadFontsDirectly() {
         this.load.font('dyonisius', 'assets/fonts/dyonisius.ttf', 'truetype');
         this.load.font('averia_serif', 'assets/fonts/averia_serif.ttf', 'truetype');
         this.load.font('imposs', 'assets/fonts/imposs.ttf', 'truetype');
@@ -119,14 +129,14 @@ export class GLoadingScene extends GBaseScene {
                  * Don't put anything here related to the player,
                  * books, or difficulty, as those may depend on the
                  * selected game options (difficulty, game type, books order).
+                 *
+                 * Also, don't put anything here that will be loaded from a
+                 * save file when continuing a game, as it may be duplicated.
                  */
                 REGISTRY.init();
 
                 // Init key verses:
                 KEYS.initKeys();
-
-                // Init Commandments:
-                COMMANDMENTS.initCommandments();
 
                 // Init scenery definitions:
                 SCENERY.initSceneryDefs();
@@ -136,12 +146,6 @@ export class GLoadingScene extends GBaseScene {
 
                 // Start the game time:
                 STATS.startTime();
-
-                // Create the people:
-                GPersonSprite.createAllPeople();
-
-                // Create the enemies:
-                GEnemySprite.createAllSpirits();
 
                 // Add a listener for the mouse leaving the game canvas:
                 GFF.GAME.canvas.addEventListener('mouseleave', () => {
@@ -170,15 +174,6 @@ export class GLoadingScene extends GBaseScene {
         jsonManifest.forEach(file => {
             const key = file.replace(/\.[^/.]+$/, "").split('/').pop() as string;
             this.load.json(key, 'assets/' + file);
-        });
-    }
-
-    private loadFonts() {
-        // Loop through the font-manifest and load each font file
-        const fontManifest: string[] = this.cache.json.get('font-manifest') as string[];
-        fontManifest.forEach(file => {
-            const key = file.replace(/\.[^/.]+$/, "").split('/').pop() as string;
-            this.load.font(key, 'assets/' + file, 'truetype');
         });
     }
 
@@ -232,7 +227,6 @@ export class GLoadingScene extends GBaseScene {
 
     public create(): void {
         this.loadJsons();
-        // this.loadFonts();
         this.loadImages();
         this.loadSpritesheets();
         this.loadAudios();

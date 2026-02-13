@@ -13,7 +13,7 @@ export class GStrongholdCastle extends GStronghold {
      */
 
     constructor() {
-        super('Castle of Perdition', 4, 'castle_front', AREA.CASTLE_AREA);
+        super('Castle of Perdition', 4, 'castle_front');
     }
 
     public getProphetThemeText(): string {

@@ -21,6 +21,7 @@ export class GTravelAgentSprite extends GPersonSprite {
         reprobate: false,
         convert: false,
         captive: false,
+        specialGift: null,
         homeTown: null, // The same agent will appear in every town
         bio1: null,
         bio2: null,

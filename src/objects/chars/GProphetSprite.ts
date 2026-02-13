@@ -56,6 +56,7 @@ export class GProphetSprite extends GPersonSprite {
         reprobate: false,
         convert: false,
         captive: false,
+        specialGift: null,
         homeTown: null, // The same prophet will appear in every stronghold
         bio1: null,
         bio2: null,

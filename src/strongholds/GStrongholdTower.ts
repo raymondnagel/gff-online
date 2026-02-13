@@ -14,7 +14,7 @@ export class GStrongholdTower extends GStronghold {
      */
 
     constructor() {
-        super("Tower of Deception", 0, "tower_front", AREA.TOWER_AREA);
+        super("Tower of Deception", 0, "tower_front");
     }
 
     public getProphetThemeText(): string {

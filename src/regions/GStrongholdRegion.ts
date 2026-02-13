@@ -283,7 +283,7 @@ const ROOM_SCENERY_GENERATORS: RoomSceneryGenerator[] = [
 ];
 
 
-export class GStrongholdRegion extends GInsideRegion {
+export abstract class GStrongholdRegion extends GInsideRegion {
 
     private static roomPatternContext: CanvasRenderingContext2D;
 

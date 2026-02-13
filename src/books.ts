@@ -38,17 +38,41 @@ export namespace BOOKS {
     // List of books in the player's inventory. Tri-state.
     let books: Map<string, BookState> = new Map<string, BookState>();
 
-    export function initBooks() {
+    export function initBooks(addToFindList: boolean = true) {
         entries = GFF.GAME.cache.json.get('books_info');
         entries.forEach(b => {
             books.set(b.name, 'missing');
-            booksToFind.push(b.name);
+            if (addToFindList) {
+                booksToFind.push(b.name);
+            }
         });
     }
 
     export function getAllBookEntries(): GBookEntry[] {
         return entries;
     }
+
+    export function toSaveObject(): any {
+        const inventory: {[key: string]: BookState} = {};
+        books.forEach((value, key) => {
+            inventory[key] = value;
+        });
+        const saveObj = {
+            inventory,
+            findList: booksToFind,
+        };
+        return saveObj;
+    }
+
+    export function fromSaveData(saveData: any) {
+        initBooks(false);
+        const inventoryData = saveData.inventory;
+        for (const key in inventoryData) {
+            books.set(key, inventoryData[key]);
+        }
+        booksToFind = saveData.findList;
+    }
+
 
     export function lookupEntry(name: string): GBookEntry|undefined {
         return entries.find(entry => entry.name === name);

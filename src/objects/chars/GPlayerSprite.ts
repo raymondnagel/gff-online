@@ -24,6 +24,7 @@ const person: GPerson = {
     reprobate: false,
     convert: false,
     captive: false,
+    specialGift: null,
     homeTown: null,
     bio1: null,
     bio2: null,

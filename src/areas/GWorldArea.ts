@@ -37,6 +37,8 @@ import { GStrongholdKeep } from "../strongholds/GStrongholdKeep";
 import { GStrongholdTower } from "../strongholds/GStrongholdTower";
 import { STRONGHOLD } from "../stronghold";
 import { GOutsideRegion } from "../regions/GOutsideRegion";
+import { RefFunction } from "../scenes/GLoadGameContent";
+import { SAVE } from "../save";
 
 const WORLD_WIDTH: number = 16;
 const WORLD_HEIGHT: number = 16;
@@ -76,7 +78,10 @@ export class GWorldArea extends GArea {
             WORLD_WIDTH,
             WORLD_HEIGHT
         );
+    }
 
+    public generate(): void {
+        super.generate();
         this.createRooms();
         this.createRegions();
         this.addRandomWallSections(0, true, false, 200);
@@ -554,11 +559,23 @@ export class GWorldArea extends GArea {
     }
 
     private createStrongholds() {
-        STRONGHOLD.addStronghold(new GStrongholdTower());    // Boss: Mammon     // Treasure: Girdle of Truth
-        STRONGHOLD.addStronghold(new GStrongholdDungeon());  // Boss: Beelzebub  // Treasure: Shield of Faith
-        STRONGHOLD.addStronghold(new GStrongholdKeep());     // Boss: Belial     // Treasure: Breastplate of Righteousness
-        STRONGHOLD.addStronghold(new GStrongholdFortress()); // Boss: Legion     // Treasure: Preparation of Peace
-        STRONGHOLD.addStronghold(new GStrongholdCastle());   // Boss: Apollyon   // Treasure: Helmet of Salvation
+        const tower = new GStrongholdTower();       // Boss: Mammon     // Treasure: Girdle of Truth
+        const dungeon = new GStrongholdDungeon();   // Boss: Beelzebub  // Treasure: Shield of Faith
+        const keep = new GStrongholdKeep();         // Boss: Belial     // Treasure: Breastplate of Righteousness
+        const fortress = new GStrongholdFortress(); // Boss: Legion     // Treasure: Preparation of Peace
+        const castle = new GStrongholdCastle();     // Boss: Apollyon   // Treasure: Helmet of Salvation
+
+        tower.setInteriorArea(AREA.TOWER_AREA);
+        dungeon.setInteriorArea(AREA.DUNGEON_AREA);
+        keep.setInteriorArea(AREA.KEEP_AREA);
+        fortress.setInteriorArea(AREA.FORTRESS_AREA);
+        castle.setInteriorArea(AREA.CASTLE_AREA);
+
+        STRONGHOLD.addStronghold(tower);
+        STRONGHOLD.addStronghold(dungeon);
+        STRONGHOLD.addStronghold(keep);
+        STRONGHOLD.addStronghold(fortress);
+        STRONGHOLD.addStronghold(castle);
 
         const strongholds: GStronghold[] = [...STRONGHOLD.getStrongholds()];
         RANDOM.shuffle(strongholds);
@@ -696,5 +713,18 @@ export class GWorldArea extends GArea {
                 }
             }
         }
+    }
+
+    public toSaveObject(ids: Map<any, number>): object {
+        const parentData = super.toSaveObject(ids);
+        return {
+            ...parentData,
+            startRoom: SAVE.idFor(this.startRoom, ids),
+        };
+    }
+
+    public hydrateLoadedObject(context: any, refObj: RefFunction): void {
+        super.hydrateLoadedObject(context, refObj);
+        this.startRoom = refObj(context.startRoom);
     }
 }

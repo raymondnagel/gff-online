@@ -2,6 +2,8 @@ import 'phaser';
 import { GFF } from '../main';
 import { GContentScene } from './GContentScene';
 import { REGISTRY } from '../registry';
+import { BUILD_VERSION } from '../_generated/buildVersion';
+import { COLOR } from '../colors';
 
 export class GTitleContent extends GContentScene {
 
@@ -34,6 +36,17 @@ export class GTitleContent extends GContentScene {
         // Create the prompt image, set it invisible initially
         const promptImage = this.add.image(centerX, this.cameras.main.height - 120, 'title_prompt');
         promptImage.setAlpha(0);
+
+        // Show the version number in the bottom left corner
+        const majorMinor = BUILD_VERSION.split(' ')[0];
+        const versionText = this.add.text(10, GFF.GAME_H - 10, `v${majorMinor}`, {
+            color: COLOR.WHITE.str(),
+            fontFamily: 'averia_serif',
+            fontSize: '18px',
+            stroke: COLOR.GREY_1.str(),
+            strokeThickness: 4
+        });
+        versionText.setOrigin(0, 1);
 
         // Play the intro sound
         const introSound = this.getSound().playSound('intro_w_drumroll');

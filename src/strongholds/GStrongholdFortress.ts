@@ -14,7 +14,7 @@ export class GStrongholdFortress extends GStronghold {
      */
 
     constructor() {
-        super("Fortress of Enmity", 3, "fortress_front", AREA.FORTRESS_AREA);
+        super("Fortress of Enmity", 3, "fortress_front");
     }
 
     public getProphetThemeText(): string {

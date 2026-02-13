@@ -26,7 +26,7 @@ export class GChurchRegion extends GInsideRegion{
 
     constructor(){
         super(
-            'Church',
+            'church',
             'church_bg',
             '', // No encounters ever happen in churches!
             'map_floor'

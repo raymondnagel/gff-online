@@ -102,12 +102,12 @@ export class GPersonSprite extends GCharSprite implements GInteractable {
     }
 
     public hasSpecialGift(): boolean {
-        return this.person.specialGift !== undefined;
+        return this.person.specialGift !== null;
     }
 
-    public giveSpecialGift(): 'sermon'|'standard'|undefined {
+    public giveSpecialGift(): 'sermon'|'standard'|null {
         const gift = this.person.specialGift;
-        this.person.specialGift = undefined;
+        this.person.specialGift = null;
         return gift;
     }
 
@@ -245,6 +245,7 @@ export class GPersonSprite extends GCharSprite implements GInteractable {
             reprobate: RANDOM.flipCoin(),
             convert: false,
             captive: false,
+            specialGift: null,
             homeTown: null,
             bio1: null,
             bio2: null,

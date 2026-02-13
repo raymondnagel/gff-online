@@ -2,6 +2,7 @@ import { DIRECTION } from "./direction";
 import { GRoom } from "./GRoom";
 import { GTown } from "./GTown";
 import { GCharSprite } from "./objects/chars/GCharSprite";
+import { RefFunction } from "./scenes/GLoadGameContent";
 
 export type ONE = 1;
 export type TWO = ONE|2;
@@ -13,6 +14,13 @@ export type SEVEN = SIX|7;
 export type EIGHT = SEVEN|8;
 export type NINE = EIGHT|9;
 export type TEN = NINE|10;
+
+export interface GSaveable {
+    toSaveObject(ids: Map<any, number>): object;
+    hydrateLoadedObject(context: any, refObj: RefFunction): void;
+}
+
+export type GSaveableInterface = GPerson|GSpirit;
 
 export type GActorEvent = {
     eventId: string,
@@ -67,6 +75,7 @@ export type GKeyList = {
 
 // Represents a game difficulty:
 export type GDifficulty = {
+    index: number;
     level: number;
     levelName: string;
     enemyBaseAttack: number;
@@ -166,7 +175,7 @@ export interface GPerson {
     reprobate: boolean; // if true, faith decreases instead of increasing
     convert: boolean; // if true, this person has been converted by the player
     captive: boolean; // if true, this person was rescued from captivity by the player
-    specialGift?: 'sermon'|'standard'; // if present, the gift this person can give when talked to
+    specialGift: 'sermon'|'standard'|null; // if present, the gift this person can give when talked to
     homeTown: GTown|null; // need this so they can join the town's church when converted
     bio1: string|null; // Bio part 1: intro, town, background
     bio2: string|null; // Bio part 2: grace, conversion, current
@@ -180,8 +189,8 @@ export interface GSpirit {
     name: string;
     level: number;
     introduced: boolean;
-    portraitKey?: string;
-    avatarKey?: string;
+    portraitKey: string|null;
+    avatarKey: string|null;
 }
 
 export enum DirVert {

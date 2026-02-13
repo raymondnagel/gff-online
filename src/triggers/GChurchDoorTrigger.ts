@@ -1,25 +1,25 @@
 import { EFFECTS } from "../effects";
 import { GFF } from "../main";
-import { PHYSICS } from "../physics";
 import { PLAYER } from "../player";
-import { GPoint2D, GRect } from "../types";
+import { GPoint2D } from "../types";
 import { GEventTrigger } from "./GEventTrigger";
 
 export class GChurchDoorTrigger extends GEventTrigger {
 
-    private triggerArea: GRect;
+    private triggerPoint: GPoint2D;
     private doorOpenLocation: GPoint2D;
     private doorSpriteDepth: number;
 
-    constructor(triggerArea: GRect, doorOpenLocation: GPoint2D, doorSpriteDepth: number) {
+    constructor(doorOpenLocation: GPoint2D, doorSpriteDepth: number) {
         super('church door opening', 1);
-        this.triggerArea = triggerArea;
         this.doorOpenLocation = doorOpenLocation;
         this.doorSpriteDepth = doorSpriteDepth;
+        // Set the trigger point to be at the center-bottom of the door
+        this.triggerPoint = {x: doorOpenLocation.x + 70, y: doorOpenLocation.y + 160};
     }
 
     protected condition(): boolean {
-        return PLAYER.getFaith() > 0 && PHYSICS.isCenterWithin(PLAYER.getSprite(), this.triggerArea);
+        return PLAYER.getFaith() > 0 && Phaser.Math.Distance.BetweenPoints(this.triggerPoint, PLAYER.getSprite().getPhysicalCenter()) < 100;
     }
 
     protected action(): void {

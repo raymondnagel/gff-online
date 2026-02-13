@@ -55,6 +55,7 @@ import { SCENERY } from '../scenery';
 import { GProphetSprite } from '../objects/chars/GProphetSprite';
 import { GOverheadAnimatedDecoration } from '../objects/decorations/GOverheadAnimatedDecoration';
 import { GHiddenTrap } from '../objects/touchables/GHiddenTrap';
+import { SAVE } from '../save';
 
 const MOUSE_UI_BUTTON: string = 'MOUSE_UI_BUTTON';
 
@@ -123,24 +124,18 @@ export class GAdventureContent extends GContentScene {
 
     public create(): void {
         // Whenever we create the adventure content, we are beginning the game,
-        // and we'll always start in the start room...
-        const startRoom: GRoom = AREA.WORLD_AREA.getStartRoom();
+        this.startGame();
+    }
 
-        // Well... sort of. If a new game was just started, we need to play the opening cutscene,
-        // which takes place in the start room's church.
-        if (REGISTRY.getBoolean('doIntro')) {
-            const portalRoom: GRoom = startRoom.getPortalRoom() as GRoom;
-            this.setCurrentRoom(portalRoom.getX(), portalRoom.getY(), portalRoom.getFloor(), portalRoom.getArea());
-        } else {
-            this.setCurrentRoom(startRoom.getX(), startRoom.getY(), startRoom.getFloor(), startRoom.getArea());
-            // REGISTRY.set('isNoImps', true);
-            // REGISTRY.set('isDebug', true);
-            // const tempStartRoom: GRoom = AREA.TOWER_AREA.getRoomAt(6, 0, 1) as GRoom;
-            // this.setCurrentRoom(tempStartRoom.getX(), tempStartRoom.getY(), tempStartRoom.getFloor(), tempStartRoom.getArea());
-        }
+    private startGame() {
+        // We'll always start the game in the start room's church
+        const startRoom: GRoom = AREA.WORLD_AREA.getStartRoom();
+        const portalRoom: GRoom = startRoom.getPortalRoom() as GRoom;
+        this.setCurrentRoom(portalRoom.getX(), portalRoom.getY(), portalRoom.getFloor(), portalRoom.getArea());
 
         // Create the player:
-        this.player = new GPlayerSprite(512-(GFF.CHAR_W/2), 460);
+        this.player = new GPlayerSprite(0, 0);
+        this.player.centerPhysically({x: 512, y: 352});
 
         // Init physics:
         this.initPhysics();
@@ -157,17 +152,21 @@ export class GAdventureContent extends GContentScene {
 
         // Init input modes:
         this.initInputModes();
-        this.setInputMode(INPUT_ADVENTURING);
 
         // Set vision:
         this.setVisionWithCheck();
 
-
         // Check whether we need to play the intro cutscene:
         if (REGISTRY.getBoolean('doIntro')) {
+            console.log('Playing intro cutscene');
             REGISTRY.set('doIntro', false);
             const church: GChurch = startRoom.getChurch() as GChurch;
             new GOpeningCutscene(church).play();
+        } else {
+            // If not playing the intro, fade in the scene:
+            this.fadeIn(500, undefined, () => {
+                this.setInputMode(INPUT_ADVENTURING);
+            });
         }
     }
 
@@ -1091,12 +1090,11 @@ export class GAdventureContent extends GContentScene {
     }
 
     private flipCommonChests() {
-        console.log('Flipping common chests by faith');
         const faithMax: boolean = PLAYER.getFaith() >= PLAYER.getMaxFaith();
         for (let obj of this.touchablesGroup.getChildren()) {
             if (obj instanceof GTreasureChest) {
                 const chest: GTreasureChest = obj as GTreasureChest;
-                if (chest.isWicked()) {
+                if (chest.isWicked() && !chest.isOpen()) {
                     chest.setTexture(faithMax ? 'black_chest' : 'brown_chest');
                 }
             }
@@ -1619,22 +1617,6 @@ export class GAdventureContent extends GContentScene {
         }
     }
 
-    public saveGame() {
-        /**
-         * TODO: Implement game saving.
-         * This is going to take a LOT of work. We'll need to save:
-         * - the entire world, since it is procedurally generated
-         * - all the procedurally generated people
-         * - player state (level, experience, faith, grace, items, etc.)
-         * - enemy state (similar to player state)
-         * - any special event flags
-         * - all recorded statistics
-         * I'll delay this for now, since most parts of the game are still
-         * subject to change, and I don't want to have to rework the save
-         * system every time I change something.
-         */
-    }
-
     /**
      * I hate to do this, but it may be necessary in certain cases when
      * changing from one input mode to another (for example, from Conversation
@@ -1840,7 +1822,10 @@ export class GAdventureContent extends GContentScene {
         }
     }
 
-    public endGame() {
+    public endGame(save: boolean = false) {
+        if (save) {
+            SAVE.saveGame('test_save'); // To be replaced with a file-picker eventually
+        }
         this.setInputMode(INPUT_DISABLED);
         this.getSound().stopMusic();
         this.scene.pause();

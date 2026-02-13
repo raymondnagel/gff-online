@@ -1,5 +1,5 @@
 import { GRegion } from "./regions/GRegion";
-import { CardDir, CubeDir, Dir9, DirVert, GCityBlock, GColor, GDoorways, GLockedDoorRef, GPerson, GPoint2D, GPoint3D, GRect, GRoomWalls, GSceneryDef, GSceneryPlan, RoomBorder } from "./types";
+import { CardDir, CubeDir, Dir9, DirVert, GCityBlock, GColor, GDoorways, GLockedDoorRef, GPerson, GPoint2D, GPoint3D, GRect, GRoomWalls, GSaveable, GSceneryDef, GSceneryPlan, RoomBorder } from "./types";
 import { SCENERY } from "./scenery";
 import { GFF } from "./main";
 import { RANDOM } from "./random";
@@ -42,6 +42,8 @@ import { KEYS } from "./keys";
 import { GProphetTrigger } from "./triggers/GProphetTrigger";
 import { STRONGHOLD } from "./stronghold";
 import { GChurchArea } from "./areas/GChurchArea";
+import { SAVE } from "./save";
+import { RefFunction } from "./scenes/GLoadGameContent";
 
 const WALL_GUARD_THICK: number = 10;
 const WALL_CTRS: number[] = [
@@ -79,7 +81,7 @@ type TestZone = GRect &{
  * to the AdventureScene when the room is entered, and unloaded
  * when the room is exited.
  */
-export class GRoom {
+export class GRoom implements GSaveable {
     private area: GArea;
     private floor: number;
     private x: number;
@@ -87,7 +89,7 @@ export class GRoom {
     private plans: GSceneryPlan[] = [];
     private noSceneryZones: GRect[] = [];
     private region: GRegion;
-    private sector: GSector|undefined = undefined;
+    private sector: GSector|null = null;
     private town: GTown|null = null;
     private church: GChurch|null = null;
     private stronghold: GStronghold|null = null;
@@ -276,7 +278,7 @@ export class GRoom {
         return this.region;
     }
 
-    public getSector(): GSector|undefined {
+    public getSector(): GSector|null {
         return this.sector;
     }
 
@@ -770,7 +772,7 @@ export class GRoom {
                         .setOrigin(0, 0)
                         .setTint(stoneTint)
                         .setDepth(DEPTH.WALL_NORTH);
-                    this.addPermanentEventTrigger(new GStrongholdNorthArchTrigger(arch));
+                    this.addTemporaryEventTrigger(new GStrongholdNorthArchTrigger(arch));
                 }
             } else {
                 const nMidWall: GSceneryDef|undefined = region.getWallPiece('n_mid');
@@ -1462,7 +1464,6 @@ export class GRoom {
     public planProphetChamber(): void {
         this.planPositionedScenery(SCENERY.def('prophet_bed'), 462, 300, 1, .5);
         this.planPositionedScenery(SCENERY.def('prophet_table'), 562, 300, 0, .5);
-        this.addPermanentEventTrigger(new GProphetTrigger(512, 380));
     }
 
     public planPrisonerCell(): void {
@@ -2025,16 +2026,6 @@ export class GRoom {
         const churchY: number = 64;
         this.planPositionedScenery(churchDef, churchX + churchDef.body.x, churchY + churchDef.body.y, 0, 0);
 
-        // As we plan the church, we can also add a trigger for the door:
-        const radius: number = 100;
-        const doorX: number = churchX + (churchWidth / 2);
-        const doorY: number = churchY + churchHeight;
-        const animX: number = doorX - 70;
-        const animY: number = doorY - 135;
-        const triggerArea: GRect = {x: doorX - radius, y: doorY - radius, width: radius * 2, height: radius * 2};
-        const doorSpriteDepth: number = doorY + 1;
-        this.addPermanentEventTrigger(new GChurchDoorTrigger(triggerArea, {x: animX, y: animY}, doorSpriteDepth));
-
         // A church is an important feature that shouldn't be covered up by random scenery
         this.noSceneryZones.push({x: 312, y: 128, width: 400, height: 576});
 
@@ -2042,6 +2033,8 @@ export class GRoom {
         if (this.isStart()) {
             this.planPositionedScenery(SCENERY.def('help_sign'), churchX + 40, churchY + 100, 0, 0);
         }
+
+        // (A permanent door trigger will be added later)
     }
 
     public planChurchInterior() {
@@ -2136,33 +2129,10 @@ export class GRoom {
         // Finally, add the stronghold itself:
         this.planPositionedScenery(strongholdDef as GSceneryDef, shX, shY);
 
-        // Place the correct door trigger for the stronghold type:
-        const radius: number = 100;
-        const doorX: number = shX + (strongholdDef.body.width / 2);
-        const doorY: number = bY;
-        const triggerArea: GRect = {x: doorX - radius, y: doorY - radius, width: radius * 2, height: radius * 2};
-        const doorSpriteDepth: number = bY + 1;
-
-        switch(strongholdDef.key) {
-            case 'tower_front':
-                this.addPermanentEventTrigger(new GTowerDoorTrigger(triggerArea, {x: doorX - 88, y: doorY - 148}, doorSpriteDepth));
-                break;
-            case 'dungeon_front':
-                this.addPermanentEventTrigger(new GDungeonDoorTrigger(triggerArea, {x: doorX - 84.5, y: doorY - 150}, doorSpriteDepth));
-                break;
-            case 'keep_front':
-                this.addPermanentEventTrigger(new GKeepDoorTrigger(triggerArea, {x: doorX - 91.5, y: doorY - 155}, doorSpriteDepth));
-                break;
-            case 'fortress_front':
-                this.addPermanentEventTrigger(new GFortressDoorTrigger(triggerArea, {x: doorX - 50, y: doorY - 143}, doorSpriteDepth));
-                break;
-            case 'castle_front':
-                this.addPermanentEventTrigger(new GCastleDoorTrigger(triggerArea, {x: doorX - 65.5, y: doorY - 159}, doorSpriteDepth));
-                break;
-        }
-
         // A stronghold is an important feature that shouldn't be covered up by random scenery
         this.noSceneryZones.push({x: 312, y: 128, width: 400, height: 576});
+
+        // (A permanent door trigger will be added later)
     }
 
     private simpleFit(objectWidth: number, objectHeight: number, maxTries: number, objects: GRect[], zones: GRect[]): GRect|null {
@@ -2224,6 +2194,7 @@ export class GRoom {
     public finalizeSceneryPlans() {
         // Implement any post-processing needed for scenery plans here
         this.joinTiles();
+        this.addPermanentTriggersForScenery();
     }
 
     /**
@@ -2288,5 +2259,99 @@ export class GRoom {
     public static createPortal(room1: GRoom, room2: GRoom) {
         room1.portalRoom = room2;
         room2.portalRoom = room1;
+    }
+
+
+    private addPermanentTriggersForScenery() {
+        for (let plan of this.plans) {
+
+            switch (plan.key) {
+                case 'prophet_bed':
+                    this.addPermanentEventTrigger(new GProphetTrigger(512, 380));
+                    break;
+                case 'church_front':
+                    this.addPermanentEventTrigger(new GChurchDoorTrigger({x: plan.x + 128, y: plan.y + 274}, plan.y + 410));
+                    break;
+                case 'tower_front':
+                    this.addPermanentEventTrigger(new GTowerDoorTrigger({x: plan.x + 0, y: plan.y + 214}, plan.y + 363));
+                    break;
+                case 'dungeon_front':
+                    this.addPermanentEventTrigger(new GDungeonDoorTrigger({x: plan.x + 87, y: plan.y + 61}, plan.y + 212));
+                    break;
+                case 'keep_front':
+                    this.addPermanentEventTrigger(new GKeepDoorTrigger({x: plan.x + 53, y: plan.y + 202}, plan.y + 358));
+                    break;
+                case 'fortress_front':
+                    this.addPermanentEventTrigger(new GFortressDoorTrigger({x: plan.x + 134, y: plan.y + 199}, plan.y + 343));
+                    break;
+                case 'castle_front':
+                    this.addPermanentEventTrigger(new GCastleDoorTrigger({x: plan.x + 135, y: plan.y + 237}, plan.y + 397));
+                    break;
+            }
+        }
+    }
+
+    public toSaveObject(ids: Map<any, number>): object {
+        return {
+            // Basic properties
+            floor: this.floor,
+            x: this.x,
+            y: this.y,
+            cellVerseRef: this.cellVerseRef,
+            chestItem: this.chestItem,
+
+            // Flags
+            startRoom: this.startRoom,
+            discovered: this.discovered,
+            travelAgency: this.travelAgency,
+            prophetChamber: this.prophetChamber,
+
+            // String references (used to look up objects on load)
+            ...(this.prisoner !== undefined && { prisoner: this.prisoner ? this.prisoner.spriteKeyPrefix : this.prisoner }), // Only include prisoner if it's defined
+
+            // Object references (used to look up objects on load)
+            area: SAVE.idFor(this.area, ids),
+            town: SAVE.idFor(this.town, ids),
+            church: SAVE.idFor(this.church, ids),
+            stronghold: SAVE.idFor(this.stronghold, ids),
+            portalRoom: SAVE.idFor(this.portalRoom, ids),
+            region: SAVE.idFor(this.region, ids),
+            sector: SAVE.idFor(this.sector, ids),
+
+            // Arrays
+            walls: this.walls,
+            doorways: this.doorways,
+            lockedDoors: this.lockedDoors,
+            yards: this.yards,
+            plans: this.plans,
+        };
+    }
+
+    public hydrateLoadedObject(context: any, refObj: RefFunction): void {
+        /**
+         * floor, x, y, area already added during construction
+         */
+        this.cellVerseRef = context.cellVerseRef;
+        this.chestItem = context.chestItem;
+        this.startRoom = context.startRoom;
+        this.discovered = context.discovered;
+        this.travelAgency = context.travelAgency;
+        this.prophetChamber = context.prophetChamber;
+        this.town = refObj(context.town);
+        this.church = refObj(context.church);
+        this.stronghold = refObj(context.stronghold);
+        this.portalRoom = refObj(context.portalRoom);
+        this.region = refObj(context.region);
+        this.sector = refObj(context.sector);
+        this.walls = context.walls;
+        this.doorways = context.doorways;
+        this.lockedDoors = context.lockedDoors;
+        this.yards = context.yards;
+        this.plans = context.plans;
+        if (context.prisoner !== undefined) {
+            this.prisoner = context.prisoner ? PEOPLE.getPersonBySpriteKeyPrefix(context.prisoner) : context.prisoner;
+        }
+
+        this.addPermanentTriggersForScenery();
     }
 }

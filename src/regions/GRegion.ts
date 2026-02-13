@@ -1,7 +1,8 @@
 import { GRoom } from "../GRoom";
-import { GTown } from "../GTown";
-import { RANDOM } from "../random";
+import { SAVE } from "../save";
+import { RefFunction } from "../scenes/GLoadGameContent";
 import { STRING } from "../string";
+import { GSaveable } from "../types";
 
 /**
  * GRegion represents part of a GArea that should
@@ -17,7 +18,7 @@ import { STRING } from "../string";
  * - set background image based on region
  * - show region title upon arrival to the region
  */
-export abstract class GRegion {
+export abstract class GRegion implements GSaveable {
     private name: string;
     private fullName: string;
     private bgImage: string;
@@ -107,4 +108,22 @@ export abstract class GRegion {
     public abstract isInterior(): boolean;
 
     public abstract getTemperature(): number;
+
+    public toSaveObject(ids: Map<any, number>): object {
+        return {
+            name: this.name,
+            fullName: this.fullName,
+            bgImage: this.bgImage,
+            encBgImage: this.encBgImage,
+            terrainImage: this.terrainImage,
+            center: SAVE.idFor(this.center, ids),
+            rooms: this.rooms.map(r => SAVE.idFor(r, ids)),
+        };
+    }
+
+    public hydrateLoadedObject(context: any, refObj: RefFunction): void {
+        this.fullName = context.fullName; // A full name was set by the constructor, but it's not the full name we want
+        this.center = refObj(context.center) as GRoom;
+        this.rooms = context.rooms.map((id: number) => refObj(id) as GRoom);
+    }
 }

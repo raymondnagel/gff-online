@@ -19,6 +19,10 @@ export namespace REGISTRY {
         REGISTRY.set('bossDefeated_Apollyon', false);
     }
 
+    export function getAll(): {[key: string]: any} {
+        return GFF.GAME.registry.getAll();
+    }
+
     export function get(key: string): any {
         return GFF.GAME.registry.get(key);
     }

@@ -1,6 +1,7 @@
 import { GFF } from "./main";
 import { GEnemySprite } from "./objects/chars/GEnemySprite";
 import { PLAYER } from "./player";
+import { RefFunction } from "./scenes/GLoadGameContent";
 import { GSpirit } from "./types";
 
 const REL_XP_DEC_PER_LEVEL: number = .3;
@@ -73,6 +74,25 @@ export namespace ENEMY {
     let avatar: string;
     let spirit: GSpirit;
     let sprite: GEnemySprite|null;
+
+    export function toSaveObject(spirit: GSpirit, _ids: Map<any, number>): object {
+        return {
+            type: spirit.type,
+            name: spirit.name,
+            level: spirit.level,
+            introduced: spirit.introduced,
+            portraitKey: spirit.portraitKey,
+            avatarKey: spirit.avatarKey,
+        };
+    }
+
+    export function hydrateSpirit(_id: number, _context: any, _refObj: RefFunction): void {
+        /**
+         * GSpirit doesn't actually have references to any other objects,
+         * so we don't need to do anything here. Maybe that will change someday.
+         * In the meantime, I added this empty method just to be consistent with GPerson.
+         */
+    }
 
     export function getXpValue(): number {
         /**

@@ -22,6 +22,7 @@ export class GTreasureChest extends GTouchable {
     private premium: boolean;
     private color: 'brown'|'blue'|'red'|'purple'|'gold'|'black';
     private wicked: boolean;
+    private open: boolean = false;
 
     constructor(x: number, y: number, chestKey: 'brown_chest'|'blue_chest'|'red_chest'|'purple_chest'|'gold_chest'|'black_chest', wicked: boolean = false) {
         super(SCENERY.def(chestKey), x, y);
@@ -39,7 +40,12 @@ export class GTreasureChest extends GTouchable {
         return PLAYER.getFaith() > 0;
     }
 
+    public isOpen(): boolean {
+        return this.open;
+    }
+
     public doTouch() {
+        this.open = true;
         const item: GItem = this.premium ? this.getPremiumItem() : this.getCommonItem();
 
         // Unmark the chest if it is premium and marked::

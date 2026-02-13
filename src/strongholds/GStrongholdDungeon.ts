@@ -13,7 +13,7 @@ export class GStrongholdDungeon extends GStronghold {
      */
 
     constructor() {
-        super("Dungeon of Doubt", 1, "dungeon_front", AREA.DUNGEON_AREA);
+        super("Dungeon of Doubt", 1, "dungeon_front");
     }
 
     public getProphetThemeText(): string {

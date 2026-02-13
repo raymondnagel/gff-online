@@ -12,7 +12,10 @@ export class GChurchArea extends GBuildingArea {
             1,
             1
         );
+    }
 
+    public generate(): void {
+        super.generate();
         this.createRooms();
         this.createOuterBorder(0);
     }

@@ -1,9 +1,11 @@
 import { GChurchArea } from "./areas/GChurchArea";
 import { GRoom } from "./GRoom";
 import { GTown } from "./GTown";
-import { GPerson } from "./types";
+import { SAVE } from "./save";
+import { RefFunction } from "./scenes/GLoadGameContent";
+import { GPerson, GSaveable } from "./types";
 
-export class GChurch {
+export class GChurch implements GSaveable {
     private name: string;
     private town: GTown;
     private fruitNum: number|null = null;
@@ -43,7 +45,7 @@ export class GChurch {
 
     public setInteriorArea(area: GChurchArea) {
         this.interiorArea = area;
-        this.interiorArea.setName(this.town.getName() + ' Church Building')
+        this.interiorArea.setName(this.town.getName() + ' Church Building');
     }
 
     public getInteriorArea(): GChurchArea {
@@ -64,5 +66,25 @@ export class GChurch {
         person.nameLevel = 2;
         person.reprobate = false;
         this.people.push(person);
+    }
+
+    public toSaveObject(ids: Map<any, number>): object {
+        return {
+            name: this.name,
+            town: SAVE.idFor(this.town, ids),
+            fruitNum: this.fruitNum,
+            worldRoom: SAVE.idFor(this.worldRoom, ids),
+            interiorArea: SAVE.idFor(this.interiorArea, ids),
+            people: this.people.map(p => SAVE.idFor(p, ids)),
+        };
+    }
+
+    public hydrateLoadedObject(context: any, refObj: RefFunction): void {
+        this.name = context.name;
+        this.town = refObj(context.town);
+        this.fruitNum = context.fruitNum;
+        this.worldRoom = refObj(context.worldRoom);
+        this.people = context.people.map((id: string) => refObj(id));
+        this.setInteriorArea(refObj(context.interiorArea));
     }
 }

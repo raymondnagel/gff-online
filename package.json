@@ -4,13 +4,14 @@
   "main": "index.js",
   "scripts": {
     "development": "node ./tools/create-asset-manifest.mjs && webpack serve --open --config webpack.development.js",
-    "distribution": "node ./tools/create-asset-manifest.mjs && webpack --config webpack.distribution.js"
+    "distribution": "tsx ./tools/gen-build-version.ts && node ./tools/create-asset-manifest.mjs && webpack --config webpack.distribution.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@msgpack/msgpack": "^3.1.3",
     "jszip": "^3.10.1",
     "phaser": "^3.87.0"
   },
@@ -18,6 +19,7 @@
     "clean-webpack-plugin": "^4.0.0",
     "copy-webpack-plugin": "^12.0.2",
     "ts-loader": "^9.5.1",
+    "tsx": "^4.21.0",
     "typescript": "^5.6.2",
     "webpack": "^5.94.0",
     "webpack-cli": "^5.1.4",

@@ -1,8 +1,11 @@
 import { ARMORS } from "../armors";
 import { BOOKS } from "../books";
 import { COLOR } from "../colors";
+import { COMMANDMENTS } from "../commandments";
 import { GInputMode } from "../GInputMode";
 import { GFF } from "../main";
+import { GEnemySprite } from "../objects/chars/GEnemySprite";
+import { GPersonSprite } from "../objects/chars/GPersonSprite";
 import { GMenuCheckOption } from "../objects/components/GMenuCheckOption";
 import { GMenuRadioGroup } from "../objects/components/GMenuRadioGroup";
 import { GMenuRadioOption } from "../objects/components/GMenuRadioOption";
@@ -11,6 +14,7 @@ import { GMenuTextOption } from "../objects/components/GMenuTextOption";
 import { GTextOptionButton } from "../objects/components/GTextOptionButton";
 import { PLAYER } from "../player";
 import { REGISTRY } from "../registry";
+import { SAVE } from "../save";
 import { GDifficulty } from "../types";
 import { GContentScene } from "./GContentScene";
 
@@ -110,7 +114,7 @@ export class GMainMenuContent extends GContentScene {
 
         optionY = OPTION_GAP + this.mainMenuSection.addOption(this.initTextOption(CENTER_X, optionY, "Continue Game", 'md',
             `Continue a previously saved game`, () => {
-            console.log('Continue Game - (not implemented yet)');
+            this.continueGame();
         }));
 
         optionY = OPTION_GAP + this.mainMenuSection.addOption(this.initTextOption(CENTER_X, optionY, "Duel Mode", 'md',
@@ -164,19 +168,19 @@ export class GMainMenuContent extends GContentScene {
         optionY = OPTION_GAP + this.newGameOptionsSection.addOption(this.initRadioOption(LEFT_COL_X, optionY, "Babe", 'sm', difficultyGroup,
             `Out of the mouth of babes and sucklings thou hast perfected praise`, (_labelText: string, checkState: boolean) => {
             if (checkState) {
-                REGISTRY.set('difficulty', GFF.DIFFICULTY_BABE);
+                REGISTRY.set('difficulty', GFF.DIFFICULTY_BABE.index);
             }
         }));
         optionY = OPTION_GAP + this.newGameOptionsSection.addOption(this.initRadioOption(LEFT_COL_X, optionY, "Disciple", 'sm', difficultyGroup,
             `If ye continue in my word, then are ye my disciples indeed`, (_labelText: string, checkState: boolean) => {
             if (checkState) {
-                REGISTRY.set('difficulty', GFF.DIFFICULTY_DISCIPLE);
+                REGISTRY.set('difficulty', GFF.DIFFICULTY_DISCIPLE.index);
             }
         }));
         optionY = OPTION_GAP + this.newGameOptionsSection.addOption(this.initRadioOption(LEFT_COL_X, optionY, "Soldier", 'sm', difficultyGroup,
             `Thou therefore endure hardness, as a good soldier of Jesus Christ`, (_labelText: string, checkState: boolean) => {
             if (checkState) {
-                REGISTRY.set('difficulty', GFF.DIFFICULTY_SOLDIER);
+                REGISTRY.set('difficulty', GFF.DIFFICULTY_SOLDIER.index);
             }
         }));
 
@@ -292,15 +296,26 @@ export class GMainMenuContent extends GContentScene {
         GFF.AdventureContent.getSound().playSound('amen');
 
         /**
-         * Initialize the new game with selected options
+         * Initialize the new game with selected options.
+         * Everything listed here will be loaded from a save file
+         * when continuing a game.
          */
         GFF.log('Starting new game with options:');
-        GFF.log(`Difficulty: ${(REGISTRY.get('difficulty') as GDifficulty).levelName}`);
+        GFF.log(`Difficulty: ${GFF.getDifficulty().levelName}`);
         GFF.log(`Game Type: ${REGISTRY.get('gameType')}`);
         GFF.log(`Books Order: ${REGISTRY.get('booksOrder')}`);
 
         // Init some registry values:
         REGISTRY.set('canSaintGift', true);
+
+        // Init Commandments:
+        COMMANDMENTS.initCommandments();
+
+        // Create the people:
+        GPersonSprite.createAllPeople();
+
+        // Create the enemies:
+        GEnemySprite.createAllSpirits();
 
         // Init Bible books:
         BOOKS.initBooks();
@@ -336,6 +351,54 @@ export class GMainMenuContent extends GContentScene {
         this.fadeOut(1000, undefined, () => {
             GFF.WORLDBUILD_MODE.switchTo(GFF.MAINMENU_MODE);
         });
+    }
+
+    private continueGame(): void {
+        GFF.AdventureContent.getSound().playSound('amen');
+
+        /**
+         * Continue a game from a savefile.
+         *
+         * While load functionality is in development, transition directly
+         * to the Load Game mode. When it's ready, we'll show a dialog to
+         * allow selecting a savefile.
+         *
+         * The eventual plan will be to have 2 ways to save/load:
+         * - save/load in IndexedDB with a custom UI save slot system
+         * - download/upload a JSON file as an Import/Export option
+         *
+         * Both options should be accessible from the Main Menu UI;
+         * so before switching to the Load Game mode, we'll already
+         * have loaded the savefile data into memory via either option.
+         *
+         * So we'll either call:
+         * - SAVE.loadFromIndexedDb()
+         * - SAVE.uploadSaveFile()
+         *
+         * For now we'll just load a static test savefile and save that
+         * in the registry for the Load Game mode to use.
+         */
+        GFF.log('Continuing saved game...');
+
+        // Load the test savefile here and put it in the registry;
+        // don't bother putting this in SAVE, since it's just for testing.
+        this.loadTestSaveFile();
+
+        // Transition to the load game mode
+        this.getSound().fadeOutMusic(1000);
+        this.fadeOut(1000, undefined, () => {
+            GFF.LOADGAME_MODE.switchTo(GFF.MAINMENU_MODE);
+        });
+    }
+
+    private loadTestSaveFile(): void {
+        fetch("/assets/_test_saves/test_save.gffsave")
+            .then(res => res.arrayBuffer())
+            .then(buf => {
+                REGISTRY.set('loadedSaveData', new Uint8Array(buf));
+                // Re-save the loaded data as plain-text JSON for verification:
+                SAVE.resaveLoadedGameData();
+            });
     }
 
     private initInputMode() {

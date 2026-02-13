@@ -1,10 +1,7 @@
 import 'phaser';
 import { GCharSprite } from './GCharSprite';
-import { RANDOM } from '../../random';
 import { GFF } from '../../main';
 import { GGender, GPerson, GSpirit } from '../../types';
-import { GSearchForPlayerGoal } from '../../goals/GSearchForPlayerGoal';
-import { GSpawnImpGoal } from '../../goals/GSpawnImpGoal';
 import { ENEMY } from '../../enemy';
 import { GGoal } from '../../goals/GGoal';
 import { REGISTRY } from '../../registry';
@@ -27,6 +24,7 @@ const person: GPerson = {
     reprobate: true, // Might as well make the devils reprobate :-p
     convert: false,
     captive: false,
+    specialGift: null,
     homeTown: null,
     bio1: null,
     bio2: null,
@@ -112,7 +110,9 @@ export abstract class GEnemySprite extends GCharSprite {
                 type: 'minion',
                 name: spiritName,
                 level: 0,
-                introduced: false
+                introduced: false,
+                portraitKey: null,
+                avatarKey: null
             });
         }
     }

@@ -13,17 +13,20 @@ import { GDungeonRegion } from '../regions/GDungeonRegion';
 import { GKeepRegion } from '../regions/GKeepRegion';
 import { GFortressRegion } from '../regions/GFortressRegion';
 import { GCastleRegion } from '../regions/GCastleRegion';
+import { RANDOM } from '../random';
+import { COLOR } from '../colors';
 
 type AreaGenInfo = { area: GArea, rooms: number };
 
 const INPUT_DISABLED: GInputMode = new GInputMode('worldbuild.disabled');
 const INPUT_PROMPTENTER: GInputMode = new GInputMode('worldbuild.prompt_enter');
 
-const LOAD_COLOR: number     = 0xffffff;
-const PROGRESS_COLOR: number = 0x00c220;
+const LOAD_COLOR: number     = COLOR.WHITE.num();
+const PROGRESS_COLOR: number = COLOR.GREY_3.num();
 const PROGRESS_LENGTH: number = 512;
 
 export class GWorldBuildContent extends GBaseScene {
+    private bgImage: Phaser.GameObjects.Image;
     private loadBar: Phaser.GameObjects.Rectangle;
     private progressBar: Phaser.GameObjects.Rectangle;
     private progressText: Phaser.GameObjects.Text;
@@ -51,7 +54,9 @@ export class GWorldBuildContent extends GBaseScene {
                 this.tweens.killAll();
                 this.promptText.setAlpha(1);
                 this.fadeOut(1000, undefined, () => {
-                    GFF.ADVENTURE_MODE.switchTo(GFF.WORLDBUILD_MODE);
+                    this.time.delayedCall(500, () => {
+                        GFF.ADVENTURE_MODE.switchTo(GFF.WORLDBUILD_MODE);
+                    });
                 });
             }
         });
@@ -67,52 +72,69 @@ export class GWorldBuildContent extends GBaseScene {
     }
 
     private createObjects() {
-        this.titleText = this.add.text(GFF.GAME_W / 2, 300, 'Generating a new world...', {
+        const bgImageKey = `load_bg_${RANDOM.randInt(1, 4)}`;
+        this.bgImage = this.add.image(0, 0, bgImageKey).setOrigin(0, 0);
+
+        this.titleText = this.add.text(GFF.GAME_W / 2, GFF.GAME_H / 2, 'Generating a new world...', {
             fontFamily: 'dyonisius',
             fontSize: 36,
-            color: '#ffffff'
+            color: COLOR.WHITE.str(),
+            stroke: COLOR.GREY_1.str(),
+            strokeThickness: 6
         }).setOrigin(.5, .5);
 
         this.loadBar = this.add.rectangle(
             GFF.GAME_W / 2,
-            GFF.GAME_H / 2,
+            GFF.GAME_H - 20,
             PROGRESS_LENGTH + 4,
-            60,
+            32,
             LOAD_COLOR
-        ).setOrigin(.5, .5);
+        ).setOrigin(.5, 1);
 
         this.progressBar = this.add.rectangle(
             (GFF.GAME_W / 2) - (PROGRESS_LENGTH / 2),
-            GFF.GAME_H / 2,
+            GFF.GAME_H - 22,
             0,
-            56,
+            28,
             PROGRESS_COLOR
-        ).setOrigin(0, .5);
+        ).setOrigin(0, 1);
 
         this.progressText = this.add.text(
             GFF.GAME_W / 2,
-            GFF.GAME_H / 2,
+            GFF.GAME_H - 36,
             '0%',
-            { fontFamily: 'oxygen', fontSize: 22, color: '#000000' }
+            { fontFamily: 'oxygen', fontSize: 14, color: COLOR.BLACK.str() }
         ).setOrigin(.5, .5);
 
         this.promptText = this.add.text(GFF.GAME_W / 2, GFF.GAME_H / 2, 'Press Enter to start!', {
             fontFamily: 'dyonisius',
             fontSize: 36,
-            color: '#ffffff'
+            color: COLOR.WHITE.str(),
+            stroke: COLOR.GREY_1.str(),
+            strokeThickness: 6
         }).setOrigin(.5, .5).setAlpha(0);
     }
 
     public setProgress(description: string, current: number, goal: number) {
         const ratio: number = current / goal;
         this.progressBar.width = ratio * PROGRESS_LENGTH;
-        this.progressText.setText(description + `: ${current} of ${goal}`);
+
+        // Calculate the percent:
+        const percent: number = Math.floor(ratio * 100);
+        this.progressText.setText(`${description}: ${percent}%`);
     }
 
     private areaList: AreaGenInfo[];
     public create(): void {
         GFF.genLog('GWorldBuildContent.create()');
 
+        // Fade in the scene, then start building the world:
+        this.fadeIn(1000, undefined, () => {
+            this.buildWorld();
+        });
+    }
+
+    private buildWorld() {
         // Church Areas (will be assigned to churches once they are created)
         AREA.CHURCH_AREAS = [];
         for (let c = 0; c < TOWN.TOWN_COUNT; c++) {
@@ -175,6 +197,11 @@ export class GWorldBuildContent extends GBaseScene {
         const area: GArea = this.areaList[areaIndex].area;
         const rooms: number = this.areaList[areaIndex].rooms;
         let roomCount: number = 0;
+
+        // Builds map, floors, walls - everything except room contents
+        area.generate();
+
+        // Furnishing rooms is the bulk of the work, so that's what we'll show progress for.
         const timer: Phaser.Time.TimerEvent = this.time.addEvent({
             callback: () => {
                 if (area.furnishNextRoom()) {

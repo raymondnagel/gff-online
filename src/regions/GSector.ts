@@ -1,7 +1,9 @@
 import { GStrongholdArea } from "../areas/GStrongholdArea";
 import { ARRAY } from "../array";
 import { GRoom } from "../GRoom";
-import { GColor } from "../types";
+import { SAVE } from "../save";
+import { RefFunction } from "../scenes/GLoadGameContent";
+import { GColor, GSaveable } from "../types";
 
 /**
  * GSector is like a lesser version of GRegion, giving us a way to
@@ -12,9 +14,13 @@ import { GColor } from "../types";
  * (without making the stronghold maze-like), and to allow for "gates"
  * between sectors that can be used for locked doors.
  *
+ * The only reason to save them would be for debugging purposes,
+ * since the map shows them by color so we can see how the generation
+ * worked. It's probably worth doing for that reason alone.
+ *
  * They need not be named or have any special properties.
  */
-export class GSector {
+export class GSector implements GSaveable {
     private center: GRoom;
     private rooms: GRoom[] = [];
     private connected: boolean = false;
@@ -69,5 +75,16 @@ export class GSector {
             sectorA.connected = true;
             sectorB.connected = true;
         }
+    }
+
+    public toSaveObject(ids: Map<any, number>): object {
+        return {
+            color: this.color.num(),
+            rooms: this.rooms.map(r => SAVE.idFor(r, ids)),
+        };
+    }
+
+    public hydrateLoadedObject(context: any, refObj: RefFunction): void {
+        this.rooms = context.rooms.map((id: number) => refObj(id) as GRoom);
     }
 }

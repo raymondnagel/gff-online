@@ -194,9 +194,6 @@ const CMD_FUNCTIONS: Record<string, (...args: any[]) => any> = {
         const destination: GTown = town.getFlights()[flightNum - 1];
         GFF.AdventureContent.quickTravel(destination);
     },
-    doSaveGame: (_player: GPlayerSprite, _someone: GCharSprite) => {
-        GFF.AdventureContent.saveGame();
-    },
     restoreFaith: (_player: GPlayerSprite, _someone: GCharSprite) => {
         const faithWrapper: {value: number} = {value: PLAYER.getFaith()};
         const newFaith: number = PLAYER.getMaxFaith();

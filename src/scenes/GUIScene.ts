@@ -76,7 +76,12 @@ export abstract class GUIScene extends GBaseScene {
                     this.getSound().playSound('icon_click');
                     if (this.getContainingMode() === GFF.ADVENTURE_MODE) {
                         GPopup.createChoicePopup('Are you sure you wish to leave the game?', 'Exit Game', [
-                            {option: 'Yes', hotkey: 'y', action: () => {GFF.AdventureContent.endGame()}},
+                            {option: 'Yes', hotkey: 'y', action: () => {
+                                GPopup.createChoicePopup('Do you want to save the game?', 'Save Game', [
+                                    {option: 'Yes', hotkey: 'y', action: () => {GFF.AdventureContent.endGame(true)}},
+                                    {option: 'No', hotkey: 'n', action: () => {GFF.AdventureContent.endGame()}}
+                                ]);
+                            }},
                             {option: 'No', hotkey: 'n', action: () => {}}
                         ]);
                     } else {
