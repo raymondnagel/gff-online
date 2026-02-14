@@ -55,7 +55,7 @@ export namespace SAVE {
      * The method of saving and the name of the save file are
      * already determined by the UI before this function is called.
      */
-    export function saveGame(saveName: string, downloadFile: boolean = true) {
+    export function saveGame(saveName: string = 'gff', downloadFile: boolean = true) {
         /**
          * Step 1: Gather all data collections to be saved
          */
@@ -158,7 +158,7 @@ export namespace SAVE {
          * Initially, only "Export" (download file) is supported.
          */
         if (downloadFile) {
-            downloadSaveFile(bytes, `${saveName}.gffsave`);
+            downloadSaveFile(bytes, `${saveName}_${getSaveTimestamp()}.gffsave`);
         } else {
             saveToIndexedDb(saveName, bytes);
         }
@@ -167,6 +167,19 @@ export namespace SAVE {
          * Step 8: Play a sound to indicate the game was saved
          */
         GFF.AdventureContent.getSound().playSound('success');
+    }
+
+    function getSaveTimestamp(): string {
+        const now = new Date();
+        const pad = (n: number) => n.toString().padStart(2, '0');
+        const year = now.getFullYear();
+        const month = pad(now.getMonth() + 1);
+        const day = pad(now.getDate());
+        const hour = pad(now.getHours());
+        const minute = pad(now.getMinutes());
+        const second = pad(now.getSeconds());
+
+        return `${month}-${day}-${year}_${hour}-${minute}-${second}`;
     }
 
     /**
@@ -269,30 +282,6 @@ export namespace SAVE {
     // Called from saveGame() if doing a regular save (to IndexedDB)
     function saveToIndexedDb(_saveName: string, _bytes: Uint8Array) {
         console.log('Saving to IndexedDB is not yet implemented.');
-    }
-
-    // Called from Main Menu when continuing a saved game; save slot already chosen in UI
-    export function loadFromIndexedDb(_saveSlot: number) {
-        console.log('Loading from IndexedDB is not yet implemented.');
-        /**
-         * This will get the loaded save data from IndexedDB
-         * and put in the REGISTRY, similar to uploadSaveFile().
-         *
-         * Then, the Load Game mode can proceed to load the game
-         * from the save data in the REGISTRY.
-         */
-    }
-
-    // Called from Main Menu when continuing a saved game; file already chosen in UI
-    export function uploadSaveFile(_filePath: string) {
-        console.log('Uploading a save file is not yet implemented.');
-        /**
-         * This will get the loaded save data from a file upload
-         * and put in the REGISTRY, similar to loadFromIndexedDb().
-         *
-         * Then, the Load Game mode can proceed to load the game
-         * from the save data in the REGISTRY.
-         */
     }
 
     export function decodeLoadedSaveData(): FullSaveData {

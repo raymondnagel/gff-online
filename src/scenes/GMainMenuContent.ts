@@ -354,14 +354,10 @@ export class GMainMenuContent extends GContentScene {
     }
 
     private continueGame(): void {
-        GFF.AdventureContent.getSound().playSound('amen');
+
 
         /**
          * Continue a game from a savefile.
-         *
-         * While load functionality is in development, transition directly
-         * to the Load Game mode. When it's ready, we'll show a dialog to
-         * allow selecting a savefile.
          *
          * The eventual plan will be to have 2 ways to save/load:
          * - save/load in IndexedDB with a custom UI save slot system
@@ -380,15 +376,33 @@ export class GMainMenuContent extends GContentScene {
          */
         GFF.log('Continuing saved game...');
 
-        // Load the test savefile here and put it in the registry;
-        // don't bother putting this in SAVE, since it's just for testing.
-        this.loadTestSaveFile();
+        // Load the savefile here and put it in the registry;
+        this.loadSaveFileFromPicker();
+        // this.loadTestSaveFile();
+    }
 
-        // Transition to the load game mode
-        this.getSound().fadeOutMusic(1000);
-        this.fadeOut(1000, undefined, () => {
-            GFF.LOADGAME_MODE.switchTo(GFF.MAINMENU_MODE);
-        });
+    private loadSaveFileFromPicker(): void {
+        const input = document.createElement("input");
+        input.type = "file";
+        input.accept = ".gffsave";
+        input.style.display = "none";
+
+        input.onchange = () => {
+            const file = input.files?.[0];
+            input.remove();
+
+            if (!file) return; // user cancelled
+
+            file.arrayBuffer().then(buf => {
+                REGISTRY.set('loadedSaveData', new Uint8Array(buf));
+                // Re-save the loaded data as plain-text JSON for verification:
+                // SAVE.resaveLoadedGameData();
+                this.loadSaveData();
+            });
+        };
+
+        document.body.appendChild(input);
+        input.click();
     }
 
     private loadTestSaveFile(): void {
@@ -397,8 +411,18 @@ export class GMainMenuContent extends GContentScene {
             .then(buf => {
                 REGISTRY.set('loadedSaveData', new Uint8Array(buf));
                 // Re-save the loaded data as plain-text JSON for verification:
-                SAVE.resaveLoadedGameData();
+                // SAVE.resaveLoadedGameData();
+                this.loadSaveData();
             });
+    }
+
+    private loadSaveData() {
+        // Transition to the load game mode
+        this.getSound().playSound('amen');
+        this.getSound().fadeOutMusic(1000);
+        this.fadeOut(1000, undefined, () => {
+            GFF.LOADGAME_MODE.switchTo(GFF.MAINMENU_MODE);
+        });
     }
 
     private initInputMode() {

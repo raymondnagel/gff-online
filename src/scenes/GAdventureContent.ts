@@ -1824,7 +1824,7 @@ export class GAdventureContent extends GContentScene {
 
     public endGame(save: boolean = false) {
         if (save) {
-            SAVE.saveGame('test_save'); // To be replaced with a file-picker eventually
+            SAVE.saveGame();
         }
         this.setInputMode(INPUT_DISABLED);
         this.getSound().stopMusic();
