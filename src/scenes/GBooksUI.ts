@@ -2,7 +2,7 @@ import { BOOKS } from "../books";
 import { COLOR } from "../colors";
 import { GInputMode } from "../GInputMode";
 import { GFF } from "../main";
-import { GCheckBox } from "../objects/components/GCheckBox";
+import { GBookCheckBox } from "../objects/components/GBookCheckBox";
 import { GTextButton } from "../objects/components/GTextButton";
 import { GUIScene } from "./GUIScene";
 
@@ -13,8 +13,8 @@ const INPUT_DEFAULT: GInputMode = new GInputMode('books.default');
 
 export class GBooksUI extends GUIScene {
 
-    private otChecks: GCheckBox[] = [];
-    private ntChecks: GCheckBox[] = [];
+    private otChecks: GBookCheckBox[] = [];
+    private ntChecks: GBookCheckBox[] = [];
     private otButton: GTextButton;
     private ntButton: GTextButton;
 
@@ -43,7 +43,7 @@ export class GBooksUI extends GUIScene {
     }
 
     private updateButton(testament: 'OT'|'NT') {
-        const bookChecks: GCheckBox[] = testament === 'OT' ? this.otChecks : this.ntChecks;
+        const bookChecks: GBookCheckBox[] = testament === 'OT' ? this.otChecks : this.ntChecks;
         const button: GTextButton = testament === 'OT' ? this.otButton : this.ntButton;
 
         let allPossibleBooksChecked: boolean = true;
@@ -227,7 +227,7 @@ export class GBooksUI extends GUIScene {
         this.updateButton('NT');
     }
 
-    private createBookGroup(title: string, x: number, y: number, testament: GCheckBox[], books: string[]): number {
+    private createBookGroup(title: string, x: number, y: number, testament: GBookCheckBox[], books: string[]): number {
         this.add.text(x, y, title, {
             fontFamily: 'dyonisius',
             fontSize: '18px',
@@ -239,7 +239,7 @@ export class GBooksUI extends GUIScene {
 
             const hasBook: boolean = BOOKS.isBookObtained(book);
             const isEnabled: boolean = BOOKS.isBookEnabled(book);
-            const checkBox: GCheckBox = new GCheckBox(this, x, y, book, isEnabled, hasBook, (label: string, check: boolean) => {
+            const checkBox: GBookCheckBox = new GBookCheckBox(this, x, y, book, isEnabled, hasBook, (label: string, check: boolean) => {
                 // Don't allow unchecking the only book! We always need one enabled!
                 if (!check && BOOKS.isOnlyEnabledBook(label)) {
                     return;

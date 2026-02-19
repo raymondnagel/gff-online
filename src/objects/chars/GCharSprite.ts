@@ -69,7 +69,7 @@ export abstract class GCharSprite extends Phaser.Physics.Arcade.Sprite {
 
     public pronounceWord() {
         const voiceKey: string = this.getVoiceKey();
-        GFF.AdventureContent.getSound().playSound(voiceKey);
+        GFF.AdventureContent.getSound().playSpeech(voiceKey);
     }
 
     public getBody(): Phaser.Physics.Arcade.Body {

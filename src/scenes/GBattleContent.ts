@@ -162,6 +162,8 @@ export class GBattleContent extends GContentScene {
     private playerBooks: string[];
     private bookWheelRepeats: number = 0;
 
+    private animSpeed: number = 1;
+
     constructor() {
         super("BattleContent");
         GFF.BattleContent = this;
@@ -342,7 +344,7 @@ export class GBattleContent extends GContentScene {
             blendMode: Phaser.BlendModes.NORMAL,
             emitting: false
         });
-
+        this.animSpeed = REGISTRY.getNumber('battleSpeed');
         this.currentStage = BattleStage.NONE;
         this.getSound().playMusic('onward');
         this.createAnimations();
@@ -441,9 +443,10 @@ export class GBattleContent extends GContentScene {
                     'slash',
                     { start: 0, end: 7 }
                 ),
-                frameRate: 24
+                frameRate: (24)
             });
         }
+        this.anims.get('slash').frameRate = 24 * this.animSpeed;
     }
 
     private createGuessResult() {
@@ -603,7 +606,7 @@ export class GBattleContent extends GContentScene {
         this.tweens.add({
             targets: this.playerAvatar,
             x: playerDestX,
-            duration: APPROACH_TIME,
+            duration: APPROACH_TIME / this.animSpeed,
             onComplete: () => {
                 this.beginRound();
             }
@@ -612,7 +615,7 @@ export class GBattleContent extends GContentScene {
         this.tweens.add({
             targets: this.enemyAvatar,
             x: enemyDestX,
-            duration: APPROACH_TIME
+            duration: APPROACH_TIME / this.animSpeed
         });
     }
 
@@ -624,12 +627,12 @@ export class GBattleContent extends GContentScene {
         this.tweens.add({
             targets: this.eventText,
             alpha: 1.0,
-            duration: 200,
+            duration: 200 / this.animSpeed,
             onComplete: () => {
                 this.tweens.add({
                     targets: this.swordImage,
                     x: SWORD_RETRACT_X,
-                    duration: 500,
+                    duration: 500 / this.animSpeed,
                     ease: 'Power2',
                     onComplete: () => {
                         this.getSound().playSound('thrust');
@@ -648,7 +651,7 @@ export class GBattleContent extends GContentScene {
         this.tweens.add({
             targets: this.swordImage,
             x: SWORD_HIT_X,
-            duration: 200,
+            duration: 200 / this.animSpeed,
             onComplete: () => {
                 this.getSound().playSound('splooge');
                 this.damageEnemyResistance(damage);
@@ -660,7 +663,7 @@ export class GBattleContent extends GContentScene {
         this.tweens.add({
             targets: this.swordImage,
             x: SWORD_MISS_X,
-            duration: 200,
+            duration: 200 / this.animSpeed,
             alpha: 0,
             onComplete: () => {
                 this.eventText.text = 'Adam missed!';
@@ -697,13 +700,13 @@ export class GBattleContent extends GContentScene {
                 this.finalScoreCaption,
                 this.finalScoreCalc
             ],
-            duration: 500,
+            duration: 500 / this.animSpeed,
             alpha: 0.0,
             onComplete: () => {
                 this.eventText.alpha = 1.0;
                 this.eventText.setVisible(true);
                 this.eventText.text = chosenAttack.text.replace('_', ENEMY.getCurrentSpirit().name);
-                this.time.delayedCall(700, () => {
+                this.time.delayedCall(700 / this.animSpeed, () => {
                     this.getSound().playSound(chosenAttack.soundKey);
                     chosenAttack.actionFunction();
                 });
@@ -712,7 +715,7 @@ export class GBattleContent extends GContentScene {
     }
 
     private beginRound() {
-        this.time.delayedCall(500, () => {
+        this.time.delayedCall(500 / this.animSpeed, () => {
             this.serveScroll();
         });
     }
@@ -738,23 +741,23 @@ export class GBattleContent extends GContentScene {
             scaleY: 1,
             angle: 1080,
             ease: 'Power1',
-            duration: 900
+            duration: 900 / this.animSpeed
         });
         this.tweens.chain({
             targets: this.scrollClosedImage,
-            duration: 900,
+            duration: 900 / this.animSpeed,
             tweens: [
                 {
                     // Phase 1: Rise up
                     y: this.cameras.main.height * 0.3,
                     ease: 'Quad.easeOut',
-                    duration: 600
+                    duration: 600 / this.animSpeed
                 },
                 {
                     // Phase 2: Fall back down
                     y: finalY,
                     ease: 'Power1',
-                    duration: 300,
+                    duration: 300 / this.animSpeed,
                     onComplete: () => {
                         const crop: Phaser.Geom.Rectangle = new Phaser.Geom.Rectangle(this.scrollOpenImage.width / 2, 0, 0, this.scrollOpenImage.height);
                         this.scrollClosedImage.setVisible(false);
@@ -768,17 +771,17 @@ export class GBattleContent extends GContentScene {
 
                         this.tweens.add({
                             targets: this.leftRollImage,
-                            duration: 500,
+                            duration: 500 / this.animSpeed,
                             x: LEFT_ROLL_END_X
                         });
                         this.tweens.add({
                             targets: this.rightRollImage,
-                            duration: 500,
+                            duration: 500 / this.animSpeed,
                             x: RIGHT_ROLL_END_X
                         });
                         this.tweens.add({
                             targets: crop,
-                            duration: 500,
+                            duration: 500 / this.animSpeed,
                             x: 0,
                             width: this.scrollOpenImage.width,
                             onUpdate: () => {
@@ -814,7 +817,7 @@ export class GBattleContent extends GContentScene {
 
         this.tweens.add({
             targets: this.scriptureText,
-            duration: 500,
+            duration: 500 / this.animSpeed,
             alpha: 1.0,
             onComplete: () => {
                 this.allowGuess();
@@ -834,7 +837,7 @@ export class GBattleContent extends GContentScene {
         this.verseEntry.setEnteredText('');
 
         // Set to the book entry stage:
-        this.time.delayedCall(500, () => {
+        this.time.delayedCall(500 / this.animSpeed, () => {
             this.setCurrentStage(BattleStage.BOOK);
         });
     }
@@ -943,7 +946,7 @@ export class GBattleContent extends GContentScene {
 
         this.tweens.add({
             targets: entryPart,
-            duration: 500,
+            duration: 500 / this.animSpeed,
             alpha: 1.0,
             onUpdate: () => {
                 replaceText.alpha = 1.0 - entryPart.alpha;
@@ -972,7 +975,7 @@ export class GBattleContent extends GContentScene {
         }
         this.tweens.add({
             targets: entryPart,
-            duration: 500,
+            duration: 500 / this.animSpeed,
             alpha: 0.0,
             onUpdate: () => {
                 replaceText.alpha = 1.0 - entryPart.alpha;
@@ -993,9 +996,9 @@ export class GBattleContent extends GContentScene {
         this.swordImage.setX(SWORD_START_X);
         this.tweens.add({
             targets: [this.bookText, this.chapterText, this.colonText, this.verseText],
-            duration: 200,
+            duration: 200 / this.animSpeed,
             alpha: 0.0,
-            delay: 500,
+            delay: 500 / this.animSpeed,
             onUpdate: () => {
                 this.swordImage.alpha = 1.0 - this.bookText.alpha;
             },
@@ -1109,7 +1112,7 @@ export class GBattleContent extends GContentScene {
         const newFaith: number = Math.max(0, PLAYER.getFaith() - amount);
         this.tweens.add({
             targets: [faithWrapper],
-            duration: 300,
+            duration: 300 / this.animSpeed,
             value: newFaith,
             onUpdate: () => {
                 PLAYER.setFaith(Math.floor(faithWrapper.value));
@@ -1117,9 +1120,9 @@ export class GBattleContent extends GContentScene {
             onComplete: () => {
                 this.tweens.add({
                     targets: this.eventText,
-                    duration: 200,
+                    duration: 200 / this.animSpeed,
                     alpha: 0.0,
-                    delay: 1000,
+                    delay: 1000 / this.animSpeed,
                     onComplete: () => {
                         if (PLAYER.getFaith() <= 0) {
                             this.doDefeatSequence();
@@ -1138,7 +1141,7 @@ export class GBattleContent extends GContentScene {
         const newRes: number = Math.max(0, ENEMY.getResistance() - amount);
         this.tweens.add({
             targets: [resWrapper],
-            duration: 300,
+            duration: 300 / this.animSpeed,
             value: newRes,
             onUpdate: () => {
                 ENEMY.setResistance(Math.floor(resWrapper.value));
@@ -1147,7 +1150,7 @@ export class GBattleContent extends GContentScene {
                 this.tweens.add({
                     targets: this.swordImage,
                     alpha: 0,
-                    duration: 1000,
+                    duration: 1000 / this.animSpeed,
                     onComplete: () => {
                         if (ENEMY.getResistance() <= 0) {
                             this.doVictorySequence();
@@ -1183,7 +1186,7 @@ export class GBattleContent extends GContentScene {
         this.tweens.add({
             targets: this.enemyAvatar,
             x: GFF.GAME_W,
-            duration: APPROACH_TIME,
+            duration: APPROACH_TIME / this.animSpeed,
             onComplete: () => {
                 this.setCurrentStage(BattleStage.VICTORY);
             }
@@ -1191,13 +1194,13 @@ export class GBattleContent extends GContentScene {
     }
 
     private doDefeatSequence() {
-        this.getSound().fadeOutMusic(500, () => {
+        this.getSound().fadeOutMusic(500 / this.animSpeed, () => {
             this.getSound().playSound('defeat');
             // Create tween to retreat player:
             this.tweens.add({
                 targets: this.playerAvatar,
                 x: -this.playerBaseImage.width,
-                duration: APPROACH_TIME,
+                duration: APPROACH_TIME / this.animSpeed,
                 onComplete: () => {
                     this.getSound().playSound('enemy_laugh').once('complete', () => {
                         this.endBattle(false);
@@ -1209,7 +1212,7 @@ export class GBattleContent extends GContentScene {
 
     private endBattle(victory: boolean) {
         this.setInputMode(INPUT_DISABLED);
-        this.fadeOut(1200, undefined, () => {
+        this.fadeOut(1200 / this.animSpeed, undefined, () => {
             GFF.AdventureContent.resumeAfterBattlePreFadeIn(victory);
             GFF.ADVENTURE_MODE.switchTo(GFF.BATTLE_MODE);
             GFF.AdventureContent.fadeIn(500, undefined, () => {

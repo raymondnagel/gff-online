@@ -3,6 +3,7 @@ import { GFF } from '../main';
 import { GCharSprite } from './chars/GCharSprite';
 import { GBubble, GPoint2D } from '../types';
 import { DEPTH } from '../depths';
+import { REGISTRY } from '../registry';
 
 const SPEAKX_ADJUST: number = 10;
 const SCREEN_EDGE_SPACE: number = 4;
@@ -28,7 +29,7 @@ export class GSpeechBubble extends Phaser.GameObjects.Container implements GBubb
     private lines: TextLine[] = [];
     private longestLinePixels: number = 0;
     private currentWordIndex: number = 0;
-
+    private actualSpeed: number;
     private startTime: number;
     private wordsSpoken: number = 0;
     private complete: boolean = false;
@@ -51,6 +52,9 @@ export class GSpeechBubble extends Phaser.GameObjects.Container implements GBubb
 
         // Get pixel count of the longest line:
         this.longestLinePixels = this.getLongestLinePixels();
+
+        // Set the actual speed based on the talk speed option:
+        this.actualSpeed = WORDS_PER_SECOND * REGISTRY.getNumber('talkSpeed');
 
         // Create the bubble:
         this.createBubble();
@@ -306,7 +310,7 @@ export class GSpeechBubble extends Phaser.GameObjects.Container implements GBubb
     public update(): void {
         if (!this.isComplete()) {
             let timeElapsed: number = Date.now() - this.startTime;
-            let wordsToMoment: number = (timeElapsed / 1000) * WORDS_PER_SECOND;
+            let wordsToMoment: number = (timeElapsed / 1000) * this.actualSpeed;
             let wordWasSpoken: boolean = false;
             // Say another word if the time is right and there are more words to say:
             while (this.wordsSpoken < wordsToMoment && this.sayNextWord()) {

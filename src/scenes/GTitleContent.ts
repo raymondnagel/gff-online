@@ -25,7 +25,7 @@ export class GTitleContent extends GContentScene {
         GFF.setMouseVisible(false);
 
         // Create the background image, set it invisible initially
-        const background = this.add.image(0, 0, 'title_bg');
+        const background = this.add.image(0, 0, 'title_bg_3');
         background.setOrigin(0, 0);
         background.setVisible(false);
 

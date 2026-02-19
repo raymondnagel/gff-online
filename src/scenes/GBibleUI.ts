@@ -24,8 +24,9 @@ const VERSE_GAP: number = 4;         // Gap between verses
 /**
  * The Bible subscreen gives the player an in-game Bible simulation.
  *
- * First, the player can choose a book. (If the Bible is closed, it will be opened.)
- * When a book is select, the Bible displays chapter 1 by default.
+ * First, the Bible is closed, and the player can click on it to open it.
+ * Once it's open, the player can select a book and chapter to read.
+ * When a book is selected, the Bible displays chapter 1 by default.
  *
  * The player can then select a chapter, which will switch the Bible to that chapter.
  *

@@ -11,12 +11,21 @@ export namespace REGISTRY {
      * Don't put anything in here that will be set by new game options.
      */
     export function init(): void {
+        // Progression indicators:
         REGISTRY.set('skipIntro', 0);
         REGISTRY.set('bossDefeated_Mammon', false);
         REGISTRY.set('bossDefeated_Beelzebub', false);
         REGISTRY.set('bossDefeated_Belial', false);
         REGISTRY.set('bossDefeated_Legion', false);
         REGISTRY.set('bossDefeated_Apollyon', false);
+
+        // Options:
+        REGISTRY.set('talkSpeed', 1.0);
+        REGISTRY.set('battleSpeed', 1.0);
+        REGISTRY.set('masterVolume', 1.0);
+        REGISTRY.set('musicVolume', 0.8);
+        REGISTRY.set('sfxVolume', 0.9);
+        REGISTRY.set('speechVolume', 0.6);
     }
 
     export function getAll(): {[key: string]: any} {

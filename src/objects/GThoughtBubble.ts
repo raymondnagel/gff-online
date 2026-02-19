@@ -4,6 +4,7 @@ import { GCharSprite } from './chars/GCharSprite';
 import { GBubble, GPoint2D } from '../types';
 import { RANDOM } from '../random';
 import { DEPTH } from '../depths';
+import { REGISTRY } from '../registry';
 
 const SPEAKX_ADJUST: number = 10;
 const SCREEN_EDGE_SPACE: number = 10;
@@ -40,6 +41,7 @@ export class GThoughtBubble extends Phaser.GameObjects.Container implements GBub
     private bubbleWidth: number;
     private bubbleHeight: number;
 
+    private actualSpeed: number;
     private startTime: number;
     private wordsThought: number = 0;
     private complete: boolean = false;
@@ -62,6 +64,9 @@ export class GThoughtBubble extends Phaser.GameObjects.Container implements GBub
 
         // Get pixel count of the longest line:
         this.longestLinePixels = this.getLongestLinePixels();
+
+        // Set the actual speed based on the talk speed option:
+        this.actualSpeed = WORDS_PER_SECOND * REGISTRY.getNumber('talkSpeed');
 
         // Create the bubble:
         this.createBubble();
@@ -404,7 +409,7 @@ export class GThoughtBubble extends Phaser.GameObjects.Container implements GBub
         // But the rest should only happen if not completed:
         if (!this.isComplete()) {
             let timeElapsed: number = Date.now() - this.startTime;
-            let wordsToMoment: number = (timeElapsed / 1000) * WORDS_PER_SECOND;
+            let wordsToMoment: number = (timeElapsed / 1000) * this.actualSpeed;
             // Think another word if the time is right and there are more words to think:
             while (this.wordsThought < wordsToMoment && this.thinkNextWord()) {
                 this.wordsThought++;

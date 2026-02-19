@@ -75,7 +75,7 @@ export class GWorldBuildContent extends GBaseScene {
         const bgImageKey = `load_bg_${RANDOM.randInt(1, 4)}`;
         this.bgImage = this.add.image(0, 0, bgImageKey).setOrigin(0, 0);
 
-        this.titleText = this.add.text(GFF.GAME_W / 2, GFF.GAME_H / 2, 'Generating a new world...', {
+        this.titleText = this.add.text(GFF.GAME_W / 2, GFF.GAME_H / 2, 'Creating a new world...', {
             fontFamily: 'dyonisius',
             fontSize: 36,
             color: COLOR.WHITE.str(),

@@ -1,13 +1,12 @@
 import { COLOR } from "../../colors";
 import { GBaseScene } from "../../scenes/GBaseScene";
-import { GColor } from "../../types";
 
-const BOX_GREY: number = COLOR.GREY_3.num();
+const BOX_GREY: number = 0x777777;
 
 const BOX_SIDE: number = 16;
 const LABEL_GAP: number = 3;
 
-export class GCheckBox extends Phaser.GameObjects.Container {
+export class GBookCheckBox extends Phaser.GameObjects.Container {
 
     private clickFunction: (labelText: string, checkState: boolean) => void;
     private clickSound: string = 'icon_click';
@@ -15,10 +14,6 @@ export class GCheckBox extends Phaser.GameObjects.Container {
     private box: Phaser.GameObjects.Rectangle;
     private checkState: boolean = false;
     private enabled: boolean = true;
-
-    private defaultColor: GColor = COLOR.GREY_1;
-    private hoverColor: GColor = COLOR.GREY_2;
-    private disabledColor: GColor = COLOR.GREY_3;
 
     constructor(scene: Phaser.Scene, x: number, y: number, text: string, checkState: boolean, enabled: boolean, clickFunction: (labelText: string, checkState: boolean) => void) {
         super(scene, x, y);
@@ -63,14 +58,14 @@ export class GCheckBox extends Phaser.GameObjects.Container {
         if (this.enabled) {
             this.box.setInteractive();
             this.label.setInteractive();
-            this.label.setColor(this.defaultColor.str());
-            this.box.strokeColor = this.defaultColor.num();
+            this.label.setColor(COLOR.GREY_5.str());
+            this.box.strokeColor = COLOR.GREY_5.num();
             this.alpha = 1.0;
         } else {
             this.box.disableInteractive();
             this.label.disableInteractive();
-            this.label.setColor(this.disabledColor.str());
-            this.box.strokeColor = this.disabledColor.num();
+            this.label.setColor(COLOR.GREY_2.str());
+            this.box.strokeColor = COLOR.GREY_2.num();
             this.alpha = .6;
         }
     }
@@ -96,26 +91,19 @@ export class GCheckBox extends Phaser.GameObjects.Container {
         this.clickSound = clickSound;
     }
 
-    public setColorScheme(defaultColor: GColor = COLOR.GREY_1, hoverColor: GColor = COLOR.GREY_2, disabledColor: GColor = COLOR.GREY_3) {
-        this.defaultColor = defaultColor;
-        this.hoverColor = hoverColor;
-        this.disabledColor = disabledColor;
-        this.setEnabled(this.enabled); // Update colors based on current enabled state
-    }
-
     // Called when mouse hovers over the button
     public onHover() {
         if (this.enabled) {
-            this.label.setColor(this.hoverColor.str());
-            this.box.strokeColor = this.hoverColor.num();
+            this.label.setColor(COLOR.WHITE.str());
+            this.box.strokeColor = COLOR.WHITE.num();
         }
     }
 
     // Called when mouse moves away from the button
     public onOut() {
         if (this.enabled) {
-            this.label.setColor(this.defaultColor.str());
-            this.box.strokeColor = this.defaultColor.num();
+            this.label.setColor(COLOR.GREY_5.str());
+            this.box.strokeColor = COLOR.GREY_5.num();
         }
     }
 

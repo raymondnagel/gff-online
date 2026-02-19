@@ -1,12 +1,14 @@
 import 'phaser';
 import { GBaseScene } from './scenes/GBaseScene';
+import { REGISTRY } from './registry';
 
 export class GSoundManager {
 
     private scene: GBaseScene;
     private music: Phaser.Sound.BaseSound|null = null;
-    private soundVolume: number = 0.5;
-    private musicVolume: number = 0.5;
+    private soundVolume: number = 1.0;
+    private musicVolume: number = 1.0;
+    private speechVolume: number = 1.0;
 
     constructor(scene: GBaseScene) {
         this.scene = scene;
@@ -23,7 +25,7 @@ export class GSoundManager {
     public setMusicVolume(volume: number) {
         this.musicVolume = volume;
         if (this.music !== null && 'volume' in this.music) {
-            this.music.volume = this.musicVolume;
+            this.music.volume = this.getCalculatedMusicVolume();
         }
     }
 
@@ -31,8 +33,35 @@ export class GSoundManager {
         return this.musicVolume;
     }
 
+    public setSpeechVolume(volume: number) {
+        this.speechVolume = volume;
+    }
+
+    public getSpeechVolume(): number {
+        return this.speechVolume;
+    }
+
     public playSound(soundKey: string, volume?: number): Phaser.Sound.BaseSound {
-        const sound: Phaser.Sound.BaseSound = this.scene.sound.add(soundKey, { loop: false, volume: volume ?? this.soundVolume });
+        const sound: Phaser.Sound.BaseSound = this.scene.sound.add(
+            soundKey,
+            {
+                loop: false,
+                volume: this.getCalculatedSoundVolume(volume)
+            }
+        );
+        sound.play();
+        return sound;
+    }
+
+    // Speech is treated as a separate category from sound effects, so that it can be adjusted independently.
+    public playSpeech(soundKey: string, volume?: number): Phaser.Sound.BaseSound {
+        const sound: Phaser.Sound.BaseSound = this.scene.sound.add(
+            soundKey,
+            {
+                loop: false,
+                volume: this.getCalculatedSpeechVolume(volume)
+            }
+        );
         sound.play();
         return sound;
     }
@@ -47,7 +76,13 @@ export class GSoundManager {
 
     public playMusic(soundKey: string, volume?: number): Phaser.Sound.BaseSound {
         this.stopMusic();
-        this.music = this.scene.sound.add(soundKey, { loop: true, volume: volume ?? this.musicVolume });
+        this.music = this.scene.sound.add(
+            soundKey,
+            {
+                loop: true,
+                volume: this.getCalculatedMusicVolume(volume)
+            }
+        );
         this.music.play();
         return this.music;
     }
@@ -75,7 +110,7 @@ export class GSoundManager {
         this.playMusic(soundKey);
         this.scene.tweens.add({
             targets: this.music,
-            volume: this.musicVolume,
+            volume: this.getCalculatedMusicVolume(),
             duration: overTime,
             onComplete: () => {
                 onComplete?.call(this);
@@ -96,5 +131,17 @@ export class GSoundManager {
                 onComplete?.call(this);
             }
         });
+    }
+
+    private getCalculatedMusicVolume(arbitraryVolume: number = this.musicVolume): number {
+        return arbitraryVolume * REGISTRY.get('musicVolume') * REGISTRY.get('masterVolume');
+    }
+
+    private getCalculatedSoundVolume(arbitraryVolume: number = this.soundVolume): number {
+        return arbitraryVolume * REGISTRY.get('sfxVolume') * REGISTRY.get('masterVolume');
+    }
+
+    private getCalculatedSpeechVolume(arbitraryVolume: number = this.speechVolume): number {
+        return arbitraryVolume * REGISTRY.get('speechVolume') * REGISTRY.get('masterVolume');
     }
 }
