@@ -802,7 +802,7 @@ export class GBattleContent extends GContentScene {
     public showRandomVerse() {
         // Get a random verse from the player's books, based on the game type:
         if (REGISTRY.getString('gameType') === 'focused') {
-            this.servedVerse = BIBLE.getFocusedVerseFromBooks(this.playerBooks);
+            this.servedVerse = BIBLE.getFocusVerseFromBooks(this.playerBooks);
         } else {
             this.servedVerse = BIBLE.getRandomVerseFromBooks(this.playerBooks);
         }

@@ -332,7 +332,7 @@
   {
     "id": "screens_options",
     "speaker": "player",
-    "text": "In the Options subscreen (hotkey: [O]), you can adjust various game settings, such as audio volume, control bindings, and display options. (This subscreen will be added in a future update.)",
+    "text": "In the Options subscreen (hotkey: [O]), you can adjust various game settings, such as speeds, volume levels, and display options.",
     "next": "screensMenu"
   },
   {
@@ -340,32 +340,20 @@
     "speaker": "player",
     "choice": [
       {
-        "choiceText": "Stronghold Entrances Added",
+        "choiceText": "Save/Load System",
         "resultId": "update_1"
       },
       {
-        "choiceText": "Stronghold Interior Generation",
+        "choiceText": "Options Subscreen",
         "resultId": "update_2"
       },
       {
-        "choiceText": "Stronghold Content",
+        "choiceText": "Title & Loading Backgrounds",
         "resultId": "update_3"
       },
       {
-        "choiceText": "New Enemies",
+        "choiceText": "Versioning System",
         "resultId": "update_4"
-      },
-      {
-        "choiceText": "Dynamic Player Avatar",
-        "resultId": "update_5"
-      },
-      {
-        "choiceText": "Graphical Improvements",
-        "resultId": "update_6"
-      },
-      {
-        "choiceText": "Difficulty Setting Adjustments",
-        "resultId": "update_7"
       },
       {
         "choiceText": "[back]",
@@ -376,43 +364,25 @@
   {
     "id": "update_1",
     "speaker": "player",
-    "text": "Stronghold entrances have been added to the game, each with unique appearance and door animation! It is now possible to enter each of the 5 strongholds (1 in each themed region). Ask the saints in each town for directions to the nearest stronghold entrance.",
+    "text": "The Save/Load system is now complete! Exit the game using the UI button or 'Q' hotkey, and you'll be asked if you want to save, which will download your save file. To resume your game, choose 'Continue Game' from the title screen and upload your save file.",
     "next": "updateMenu"
   },
   {
     "id": "update_2",
     "speaker": "player",
-    "text": "Not only can you enter the strongholds - you can explore them, too! Each stronghold interior has a static layout matching its theme; but walls, doors, and scenery are all procedurally generated at game start. Each stronghold is divided into sectors, and locked doors allow passage between them. (Keys will be added in a future update; for now, they will unlock as you touch them.) Some strongholds have multiple floors, which can be accessed via staircases.",
+    "text": "The Options subscreen is now available! You can change conversation and battle animation speeds, adjust audio volumes, and toggle full-screen mode. More options will be added in future updates.",
     "next": "updateMenu"
   },
   {
     "id": "update_3",
     "speaker": "player",
-    "text": "Each stronghold contains 7 books and 1 commandment to find, as well as a piece of the armour of God. When you attempt to claim the armour piece, you will be challenged by the stronghold's boss enemy! Each stronghold has its own unique challenge feature, based on its theme. After obtaining the final treasure, a portal will appear to take you back outside so you don't have to backtrack all the way to the entrance.",
+    "text": "The game has a new, more artistic title screen background! Additionally, the loading screens for new and continued games now feature artwork representing different themes of the game (there are 4 scenes in total, randomly chosen).",
     "next": "updateMenu"
   },
   {
     "id": "update_4",
     "speaker": "player",
-    "text": "The imps (spirit-like enemies that appear in a puff of smoke) only appear in the outside world area. Within the strongholds, the enemies appear in a different form, as devils, waiting in ambush to attack you! Additionally, each stronghold has a unique boss enemy that must be defeated to claim the armour piece. (New features and attacks for these enemies will be added in a future update.)",
-    "next": "updateMenu"
-  },
-  {
-    "id": "update_5",
-    "speaker": "player",
-    "text": "Adam has a new battle avatar - and it's dynamic! As he collects pieces of the armour of God, his appearance in battle will change to reflect the armour he is wearing. (Currently the armour is non-functional; in a future update, each piece of the armour will help protect you.)",
-    "next": "updateMenu"
-  },
-  {
-    "id": "update_6",
-    "speaker": "player",
-    "text": "Many aspects of the game have received significant graphical improvements. All battle backgrounds, items, enemies, the player avatar, and various UI elements have been redone with higher-quality graphics. As new stronghold wall graphics were added to match the game's perspective, I've also redone the church interior in a similar style. Treasure chests and premium chest shrines (pillars, pedestal) have also been improved. Finally, I added curbs to the streets in towns to make them look a bit nicer.",
-    "next": "updateMenu"
-  },
-  {
-    "id": "update_7",
-    "speaker": "player",
-    "text": "I've made some minor changes to the difficulty settings to improve game balance. Babe, Disciple, and Soldier difficulties now spawn a maximum of 1, 2, and 3 enemies respectively. (This is the same for Soldier, but the average number of enemies encountered on lower difficulties has been reduced.) Additionally, the amount of experience required to level up has been lowered by 25% on Babe, and raised by 25% on Soldier. This is to maintain balance with the number of enemies encountered.",
+    "text": "A versioning system has been implemented! You can now see the current version of the game on the title screen. The first # is the major version; I am working toward an official 1.0 release! The second # is the minor version, representing the addition of new features, content, and fixes. The third # is the build number, which is more for my sanity than for you ;)",
     "next": "updateMenu"
   },
   {

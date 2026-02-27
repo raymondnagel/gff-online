@@ -128,6 +128,7 @@ export type GScripture = {
     chapter: number;
     verse: number;
     verseText: string;
+    isFocusVerse?: boolean;
 };
 
 // Represents an entry from the Glossary

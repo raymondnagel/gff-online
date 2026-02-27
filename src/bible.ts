@@ -44,7 +44,7 @@ export namespace BIBLE {
         return Array.from(kjvXml.querySelectorAll(`testament > book[name="${bookName}"] > chapter`) as NodeListOf<Element>);
     }
 
-    export function getAllVersesForChapter(bookName: string, chapterNo: number): GScripture[] {
+    export function getAllVersesForChapter(bookName: string, chapterNo: number, includeFocus: boolean = false): GScripture[] {
         // Access the loaded XML data
         const kjvXml: XMLDocument = GFF.GAME.cache.xml.get('kjv') as XMLDocument;
 
@@ -52,6 +52,10 @@ export namespace BIBLE {
         const verseElements: Element[] = Array.from(kjvXml.querySelectorAll(
             `testament > book[name="${bookName}"] > chapter[no="${chapterNo}"] > verse`
         ) as NodeListOf<Element>);
+
+        // Get all focus verses for the book (if applicable):
+        const focusVersesByBook: FocusVerses[] = includeFocus ? GFF.GAME.cache.json.get('focus_scripture') : [];
+        const focusVerses: FocusVerses|null = includeFocus ? focusVersesByBook.find(b => b.book === bookName) as FocusVerses : null;
 
         // Map the verse elements to GScripture objects
         return verseElements.map((verseNode: Element) => {
@@ -61,7 +65,8 @@ export namespace BIBLE {
                 book: bookName,
                 chapter: chapterNo,
                 verse: verseNo,
-                verseText: verseText
+                verseText: verseText,
+                isFocusVerse: focusVerses ? focusVerses.refs.includes(`${chapterNo}:${verseNo}`) : false
             };
         });
     }
@@ -144,11 +149,11 @@ export namespace BIBLE {
         return getRandomVerseFromBook(RANDOM.randElement(books) as string);
     }
 
-    export function getFocusedVerseFromBooks(books: string[]): GScripture {
-        return getFocusedVerseFromBook(RANDOM.randElement(books) as string);
+    export function getFocusVerseFromBooks(books: string[]): GScripture {
+        return getFocusVerseFromBook(RANDOM.randElement(books) as string);
     }
 
-    export function getFocusedVerseFromBook(bookName: string): GScripture {
+    export function getFocusVerseFromBook(bookName: string): GScripture {
         // Get all focus verses for the book:
         const focusVersesByBook: FocusVerses[] = GFF.GAME.cache.json.get('focus_scripture');
         const focusVerses: FocusVerses = focusVersesByBook.find(b => b.book === bookName) as FocusVerses;
@@ -168,6 +173,15 @@ export namespace BIBLE {
             verse: verseNo,
             verseText: verseText
         };
+    }
+
+    export function isFocusVerseChapter(bookName: string, chapterNo: number): boolean {
+        const focusVersesByBook: FocusVerses[] = GFF.GAME.cache.json.get('focus_scripture');
+        const focusVerses: FocusVerses = focusVersesByBook.find(b => b.book === bookName) as FocusVerses;
+        const refChapterNo = `${chapterNo}:`;
+        return focusVerses.refs.some(ref => {
+            return ref.startsWith(refChapterNo);
+        });
     }
 
     function parseReference(ref: string) {

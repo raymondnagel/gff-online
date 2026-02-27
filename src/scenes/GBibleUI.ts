@@ -2,10 +2,12 @@ import { BIBLE } from "../bible";
 import { COLOR } from "../colors";
 import { GInputMode } from "../GInputMode";
 import { GFF } from "../main";
+import { GCheckBox } from "../objects/components/GCheckBox";
 import { GOptionGroup } from "../objects/components/GOptionGroup";
 import { GScrollPane } from "../objects/components/GScrollPane";
 import { GTextButton } from "../objects/components/GTextButton";
 import { GTextOptionButton } from "../objects/components/GTextOptionButton";
+import { REGISTRY } from "../registry";
 import { GScripture } from "../types";
 import { GUIScene } from "./GUIScene";
 
@@ -78,6 +80,8 @@ export class GBibleUI extends GUIScene {
 
     private nextButton: GTextButton; // Button to go to the next page
     private previousButton: GTextButton; // Button to go to the previous page
+
+    private focusVerseCheckBox: GCheckBox; // Checkbox to toggle focus verse mode
 
     // All double pages for the current chapter
     private chapterDoublePages: DoublePage[] = [];
@@ -164,6 +168,15 @@ export class GBibleUI extends GUIScene {
 
         // Chapter selection
         this.initChapterSelection();
+
+        // Focus Verse checkbox
+        const focusMode: boolean = REGISTRY.get('gameType') === 'focused';
+        this.focusVerseCheckBox = new GCheckBox(this, 832, 80, 'Show Focus Verses', focusMode, true, (_labelText: string, checkState: boolean) => {
+            this.focusVerseCheckBox.setCheckState(checkState);
+            this.updateChapterSelection(this.currentChapterVerses[0].book);
+            this.refreshPage();
+        });
+        this.focusVerseCheckBox.setVisible(false);
     }
 
     private initBookSelection() {
@@ -211,10 +224,11 @@ export class GBibleUI extends GUIScene {
 
         for (let c = 0; c < lastChapter; c++) {
             const chapterNumber: number = c + 1;
-            const chapterButton = new GTextOptionButton(this, 0, c * 20, `${chapterType} ${chapterNumber}`, () => {
+            const isFocus = this.focusVerseCheckBox.isChecked() && BIBLE.isFocusVerseChapter(book, chapterNumber);
+            const chapterButton = new GTextOptionButton(this, 0, c * 20, `${chapterType} ${chapterNumber}${isFocus ? ' *' : ''}`, () => {
                 this.loadChapter(book, chapterNumber);
             }, {
-                color: '#ffffff',
+                color: COLOR.WHITE.str(),
                 backgroundColor: '#555555',
                 fontFamily: 'averia_serif',
                 fontSize: '12px',
@@ -235,6 +249,13 @@ export class GBibleUI extends GUIScene {
         // Find the book button by its name:
         const bookSelection: BookSelection = this.bookSelections.find(selection => selection.bookName === bookName) as BookSelection;
         return bookSelection.button;
+    }
+
+    private refreshPage() {
+        const currentChapter: number = this.currentChapterVerses[0].chapter;
+        const currentBook: string = this.currentChapterVerses[0].book;
+        const currentVerse: number = this.chapterDoublePages[this.currentDoublePageIndex].firstVerse;
+        this.loadChapter(currentBook, currentChapter, currentVerse, true);
     }
 
     private previousPage() {
@@ -299,7 +320,7 @@ export class GBibleUI extends GUIScene {
         }
     }
 
-    private loadChapter(book: string, chapter: number, verse: number = 1) {
+    private loadChapter(book: string, chapter: number, verse: number = 1, forceRefresh: boolean = false) {
         // By default, when a chapter is loaded, we'll display the double page
         // that contains the first verse of the chapter.
         // We can also specify a verse to open to, useful for a search result,
@@ -312,7 +333,8 @@ export class GBibleUI extends GUIScene {
         // Before we do anything, check whether the requested book and chapter are already current.
         // We only need to load the chapter if it or the book has changed - OR if this is the first load.
         if (
-            currentPassage === null
+            forceRefresh
+            || currentPassage === null
             || currentPassage.book !== book
             || currentPassage.chapter !== chapter
         ) {
@@ -331,7 +353,7 @@ export class GBibleUI extends GUIScene {
             }
 
             // Get a scripture object for each verse in the new chapter:
-            this.currentChapterVerses = BIBLE.getAllVersesForChapter(book, chapter);
+            this.currentChapterVerses = BIBLE.getAllVersesForChapter(book, chapter, this.focusVerseCheckBox.isChecked());
 
             // Text objects for ALL verses in the chapter must be created
             let lastVerseAdded: number = 0;
@@ -505,6 +527,7 @@ export class GBibleUI extends GUIScene {
         // Create a text object for the verse:
         const verseText = this.add.text(0, 0, `${verse.verse}  ${verse.verseText}`, {
             color: COLOR.BLACK.str(),
+            backgroundColor: verse.isFocusVerse ? COLOR.YELLOW.str() : undefined,
             fontFamily: 'averia_serif',
             fontSize: '14px',
             lineSpacing: 0,
@@ -570,6 +593,7 @@ export class GBibleUI extends GUIScene {
         this.previousButton.setVisible(open);
         this.booksScrollPane.setVisible(open);
         this.chaptersScrollPane.setVisible(open);
+        this.focusVerseCheckBox.setVisible(open);
         this.instructionTextLeft.setVisible(!open);
         this.instructionTextRight.setVisible(!open);
         this.getSound().playSound('thud');
