@@ -126,8 +126,14 @@ export namespace PLAYER {
         return maxXp;
     }
 
-    export function getXpNeededAtLevel(currentLevel: number): number {
-        return Math.floor(Math.pow(10, 1 + (.1 * currentLevel)) * GFF.getDifficulty().neededXpModifier);
+    /**
+     * This function is currently accurate, per the spreadsheet.
+     * Modifier will usually come from the difficulty, but we can also
+     * pass it as an argument, for example, to get the "base" calculation
+     * without difficulty modifiers.
+     */
+    export function getXpNeededAtLevel(currentLevel: number, modifier: number = GFF.getDifficulty().neededXpModifier): number {
+        return Math.floor(Math.pow(10, 1 + (.1 * currentLevel)) * modifier);
     }
 
     export function getRequiredXp(): number {

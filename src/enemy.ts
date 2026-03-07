@@ -1,10 +1,11 @@
 import { GFF } from "./main";
 import { GEnemySprite } from "./objects/chars/GEnemySprite";
 import { PLAYER } from "./player";
+import { RANDOM } from "./random";
 import { RefFunction } from "./scenes/GLoadGameContent";
 import { GSpirit } from "./types";
 
-const REL_XP_DEC_PER_LEVEL: number = .3;
+const REL_XP_DEC_PER_LEVEL: number = .1;
 
 export namespace ENEMY {
 
@@ -99,11 +100,20 @@ export namespace ENEMY {
          * This formula ensures several things:
          * 1. Getting to level 1 requires defeating five level 0 enemies
          * 2. The number of equal-level enemies to defeat increases slowly and smoothly
-         * 3. Reaching max level will required defeating no more than 20 equal-level enemies
+         * 3. Reaching max level will require defeating approximately 10 equal-level enemies
          * 4. Algorithm in PLAYER.getXpNeededAtLevel can be adjusted without affecting the above.
          */
         const enemyLevel = spirit.level;
-        return PLAYER.getXpNeededAtLevel(enemyLevel) / (5 + (enemyLevel * REL_XP_DEC_PER_LEVEL));
+        /**
+         * Passing in 1.0 as the modifier gives us the "base" XP needed without difficulty adjustments,
+         * which lets us scale the needed XP without also scaling the XP for defeating enemies.
+         * (Scaling both together would defeat the whole purpose of scaling the needed XP.)
+         *
+         * Also, since scaling the needed XP makes the player level faster or slower, it means he
+         * will level after fighting less or more enemies; and since the fought enemy levels up after
+         * each fight, this will also make enemies gradually weaker or stronger based on the difficulty.
+         */
+        return PLAYER.getXpNeededAtLevel(enemyLevel, 1.0) / (5 + (enemyLevel * REL_XP_DEC_PER_LEVEL));
     }
 
     export function getResistance(): number {
@@ -153,7 +163,7 @@ export namespace ENEMY {
         return sprite;
     }
 
-    export function init(enemy: GEnemySprite, enemySpirit: GSpirit, enemyPortrait: string, enemyAvatar: string) {
+    export function init(enemy: GEnemySprite|null, enemySpirit: GSpirit, enemyPortrait: string, enemyAvatar: string) {
         sprite = enemy;
         spirit = enemySpirit;
         portrait = enemyPortrait;
@@ -172,8 +182,31 @@ export namespace ENEMY {
         setResistance(getMaxResistance());
     }
 
+    /**
+     * I want 3 rules for level up:
+     * AFTER FIGHTING AN ENEMY:
+     * 1. The enemy just fought gains 1 level
+     * ON PLAYER LEVEL-UP:
+     * 2. The current lowest-level enemy becomes the player's level
+     * 3. Random half of enemies lower than the player gain 1 level
+     */
     export function levelUp() {
         spirit.level = Math.min(50, spirit.level + 1);
+    }
+
+    export function levelUpLowerEnemies() {
+        const lowestLevel = Math.min(...spirits.map(s => s.level));
+        const lowestSpirit = spirits.find(s => s.level === lowestLevel);
+        if (lowestSpirit) {
+            lowestSpirit.level = PLAYER.getLevel();
+        }
+
+        const lowerSpirits = spirits.filter(s => s.level < PLAYER.getLevel());
+        RANDOM.shuffle(lowerSpirits);
+        const halfToLevel = Math.ceil(lowerSpirits.length / 2);
+        for (let i = 0; i < halfToLevel; i++) {
+            lowerSpirits[i].level = Math.min(50, lowerSpirits[i].level + 1);
+        }
     }
 
     export function addSpirit(spirit: GSpirit) {

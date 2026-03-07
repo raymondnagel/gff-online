@@ -92,6 +92,12 @@ export namespace BOOKS {
         PLAYER.giveGrace('major');
     }
 
+    export function removeAllBooks() {
+        books.forEach((_, key) => {
+            books.set(key, 'missing');
+        });
+    }
+
     export function setBookEnabled(name: string, enabled: boolean) {
         books.set(name, enabled ? 'enabled' : 'acquired');
     }

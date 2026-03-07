@@ -1,5 +1,6 @@
 import { AREA } from "./area";
 import { ARMORS } from "./armors";
+import { BALANCE } from "./balance";
 import { BOOKS } from "./books";
 import { CHURCH } from "./church";
 import { COMMANDMENTS } from "./commandments";
@@ -15,7 +16,7 @@ import { REGISTRY } from "./registry";
 import { IntegerStatName, STATS } from "./stats";
 import { STRONGHOLD } from "./stronghold";
 import { TOWN } from "./town";
-import { NINE, SIX, TEN } from "./types";
+import { GSpirit, NINE, SIX, TEN } from "./types";
 
 export namespace CONSOLE {
 
@@ -360,6 +361,11 @@ export namespace CONSOLE {
             }
             playError();
             return `No object for ID: ${id}`;
+        },
+        balanceTest(untilLevel: number = 50) {
+            BALANCE.test(untilLevel);
+            playSuccess();
+            return 'Ok';
         }
     };
 

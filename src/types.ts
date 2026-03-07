@@ -89,6 +89,7 @@ export type GDifficulty = {
     maxRandomEnemies: number;
     neededXpModifier: number;
     trapStrengthPct: number;
+    expectedBooksAtEnd: number;
 };
 
 // Represents an attack that the enemy can perform:

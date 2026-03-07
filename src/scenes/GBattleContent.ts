@@ -19,13 +19,17 @@ const GOLD_COLOR: string = '#d5ccb4';
 const SCRIPTURE_COLOR: string = '#663420';
 const TEXT_COLOR: string = '#ffffff';
 const TEXT_SHADOW: string ='#333333';
-const HIT_CAPTION_COLOR: string = '#00b2b2';
+const REPORT_TEXT_COLOR: string = '#000000';
+const HIT_CAPTION_COLOR: string = '#015858';
 const HIT_REF_COLOR: string = '#00ffff';
 const MISS_CAPTION_COLOR: string = '#a90000';
 const MISS_REF_COLOR: string = '#ff3737';
 const ACTUAL_CAPTION_COLOR: string = '#b2691c';
 const ACTUAL_REF_COLOR: string = '#ffd639';
-const FINAL_SCORE_COLOR: string = '#dc00ff';
+const BASE_SCORE_COLOR: string = '#555555';
+const FINAL_SCORE_COLOR: string = '#ffffff';
+const ATTACK_CAPTION_COLOR: string = '#a90000';
+const ATTACK_CALC_COLOR: string = '#ff3737';
 
 const TOP_MARGIN: number = 10;
 const SIDE_MARGIN: number = 4;
@@ -60,9 +64,9 @@ const SWORD_START_X: number = 482;
 const SWORD_RETRACT_X: number = 420;
 const SWORD_MISS_X: number = 620;
 const SWORD_HIT_X: number = 680;
-const RESULT_IMG_Y: number = 468;
-const SCORE_CAPTION_X: number = 416;
-const SCORE_CALC_X: number = 554;
+const RESULT_IMG_Y: number = 440 /*top*/ + 160 /*half image*/;
+const SCORE_CAPTION_X: number = 424;
+const SCORE_CALC_X: number = 560;
 const PLAYER_PARTICLE_X: number = 120;
 const ENEMY_PARTICLE_X: number = 904;
 
@@ -73,22 +77,16 @@ const INPUT_REFVERSE: GInputMode = new GInputMode('battle.ref_verse');
 const INPUT_DISABLED: GInputMode = new GInputMode('battle.disabled');
 
 enum BattleStage {
-    NONE      = 0,  // We're in an automatic process, not waiting for the player to do anything.
-    BOOK      = 1,  // Waiting for the player to select a book and press Enter.
-    CHAPTER   = 2,  // Waiting for the player to type a chapter # and press Enter.
-    VERSE     = 3,  // Waiting for the player to type a verse # and press Enter.
-    END_GUESS = 4,  // Player has made a guess; attack sequence is in progress.
-    END_TURN  = 5,  // Player has taken his turn, and the result is displayed. Press Enter to take enemy's turn.
-    VICTORY   = 6   // Player is victorious! Press Enter to leave the battle.
-    /**
-     * When the player is defeated, the battle will exit automatically after a short delay.
-     * This is acceptable and preferred for a few reasons:
-     * 1) Since the battle ends with the enemy's turn, there is no score to show
-     * 2) Since there is nothing to read, there's no need to wait for the player to press Enter
-     * 3) It's probably better to not let the player stare at a defeat screen for too long :(
-     * 4) We don't need to wait for the player to be ready before returning to AdventureMode;
-     *    when he is at 0 faith, he won't be attacked by enemies, so there is no danger.
-     */
+    NONE            = 0,  // We're in an automatic process, not waiting for the player to do anything.
+    BOOK            = 1,  // Waiting for the player to select a book and press Enter.
+    CHAPTER         = 2,  // Waiting for the player to type a chapter # and press Enter.
+    VERSE           = 3,  // Waiting for the player to type a verse # and press Enter.
+    PLAYER_ATTACK   = 4,  // Player has made a guess; attack sequence is in progress.
+    END_PLAYER_TURN = 5,  // Player has taken his turn, and the result is displayed. Press Enter to take enemy's turn.
+    ENEMY_ATTACK    = 6,  // Enemy's attack sequence is in progress.
+    END_ENEMY_TURN  = 7,  // Enemy has taken its turn, and the result is displayed. Press Enter to continue.
+    VICTORY         = 8,  // Player is victorious! Press Enter to leave the battle.
+    DEFEAT          = 9   // Player is defeated. Press Enter to leave the battle.
 };
 
 export class GBattleContent extends GContentScene {
@@ -146,12 +144,35 @@ export class GBattleContent extends GContentScene {
     private chapterScoreCalc: Phaser.GameObjects.Text;
     private verseScoreCaption: Phaser.GameObjects.Text;
     private verseScoreCalc: Phaser.GameObjects.Text;
+    private perfectBonusCaption: Phaser.GameObjects.Text;
+    private perfectBonusCalc: Phaser.GameObjects.Text;
+    private baseScoreCaption: Phaser.GameObjects.Text;
+    private baseScoreCalc: Phaser.GameObjects.Text;
     private booksMultCaption: Phaser.GameObjects.Text;
     private booksMultCalc: Phaser.GameObjects.Text;
-    private bonusScoreCaption: Phaser.GameObjects.Text;
-    private bonusScoreCalc: Phaser.GameObjects.Text;
+    private graceBonusCaption: Phaser.GameObjects.Text;
+    private graceBonusCalc: Phaser.GameObjects.Text;
     private finalScoreCaption: Phaser.GameObjects.Text;
     private finalScoreCalc: Phaser.GameObjects.Text;
+
+    private enemyResultImage: Phaser.GameObjects.Image;
+    private attackTypeCaption: Phaser.GameObjects.Text;
+    private attackTypeCalc: Phaser.GameObjects.Text;
+    private attackPowerCaption: Phaser.GameObjects.Text;
+    private attackPowerCalc: Phaser.GameObjects.Text;
+    private attackEffectCaption: Phaser.GameObjects.Text;
+    private armorCaption: Phaser.GameObjects.Text;
+    private armorCalc: Phaser.GameObjects.Text;
+    private shieldCaption: Phaser.GameObjects.Text;
+    private shieldCalc: Phaser.GameObjects.Text;
+    private baseDamageCaption: Phaser.GameObjects.Text;
+    private baseDamageCalc: Phaser.GameObjects.Text;
+    private statusEffectCaption: Phaser.GameObjects.Text;
+    private statusEffectCalc: Phaser.GameObjects.Text;
+    private graceProtectionCaption: Phaser.GameObjects.Text;
+    private graceProtectionCalc: Phaser.GameObjects.Text;
+    private finalDamageCaption: Phaser.GameObjects.Text;
+    private finalDamageCalc: Phaser.GameObjects.Text;
 
     private playerParticleEmitter: Phaser.GameObjects.Particles.ParticleEmitter;
     private enemyParticleEmitter: Phaser.GameObjects.Particles.ParticleEmitter;
@@ -348,7 +369,8 @@ export class GBattleContent extends GContentScene {
         this.currentStage = BattleStage.NONE;
         this.getSound().playMusic('onward');
         this.createAnimations();
-        this.createGuessResult();
+        this.createPlayerResult();
+        this.createEnemyResult();
         this.loadEnemyAttacks();
         this.showUI();
     }
@@ -359,7 +381,7 @@ export class GBattleContent extends GContentScene {
         INPUT_PROMPTENTER.onKeyDown((keyEvent: KeyboardEvent) => {
             switch(keyEvent.key) {
                 case 'Enter':
-                    if (this.currentStage === BattleStage.END_TURN) {
+                    if (this.currentStage === BattleStage.END_PLAYER_TURN) {
                         this.doEnemyAttack();
                     } else if (this.currentStage === BattleStage.VICTORY) {
                         this.endBattle(true);
@@ -449,55 +471,209 @@ export class GBattleContent extends GContentScene {
         this.anims.get('slash').frameRate = 24 * this.animSpeed;
     }
 
-    private createGuessResult() {
+    private createPlayerResult() {
         const smallTextStyle = {
-            color: '#ffffff',
             fontFamily: 'dyonisius',
             fontSize: '16px'
         };
         const bigTextStyle = {
-            color: '#ffffff',
             fontFamily: 'dyonisius',
             fontSize: '20px'
         };
-        const smallGap: number = 20;
-        const largeGap: number = 30;
 
-        this.resultImage = this.add.image(GFF.GAME_W / 2, RESULT_IMG_Y, 'eval_back').setOrigin(.5, 0).setVisible(false);
+        this.resultImage = this.add.image(GFF.GAME_W / 2, RESULT_IMG_Y, 'battle_results_hero').setOrigin(.5, .5).setVisible(false);
 
-        let y: number = 498;
-        this.guessCaption = this.add.text(GFF.GAME_W / 2, y, 'Guessed Reference:', smallTextStyle).setOrigin(.5, 0).setVisible(false);
-        y += smallGap;
-        this.guessReference = this.add.text(GFF.GAME_W / 2, y, 'Genesis 20:20', bigTextStyle).setOrigin(.5, 0).setVisible(false);
-        y += largeGap;
+        this.guessCaption = this.add.text(0, 0, 'Guessed Reference:', smallTextStyle).setOrigin(.5, 0).setVisible(false);
+        this.guessReference = this.add.text(0, 0, 'Genesis 20:20', bigTextStyle).setOrigin(.5, 0).setVisible(false);
 
-        this.actualCaption = this.add.text(GFF.GAME_W / 2, y, 'Actual Reference:', smallTextStyle).setOrigin(.5, 0).setVisible(false);
+        this.actualCaption = this.add.text(0, 0, 'Actual Reference:', smallTextStyle).setOrigin(.5, 0).setVisible(false);
         this.actualCaption.setColor(ACTUAL_CAPTION_COLOR);
-        y += smallGap;
-        this.actualReference = this.add.text(GFF.GAME_W / 2, y, 'Genesis 20:20', bigTextStyle).setOrigin(.5, 0).setVisible(false);
+        this.actualReference = this.add.text(0, 0, 'Genesis 20:20', bigTextStyle).setOrigin(.5, 0).setVisible(false);
         this.actualReference.setColor(ACTUAL_REF_COLOR);
-        y += largeGap;
 
-        this.chapterScoreCaption = this.add.text(SCORE_CAPTION_X, y, 'Chapter Score:', smallTextStyle).setOrigin(0, 0).setVisible(false);
-        this.chapterScoreCalc = this.add.text(SCORE_CALC_X, y, '100', smallTextStyle).setOrigin(0, 0).setVisible(false);
-        y += smallGap;
+        this.chapterScoreCaption = this.add.text(0, 0, 'Chapter Score', smallTextStyle).setOrigin(0, 0).setVisible(false);
+        this.chapterScoreCaption.setColor(REPORT_TEXT_COLOR);
+        this.chapterScoreCalc = this.add.text(0, 0, '+100', smallTextStyle).setOrigin(0, 0).setVisible(false);
+        this.chapterScoreCalc.setColor(REPORT_TEXT_COLOR);
 
-        this.verseScoreCaption = this.add.text(SCORE_CAPTION_X, y, 'Verse Score:', smallTextStyle).setOrigin(0, 0).setVisible(false);
-        this.verseScoreCalc = this.add.text(SCORE_CALC_X, y, '100 x 100%', smallTextStyle).setOrigin(0, 0).setVisible(false);
-        y += smallGap;
+        this.verseScoreCaption = this.add.text(0, 0, 'Verse Score', smallTextStyle).setOrigin(0, 0).setVisible(false);
+        this.verseScoreCaption.setColor(REPORT_TEXT_COLOR);
+        this.verseScoreCalc = this.add.text(0, 0, '+100', smallTextStyle).setOrigin(0, 0).setVisible(false);
+        this.verseScoreCalc.setColor(REPORT_TEXT_COLOR);
 
-        this.bonusScoreCaption = this.add.text(SCORE_CAPTION_X, y, 'Bonus Score:', smallTextStyle).setOrigin(0, 0).setVisible(false);
-        this.bonusScoreCalc = this.add.text(SCORE_CALC_X, y, '100', smallTextStyle).setOrigin(0, 0).setVisible(false);
-        y += largeGap;
+        this.perfectBonusCaption = this.add.text(0, 0, 'Perfect Bonus', smallTextStyle).setOrigin(0, 0).setVisible(false);
+        this.perfectBonusCaption.setColor(REPORT_TEXT_COLOR);
+        this.perfectBonusCalc = this.add.text(0, 0, '+100', smallTextStyle).setOrigin(0, 0).setVisible(false);
+        this.perfectBonusCalc.setColor(REPORT_TEXT_COLOR);
 
-        this.booksMultCaption = this.add.text(SCORE_CAPTION_X, y, 'Books Multiplier:', smallTextStyle).setOrigin(0, 0).setVisible(false);
-        this.booksMultCalc = this.add.text(SCORE_CALC_X, y, '200 x 66', smallTextStyle).setOrigin(0, 0).setVisible(false);
-        y += smallGap;
+        this.baseScoreCaption = this.add.text(0, 0, 'Base Score:', bigTextStyle).setOrigin(0, 0).setVisible(false);
+        this.baseScoreCaption.setColor(BASE_SCORE_COLOR);
+        this.baseScoreCalc = this.add.text(0, 0, '100', bigTextStyle).setOrigin(0, 0).setVisible(false);
+        this.baseScoreCalc.setColor(BASE_SCORE_COLOR);
 
-        this.finalScoreCaption = this.add.text(SCORE_CAPTION_X, y, 'Final Score:', bigTextStyle).setOrigin(0, 0).setVisible(false);
+        this.booksMultCaption = this.add.text(0, 0, '66 Books x 10%', smallTextStyle).setOrigin(0, 0).setVisible(false);
+        this.booksMultCaption.setColor(REPORT_TEXT_COLOR);
+        this.booksMultCalc = this.add.text(0, 0, '+660%', smallTextStyle).setOrigin(0, 0).setVisible(false);
+        this.booksMultCalc.setColor(REPORT_TEXT_COLOR);
+
+        this.graceBonusCaption = this.add.text(0, 0, 'Grace Bonus', smallTextStyle).setOrigin(0, 0).setVisible(false);
+        this.graceBonusCaption.setColor(REPORT_TEXT_COLOR);
+        this.graceBonusCalc = this.add.text(0, 0, '+100%', smallTextStyle).setOrigin(0, 0).setVisible(false);
+        this.graceBonusCalc.setColor(REPORT_TEXT_COLOR);
+
+        this.finalScoreCaption = this.add.text(0, 0, 'Final Score:', bigTextStyle).setOrigin(0, 0).setVisible(false);
         this.finalScoreCaption.setColor(FINAL_SCORE_COLOR);
-        this.finalScoreCalc = this.add.text(SCORE_CALC_X, y, '13200', bigTextStyle).setOrigin(0, 0).setVisible(false);
+        this.finalScoreCalc = this.add.text(0, 0, '2580', bigTextStyle).setOrigin(0, 0).setVisible(false);
         this.finalScoreCalc.setColor(FINAL_SCORE_COLOR);
+    }
+
+    private createEnemyResult() {
+        const smallTextStyle = {
+            fontFamily: 'dyonisius',
+            fontSize: '16px'
+        };
+        const bigTextStyle = {
+            fontFamily: 'dyonisius',
+            fontSize: '20px'
+        };
+
+        this.enemyResultImage = this.add.image(GFF.GAME_W / 2, RESULT_IMG_Y, 'battle_results_enemy').setOrigin(.5, .5).setVisible(false);
+
+        this.attackTypeCaption = this.add.text(0, 0, 'Enemy Attack:', smallTextStyle).setOrigin(.5, 0).setVisible(false);
+        this.attackTypeCaption.setColor(ATTACK_CAPTION_COLOR);
+        this.attackTypeCalc = this.add.text(0, 0, 'Basic', bigTextStyle).setOrigin(.5, 0).setVisible(false);
+        this.attackTypeCalc.setColor(ATTACK_CALC_COLOR);
+        this.attackEffectCaption = this.add.text(0, 0, 'Effect: Poison', smallTextStyle).setOrigin(.5, 0).setVisible(false);
+
+        this.attackPowerCaption = this.add.text(0, 0, 'Attack Power', smallTextStyle).setOrigin(0, 0).setVisible(false);
+        this.attackPowerCaption.setColor(REPORT_TEXT_COLOR);
+        this.attackPowerCalc = this.add.text(0, 0, '+ 100', smallTextStyle).setOrigin(0, 0).setVisible(false);
+        this.attackPowerCalc.setColor(REPORT_TEXT_COLOR);
+
+        this.armorCaption = this.add.text(0, 0, 'Armor Absorb', smallTextStyle).setOrigin(0, 0).setVisible(false);
+        this.armorCaption.setColor(REPORT_TEXT_COLOR);
+        this.armorCalc = this.add.text(0, 0, '+ 50%', smallTextStyle).setOrigin(0, 0).setVisible(false);
+        this.armorCalc.setColor(REPORT_TEXT_COLOR);
+
+        this.shieldCaption = this.add.text(0, 0, 'Shield Deflect', smallTextStyle).setOrigin(0, 0).setVisible(false);
+        this.shieldCaption.setColor(REPORT_TEXT_COLOR);
+        this.shieldCalc = this.add.text(0, 0, '+ 50%', smallTextStyle).setOrigin(0, 0).setVisible(false);
+        this.shieldCalc.setColor(REPORT_TEXT_COLOR);
+
+        this.baseDamageCaption = this.add.text(0, 0, 'Base Damage:', bigTextStyle).setOrigin(0, 0).setVisible(false);
+        this.baseDamageCaption.setColor(BASE_SCORE_COLOR);
+        this.baseDamageCalc = this.add.text(0, 0, '100', bigTextStyle).setOrigin(0, 0).setVisible(false);
+        this.baseDamageCalc.setColor(BASE_SCORE_COLOR);
+
+        this.statusEffectCaption = this.add.text(0, 0, 'Status: Burning', smallTextStyle).setOrigin(0, 0).setVisible(false);
+        this.statusEffectCaption.setColor(REPORT_TEXT_COLOR);
+        this.statusEffectCalc = this.add.text(0, 0, '+ 10', smallTextStyle).setOrigin(0, 0).setVisible(false);
+        this.statusEffectCalc.setColor(REPORT_TEXT_COLOR);
+
+        this.graceProtectionCaption = this.add.text(0, 0, 'Grace Bonus', smallTextStyle).setOrigin(0, 0).setVisible(false);
+        this.graceProtectionCaption.setColor(REPORT_TEXT_COLOR);
+        this.graceProtectionCalc = this.add.text(0, 0, '- 100%', smallTextStyle).setOrigin(0, 0).setVisible(false);
+        this.graceProtectionCalc.setColor(REPORT_TEXT_COLOR);
+
+        this.finalDamageCaption = this.add.text(0, 0, 'Final Damage:', bigTextStyle).setOrigin(0, 0).setVisible(false);
+        this.finalDamageCaption.setColor(FINAL_SCORE_COLOR);
+        this.finalDamageCalc = this.add.text(0, 0, '100', bigTextStyle).setOrigin(0, 0).setVisible(false);
+        this.finalDamageCalc.setColor(FINAL_SCORE_COLOR);
+    }
+
+    private layoutPlayerResult(isPerfect: boolean) {
+        const smallGap: number = 18;
+        const largeGap: number = 28;
+
+        // If not perfect, make a small adjustment
+        // because the Perfect Bonus line won't be there:
+        let y: number = 486 + (isPerfect ? 0 : 10);
+
+        this.guessCaption.setPosition(GFF.GAME_W / 2, y);
+        y += smallGap;
+        this.guessReference.setPosition(GFF.GAME_W / 2, y);
+        y += largeGap;
+
+        this.actualCaption.setPosition(GFF.GAME_W / 2, y);
+        y += smallGap;
+        this.actualReference.setPosition(GFF.GAME_W / 2, y);
+        y += largeGap;
+
+        this.chapterScoreCaption.setPosition(SCORE_CAPTION_X, y);
+        this.chapterScoreCalc.setPosition(SCORE_CALC_X, y);
+        y += smallGap;
+
+        this.verseScoreCaption.setPosition(SCORE_CAPTION_X, y);
+        this.verseScoreCalc.setPosition(SCORE_CALC_X, y);
+        y += smallGap;
+
+        if (isPerfect) {
+            this.perfectBonusCaption.setPosition(SCORE_CAPTION_X, y);
+            this.perfectBonusCalc.setPosition(SCORE_CALC_X, y);
+            y += smallGap;
+        }
+
+        this.baseScoreCaption.setPosition(SCORE_CAPTION_X, y);
+        this.baseScoreCalc.setPosition(SCORE_CALC_X, y);
+        y += largeGap;
+
+        this.booksMultCaption.setPosition(SCORE_CAPTION_X, y);
+        this.booksMultCalc.setPosition(SCORE_CALC_X, y);
+        y += smallGap;
+
+        this.graceBonusCaption.setPosition(SCORE_CAPTION_X, y);
+        this.graceBonusCalc.setPosition(SCORE_CALC_X, y);
+        y += smallGap;
+
+        this.finalScoreCaption.setPosition(SCORE_CAPTION_X, y);
+        this.finalScoreCalc.setPosition(SCORE_CALC_X, y);
+    }
+
+    private layoutEnemyResult(newEffect: boolean, existingEffect: boolean) {
+        const smallGap: number = 18;
+        const largeGap: number = 28;
+
+        // If status effect lines are ommitted, make some
+        // small adjustments to keep everything centered.
+        let y: number = 486 + (newEffect ? 0 : 10) + (existingEffect ? 0 : 10);
+
+        this.attackTypeCaption.setPosition(GFF.GAME_W / 2, y);
+        y += smallGap;
+        this.attackTypeCalc.setPosition(GFF.GAME_W / 2, y);
+        if (newEffect) {
+            y += smallGap;
+            this.attackEffectCaption.setPosition(GFF.GAME_W / 2, y);
+        }
+        y += largeGap;
+
+        this.attackPowerCaption.setPosition(SCORE_CAPTION_X, y);
+        this.attackPowerCalc.setPosition(SCORE_CALC_X, y);
+        y += smallGap;
+
+        this.armorCaption.setPosition(SCORE_CAPTION_X, y);
+        this.armorCalc.setPosition(SCORE_CALC_X, y);
+        y += smallGap;
+
+        this.shieldCaption.setPosition(SCORE_CAPTION_X, y);
+        this.shieldCalc.setPosition(SCORE_CALC_X, y);
+        y += smallGap;
+
+        this.baseDamageCaption.setPosition(SCORE_CAPTION_X, y);
+        this.baseDamageCalc.setPosition(SCORE_CALC_X, y);
+        y += largeGap;
+
+        if (existingEffect) {
+            this.statusEffectCaption.setPosition(SCORE_CAPTION_X, y);
+            this.statusEffectCalc.setPosition(SCORE_CALC_X, y);
+            y += smallGap;
+        }
+
+        this.graceProtectionCaption.setPosition(SCORE_CAPTION_X, y);
+        this.graceProtectionCalc.setPosition(SCORE_CALC_X, y);
+        y += smallGap;
+
+        this.finalDamageCaption.setPosition(SCORE_CAPTION_X, y);
+        this.finalDamageCalc.setPosition(SCORE_CALC_X, y);
     }
 
     private loadEnemyAttacks() {
@@ -668,7 +844,7 @@ export class GBattleContent extends GContentScene {
             onComplete: () => {
                 this.eventText.text = 'Adam missed!';
                 this.getSound().playSound('miss').once('complete', () => {
-                    this.setCurrentStage(BattleStage.END_TURN);
+                    this.setCurrentStage(BattleStage.END_PLAYER_TURN);
                 });
             }
         });
@@ -684,7 +860,6 @@ export class GBattleContent extends GContentScene {
                 this.scriptureText,
                 this.eventText,
                 this.resultImage,
-                this.resultImage,
                 this.guessCaption,
                 this.guessReference,
                 this.actualCaption,
@@ -693,10 +868,14 @@ export class GBattleContent extends GContentScene {
                 this.chapterScoreCalc,
                 this.verseScoreCaption,
                 this.verseScoreCalc,
+                this.perfectBonusCaption,
+                this.perfectBonusCalc,
+                this.baseScoreCaption,
+                this.baseScoreCalc,
                 this.booksMultCaption,
                 this.booksMultCalc,
-                this.bonusScoreCaption,
-                this.bonusScoreCalc,
+                this.graceBonusCaption,
+                this.graceBonusCalc,
                 this.finalScoreCaption,
                 this.finalScoreCalc
             ],
@@ -859,7 +1038,7 @@ export class GBattleContent extends GContentScene {
             case BattleStage.VERSE:
                 if (this.verseEntry.isEnteredTextValid()) {
                     this.setInputMode(INPUT_DISABLED);
-                    this.setCurrentStage(BattleStage.END_GUESS);
+                    this.setCurrentStage(BattleStage.PLAYER_ATTACK);
                 } else {
                     this.getSound().playSound('error_buzz');
                 }
@@ -899,10 +1078,10 @@ export class GBattleContent extends GContentScene {
                         this.setInputMode(INPUT_REFVERSE);
                     });
                     break;
-                case BattleStage.END_GUESS:
+                case BattleStage.PLAYER_ATTACK:
                     this.finishGuess();
                     break;
-                case BattleStage.END_TURN:
+                case BattleStage.END_PLAYER_TURN:
                     this.showGuessResult();
                     break;
                 case BattleStage.VICTORY:
@@ -927,10 +1106,10 @@ export class GBattleContent extends GContentScene {
             case BattleStage.VERSE:
                 this.completePartEntry(this.verseEntry, this.verseText, setup, true);
                 break;
-            case BattleStage.END_GUESS:
+            case BattleStage.PLAYER_ATTACK:
                 setup();
                 break;
-            case BattleStage.END_TURN:
+            case BattleStage.END_PLAYER_TURN:
                 setup();
                 break;
             default:
@@ -1031,28 +1210,49 @@ export class GBattleContent extends GContentScene {
         const verseStep: number = 100 / numVerses;
 
         const chapterBase: number = Math.floor(Math.max(0, 100 - (chapterDiff * chapterStep)));
-        const verseBase: number = Math.floor(Math.max(0, 100 - (verseDiff * verseStep)));
+        const verseBase: number = Math.max(0, 100 - (verseDiff * verseStep));
+        const verseBaseAdj: number = Math.floor((chapterBase / 100) * verseBase); // Verse score is worth less if the chapter is way off
 
         const hit: boolean = this.bookText.text === this.servedVerse.book;
         const perfect: boolean = hit && guessChapter === actualChapter && guessVerse === actualVerse;
 
-        const bonusScore: number = perfect ? 100 : 0;
+        const perfectBonus: number = perfect ? 100 : 0;
 
-        const subTotal: number = Math.floor(bonusScore + chapterBase + ( (chapterBase / 100) * verseBase));
+        const graceBonus: number = Math.ceil(PLAYER.getGrace() / 10);
+        const gracePct: number = graceBonus / 100;
+
+        const subTotal: number = Math.floor(perfectBonus + chapterBase + verseBaseAdj);
         const books: number = this.playerBooks.length;
-        const finalScore: number = Math.floor(subTotal * books);
+        const booksPct: number = books * 0.1;
+        const finalScore: number = Math.floor(subTotal + (subTotal * (booksPct + gracePct)));
+
+        GFF.log(`Guess evaluation:
+        Actual: ${this.servedVerse.book} ${actualChapter}:${actualVerse}
+        Guess: ${this.bookText.text} ${guessChapter}:${guessVerse}
+        Chapter base: ${chapterBase}
+        Verse base: ${verseBase}
+        Verse base (adj): ${verseBaseAdj}
+        Perfect bonus: ${perfectBonus}
+        Subtotal: ${subTotal}
+        Books Pct: ${books} = ${booksPct}
+        Grace Pct: ${gracePct}
+        Total Pcts: ${booksPct + gracePct}
+        Final score: ${finalScore}`);
 
         this.guessCaption.text = 'Guessed Reference:';
         this.guessReference.text = `${this.bookText.text} ${guessChapter}:${guessVerse}`;
         this.actualCaption.text = 'Actual Reference:';
         this.actualReference.text = `${this.servedVerse.book} ${actualChapter}:${actualVerse}`;
+        this.perfectBonusCalc.text = `+ ${perfectBonus}`;
+
+        this.layoutPlayerResult(perfect);
 
         if (hit) {
             STATS.changeInt('Hits', 1);
             STATS.recordBookResult(this.servedVerse.book, true);
             if (perfect) {
                 // Perfect!
-                this.guessCaption.setText('Reference Correct: BONUS!');
+                this.guessCaption.setText('Reference Correct!');
                 this.guessCaption.setColor(ACTUAL_CAPTION_COLOR);
                 this.guessReference.setColor(ACTUAL_REF_COLOR);
                 this.getSound().playSound('success');
@@ -1062,11 +1262,13 @@ export class GBattleContent extends GContentScene {
                 this.guessCaption.setColor(HIT_CAPTION_COLOR);
                 this.guessReference.setColor(HIT_REF_COLOR);
             }
-            this.chapterScoreCalc.text = chapterBase + '';
-            this.verseScoreCalc.text = `${verseBase} x ${chapterBase}%`;
-            this.bonusScoreCalc.text = bonusScore + '';
-            this.booksMultCalc.text = `${subTotal} x ${books}`;
-            this.finalScoreCalc.text = finalScore + '';
+            this.chapterScoreCalc.text = `+ ${chapterBase}`;
+            this.verseScoreCalc.text = `+ ${verseBaseAdj}`;
+            this.baseScoreCalc.text = `${subTotal}`;
+            this.booksMultCaption.text = `${books} ${books === 1 ? 'Book' : 'Books'} x 10%`;
+            this.booksMultCalc.text = `+ ${books * 10}%`;
+            this.graceBonusCalc.text = `+ ${graceBonus}%`;
+            this.finalScoreCalc.text = `${finalScore}`;
 
             // High score?
             STATS.checkNewHighScore(finalScore);
@@ -1078,10 +1280,12 @@ export class GBattleContent extends GContentScene {
             STATS.recordBookResult(this.servedVerse.book, false);
             this.guessCaption.setColor(MISS_CAPTION_COLOR);
             this.guessReference.setColor(MISS_REF_COLOR);
-            this.chapterScoreCalc.text = '0';
-            this.verseScoreCalc.text = '0 x 0';
-            this.bonusScoreCalc.text = '0';
-            this.booksMultCalc.text = `0 x ${books}`;
+            this.chapterScoreCalc.text = '+ 0';
+            this.verseScoreCalc.text = '+ 0';
+            this.baseScoreCalc.text = '0';
+            this.booksMultCaption.text = `${books} ${books === 1 ? 'Book' : 'Books'} x 10%`;
+            this.booksMultCalc.text = `+ ${books * 10}%`;
+            this.graceBonusCalc.text = `+ ${graceBonus}%`;
             this.finalScoreCalc.text = '0';
             return 0;
         }
@@ -1089,21 +1293,36 @@ export class GBattleContent extends GContentScene {
 
     private showGuessResult() {
         this.setInputMode(INPUT_PROMPTENTER);
+
+        const perfect: boolean = this.perfectBonusCalc.text === '+ 100';
+
+        this.resultImage.setScale(0);
         this.resultImage.setVisible(true).setAlpha(1.0);
-        this.guessCaption.setVisible(true).setAlpha(1.0);
-        this.guessReference.setVisible(true).setAlpha(1.0);
-        this.actualCaption.setVisible(true).setAlpha(1.0);
-        this.actualReference.setVisible(true).setAlpha(1.0);
-        this.chapterScoreCaption.setVisible(true).setAlpha(1.0);
-        this.chapterScoreCalc.setVisible(true).setAlpha(1.0);
-        this.verseScoreCaption.setVisible(true).setAlpha(1.0);
-        this.verseScoreCalc.setVisible(true).setAlpha(1.0);
-        this.booksMultCaption.setVisible(true).setAlpha(1.0);
-        this.booksMultCalc.setVisible(true).setAlpha(1.0);
-        this.bonusScoreCaption.setVisible(true).setAlpha(1.0);
-        this.bonusScoreCalc.setVisible(true).setAlpha(1.0);
-        this.finalScoreCaption.setVisible(true).setAlpha(1.0);
-        this.finalScoreCalc.setVisible(true).setAlpha(1.0);
+        this.tweens.add({
+            targets: this.resultImage,
+            duration: 300 / this.animSpeed,
+            scale: 1.0,
+            onComplete: () => {
+                this.guessCaption.setVisible(true).setAlpha(1.0);
+                this.guessReference.setVisible(true).setAlpha(1.0);
+                this.actualCaption.setVisible(true).setAlpha(1.0);
+                this.actualReference.setVisible(true).setAlpha(1.0);
+                this.chapterScoreCaption.setVisible(true).setAlpha(1.0);
+                this.chapterScoreCalc.setVisible(true).setAlpha(1.0);
+                this.verseScoreCaption.setVisible(true).setAlpha(1.0);
+                this.verseScoreCalc.setVisible(true).setAlpha(1.0);
+                this.perfectBonusCaption.setVisible(perfect).setAlpha(1.0);
+                this.perfectBonusCalc.setVisible(perfect).setAlpha(1.0);
+                this.baseScoreCaption.setVisible(true).setAlpha(1.0);
+                this.baseScoreCalc.setVisible(true).setAlpha(1.0);
+                this.booksMultCaption.setVisible(true).setAlpha(1.0);
+                this.booksMultCalc.setVisible(true).setAlpha(1.0);
+                this.graceBonusCaption.setVisible(true).setAlpha(1.0);
+                this.graceBonusCalc.setVisible(true).setAlpha(1.0);
+                this.finalScoreCaption.setVisible(true).setAlpha(1.0);
+                this.finalScoreCalc.setVisible(true).setAlpha(1.0);
+            }
+        });
     }
 
     private damagePlayerFaith(amount: number) {
@@ -1155,7 +1374,7 @@ export class GBattleContent extends GContentScene {
                         if (ENEMY.getResistance() <= 0) {
                             this.doVictorySequence();
                         } else {
-                            this.setCurrentStage(BattleStage.END_TURN);
+                            this.setCurrentStage(BattleStage.END_PLAYER_TURN);
                         }
                     }
                 });

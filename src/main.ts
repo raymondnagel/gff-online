@@ -134,48 +134,51 @@ export namespace GFF {
         level: 1,
         levelName: 'Babe',
         enemyBaseAttack: 5,
-        enemyAttackPerLevel: 2,
+        enemyAttackPerLevel: 1.5,
         enemyBaseResist: 10,
-        enemyResistPerLevel: 10,
+        enemyResistPerLevel: 2,
         enemySpeed: .9,
         bossResistPct: 0.75,
         minorGraceIncrease: .06,
         majorGraceIncrease: .12,
         maxRandomEnemies: 1,
         neededXpModifier: 0.75,
-        trapStrengthPct: .05
+        trapStrengthPct: .05,
+        expectedBooksAtEnd: 10
     };
     export const DIFFICULTY_DISCIPLE: GDifficulty = {
         index: 1,
         level: 2,
         levelName: 'Disciple',
         enemyBaseAttack: 10,
-        enemyAttackPerLevel: 3,
+        enemyAttackPerLevel: 2,
         enemyBaseResist: 20,
-        enemyResistPerLevel: 20,
+        enemyResistPerLevel: 4,
         enemySpeed: 1.0,
         bossResistPct: 1.0,
         minorGraceIncrease: .04,
         majorGraceIncrease: .08,
         maxRandomEnemies: 2,
         neededXpModifier: 1.0,
-        trapStrengthPct: .1
+        trapStrengthPct: .1,
+        expectedBooksAtEnd: 30
     };
     export const DIFFICULTY_SOLDIER: GDifficulty = {
         index: 2,
         level: 3,
         levelName: 'Soldier',
         enemyBaseAttack: 15,
-        enemyAttackPerLevel: 4,
+        enemyAttackPerLevel: 3,
         enemyBaseResist: 30,
-        enemyResistPerLevel: 30,
+        enemyResistPerLevel: 6,
         enemySpeed: 1.1,
         bossResistPct: 1.25,
         minorGraceIncrease: .02,
         majorGraceIncrease: .04,
         maxRandomEnemies: 3,
         neededXpModifier: 1.25,
-        trapStrengthPct: .2
+        trapStrengthPct: .2,
+        expectedBooksAtEnd: 60
     };
 
     export const Difficulties: GDifficulty[] = [
