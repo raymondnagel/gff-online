@@ -1,5 +1,4 @@
-import { COLOR } from "../../colors";
-import { GColor } from "../../types";
+import { COLOR, GColor } from "../../colors";
 import { GMenuTextOption } from "./GMenuTextOption";
 
 const CHECKBOX_GAP: number = 4;

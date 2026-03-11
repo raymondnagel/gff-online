@@ -1,6 +1,5 @@
-import { COLOR } from "../../colors";
+import { COLOR, GColor } from "../../colors";
 import { GBaseScene } from "../../scenes/GBaseScene";
-import { GColor } from "../../types";
 
 export class GMenuTextOption extends Phaser.GameObjects.Text {
 

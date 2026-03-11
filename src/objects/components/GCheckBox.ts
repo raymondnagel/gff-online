@@ -1,6 +1,6 @@
 import { COLOR } from "../../colors";
 import { GBaseScene } from "../../scenes/GBaseScene";
-import { GColor } from "../../types";
+import { GColor } from "../../colors";
 
 const BOX_GREY: number = COLOR.GREY_3.num();
 

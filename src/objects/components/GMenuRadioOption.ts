@@ -1,5 +1,4 @@
-import { COLOR } from "../../colors";
-import { GColor } from "../../types";
+import { COLOR, GColor } from "../../colors";
 import { GMenuRadioGroup } from "./GMenuRadioGroup";
 import { GMenuTextOption } from "./GMenuTextOption";
 

@@ -1,4 +1,19 @@
-import { GColor } from "./types";
+// Allows creating colors that can be used as either numbers or strings as needed:
+export class GColor {
+    constructor(public hexColor: number) {}
+    num(): number {
+        return this.hexColor;
+    }
+    str(): string {
+        return '#' + this.hexColor.toString(16).padStart(6, '0');
+    }
+    phaser(): Phaser.Display.Color {
+        const r = (this.hexColor >> 16) & 0xFF;
+        const g = (this.hexColor >> 8) & 0xFF;
+        const b = this.hexColor & 0xFF;
+        return new Phaser.Display.Color(r, g, b);
+    }
+}
 
 export namespace COLOR {
 

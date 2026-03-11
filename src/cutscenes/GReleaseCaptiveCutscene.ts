@@ -1,10 +1,8 @@
-import { COLOR } from "../colors";
-import { GChurch } from "../GChurch";
 import { GConversation } from "../GConversation";
 import { GFF } from "../main";
 import { GPersonSprite } from "../objects/chars/GPersonSprite";
 import { PLAYER } from "../player";
-import { CLabeledChar, Dir9, GColor, GPerson } from "../types";
+import { Dir9 } from "../types";
 import { GCutscene } from "./GCutscene";
 
 const CENTER_X: number = 512;

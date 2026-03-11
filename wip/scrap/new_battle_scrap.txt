@@ -1,0 +1,55 @@
+/**
+ * When the enemy attacks, it calls the attack's action function
+ * which calls damagePlayerFaith.
+ *
+ * Currently, damagePlayerFaith immediately begins the next round
+ * once completed; but we need to decouple that. It used to be that
+ * the player's faith would ONLY get damaged by the enemy's attack,
+ * and there was no report afterward.
+ *
+ * Now, we probably want to handle these in BattleStages, similar
+ * to how the player's attack works.
+ *
+ * After the enemy's attack finishes, it should set a new BattleStage
+ * called END_ENEMY_TURN, which will:
+ * - show the report
+ * - cause any additional status effect damage
+ * - wait for the player to press Enter
+ *
+ * The game currently compiles and runs successfully.
+ * Before making these changes, commit the current state,
+ * because this is a complex system that could break very
+ * easily, and we may need to revert if it's broken.
+ */
+
+startEnemyTurn {
+    attack.actionFunction ("doEnemyAttackBasic") {
+        damagePlayerFaith {
+            beginRound
+        }
+    }
+}
+
+/**
+ * New sequence:
+ */
+
+startEnemyTurn {
+    (choose enemy attack)
+    attack.actionFunction ("doEnemyAttackBasic") {
+        damagePlayerFaith {
+            setCurrentStage(BattleStage.END_ENEMY_TURN)
+        }
+    }
+}
+
+
+
+
+doPlayerAttack {
+    doSuccesfulPlayerAttack {
+        damageEnemyResistance {
+            setCurrentStage(BattleStage.END_TURN)
+        }
+    }
+}

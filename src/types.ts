@@ -54,17 +54,6 @@ export type SpriteEffect = {
     hideOnFinish: boolean
 }
 
-// Allows creating colors that can be used as either numbers or strings as needed:
-export class GColor {
-    constructor(public hexColor: number) {}
-    num(): number {
-        return this.hexColor;
-    }
-    str(): string {
-        return '#' + this.hexColor.toString(16).padStart(6, '0');
-    }
-}
-
 // Represents a callback function for updating progress:
 export type ProgressCallback = (description: string, current: number, total: number) => void;
 
@@ -90,17 +79,6 @@ export type GDifficulty = {
     neededXpModifier: number;
     trapStrengthPct: number;
     expectedBooksAtEnd: number;
-};
-
-// Represents an attack that the enemy can perform:
-export type GEnemyAttack = {
-    attackName: string;
-    enemies: string[];
-    minLevel: number;
-    weight: number;
-    text: string;
-    soundKey: string;
-    actionFunction: Function;
 };
 
 // Represents a GameObject with position and bounds:

@@ -1,9 +1,10 @@
 import { GStrongholdArea } from "../areas/GStrongholdArea";
 import { ARRAY } from "../array";
+import { GColor } from "../colors";
 import { GRoom } from "../GRoom";
 import { SAVE } from "../save";
 import { RefFunction } from "../scenes/GLoadGameContent";
-import { GColor, GSaveable } from "../types";
+import { GSaveable } from "../types";
 
 /**
  * GSector is like a lesser version of GRegion, giving us a way to

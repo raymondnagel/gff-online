@@ -8,11 +8,14 @@ import { GNumberEntry } from "../objects/components/GNumberEntry";
 import { GOptionWheel } from "../objects/components/GOptionWheel";
 import { GTextEntryControl } from "../objects/components/GTextEntryControl";
 import { PLAYER } from "../player";
-import { GEnemyAttack, GScripture } from "../types";
+import { GScripture } from "../types";
 import { GContentScene } from "./GContentScene";
 import { STATS } from "../stats";
 import { REGISTRY } from "../registry";
 import { ARMORS } from "../armors";
+import { GColor } from "../colors";
+import { ANIM } from "../anim";
+import { stat } from "node:fs";
 
 const BAR_COLOR: number = 0xff0000;
 const GOLD_COLOR: string = '#d5ccb4';
@@ -26,10 +29,12 @@ const MISS_CAPTION_COLOR: string = '#a90000';
 const MISS_REF_COLOR: string = '#ff3737';
 const ACTUAL_CAPTION_COLOR: string = '#b2691c';
 const ACTUAL_REF_COLOR: string = '#ffd639';
-const BASE_SCORE_COLOR: string = '#555555';
-const FINAL_SCORE_COLOR: string = '#ffffff';
+const BASE_SCORE_COLOR: string = '#015858';
+const FINAL_SCORE_COLOR: string = '#00ffff';
 const ATTACK_CAPTION_COLOR: string = '#a90000';
 const ATTACK_CALC_COLOR: string = '#ff3737';
+const BASE_DAMAGE_COLOR: string = '#a90000';
+const FINAL_DAMAGE_COLOR: string = '#ff3737';
 
 const TOP_MARGIN: number = 10;
 const SIDE_MARGIN: number = 4;
@@ -87,6 +92,111 @@ enum BattleStage {
     END_ENEMY_TURN  = 7,  // Enemy has taken its turn, and the result is displayed. Press Enter to continue.
     VICTORY         = 8,  // Player is victorious! Press Enter to leave the battle.
     DEFEAT          = 9   // Player is defeated. Press Enter to leave the battle.
+};
+
+/**
+ * Structures
+ */
+
+type StatusEffect = {
+    name: string;
+    statusName: string;
+    iconKey: string;
+    duration: number;
+    animation: string;
+    sound: string;
+    pulseColor?: GColor;
+    effectFunc?: Function;
+    damageFunc?: () => number;
+};
+type GEnemyAttack = {
+    attackName: string;
+    enemies: string[];
+    minLevel: number;
+    text: string;
+    soundKey: string;
+    statusEffect: StatusEffect|null;
+    animFunc: (nextStep: Function) => void;
+    damageFunc: () => number;
+    condFunc: () => boolean;
+};
+type EnemyTurnResult = {
+    damage: number;
+    newStatusEffect?: StatusEffect;
+    armorAbsorb: boolean;
+    shieldDeflect: boolean;
+    armorPart: string|null;
+    statusEffectDamage: number;
+};
+
+/**
+ * Status Effects
+ */
+
+// Inflicted by the Poison attack
+const POISON_EFFECT: StatusEffect = {
+    name: 'Poison',
+    statusName: 'Poisoned',
+    iconKey: 'poison_status',
+    duration: 4,
+    animation: '',
+    sound: 'poison',
+    pulseColor: new GColor(0x66ff66),
+    damageFunc: () => {
+        return RANDOM.randInt(
+            Math.ceil(ENEMY.getBaseDamage() * .25),
+            Math.ceil(ENEMY.getBaseDamage() * .5)
+        );
+    }
+};
+// Inflicted by the Snare attack
+const ENSNARE_EFFECT: StatusEffect = {
+    name: 'Ensnare',
+    statusName: 'Ensnared',
+    iconKey: 'ensnare_status',
+    animation: '',
+    sound: '',
+    duration: 4, // Effectively 3, because it will tick down at the beginning of the round
+    effectFunc: () => {
+    }
+};
+// Inflicted by the Smoke attack
+const VEIL_EFFECT: StatusEffect = {
+    name: 'Veil',
+    statusName: 'Veiled',
+    iconKey: 'veil_status',
+    duration: 3,
+    animation: '',
+    sound: '',
+    effectFunc: () => {
+    }
+};
+// Inflicted by the Flame Breath attack
+const BURN_EFFECT: StatusEffect = {
+    name: 'Burn',
+    statusName: 'Burning',
+    iconKey: 'burn_status',
+    duration: 2,
+    animation: '',
+    sound: '',
+    pulseColor: new GColor(0xff6600),
+    damageFunc: () => {
+        return RANDOM.randInt(
+            Math.ceil(ENEMY.getBaseDamage() * .5),
+            Math.ceil(ENEMY.getBaseDamage() * .75)
+        );
+    }
+};
+// Inflicted by the Terrible Roar attack
+const FEAR_EFFECT: StatusEffect = {
+    name: 'Fear',
+    statusName: 'Afraid',
+    iconKey: 'fear_status',
+    duration: 1,
+    animation: '',
+    sound: '',
+    effectFunc: () => {
+    }
 };
 
 export class GBattleContent extends GContentScene {
@@ -174,16 +284,30 @@ export class GBattleContent extends GContentScene {
     private finalDamageCaption: Phaser.GameObjects.Text;
     private finalDamageCalc: Phaser.GameObjects.Text;
 
+    private playerReportTexts: Phaser.GameObjects.Text[];
+    private enemyReportTexts: Phaser.GameObjects.Text[];
+
     private playerParticleEmitter: Phaser.GameObjects.Particles.ParticleEmitter;
     private enemyParticleEmitter: Phaser.GameObjects.Particles.ParticleEmitter;
+    private poisonVaporEmitter: Phaser.GameObjects.Particles.ParticleEmitter;
 
-    private enemyAttacks: {element: GEnemyAttack, weight: number}[];
-    private enemyAttackSlashSprite: Phaser.GameObjects.Sprite;
+    private enemyAttacks: GEnemyAttack[];
+    private enemyBasicAttackSprite: Phaser.GameObjects.Sprite;
+    private enemyFieryDartSprite: Phaser.GameObjects.Sprite;
+    private enemySnareProjectileSprite: Phaser.GameObjects.Sprite;
+    private snareFullSprite: Phaser.GameObjects.Sprite;
+    private enemyPoisonVialImage: Phaser.GameObjects.Image;
 
     private playerBooks: string[];
     private bookWheelRepeats: number = 0;
 
     private animSpeed: number = 1;
+
+    private currentStatusEffect: StatusEffect|null = null;
+    private statusEffectIcon: Phaser.GameObjects.Image;
+    private statusEffectDurationText: Phaser.GameObjects.Text;
+    private statusEffectDuration: number = 0;
+    private specialAttackUsed: boolean = false;
 
     constructor() {
         super("BattleContent");
@@ -349,9 +473,17 @@ export class GBattleContent extends GContentScene {
         // Sword
         this.swordImage = this.add.image(SWORD_START_X, GUESS_SCRIPTURE_Y, 'big_sword').setOrigin(.5, .5).setVisible(false);
 
+        // Status Effect
+        this.statusEffectIcon = this.add.image(172, 121, 'poison_status').setOrigin(.5, .5).setScale(.1).setVisible(false);
+        this.statusEffectDurationText = this.add.text(196, 121, '', {
+            color: '#ffffff',
+            fontFamily: 'dyonisius',
+            fontSize: '20px'
+        }).setShadow(0, 0, '#313131', 3, false, true).setOrigin(.5, .5).setVisible(false);
+
         // Particle emitters (for damage):
         this.playerParticleEmitter = this.add.particles(PLAYER_PARTICLE_X, GUESS_SCRIPTURE_Y, 'light_particle', {
-            lifespan: 2000,
+            lifespan: 2000 / this.animSpeed,
             speed: { min: 500, max: 1000 },
             alpha: { start: 1.0, end: 0.0},
             gravityY: 2000,
@@ -359,14 +491,20 @@ export class GBattleContent extends GContentScene {
             emitting: false
         });
         this.enemyParticleEmitter = this.add.particles(ENEMY_PARTICLE_X, GUESS_SCRIPTURE_Y, 'dark_particle', {
-            lifespan: 2000,
+            lifespan: 2000 / this.animSpeed,
             speed: { min: 500, max: 1000 },
+            alpha: { start: 1.0, end: 0.0},
             gravityY: 2000,
             blendMode: Phaser.BlendModes.NORMAL,
             emitting: false
         });
+
+        // Reset some things for the beginning of combat:
         this.animSpeed = REGISTRY.getNumber('battleSpeed');
         this.currentStage = BattleStage.NONE;
+        this.currentStatusEffect = null;
+        this.specialAttackUsed = false;
+
         this.getSound().playMusic('onward');
         this.createAnimations();
         this.createPlayerResult();
@@ -382,9 +520,13 @@ export class GBattleContent extends GContentScene {
             switch(keyEvent.key) {
                 case 'Enter':
                     if (this.currentStage === BattleStage.END_PLAYER_TURN) {
-                        this.doEnemyAttack();
+                        this.setCurrentStage(BattleStage.ENEMY_ATTACK);
+                    } else if (this.currentStage === BattleStage.END_ENEMY_TURN) {
+                        this.finishEnemyTurn();
                     } else if (this.currentStage === BattleStage.VICTORY) {
                         this.endBattle(true);
+                    } else if (this.currentStage === BattleStage.DEFEAT) {
+                        this.endBattle(false);
                     }
                     break;
             }
@@ -456,19 +598,98 @@ export class GBattleContent extends GContentScene {
     }
 
     private createAnimations() {
-        this.enemyAttackSlashSprite = this.add.sprite(PLAYER_PARTICLE_X, GUESS_SCRIPTURE_Y, 'slash').setOrigin(0, .5);
-        this.enemyAttackSlashSprite.setVisible(false);
+        /**
+         * The Basic attack uses a simple sprite animation that plays once and disappears.
+         */
+        this.enemyBasicAttackSprite = this.add.sprite(PLAYER_PARTICLE_X, GUESS_SCRIPTURE_Y, 'slash').setOrigin(0, .5).setVisible(false);
         if (!this.anims.exists('slash')) {
             this.anims.create({
                 key: 'slash',
                 frames: this.anims.generateFrameNumbers(
                     'slash',
                     { start: 0, end: 7 }
-                ),
-                frameRate: (24)
+                )
             });
         }
         this.anims.get('slash').frameRate = 24 * this.animSpeed;
+
+        /**
+         * The Fiery Dart attack uses a sprite projectile that twists as it flies from the enemy to the player.
+         */
+        this.enemyFieryDartSprite = this.add.sprite(0, 0, 'fiery_dart').setOrigin(.5, .5).setVisible(false);
+        if (!this.anims.exists('fiery_dart')) {
+            this.anims.create({
+                key: 'fiery_dart',
+                frames: this.anims.generateFrameNumbers(
+                    'fiery_dart',
+                    { start: 0, end: 3 }
+                ),
+                repeat: -1
+            });
+        }
+        this.anims.get('fiery_dart').frameRate = 8 * this.animSpeed;
+
+        /**
+         * The Poison attack uses a simple image that flies in an arc toward the player;
+         * a particle emitter is used to create a trail of poisonous vapors behind it.
+         */
+        this.enemyPoisonVialImage = this.add.image(0, 0, 'poison_vial').setOrigin(.5, .5).setVisible(false);
+        this.poisonVaporEmitter = this.add.particles(0, 0, 'poison_vapor', {
+            lifespan: 1000 / this.animSpeed,
+            blendMode: Phaser.BlendModes.NORMAL,
+            speed: { min: 50, max: 100 },
+            scale: { start: 0.1, end: 1.0 },
+            alpha: { start: 1.0, end: 0.0 },
+            quantity: 1,
+            emitting: false,
+        });
+
+        /**
+         * The Snare attack uses a sprite projectile that flies in an arc toward the player
+         * before spreading over him.
+         */
+        this.enemySnareProjectileSprite = this.add.sprite(0, 0, 'snare_phase1').setOrigin(.5, .5).setVisible(false);
+        this.snareFullSprite = this.add.sprite(0, 0, 'snare_drop').setOrigin(0, 0).setVisible(false);
+        if (!this.anims.exists('snare_phase1')) {
+            this.anims.create({
+                key: 'snare_phase1',
+                frames: this.anims.generateFrameNumbers(
+                    'snare_phase1',
+                    { start: 0, end: 5 }
+                )
+            });
+        }
+        this.anims.get('snare_phase1').frameRate = 45 * this.animSpeed;
+        if (!this.anims.exists('snare_phase2')) {
+            this.anims.create({
+                key: 'snare_phase2',
+                frames: this.anims.generateFrameNumbers(
+                    'snare_phase2',
+                    { start: 0, end: 6 }
+                )
+            });
+        }
+        this.anims.get('snare_phase2').frameRate = 45 * this.animSpeed;
+        if (!this.anims.exists('snare_drop')) {
+            this.anims.create({
+                key: 'snare_drop',
+                frames: this.anims.generateFrameNumbers(
+                    'snare_drop',
+                    { start: 0, end: 5 }
+                )
+            });
+        }
+        this.anims.get('snare_drop').frameRate = 40 * this.animSpeed;
+        if (!this.anims.exists('snare_break')) {
+            this.anims.create({
+                key: 'snare_break',
+                frames: this.anims.generateFrameNumbers(
+                    'snare_break',
+                    { start: 0, end: 5 }
+                )
+            });
+        }
+        this.anims.get('snare_break').frameRate = 30 * this.animSpeed;
     }
 
     private createPlayerResult() {
@@ -525,6 +746,27 @@ export class GBattleContent extends GContentScene {
         this.finalScoreCaption.setColor(FINAL_SCORE_COLOR);
         this.finalScoreCalc = this.add.text(0, 0, '2580', bigTextStyle).setOrigin(0, 0).setVisible(false);
         this.finalScoreCalc.setColor(FINAL_SCORE_COLOR);
+
+        this.playerReportTexts = [
+            this.guessCaption,
+            this.guessReference,
+            this.actualCaption,
+            this.actualReference,
+            this.chapterScoreCaption,
+            this.chapterScoreCalc,
+            this.verseScoreCaption,
+            this.verseScoreCalc,
+            this.perfectBonusCaption,
+            this.perfectBonusCalc,
+            this.baseScoreCaption,
+            this.baseScoreCalc,
+            this.booksMultCaption,
+            this.booksMultCalc,
+            this.graceBonusCaption,
+            this.graceBonusCalc,
+            this.finalScoreCaption,
+            this.finalScoreCalc
+        ];
     }
 
     private createEnemyResult() {
@@ -544,6 +786,7 @@ export class GBattleContent extends GContentScene {
         this.attackTypeCalc = this.add.text(0, 0, 'Basic', bigTextStyle).setOrigin(.5, 0).setVisible(false);
         this.attackTypeCalc.setColor(ATTACK_CALC_COLOR);
         this.attackEffectCaption = this.add.text(0, 0, 'Effect: Poison', smallTextStyle).setOrigin(.5, 0).setVisible(false);
+        this.attackEffectCaption.setColor(ATTACK_CAPTION_COLOR);
 
         this.attackPowerCaption = this.add.text(0, 0, 'Attack Power', smallTextStyle).setOrigin(0, 0).setVisible(false);
         this.attackPowerCaption.setColor(REPORT_TEXT_COLOR);
@@ -552,18 +795,18 @@ export class GBattleContent extends GContentScene {
 
         this.armorCaption = this.add.text(0, 0, 'Armor Absorb', smallTextStyle).setOrigin(0, 0).setVisible(false);
         this.armorCaption.setColor(REPORT_TEXT_COLOR);
-        this.armorCalc = this.add.text(0, 0, '+ 50%', smallTextStyle).setOrigin(0, 0).setVisible(false);
+        this.armorCalc = this.add.text(0, 0, '- 50%', smallTextStyle).setOrigin(0, 0).setVisible(false);
         this.armorCalc.setColor(REPORT_TEXT_COLOR);
 
         this.shieldCaption = this.add.text(0, 0, 'Shield Deflect', smallTextStyle).setOrigin(0, 0).setVisible(false);
         this.shieldCaption.setColor(REPORT_TEXT_COLOR);
-        this.shieldCalc = this.add.text(0, 0, '+ 50%', smallTextStyle).setOrigin(0, 0).setVisible(false);
+        this.shieldCalc = this.add.text(0, 0, '- 50%', smallTextStyle).setOrigin(0, 0).setVisible(false);
         this.shieldCalc.setColor(REPORT_TEXT_COLOR);
 
         this.baseDamageCaption = this.add.text(0, 0, 'Base Damage:', bigTextStyle).setOrigin(0, 0).setVisible(false);
-        this.baseDamageCaption.setColor(BASE_SCORE_COLOR);
+        this.baseDamageCaption.setColor(BASE_DAMAGE_COLOR);
         this.baseDamageCalc = this.add.text(0, 0, '100', bigTextStyle).setOrigin(0, 0).setVisible(false);
-        this.baseDamageCalc.setColor(BASE_SCORE_COLOR);
+        this.baseDamageCalc.setColor(BASE_DAMAGE_COLOR);
 
         this.statusEffectCaption = this.add.text(0, 0, 'Status: Burning', smallTextStyle).setOrigin(0, 0).setVisible(false);
         this.statusEffectCaption.setColor(REPORT_TEXT_COLOR);
@@ -576,9 +819,29 @@ export class GBattleContent extends GContentScene {
         this.graceProtectionCalc.setColor(REPORT_TEXT_COLOR);
 
         this.finalDamageCaption = this.add.text(0, 0, 'Final Damage:', bigTextStyle).setOrigin(0, 0).setVisible(false);
-        this.finalDamageCaption.setColor(FINAL_SCORE_COLOR);
+        this.finalDamageCaption.setColor(FINAL_DAMAGE_COLOR);
         this.finalDamageCalc = this.add.text(0, 0, '100', bigTextStyle).setOrigin(0, 0).setVisible(false);
-        this.finalDamageCalc.setColor(FINAL_SCORE_COLOR);
+        this.finalDamageCalc.setColor(FINAL_DAMAGE_COLOR);
+
+        this.enemyReportTexts = [
+            this.attackTypeCaption,
+            this.attackTypeCalc,
+            this.attackEffectCaption,
+            this.attackPowerCaption,
+            this.attackPowerCalc,
+            this.armorCaption,
+            this.armorCalc,
+            this.shieldCaption,
+            this.shieldCalc,
+            this.baseDamageCaption,
+            this.baseDamageCalc,
+            this.statusEffectCaption,
+            this.statusEffectCalc,
+            this.graceProtectionCaption,
+            this.graceProtectionCalc,
+            this.finalDamageCaption,
+            this.finalDamageCalc
+        ];
     }
 
     private layoutPlayerResult(isPerfect: boolean) {
@@ -635,42 +898,42 @@ export class GBattleContent extends GContentScene {
 
         // If status effect lines are ommitted, make some
         // small adjustments to keep everything centered.
-        let y: number = 486 + (newEffect ? 0 : 10) + (existingEffect ? 0 : 10);
-
+        let y: number = 496 + (newEffect ? 0 : 10) + (existingEffect ? 0 : 10);
+        console.log('attackTypeCaption y:', y);
         this.attackTypeCaption.setPosition(GFF.GAME_W / 2, y);
-        y += smallGap;
+        y += smallGap; console.log('attackTypeCalc y:', y);
         this.attackTypeCalc.setPosition(GFF.GAME_W / 2, y);
         if (newEffect) {
-            y += smallGap;
+            y += smallGap; console.log('attackEffectCaption y:', y);
             this.attackEffectCaption.setPosition(GFF.GAME_W / 2, y);
         }
-        y += largeGap;
+        y += largeGap; console.log('attackPowerCaption y:', y);
 
         this.attackPowerCaption.setPosition(SCORE_CAPTION_X, y);
         this.attackPowerCalc.setPosition(SCORE_CALC_X, y);
-        y += smallGap;
+        y += smallGap; console.log('armorCaption y:', y);
 
         this.armorCaption.setPosition(SCORE_CAPTION_X, y);
         this.armorCalc.setPosition(SCORE_CALC_X, y);
-        y += smallGap;
+        y += smallGap; console.log('shieldCaption y:', y);
 
         this.shieldCaption.setPosition(SCORE_CAPTION_X, y);
         this.shieldCalc.setPosition(SCORE_CALC_X, y);
-        y += smallGap;
+        y += smallGap; console.log('baseDamageCaption y:', y);
 
         this.baseDamageCaption.setPosition(SCORE_CAPTION_X, y);
         this.baseDamageCalc.setPosition(SCORE_CALC_X, y);
-        y += largeGap;
+        y += largeGap; console.log('statusEffectCaption y:', y);
 
         if (existingEffect) {
             this.statusEffectCaption.setPosition(SCORE_CAPTION_X, y);
             this.statusEffectCalc.setPosition(SCORE_CALC_X, y);
-            y += smallGap;
+            y += smallGap; console.log('graceProtectionCaption y:', y);
         }
 
         this.graceProtectionCaption.setPosition(SCORE_CAPTION_X, y);
         this.graceProtectionCalc.setPosition(SCORE_CALC_X, y);
-        y += smallGap;
+        y += smallGap; console.log('finalDamageCaption y:', y);
 
         this.finalDamageCaption.setPosition(SCORE_CAPTION_X, y);
         this.finalDamageCalc.setPosition(SCORE_CALC_X, y);
@@ -679,22 +942,165 @@ export class GBattleContent extends GContentScene {
     private loadEnemyAttacks() {
         const ENEMY_ATTACKS: GEnemyAttack[] = [
             {
-                attackName: 'basic attack',
+                attackName: 'Basic',
                 enemies: ['minion', 'Mammon', 'Beelzebub', 'Belial', 'Legion', 'Apollyon', 'Lucifer', 'Dragon'],
                 minLevel: 0,
-                weight: 3,
                 text: '_ attacks!',
                 soundKey: 'kapow',
-                actionFunction: () => {this.doEnemyAttackBasic();}
-            }
+                statusEffect: null,
+                animFunc: (nextStep: Function) => {
+                    this.enemyBasicAttackSprite.setVisible(true);
+                    this.enemyBasicAttackSprite.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
+                        console.log('animation complete: calling nextStep');
+                        this.enemyBasicAttackSprite.setVisible(false);
+                        nextStep();
+
+                    });
+                    this.enemyBasicAttackSprite.play('slash');
+                },
+                damageFunc: () => {return ENEMY.getBaseDamage();},
+                condFunc: () => {return true;},
+            },
+            {
+                attackName: 'Fiery Dart',
+                enemies: ['minion', 'Mammon', 'Beelzebub', 'Belial', 'Legion', 'Apollyon', 'Lucifer', 'Dragon'],
+                minLevel: 0,
+                text: '_ hurls a fiery dart!',
+                soundKey: 'fiery_dart',
+                statusEffect: null,
+                animFunc: (nextStep: Function) => {
+                    this.enemyFieryDartSprite.setPosition(this.enemyAvatar.x + this.enemyAvatar.width / 3, this.enemyAvatar.y + this.enemyAvatar.height / 3);
+                    this.enemyFieryDartSprite.setVisible(true);
+                    // The sprite animation rotates 4 frames
+                    this.enemyFieryDartSprite.play('fiery_dart');
+                    // Tween makes the dart shrink and grow as it flies, appearing to spin
+                    this.tweens.add({
+                        targets: this.enemyFieryDartSprite,
+                        scaleY: 0.25,
+                        duration: 300 / this.animSpeed,
+                        yoyo: true,
+                        repeat: 4,
+                    });
+                    // Tween makes the dart bob up and down as it flies:
+                    this.tweens.add({
+                        targets: this.enemyFieryDartSprite,
+                        y: this.enemyFieryDartSprite.y - 16,
+                        duration: 150 / this.animSpeed,
+                        ease: 'Sine.easeInOut',
+                        yoyo: true,
+                        repeat: 9
+                    });
+                    // Tween makes the dart fly across the screen:
+                    this.tweens.add({
+                        targets: this.enemyFieryDartSprite,
+                        x: PLAYER_PARTICLE_X,
+                        duration: 1500 / this.animSpeed,
+                        ease: 'Linear',
+                        onComplete: () => {
+                            this.enemyFieryDartSprite.setVisible(false);
+                            this.enemyFieryDartSprite.stop();
+                            nextStep();
+                        }
+                    });
+                },
+                damageFunc: () => {return Math.ceil(ENEMY.getBaseDamage() * RANDOM.randFloat(1.25, 1.75));},
+                condFunc: () => {return !this.specialAttackUsed && RANDOM.randPct() <= .3;},
+            },
+            {
+                attackName: 'Poison',
+                enemies: ['minion', 'Mammon', 'Beelzebub', 'Belial', 'Legion', 'Apollyon', 'Lucifer', 'Dragon'],
+                minLevel: 0,
+                text: '_ uses a deadly poison!',
+                soundKey: 'poison',
+                statusEffect: POISON_EFFECT,
+                animFunc: (nextStep: Function) => {
+                    const startY: number = this.enemyAvatar.y + this.enemyAvatar.height / 3;
+                    this.enemyPoisonVialImage.setPosition(this.enemyAvatar.x + this.enemyAvatar.width / 3, startY).setVisible(true);
+                    this.poisonVaporEmitter.setPosition(this.enemyPoisonVialImage.x, this.enemyPoisonVialImage.y).setVisible(true).setAbove(this.enemyPoisonVialImage);
+                    this.poisonVaporEmitter.emitParticle(1);
+                    this.poisonVaporEmitter.setFrequency(20 / this.animSpeed);
+                    this.poisonVaporEmitter.start();
+                    this.tweens.add({
+                        targets: this.enemyPoisonVialImage,
+                        x: PLAYER_PARTICLE_X,
+                        duration: 1200 / this.animSpeed,
+                        ease: 'Linear',
+                        onUpdate: (tween, target) => {
+                            const progress = tween.progress;
+                            target.y = startY - Math.sin(progress * Math.PI) * 40;
+                            this.poisonVaporEmitter.setPosition(target.x, target.y);
+                        },
+                        onComplete: () => {
+                            this.enemyPoisonVialImage.setVisible(false);
+                            this.poisonVaporEmitter.stop();
+                            this.poisonVaporEmitter.explode(20);
+                            this.doStatusPulse(POISON_EFFECT);
+                            this.createNewStatusEffect(POISON_EFFECT, nextStep);
+                        }
+                    });
+                },
+                damageFunc: () => {return 0;},
+                condFunc: () => {return !this.specialAttackUsed && this.currentStatusEffect === null;},
+            },
+            {
+                attackName: 'Snare',
+                enemies: ['minion', 'Mammon', 'Beelzebub', 'Belial', 'Legion', 'Apollyon', 'Lucifer', 'Dragon'],
+                minLevel: 0,
+                text: '_ casts a snare!',
+                soundKey: 'miss',
+                statusEffect: ENSNARE_EFFECT,
+                animFunc: (nextStep: Function) => {
+                    const startX: number = this.enemyAvatar.x + this.enemyAvatar.width / 3;
+                    const startY: number = this.playerAvatar.y;
+                    const finalX: number = this.playerAvatar.x + this.playerBaseImage.width - (this.playerBaseImage.width / 3);
+                    this.enemySnareProjectileSprite.setPosition(startX, startY).setVisible(true);
+                    // The projectile animation plays 6 frames, 8 times
+                    this.enemySnareProjectileSprite.play({ key: 'snare_phase1', repeat: 7 });
+                    this.enemySnareProjectileSprite.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
+                        // The spread animation plays 7 frames, once
+                        this.enemySnareProjectileSprite.play('snare_phase2');
+                    });
+                    this.tweens.add({
+                        targets: this.enemySnareProjectileSprite,
+                        x: finalX,
+                        duration: 1200 / this.animSpeed,
+                        ease: 'Linear',
+                        onUpdate: (tween, target: Phaser.GameObjects.Image) => {
+                            const progress = tween.progress;
+                            const height = 140;
+                            target.y = startY - Math.sin(progress * Math.PI) * height;
+                            const dx = finalX - startX;
+                            const dy = -Math.cos(progress * Math.PI) * height * Math.PI;
+                            target.rotation = Math.atan2(dy, dx) + Math.PI;
+                        },
+                        onComplete: () => {
+                            this.enemySnareProjectileSprite.setVisible(false);
+                            // The drop animation plays 6 frames, once
+                            this.snareFullSprite.setPosition(this.playerAvatar.x - 63, this.playerAvatar.y - 45).setVisible(true);
+                            this.snareFullSprite.play('snare_drop');
+                            this.getSound().playSound('wind_rush');
+                            this.snareFullSprite.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
+                                this.createNewStatusEffect(ENSNARE_EFFECT, nextStep);
+                            });
+                        }
+                    });
+                },
+                damageFunc: () => {return 0;},
+                condFunc: () => {return !this.specialAttackUsed && this.currentStatusEffect === null;},
+            },
         ];
 
         this.enemyAttacks = [];
         ENEMY_ATTACKS.forEach(a => {
             // Check if the enemy is eligible for this attack:
-            if (a.enemies.includes(ENEMY.getCurrentSpirit().type) && a.minLevel <= ENEMY.getCurrentSpirit().level) {
+            if (
+                // Enemy must be in the list:
+                a.enemies.includes(ENEMY.getCurrentSpirit().type)
+                // Enemy must be a boss, or a minion of sufficient level:
+                && (ENEMY.getCurrentSpirit().type !== 'minion' || a.minLevel <= ENEMY.getCurrentSpirit().level)
+            ) {
                 // Eligible: add to array of attacks:
-                this.enemyAttacks.push({element: a, weight: a.weight});
+                this.enemyAttacks.push(a);
             }
         });
     }
@@ -850,34 +1256,23 @@ export class GBattleContent extends GContentScene {
         });
     }
 
-    private doEnemyAttack() {
+    private startEnemyTurn() {
         this.setInputMode(INPUT_DISABLED);
-        const chosenAttack: GEnemyAttack = RANDOM.randElementWeighted(this.enemyAttacks) as GEnemyAttack;
+        const eligibleAttacks: GEnemyAttack[] = this.enemyAttacks.filter(a => a.condFunc());
+        const chosenAttack: GEnemyAttack = RANDOM.randElement(eligibleAttacks);
+
+        this.playerReportTexts.forEach(t => t.setVisible(false));
+        this.tweens.add({
+            targets: this.resultImage,
+            duration: 200 / this.animSpeed,
+            scale: 0.0
+        });
 
         this.tweens.add({
             targets: [
                 this.scrollOpenImage,
                 this.scriptureText,
                 this.eventText,
-                this.resultImage,
-                this.guessCaption,
-                this.guessReference,
-                this.actualCaption,
-                this.actualReference,
-                this.chapterScoreCaption,
-                this.chapterScoreCalc,
-                this.verseScoreCaption,
-                this.verseScoreCalc,
-                this.perfectBonusCaption,
-                this.perfectBonusCalc,
-                this.baseScoreCaption,
-                this.baseScoreCalc,
-                this.booksMultCaption,
-                this.booksMultCalc,
-                this.graceBonusCaption,
-                this.graceBonusCalc,
-                this.finalScoreCaption,
-                this.finalScoreCalc
             ],
             duration: 500 / this.animSpeed,
             alpha: 0.0,
@@ -886,17 +1281,54 @@ export class GBattleContent extends GContentScene {
                 this.eventText.setVisible(true);
                 this.eventText.text = chosenAttack.text.replace('_', ENEMY.getCurrentSpirit().name);
                 this.time.delayedCall(700 / this.animSpeed, () => {
-                    this.getSound().playSound(chosenAttack.soundKey);
-                    chosenAttack.actionFunction();
+                    this.doEnemyAttack(chosenAttack);
                 });
             }
         });
     }
 
-    private beginRound() {
-        this.time.delayedCall(500 / this.animSpeed, () => {
-            this.serveScroll();
+    private finishEnemyTurn() {
+        this.enemyReportTexts.forEach(t => t.setVisible(false));
+        this.tweens.add({
+            targets: this.enemyResultImage,
+            duration: 200 / this.animSpeed,
+            scale: 0.0
         });
+
+        this.tweens.add({
+            targets: [
+                this.eventText
+            ],
+            duration: 500 / this.animSpeed,
+            alpha: 0.0,
+            onComplete: () => {
+                this.beginRound();
+            }
+        });
+    }
+
+    private beginRound() {
+        // Tick down status effect duration and remove if expired:
+        if (this.statusEffectDuration > 0) {
+            this.statusEffectDuration--;
+            const text = `${this.currentStatusEffect === ENSNARE_EFFECT ? this.statusEffectDuration - 1 : this.statusEffectDuration}`;
+            this.statusEffectDurationText.setText(text);
+            if (this.statusEffectDuration === 0) {
+                this.removeStatusEffect(() => {
+                    this.time.delayedCall(500 / this.animSpeed, () => {
+                        this.serveScroll();
+                    });
+                });
+                return;
+            }
+        }
+        if (this.currentStatusEffect === ENSNARE_EFFECT) {
+            this.doSnareStruggle();
+        } else {
+            this.time.delayedCall(500 / this.animSpeed, () => {
+                this.serveScroll();
+            });
+        }
     }
 
     private serveScroll() {
@@ -1047,11 +1479,11 @@ export class GBattleContent extends GContentScene {
         }
     }
 
-    private setCurrentStage(guessStage: BattleStage) {
+    private setCurrentStage(newStage: BattleStage) {
 
         const setup: Function = () => {
             // Set new stage:
-            this.currentStage = guessStage;
+            this.currentStage = newStage;
             // Begin new stage:
             switch (this.currentStage) {
                 case BattleStage.BOOK:
@@ -1084,9 +1516,21 @@ export class GBattleContent extends GContentScene {
                 case BattleStage.END_PLAYER_TURN:
                     this.showGuessResult();
                     break;
+                case BattleStage.ENEMY_ATTACK:
+                    this.startEnemyTurn();
+                    break;
+                case BattleStage.END_ENEMY_TURN:
+                    this.setInputMode(INPUT_PROMPTENTER);
+                    break;
                 case BattleStage.VICTORY:
                     this.showGuessResult();
                     this.setInputMode(INPUT_PROMPTENTER);
+                    break;
+                case BattleStage.DEFEAT:
+                    this.showEnemyAttackResult();
+                    this.getSound().playSound('enemy_laugh').once('complete', () => {
+                        this.setInputMode(INPUT_PROMPTENTER);
+                    });
                     break;
             }
         };
@@ -1110,6 +1554,12 @@ export class GBattleContent extends GContentScene {
                 setup();
                 break;
             case BattleStage.END_PLAYER_TURN:
+                setup();
+                break;
+            case BattleStage.ENEMY_ATTACK:
+                setup();
+                break;
+            case BattleStage.END_ENEMY_TURN:
                 setup();
                 break;
             default:
@@ -1300,32 +1750,111 @@ export class GBattleContent extends GContentScene {
         this.resultImage.setVisible(true).setAlpha(1.0);
         this.tweens.add({
             targets: this.resultImage,
-            duration: 300 / this.animSpeed,
+            duration: 200 / this.animSpeed,
             scale: 1.0,
             onComplete: () => {
-                this.guessCaption.setVisible(true).setAlpha(1.0);
-                this.guessReference.setVisible(true).setAlpha(1.0);
-                this.actualCaption.setVisible(true).setAlpha(1.0);
-                this.actualReference.setVisible(true).setAlpha(1.0);
-                this.chapterScoreCaption.setVisible(true).setAlpha(1.0);
-                this.chapterScoreCalc.setVisible(true).setAlpha(1.0);
-                this.verseScoreCaption.setVisible(true).setAlpha(1.0);
-                this.verseScoreCalc.setVisible(true).setAlpha(1.0);
+                this.playerReportTexts.forEach(t => t.setVisible(true).setAlpha(1.0));
                 this.perfectBonusCaption.setVisible(perfect).setAlpha(1.0);
                 this.perfectBonusCalc.setVisible(perfect).setAlpha(1.0);
-                this.baseScoreCaption.setVisible(true).setAlpha(1.0);
-                this.baseScoreCalc.setVisible(true).setAlpha(1.0);
-                this.booksMultCaption.setVisible(true).setAlpha(1.0);
-                this.booksMultCalc.setVisible(true).setAlpha(1.0);
-                this.graceBonusCaption.setVisible(true).setAlpha(1.0);
-                this.graceBonusCalc.setVisible(true).setAlpha(1.0);
-                this.finalScoreCaption.setVisible(true).setAlpha(1.0);
-                this.finalScoreCalc.setVisible(true).setAlpha(1.0);
             }
         });
     }
 
-    private damagePlayerFaith(amount: number) {
+    private evaluateEnemyAttack(attack: GEnemyAttack): EnemyTurnResult {
+        // Get the attack's raw damage:
+        const damage: number = attack.damageFunc();
+
+        // Create the layout for the enemy's attack result, which will show after the attack animation:
+        this.layoutEnemyResult(attack.statusEffect !== null, this.currentStatusEffect !== null);
+
+        // Determine whether the player's armor/shield will help mitigate the damage:
+        let armorAbsorb: boolean = false;
+        let armorPart: string|null = null;
+        const struckPart: number = RANDOM.randInt(1, 4);
+        const shieldDeflect = ARMORS.hasArmor(2) && RANDOM.randInt(1, 4) === struckPart;
+        switch (struckPart) {
+            case 1: // Helmet
+                if (ARMORS.hasArmor(2)) {
+                    armorAbsorb = true;
+                    armorPart = 'Helmet';
+                }
+                break;
+            case 4: // Breastplate
+                if (ARMORS.hasArmor(3)) {
+                    armorAbsorb = true;
+                    armorPart = 'Breastplate';
+                }
+                break;
+            case 2: // Girdle
+                if (ARMORS.hasArmor(6)) {
+                    armorAbsorb = true;
+                    armorPart = 'Girdle';
+                }
+                break;
+            case 3: // Shoes
+                if (ARMORS.hasArmor(5)) {
+                    armorAbsorb = true;
+                    armorPart = 'Shoes';
+                }
+        }
+
+        const armorAmt = Math.ceil(armorAbsorb ? .5 * damage : 0);
+        const shieldAmt = Math.ceil(shieldDeflect ? .5 * damage : 0);
+        const baseDamage = Math.max(damage - armorAmt - shieldAmt, 0);
+        const statEffDamage = this.currentStatusEffect && this.currentStatusEffect.damageFunc ?
+            this.currentStatusEffect.damageFunc() : 0;
+        const gracePctInt = Math.ceil(PLAYER.getGrace() / 10);
+        const finalBaseDamage = Math.max(baseDamage - Math.ceil((gracePctInt / 100) * baseDamage), 0);
+        const finalEffectDamage = Math.max(statEffDamage - Math.ceil((gracePctInt / 100) * statEffDamage), 0);
+        const finalDamage = finalBaseDamage + finalEffectDamage;
+
+        // Fill in the values for the report
+        this.attackTypeCalc.text = attack.attackName;
+        this.attackEffectCaption.text = attack.statusEffect ? `Effect: ${attack.statusEffect.name}` : '';
+        this.attackPowerCalc.text = `+ ${damage}`;
+        this.armorCalc.text = armorAbsorb ? '- 50%' : '-';
+        this.shieldCalc.text = shieldDeflect ? '- 50%' : '-';
+        this.baseDamageCalc.text = `${baseDamage}`;
+        this.statusEffectCaption.text = this.currentStatusEffect && statEffDamage > 0 ? `Status: ${this.currentStatusEffect.name}` : '';
+        this.statusEffectCalc.text = this.currentStatusEffect && statEffDamage > 0 ? `+ ${statEffDamage}` : '';
+        this.graceProtectionCalc.text = gracePctInt > 0 ? `- ${gracePctInt}%` : '-';
+        this.finalDamageCalc.text = `${finalDamage}`;
+
+        return {
+            damage: finalBaseDamage,
+            armorPart: armorPart,
+            armorAbsorb: armorAbsorb,
+            shieldDeflect: shieldDeflect,
+            statusEffectDamage: finalEffectDamage,
+        }
+    }
+
+    private showEnemyAttackResult() {
+        const newEffect: boolean = this.attackEffectCaption.text !== '';
+        const existingEffect: boolean = this.statusEffectCalc.text !== '';
+
+        this.enemyResultImage.setScale(0);
+        this.enemyResultImage.setVisible(true).setAlpha(1.0);
+        this.tweens.add({
+            targets: this.enemyResultImage,
+            duration: 200 / this.animSpeed,
+            scale: 1.0,
+            onComplete: () => {
+                this.enemyReportTexts.forEach(t => t.setVisible(true).setAlpha(1.0));
+                this.attackEffectCaption.setVisible(newEffect).setAlpha(1.0);
+                this.statusEffectCaption.setVisible(existingEffect).setAlpha(1.0);
+                this.statusEffectCalc.setVisible(existingEffect).setAlpha(1.0);
+            }
+        });
+    }
+
+    private damagePlayerFaith(amount: number, soundKey: string, nextStep: Function) {
+        if (amount <= 0) {
+            nextStep();
+            return;
+        }
+        console.log('damagePlayerFaith() called');
+        this.sound.play(soundKey);
         this.playerParticleEmitter.explode(amount);
         const faithWrapper: {value: number} = {value: PLAYER.getFaith()};
         const newFaith: number = Math.max(0, PLAYER.getFaith() - amount);
@@ -1337,24 +1866,27 @@ export class GBattleContent extends GContentScene {
                 PLAYER.setFaith(Math.floor(faithWrapper.value));
             },
             onComplete: () => {
-                this.tweens.add({
-                    targets: this.eventText,
-                    duration: 200 / this.animSpeed,
-                    alpha: 0.0,
-                    delay: 1000 / this.animSpeed,
-                    onComplete: () => {
-                        if (PLAYER.getFaith() <= 0) {
-                            this.doDefeatSequence();
-                        } else {
-                            this.beginRound();
-                        }
-                    }
-                });
+                if (PLAYER.getFaith() <= 0) {
+                    this.doDefeatSequence();
+                } else {
+                    nextStep();
+                }
             }
         });
     }
 
     private damageEnemyResistance(amount: number) {
+        if (amount <= 0) {
+            this.tweens.add({
+                targets: this.swordImage,
+                alpha: 0,
+                duration: 1000 / this.animSpeed,
+                onComplete: () => {
+                    this.setCurrentStage(BattleStage.END_PLAYER_TURN);
+                }
+            });
+            return;
+        }
         this.enemyParticleEmitter.explode(amount);
         const resWrapper: {value: number} = {value: ENEMY.getResistance()};
         const newRes: number = Math.max(0, ENEMY.getResistance() - amount);
@@ -1382,20 +1914,155 @@ export class GBattleContent extends GContentScene {
         });
     }
 
-    private doEnemyAttackBasic() {
-        // Get enemy's base damage:
-        const baseDamage: number = ENEMY.getBaseDamage();
-
-        // Do sprite animation:
-        this.enemyAttackSlashSprite.setVisible(true);
-        this.enemyAttackSlashSprite.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
-            // Hide sprite:
-            this.enemyAttackSlashSprite.setVisible(false);
-            // Play sound and decrease player's faith:
-            this.getSound().playSound('splooge');
-            this.damagePlayerFaith(baseDamage);
+    private createNewStatusEffect(statusEffect: StatusEffect, nextStep: Function) {
+        this.currentStatusEffect = statusEffect;
+        this.statusEffectDuration = statusEffect.duration;
+        this.statusEffectIcon.setTexture(statusEffect.iconKey);
+        this.statusEffectIcon.setScale(0.1).setAlpha(1.0).setVisible(true);
+        this.tweens.add({
+            targets: this.statusEffectIcon,
+            scale: 1.0,
+            duration: 200 / this.animSpeed,
+            onComplete: () => {
+                this.tweens.add({
+                    targets: this.statusEffectIcon,
+                    scale: .5,
+                    duration: 200 / this.animSpeed,
+                    onComplete: () => {
+                        const text = `${statusEffect === ENSNARE_EFFECT ? this.statusEffectDuration - 1 : this.statusEffectDuration}`;
+                        this.statusEffectDurationText.setText(text).setVisible(true);
+                        nextStep();
+                    }
+                });
+            }
         });
-        this.enemyAttackSlashSprite.play('slash');
+    }
+
+    private removeStatusEffect(nextStep: Function) {
+        this.currentStatusEffect = null;
+        this.tweens.add({
+            targets: this.statusEffectIcon,
+            alpha: 0.0,
+            duration: 200 / this.animSpeed,
+            onComplete: () => {
+                this.statusEffectDurationText.setVisible(false);
+                nextStep();
+            }
+        });
+    }
+
+    private doStatusPulse(statusEffect: StatusEffect) {
+        // Damage-causing status effects cause the player to pulse with a certain tint:
+        const color = statusEffect.pulseColor as GColor;
+        const avatar = this.playerBaseImage;
+        avatar.setTint(color.num());
+        this.tweens.addCounter({
+            from: 100,
+            to: 0,
+            duration: 500 / this.animSpeed,
+            onUpdate: (tween) => {
+                const value = tween.getValue() as number;
+                // fade the tint effect out by interpolating toward white
+                const c = Phaser.Display.Color.Interpolate.ColorWithColor(
+                    new Phaser.Display.Color(255, 255, 255),
+                    color.phaser(),
+                    100,
+                    value
+                );
+                const tint = Phaser.Display.Color.GetColor(c.r, c.g, c.b);
+                avatar.setTint(tint);
+            },
+            onComplete: () => {
+                avatar.clearTint();
+            }
+        });
+    }
+
+    private doSnareStruggle() {
+        this.eventText.text = 'Adam struggles to get free...';
+        this.tweens.add({
+            targets: [
+                this.eventText
+            ],
+            duration: 500 / this.animSpeed,
+            alpha: 1.0,
+            onComplete: () => {
+                this.time.delayedCall(500 / this.animSpeed, () => {
+                    this.getSound().playSound('snare_struggle');
+                    ANIM.wiggle(this, [this.playerAvatar, this.snareFullSprite], () => {
+                        this.time.delayedCall(500 / this.animSpeed, () => {
+
+                            // Figure out whether he actually breaks free
+                            const chances = [1.0, .66, .33];
+                            const chance = chances[this.statusEffectDuration - 1];
+                            const roll = RANDOM.randPct();
+                            console.log(`Struggle chance: ${chance} rolled: ${roll}`);
+                            const success = roll <= chance;
+                            if (success) {
+                                this.doBreakSnare();
+                            } else {
+                                this.setCurrentStage(BattleStage.ENEMY_ATTACK);
+                            }
+                        });
+                    });
+                });
+            }
+        });
+    }
+
+    private doBreakSnare() {
+        this.getSound().playSound('snare_break');
+        this.snareFullSprite.play('snare_break');
+        this.snareFullSprite.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
+            this.snareFullSprite.setVisible(false);
+            this.removeStatusEffect(() => {
+                this.setCurrentStage(BattleStage.ENEMY_ATTACK);
+            });
+        });
+    }
+
+    private doEnemyAttack(attack: GEnemyAttack) {
+        // Determine if this is a special attack; minions can use only one special attack per battle
+        if (attack.attackName !== 'Basic' && ENEMY.getCurrentSpirit().type === 'minion') {
+            this.specialAttackUsed = true;
+        }
+
+        // Evaluate the attack to get the amount of damage it will do:
+        const result: EnemyTurnResult = this.evaluateEnemyAttack(attack);
+
+        attack.animFunc(() => {
+            // After animation is done, decrease player's faith:
+            this.damagePlayerFaith(result.damage, 'splooge', () => {
+                // Finally, end the enemy's attack by showing the result and allowing player to proceed:
+                console.log('Callback called: ending enemy attack');
+                this.endEnemyAttack(result);
+            });
+        });
+
+        this.getSound().playSound(attack.soundKey);
+    }
+
+    private endEnemyAttack(result: EnemyTurnResult) {
+        console.log('endEnemyAttack() called');
+
+        // The enemy's attack just ended.
+        // The first thing to do is show the result; we'll delay it a little.
+        this.time.delayedCall(700 / this.animSpeed, () => {
+            this.showEnemyAttackResult();
+
+            // Once the result is shown, determine whether to apply extra damage for a status effect.
+            if (this.currentStatusEffect && result.statusEffectDamage > 0) {
+                const statusEffect = this.currentStatusEffect;
+                this.time.delayedCall(400 / this.animSpeed, () => {
+                    this.doStatusPulse(statusEffect);
+                    this.damagePlayerFaith(result.statusEffectDamage, statusEffect.sound, () => {
+                        this.setCurrentStage(BattleStage.END_ENEMY_TURN);
+                    });
+                });
+            } else {
+                this.setCurrentStage(BattleStage.END_ENEMY_TURN);
+            }
+        });
     }
 
     private doVictorySequence() {
@@ -1421,9 +2088,7 @@ export class GBattleContent extends GContentScene {
                 x: -this.playerBaseImage.width,
                 duration: APPROACH_TIME / this.animSpeed,
                 onComplete: () => {
-                    this.getSound().playSound('enemy_laugh').once('complete', () => {
-                        this.endBattle(false);
-                    });
+                    this.setCurrentStage(BattleStage.DEFEAT);
                 }
             });
         });

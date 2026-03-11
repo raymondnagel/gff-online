@@ -13,7 +13,7 @@ import { GCastleRegion } from '../regions/GCastleRegion';
 import { SAVE, FullSaveData } from '../save';
 import { ENEMY } from '../enemy';
 import { PEOPLE } from '../people';
-import { GColor, GPerson, GSaveable, GSpirit } from '../types';
+import { GPerson, GSaveable, GSpirit } from '../types';
 import { GSector } from '../regions/GSector';
 import { GRegion } from '../regions/GRegion';
 import { GPlainRegion } from '../regions/GPlainRegion';
@@ -46,7 +46,7 @@ import { COMMANDMENTS } from '../commandments';
 import { ARMORS } from '../armors';
 import { BOOKS } from '../books';
 import { RANDOM } from '../random';
-import { COLOR } from '../colors';
+import { COLOR, GColor } from '../colors';
 
 type IdRegistry = Map<number, any>;
 

@@ -1,5 +1,5 @@
 import { GRegion } from "./regions/GRegion";
-import { CardDir, CubeDir, Dir9, DirVert, GCityBlock, GColor, GDoorways, GLockedDoorRef, GPerson, GPoint2D, GPoint3D, GRect, GRoomWalls, GSaveable, GSceneryDef, GSceneryPlan, RoomBorder } from "./types";
+import { CardDir, CubeDir, Dir9, DirVert, GCityBlock, GDoorways, GLockedDoorRef, GPerson, GPoint2D, GPoint3D, GRect, GRoomWalls, GSaveable, GSceneryDef, GSceneryPlan, RoomBorder } from "./types";
 import { SCENERY } from "./scenery";
 import { GFF } from "./main";
 import { RANDOM } from "./random";
@@ -44,6 +44,7 @@ import { STRONGHOLD } from "./stronghold";
 import { GChurchArea } from "./areas/GChurchArea";
 import { SAVE } from "./save";
 import { RefFunction } from "./scenes/GLoadGameContent";
+import { GColor } from "./colors";
 
 const WALL_GUARD_THICK: number = 10;
 const WALL_CTRS: number[] = [

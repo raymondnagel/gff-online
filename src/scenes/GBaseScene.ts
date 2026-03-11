@@ -1,9 +1,8 @@
 import { GInputMode } from '../GInputMode';
 import { GSoundManager } from '../GSoundManager';
-import { COLOR } from '../colors';
+import { COLOR, GColor } from '../colors';
 import { DEPTH } from '../depths';
 import { GBaseGameMode } from '../game_modes/GBaseGameMode';
-import { GColor } from '../types';
 
 export abstract class GBaseScene extends Phaser.Scene {
 

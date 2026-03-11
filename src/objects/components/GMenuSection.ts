@@ -1,5 +1,6 @@
+import { GColor } from "../../colors";
 import { GBaseScene } from "../../scenes/GBaseScene";
-import { BoundedGameObject, GColor } from "../../types";
+import { BoundedGameObject } from "../../types";
 import { GMenuTextOption } from "./GMenuTextOption";
 
 export class GMenuSection {
