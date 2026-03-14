@@ -95,7 +95,10 @@ if (!existsSync(SPRITE_MANIFEST_PATH)) {
     console.log('Sprite Manifest created @ ' + SPRITE_MANIFEST_PATH);
 }
 
-const audioAssetList = getFiles(AUDIO_PATH, '.wav');
+const audioAssetList = [
+  ...getFiles(AUDIO_PATH, '.wav'),
+  ...getFiles(AUDIO_PATH, '.mp3')
+];
 
 if (!existsSync(AUDIO_MANIFEST_PATH)) {
     writeFileSync(AUDIO_MANIFEST_PATH, JSON.stringify(audioAssetList, null, 2));

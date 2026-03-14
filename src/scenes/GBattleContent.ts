@@ -8,7 +8,7 @@ import { GNumberEntry } from "../objects/components/GNumberEntry";
 import { GOptionWheel } from "../objects/components/GOptionWheel";
 import { GTextEntryControl } from "../objects/components/GTextEntryControl";
 import { PLAYER } from "../player";
-import { GScripture } from "../types";
+import { GPoint2D, GScripture } from "../types";
 import { GContentScene } from "./GContentScene";
 import { STATS } from "../stats";
 import { REGISTRY } from "../registry";
@@ -104,9 +104,8 @@ type StatusEffect = {
     iconKey: string;
     duration: number;
     animation: string;
-    sound: string;
-    pulseColor?: GColor;
-    effectFunc?: Function;
+    roundSound?: string;
+    roundFunc?: Function; // Something to happen each round; add later so it can reference 'this'
     damageFunc?: () => number;
 };
 type GEnemyAttack = {
@@ -140,8 +139,7 @@ const POISON_EFFECT: StatusEffect = {
     iconKey: 'poison_status',
     duration: 4,
     animation: '',
-    sound: 'poison',
-    pulseColor: new GColor(0x66ff66),
+    roundSound: 'poison',
     damageFunc: () => {
         return RANDOM.randInt(
             Math.ceil(ENEMY.getBaseDamage() * .25),
@@ -155,21 +153,15 @@ const ENSNARE_EFFECT: StatusEffect = {
     statusName: 'Ensnared',
     iconKey: 'ensnare_status',
     animation: '',
-    sound: '',
     duration: 4, // Effectively 3, because it will tick down at the beginning of the round
-    effectFunc: () => {
-    }
 };
 // Inflicted by the Smoke attack
 const VEIL_EFFECT: StatusEffect = {
     name: 'Veil',
     statusName: 'Veiled',
     iconKey: 'veil_status',
-    duration: 3,
+    duration: 4,
     animation: '',
-    sound: '',
-    effectFunc: () => {
-    }
 };
 // Inflicted by the Flame Breath attack
 const BURN_EFFECT: StatusEffect = {
@@ -178,8 +170,7 @@ const BURN_EFFECT: StatusEffect = {
     iconKey: 'burn_status',
     duration: 2,
     animation: '',
-    sound: '',
-    pulseColor: new GColor(0xff6600),
+    roundSound: '',
     damageFunc: () => {
         return RANDOM.randInt(
             Math.ceil(ENEMY.getBaseDamage() * .5),
@@ -194,9 +185,7 @@ const FEAR_EFFECT: StatusEffect = {
     iconKey: 'fear_status',
     duration: 1,
     animation: '',
-    sound: '',
-    effectFunc: () => {
-    }
+    roundSound: '',
 };
 
 export class GBattleContent extends GContentScene {
@@ -206,6 +195,7 @@ export class GBattleContent extends GContentScene {
     private enemyMeterImage: Phaser.GameObjects.Image;
     private vsImage: Phaser.GameObjects.Image;
     private playerBaseImage: Phaser.GameObjects.Image;
+    private playerArmImage: Phaser.GameObjects.Image;
     private playerAvatar: Phaser.GameObjects.Container;
     private enemyAvatar: Phaser.GameObjects.Image;
     private playerBar: Phaser.GameObjects.Rectangle;
@@ -292,11 +282,13 @@ export class GBattleContent extends GContentScene {
     private poisonVaporEmitter: Phaser.GameObjects.Particles.ParticleEmitter;
 
     private enemyAttacks: GEnemyAttack[];
-    private enemyBasicAttackSprite: Phaser.GameObjects.Sprite;
-    private enemyFieryDartSprite: Phaser.GameObjects.Sprite;
-    private enemySnareProjectileSprite: Phaser.GameObjects.Sprite;
+    private basicAttackSprite: Phaser.GameObjects.Sprite;
+    private fieryDartSprite: Phaser.GameObjects.Sprite;
+    private snareProjectileSprite: Phaser.GameObjects.Sprite;
     private snareFullSprite: Phaser.GameObjects.Sprite;
-    private enemyPoisonVialImage: Phaser.GameObjects.Image;
+    private poisonVialImage: Phaser.GameObjects.Image;
+    private poisonPulseTween?: Phaser.Tweens.Tween;
+    private smokePuffSprites: Phaser.GameObjects.Sprite[];
 
     private playerBooks: string[];
     private bookWheelRepeats: number = 0;
@@ -505,6 +497,12 @@ export class GBattleContent extends GContentScene {
         this.currentStatusEffect = null;
         this.specialAttackUsed = false;
 
+        POISON_EFFECT.roundFunc = () => {
+            if (this.statusEffectDuration < 4) {
+                this.poisonVaporEmitter.explode(20);
+            }
+        };
+
         this.getSound().playMusic('onward');
         this.createAnimations();
         this.createPlayerResult();
@@ -601,7 +599,7 @@ export class GBattleContent extends GContentScene {
         /**
          * The Basic attack uses a simple sprite animation that plays once and disappears.
          */
-        this.enemyBasicAttackSprite = this.add.sprite(PLAYER_PARTICLE_X, GUESS_SCRIPTURE_Y, 'slash').setOrigin(0, .5).setVisible(false);
+        this.basicAttackSprite = this.add.sprite(PLAYER_PARTICLE_X, GUESS_SCRIPTURE_Y, 'slash').setOrigin(0, .5).setVisible(false);
         if (!this.anims.exists('slash')) {
             this.anims.create({
                 key: 'slash',
@@ -616,7 +614,7 @@ export class GBattleContent extends GContentScene {
         /**
          * The Fiery Dart attack uses a sprite projectile that twists as it flies from the enemy to the player.
          */
-        this.enemyFieryDartSprite = this.add.sprite(0, 0, 'fiery_dart').setOrigin(.5, .5).setVisible(false);
+        this.fieryDartSprite = this.add.sprite(0, 0, 'fiery_dart').setOrigin(.5, .5).setVisible(false);
         if (!this.anims.exists('fiery_dart')) {
             this.anims.create({
                 key: 'fiery_dart',
@@ -627,13 +625,13 @@ export class GBattleContent extends GContentScene {
                 repeat: -1
             });
         }
-        this.anims.get('fiery_dart').frameRate = 8 * this.animSpeed;
+        this.anims.get('fiery_dart').frameRate = 20 * this.animSpeed;
 
         /**
          * The Poison attack uses a simple image that flies in an arc toward the player;
          * a particle emitter is used to create a trail of poisonous vapors behind it.
          */
-        this.enemyPoisonVialImage = this.add.image(0, 0, 'poison_vial').setOrigin(.5, .5).setVisible(false);
+        this.poisonVialImage = this.add.image(0, 0, 'poison_vial').setOrigin(.5, .5).setVisible(false);
         this.poisonVaporEmitter = this.add.particles(0, 0, 'poison_vapor', {
             lifespan: 1000 / this.animSpeed,
             blendMode: Phaser.BlendModes.NORMAL,
@@ -648,48 +646,58 @@ export class GBattleContent extends GContentScene {
          * The Snare attack uses a sprite projectile that flies in an arc toward the player
          * before spreading over him.
          */
-        this.enemySnareProjectileSprite = this.add.sprite(0, 0, 'snare_phase1').setOrigin(.5, .5).setVisible(false);
-        this.snareFullSprite = this.add.sprite(0, 0, 'snare_drop').setOrigin(0, 0).setVisible(false);
+        this.snareProjectileSprite = this.add.sprite(0, 0, 'snare_phase1').setOrigin(0.5, 0).setVisible(false);
+        this.snareFullSprite = this.add.sprite(0, 0, 'snare_phase2').setOrigin(0.5, 0).setVisible(false);
         if (!this.anims.exists('snare_phase1')) {
             this.anims.create({
                 key: 'snare_phase1',
                 frames: this.anims.generateFrameNumbers(
                     'snare_phase1',
-                    { start: 0, end: 5 }
+                    { start: 0, end: 6 }
                 )
             });
         }
-        this.anims.get('snare_phase1').frameRate = 45 * this.animSpeed;
+        this.anims.get('snare_phase1').frameRate = 50 * this.animSpeed;
         if (!this.anims.exists('snare_phase2')) {
             this.anims.create({
                 key: 'snare_phase2',
                 frames: this.anims.generateFrameNumbers(
                     'snare_phase2',
-                    { start: 0, end: 6 }
+                    { start: 0, end: 9 }
                 )
             });
         }
-        this.anims.get('snare_phase2').frameRate = 45 * this.animSpeed;
-        if (!this.anims.exists('snare_drop')) {
+        this.anims.get('snare_phase2').frameRate = 30 * this.animSpeed;
+        if (!this.anims.exists('snare_burst')) {
             this.anims.create({
-                key: 'snare_drop',
+                key: 'snare_burst',
                 frames: this.anims.generateFrameNumbers(
-                    'snare_drop',
+                    'snare_burst',
                     { start: 0, end: 5 }
                 )
             });
         }
-        this.anims.get('snare_drop').frameRate = 40 * this.animSpeed;
-        if (!this.anims.exists('snare_break')) {
+        this.anims.get('snare_burst').frameRate = 40 * this.animSpeed;
+
+        /**
+         * The Smoke attack uses 4 sprites that play the same animation in different positions.
+         */
+        this.smokePuffSprites = [];
+        for (let i = 0; i < 4; i++) {
+            const sprite = this.add.sprite(0, 0, 'smoke_puff').setOrigin(.5, .5).setVisible(false);
+            this.smokePuffSprites.push(sprite);
+        }
+        if (!this.anims.exists('smoke_puff')) {
             this.anims.create({
-                key: 'snare_break',
+                key: 'smoke_puff',
                 frames: this.anims.generateFrameNumbers(
-                    'snare_break',
-                    { start: 0, end: 5 }
-                )
+                    'smoke_puff',
+                    { start: 0, end: 9 }
+                ),
+                repeat: -1
             });
         }
-        this.anims.get('snare_break').frameRate = 30 * this.animSpeed;
+        this.anims.get('smoke_puff').frameRate = 10 * this.animSpeed;
     }
 
     private createPlayerResult() {
@@ -899,41 +907,39 @@ export class GBattleContent extends GContentScene {
         // If status effect lines are ommitted, make some
         // small adjustments to keep everything centered.
         let y: number = 496 + (newEffect ? 0 : 10) + (existingEffect ? 0 : 10);
-        console.log('attackTypeCaption y:', y);
         this.attackTypeCaption.setPosition(GFF.GAME_W / 2, y);
-        y += smallGap; console.log('attackTypeCalc y:', y);
+        y += smallGap;
         this.attackTypeCalc.setPosition(GFF.GAME_W / 2, y);
         if (newEffect) {
-            y += smallGap; console.log('attackEffectCaption y:', y);
+            y += smallGap;
             this.attackEffectCaption.setPosition(GFF.GAME_W / 2, y);
         }
-        y += largeGap; console.log('attackPowerCaption y:', y);
+        y += largeGap;
 
         this.attackPowerCaption.setPosition(SCORE_CAPTION_X, y);
         this.attackPowerCalc.setPosition(SCORE_CALC_X, y);
-        y += smallGap; console.log('armorCaption y:', y);
+        y += smallGap;
 
         this.armorCaption.setPosition(SCORE_CAPTION_X, y);
         this.armorCalc.setPosition(SCORE_CALC_X, y);
-        y += smallGap; console.log('shieldCaption y:', y);
-
+        y += smallGap;
         this.shieldCaption.setPosition(SCORE_CAPTION_X, y);
         this.shieldCalc.setPosition(SCORE_CALC_X, y);
-        y += smallGap; console.log('baseDamageCaption y:', y);
+        y += smallGap;
 
         this.baseDamageCaption.setPosition(SCORE_CAPTION_X, y);
         this.baseDamageCalc.setPosition(SCORE_CALC_X, y);
-        y += largeGap; console.log('statusEffectCaption y:', y);
+        y += largeGap;
 
         if (existingEffect) {
             this.statusEffectCaption.setPosition(SCORE_CAPTION_X, y);
             this.statusEffectCalc.setPosition(SCORE_CALC_X, y);
-            y += smallGap; console.log('graceProtectionCaption y:', y);
+            y += smallGap;
         }
 
         this.graceProtectionCaption.setPosition(SCORE_CAPTION_X, y);
         this.graceProtectionCalc.setPosition(SCORE_CALC_X, y);
-        y += smallGap; console.log('finalDamageCaption y:', y);
+        y += smallGap;
 
         this.finalDamageCaption.setPosition(SCORE_CAPTION_X, y);
         this.finalDamageCalc.setPosition(SCORE_CALC_X, y);
@@ -941,152 +947,208 @@ export class GBattleContent extends GContentScene {
 
     private loadEnemyAttacks() {
         const ENEMY_ATTACKS: GEnemyAttack[] = [
+            // {
+            //     attackName: 'Basic',
+            //     enemies: ['minion', 'Mammon', 'Beelzebub', 'Belial', 'Legion', 'Apollyon', 'Lucifer', 'Dragon'],
+            //     minLevel: 0,
+            //     text: '_ attacks!',
+            //     soundKey: 'kapow',
+            //     statusEffect: null,
+            //     animFunc: (nextStep: Function) => {
+            //         this.basicAttackSprite.setVisible(true);
+            //         this.basicAttackSprite.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
+            //             this.basicAttackSprite.setVisible(false);
+            //             nextStep();
+            //         });
+            //         this.basicAttackSprite.play('slash');
+            //     },
+            //     damageFunc: () => {return ENEMY.getBaseDamage();},
+            //     condFunc: () => {return true;},
+            // },
+            // {
+            //     attackName: 'Fiery Dart',
+            //     enemies: ['minion', 'Mammon', 'Beelzebub', 'Belial', 'Legion', 'Apollyon', 'Lucifer', 'Dragon'],
+            //     minLevel: 0,
+            //     text: '_ hurls a fiery dart!',
+            //     soundKey: 'fiery_dart',
+            //     statusEffect: null,
+            //     animFunc: (nextStep: Function) => {
+            //         this.fieryDartSprite.setPosition(this.enemyAvatar.x + this.enemyAvatar.width / 3, this.enemyAvatar.y + this.enemyAvatar.height / 3);
+            //         this.fieryDartSprite.setVisible(true);
+            //         // The sprite animation rotates 4 frames
+            //         this.fieryDartSprite.play('fiery_dart');
+            //         // Tween makes the dart shrink and grow as it flies, appearing to spin
+            //         this.tweens.add({
+            //             targets: this.fieryDartSprite,
+            //             scaleY: 0.25,
+            //             duration: 300 / this.animSpeed,
+            //             yoyo: true,
+            //             repeat: 4,
+            //         });
+            //         // Tween makes the dart bob up and down as it flies:
+            //         this.tweens.add({
+            //             targets: this.fieryDartSprite,
+            //             y: this.fieryDartSprite.y - 16,
+            //             duration: 150 / this.animSpeed,
+            //             ease: 'Sine.easeInOut',
+            //             yoyo: true,
+            //             repeat: 9
+            //         });
+            //         // Tween makes the dart fly across the screen:
+            //         this.tweens.add({
+            //             targets: this.fieryDartSprite,
+            //             x: PLAYER_PARTICLE_X,
+            //             duration: 1500 / this.animSpeed,
+            //             ease: 'Linear',
+            //             onComplete: () => {
+            //                 this.fieryDartSprite.setVisible(false);
+            //                 this.fieryDartSprite.stop();
+            //                 nextStep();
+            //             }
+            //         });
+            //     },
+            //     damageFunc: () => {return Math.ceil(ENEMY.getBaseDamage() * RANDOM.randFloat(1.25, 1.75));},
+            //     condFunc: () => {return !this.specialAttackUsed && RANDOM.randPct() <= .3;},
+            // },
+            // {
+            //     attackName: 'Poison',
+            //     enemies: ['minion', 'Mammon', 'Beelzebub', 'Belial', 'Legion', 'Apollyon', 'Lucifer', 'Dragon'],
+            //     minLevel: 0,
+            //     text: '_ uses a deadly poison!',
+            //     soundKey: 'poison',
+            //     statusEffect: POISON_EFFECT,
+            //     animFunc: (nextStep: Function) => {
+            //         const startY: number = this.enemyAvatar.y + this.enemyAvatar.height / 3;
+            //         this.poisonVialImage.setPosition(this.enemyAvatar.x + this.enemyAvatar.width / 3, startY).setVisible(true);
+            //         this.poisonVaporEmitter.setPosition(this.poisonVialImage.x, this.poisonVialImage.y).setVisible(true).setAbove(this.poisonVialImage);
+            //         this.poisonVaporEmitter.emitParticle(1);
+            //         this.poisonVaporEmitter.setFrequency(20 / this.animSpeed);
+            //         this.poisonVaporEmitter.start();
+            //         this.tweens.add({
+            //             targets: this.poisonVialImage,
+            //             x: PLAYER_PARTICLE_X,
+            //             duration: 1200 / this.animSpeed,
+            //             ease: 'Linear',
+            //             onUpdate: (tween, target) => {
+            //                 const progress = tween.progress;
+            //                 target.y = startY - Math.sin(progress * Math.PI) * 40;
+            //                 this.poisonVaporEmitter.setPosition(target.x, target.y);
+            //             },
+            //             onComplete: () => {
+            //                 this.poisonVialImage.setVisible(false);
+            //                 this.poisonVaporEmitter.stop();
+            //                 this.startPoisonPulse();
+            //                 this.createNewStatusEffect(POISON_EFFECT, nextStep);
+            //             }
+            //         });
+            //     },
+            //     damageFunc: () => {return 0;},
+            //     condFunc: () => {return !this.specialAttackUsed && this.currentStatusEffect === null;},
+            // },
+            // {
+            //     attackName: 'Snare',
+            //     enemies: ['minion', 'Mammon', 'Beelzebub', 'Belial', 'Legion', 'Apollyon', 'Lucifer', 'Dragon'],
+            //     minLevel: 0,
+            //     text: '_ casts a snare!',
+            //     soundKey: 'miss',
+            //     statusEffect: ENSNARE_EFFECT,
+            //     animFunc: (nextStep: Function) => {
+            //         const startX: number = this.enemyAvatar.x + (this.enemyAvatar.width * .3);
+            //         const startY: number = this.playerAvatar.y + (this.playerBaseImage.height * .3);
+            //         const finalX: number = this.playerAvatar.x + (this.playerBaseImage.width * .3);
+            //         const finalY: number = this.playerAvatar.y - 40;
+            //         this.snareProjectileSprite
+            //             .setPosition(startX, startY)
+            //             .setVisible(true)
+            //             .setScale(0.5)
+            //             .play({ key: 'snare_phase1', repeat: 10 });
+            //         this.tweens.addCounter({
+            //             from: 0,
+            //             to: 1,
+            //             duration: 1500,
+            //             ease: 'Linear',
+            //             onUpdate: (tween) => {
+            //                 const t = tween.getValue() as number;
+            //                 const xT = Phaser.Math.Easing.Cubic.Out(t);
+            //                 const x = Phaser.Math.Linear(startX, finalX, xT);
+            //                 const peakY = finalY - 50;
+            //                 const splitT = 0.5;
+            //                 let y: number;
+            //                 if (t < splitT) {
+            //                     const riseT = t / splitT;
+            //                     y = Phaser.Math.Linear(startY, peakY, Phaser.Math.Easing.Quadratic.Out(riseT));
+            //                 } else {
+            //                     const fallT = (t - splitT) / (1 - splitT);
+            //                     y = Phaser.Math.Linear(peakY, finalY + 35, Phaser.Math.Easing.Quadratic.In(fallT));
+            //                 }
+            //                 this.snareProjectileSprite.setPosition(x, y);
+            //                 this.snareProjectileSprite.setScale(
+            //                     Phaser.Math.Linear(0.5, 1.0, Phaser.Math.Easing.Quadratic.Out(t))
+            //                 );
+            //             },
+            //             onComplete: () => {
+            //                 this.snareProjectileSprite.setVisible(false);
+            //                 this.snareFullSprite.setPosition(finalX, finalY + 30).setVisible(true);
+            //                 this.snareFullSprite.play('snare_phase2');
+            //                 this.getSound().playSound('wind_rush');
+            //                 this.snareFullSprite.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
+            //                     this.createNewStatusEffect(ENSNARE_EFFECT, nextStep);
+            //                 });
+            //             },
+            //         });
+            //     },
+            //     damageFunc: () => {return 0;},
+            //     condFunc: () => {return !this.specialAttackUsed && this.currentStatusEffect === null;},
+            // },
             {
-                attackName: 'Basic',
+                attackName: 'Smoke',
                 enemies: ['minion', 'Mammon', 'Beelzebub', 'Belial', 'Legion', 'Apollyon', 'Lucifer', 'Dragon'],
                 minLevel: 0,
-                text: '_ attacks!',
-                soundKey: 'kapow',
+                text: '_ creates a veiling smoke!',
+                soundKey: 'wind_rush',
                 statusEffect: null,
                 animFunc: (nextStep: Function) => {
-                    this.enemyBasicAttackSprite.setVisible(true);
-                    this.enemyBasicAttackSprite.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
-                        console.log('animation complete: calling nextStep');
-                        this.enemyBasicAttackSprite.setVisible(false);
-                        nextStep();
-
-                    });
-                    this.enemyBasicAttackSprite.play('slash');
-                },
-                damageFunc: () => {return ENEMY.getBaseDamage();},
-                condFunc: () => {return true;},
-            },
-            {
-                attackName: 'Fiery Dart',
-                enemies: ['minion', 'Mammon', 'Beelzebub', 'Belial', 'Legion', 'Apollyon', 'Lucifer', 'Dragon'],
-                minLevel: 0,
-                text: '_ hurls a fiery dart!',
-                soundKey: 'fiery_dart',
-                statusEffect: null,
-                animFunc: (nextStep: Function) => {
-                    this.enemyFieryDartSprite.setPosition(this.enemyAvatar.x + this.enemyAvatar.width / 3, this.enemyAvatar.y + this.enemyAvatar.height / 3);
-                    this.enemyFieryDartSprite.setVisible(true);
-                    // The sprite animation rotates 4 frames
-                    this.enemyFieryDartSprite.play('fiery_dart');
-                    // Tween makes the dart shrink and grow as it flies, appearing to spin
+                    this.smokePuffSprites[0].setPosition(this.enemyAvatar.x + (this.enemyAvatar.width * .3), this.enemyAvatar.y + (this.enemyAvatar.height * .3))
+                        .setOrigin(0.5, 0.5).setScale(0.1).setVisible(true);
+                    this.smokePuffSprites[0].play('smoke_puff');
+                    const destX = this.playerAvatar.x + (this.playerBaseImage.width * .3);
                     this.tweens.add({
-                        targets: this.enemyFieryDartSprite,
-                        scaleY: 0.25,
-                        duration: 300 / this.animSpeed,
-                        yoyo: true,
-                        repeat: 4,
-                    });
-                    // Tween makes the dart bob up and down as it flies:
-                    this.tweens.add({
-                        targets: this.enemyFieryDartSprite,
-                        y: this.enemyFieryDartSprite.y - 16,
-                        duration: 150 / this.animSpeed,
-                        ease: 'Sine.easeInOut',
-                        yoyo: true,
-                        repeat: 9
-                    });
-                    // Tween makes the dart fly across the screen:
-                    this.tweens.add({
-                        targets: this.enemyFieryDartSprite,
-                        x: PLAYER_PARTICLE_X,
-                        duration: 1500 / this.animSpeed,
+                        targets: this.smokePuffSprites[0],
+                        x: destX,
+                        scale: 1.0,
+                        duration: 2000 / this.animSpeed,
                         ease: 'Linear',
                         onComplete: () => {
-                            this.enemyFieryDartSprite.setVisible(false);
-                            this.enemyFieryDartSprite.stop();
-                            nextStep();
-                        }
-                    });
-                },
-                damageFunc: () => {return Math.ceil(ENEMY.getBaseDamage() * RANDOM.randFloat(1.25, 1.75));},
-                condFunc: () => {return !this.specialAttackUsed && RANDOM.randPct() <= .3;},
-            },
-            {
-                attackName: 'Poison',
-                enemies: ['minion', 'Mammon', 'Beelzebub', 'Belial', 'Legion', 'Apollyon', 'Lucifer', 'Dragon'],
-                minLevel: 0,
-                text: '_ uses a deadly poison!',
-                soundKey: 'poison',
-                statusEffect: POISON_EFFECT,
-                animFunc: (nextStep: Function) => {
-                    const startY: number = this.enemyAvatar.y + this.enemyAvatar.height / 3;
-                    this.enemyPoisonVialImage.setPosition(this.enemyAvatar.x + this.enemyAvatar.width / 3, startY).setVisible(true);
-                    this.poisonVaporEmitter.setPosition(this.enemyPoisonVialImage.x, this.enemyPoisonVialImage.y).setVisible(true).setAbove(this.enemyPoisonVialImage);
-                    this.poisonVaporEmitter.emitParticle(1);
-                    this.poisonVaporEmitter.setFrequency(20 / this.animSpeed);
-                    this.poisonVaporEmitter.start();
-                    this.tweens.add({
-                        targets: this.enemyPoisonVialImage,
-                        x: PLAYER_PARTICLE_X,
-                        duration: 1200 / this.animSpeed,
-                        ease: 'Linear',
-                        onUpdate: (tween, target) => {
-                            const progress = tween.progress;
-                            target.y = startY - Math.sin(progress * Math.PI) * 40;
-                            this.poisonVaporEmitter.setPosition(target.x, target.y);
-                        },
-                        onComplete: () => {
-                            this.enemyPoisonVialImage.setVisible(false);
-                            this.poisonVaporEmitter.stop();
-                            this.poisonVaporEmitter.explode(20);
-                            this.doStatusPulse(POISON_EFFECT);
-                            this.createNewStatusEffect(POISON_EFFECT, nextStep);
-                        }
-                    });
-                },
-                damageFunc: () => {return 0;},
-                condFunc: () => {return !this.specialAttackUsed && this.currentStatusEffect === null;},
-            },
-            {
-                attackName: 'Snare',
-                enemies: ['minion', 'Mammon', 'Beelzebub', 'Belial', 'Legion', 'Apollyon', 'Lucifer', 'Dragon'],
-                minLevel: 0,
-                text: '_ casts a snare!',
-                soundKey: 'miss',
-                statusEffect: ENSNARE_EFFECT,
-                animFunc: (nextStep: Function) => {
-                    const startX: number = this.enemyAvatar.x + this.enemyAvatar.width / 3;
-                    const startY: number = this.playerAvatar.y;
-                    const finalX: number = this.playerAvatar.x + this.playerBaseImage.width - (this.playerBaseImage.width / 3);
-                    this.enemySnareProjectileSprite.setPosition(startX, startY).setVisible(true);
-                    // The projectile animation plays 6 frames, 8 times
-                    this.enemySnareProjectileSprite.play({ key: 'snare_phase1', repeat: 7 });
-                    this.enemySnareProjectileSprite.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
-                        // The spread animation plays 7 frames, once
-                        this.enemySnareProjectileSprite.play('snare_phase2');
-                    });
-                    this.tweens.add({
-                        targets: this.enemySnareProjectileSprite,
-                        x: finalX,
-                        duration: 1200 / this.animSpeed,
-                        ease: 'Linear',
-                        onUpdate: (tween, target: Phaser.GameObjects.Image) => {
-                            const progress = tween.progress;
-                            const height = 140;
-                            target.y = startY - Math.sin(progress * Math.PI) * height;
-                            const dx = finalX - startX;
-                            const dy = -Math.cos(progress * Math.PI) * height * Math.PI;
-                            target.rotation = Math.atan2(dy, dx) + Math.PI;
-                        },
-                        onComplete: () => {
-                            this.enemySnareProjectileSprite.setVisible(false);
-                            // The drop animation plays 6 frames, once
-                            this.snareFullSprite.setPosition(this.playerAvatar.x - 63, this.playerAvatar.y - 45).setVisible(true);
-                            this.snareFullSprite.play('snare_drop');
-                            this.getSound().playSound('wind_rush');
-                            this.snareFullSprite.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
-                                this.createNewStatusEffect(ENSNARE_EFFECT, nextStep);
+                            this.tweens.add({
+                                targets: this.smokePuffSprites[0],
+                                scale: .1,
+                                duration: 200 / this.animSpeed,
+                                ease: 'Linear',
+                                onComplete: () => {
+                                    const ctrOffset = 18;
+                                    this.smokePuffSprites[3].setPosition(this.smokePuffSprites[0].x, this.smokePuffSprites[0].y + ctrOffset).setOrigin(0.5, 1.0);
+                                    this.smokePuffSprites[2].setPosition(this.smokePuffSprites[0].x, this.smokePuffSprites[0].y - ctrOffset).setOrigin(0.5, 0.0);
+                                    this.smokePuffSprites[1].setPosition(this.smokePuffSprites[0].x + ctrOffset, this.smokePuffSprites[0].y).setOrigin(1.0, 0.5);
+                                    this.smokePuffSprites[0].setPosition(this.smokePuffSprites[0].x - ctrOffset, this.smokePuffSprites[0].y).setOrigin(0.0, 0.5);
+                                    // Begin playing each puff animation at a different frame
+                                    this.smokePuffSprites.forEach((s, i) => s.setScale(0.1).setVisible(true).play('smoke_puff').anims.setCurrentFrame(this.anims.get('smoke_puff').getFrameAt(i * 2)));
+                                    this.tweens.add({
+                                        targets: this.smokePuffSprites,
+                                        scale: 1.0,
+                                        duration: 350 / this.animSpeed,
+                                        ease: 'Linear',
+                                        onComplete: () => {
+                                            this.createNewStatusEffect(VEIL_EFFECT, nextStep);
+                                        }
+                                    });
+                                    this.getSound().playSound('imp_poof');
+                                }
                             });
                         }
                     });
                 },
                 damageFunc: () => {return 0;},
-                condFunc: () => {return !this.specialAttackUsed && this.currentStatusEffect === null;},
+                condFunc: () => {return true;},//return !this.specialAttackUsed && this.currentStatusEffect === null;},
             },
         ];
 
@@ -1158,7 +1220,7 @@ export class GBattleContent extends GContentScene {
         const shoesImage = this.add.image(24, 240, 'adam_shoes').setOrigin(0, 0).setVisible(ARMORS.hasArmor(4));
         const breastplateImage = this.add.image(21, 72, 'adam_breastplate').setOrigin(0, 0).setVisible(ARMORS.hasArmor(3));
         const girdleImage = this.add.image(37, 132, 'adam_girdle').setOrigin(0, 0).setVisible(ARMORS.hasArmor(5));
-        const armImage = this.add.image(17, 116, 'adam_arm').setOrigin(0, 0);
+        this.playerArmImage = this.add.image(17, 116, 'adam_arm').setOrigin(0, 0);
         const shieldImage = this.add.image(0, 97, 'adam_shield').setOrigin(0, 0).setVisible(ARMORS.hasArmor(2));
         const helmetImage = this.add.image(35, 0, 'adam_helmet').setOrigin(0, 0).setVisible(ARMORS.hasArmor(1));
 
@@ -1168,7 +1230,7 @@ export class GBattleContent extends GContentScene {
             shoesImage,
             breastplateImage,
             girdleImage,
-            armImage,
+            this.playerArmImage,
             shieldImage,
             helmetImage,
         ]);
@@ -1292,7 +1354,10 @@ export class GBattleContent extends GContentScene {
         this.tweens.add({
             targets: this.enemyResultImage,
             duration: 200 / this.animSpeed,
-            scale: 0.0
+            scale: 0.0,
+            onComplete: () => {
+                this.enemyResultImage.setVisible(false);
+            }
         });
 
         this.tweens.add({
@@ -1527,7 +1592,13 @@ export class GBattleContent extends GContentScene {
                     this.setInputMode(INPUT_PROMPTENTER);
                     break;
                 case BattleStage.DEFEAT:
-                    this.showEnemyAttackResult();
+                    // This check is necessary because defeat may be triggered by
+                    // status effect damage AFTER the enemy's attack, and in that
+                    // case, the enemy result is already shown - don't re-show.
+                    console.log(`Defeat! Enemy result visible: ${this.enemyResultImage.visible}`);
+                    if (!this.enemyResultImage.visible) {
+                        this.showEnemyAttackResult();
+                    }
                     this.getSound().playSound('enemy_laugh').once('complete', () => {
                         this.setInputMode(INPUT_PROMPTENTER);
                     });
@@ -1853,7 +1924,6 @@ export class GBattleContent extends GContentScene {
             nextStep();
             return;
         }
-        console.log('damagePlayerFaith() called');
         this.sound.play(soundKey);
         this.playerParticleEmitter.explode(amount);
         const faithWrapper: {value: number} = {value: PLAYER.getFaith()};
@@ -1939,6 +2009,15 @@ export class GBattleContent extends GContentScene {
     }
 
     private removeStatusEffect(nextStep: Function) {
+        switch (this.currentStatusEffect) {
+            case POISON_EFFECT:
+                this.stopPoisonPulse();
+                break;
+            case VEIL_EFFECT:
+                this.stopSmoke();
+                break;
+            default:
+        }
         this.currentStatusEffect = null;
         this.tweens.add({
             targets: this.statusEffectIcon,
@@ -1951,29 +2030,46 @@ export class GBattleContent extends GContentScene {
         });
     }
 
-    private doStatusPulse(statusEffect: StatusEffect) {
-        // Damage-causing status effects cause the player to pulse with a certain tint:
-        const color = statusEffect.pulseColor as GColor;
-        const avatar = this.playerBaseImage;
-        avatar.setTint(color.num());
-        this.tweens.addCounter({
-            from: 100,
-            to: 0,
+    private startPoisonPulse() {
+        const tintColor = new GColor(0x22ff22);
+        const startColor = Phaser.Display.Color.ValueToColor(0xffffff);
+        const endColor = tintColor.phaser();
+        const tintState = { t: 0 };
+        this.poisonPulseTween = this.tweens.add({
+            targets: tintState,
+            t: 100,
             duration: 500 / this.animSpeed,
-            onUpdate: (tween) => {
-                const value = tween.getValue() as number;
-                // fade the tint effect out by interpolating toward white
+            yoyo: true,
+            repeat: -1,
+            onUpdate: () => {
                 const c = Phaser.Display.Color.Interpolate.ColorWithColor(
-                    new Phaser.Display.Color(255, 255, 255),
-                    color.phaser(),
+                    startColor,
+                    endColor,
                     100,
-                    value
+                    tintState.t
                 );
                 const tint = Phaser.Display.Color.GetColor(c.r, c.g, c.b);
-                avatar.setTint(tint);
-            },
+                this.playerBaseImage.setTint(tint);
+                this.playerArmImage.setTint(tint);
+            }
+        });
+    }
+    private stopPoisonPulse() {
+        if (this.poisonPulseTween) {
+            this.poisonPulseTween.stop();
+            this.poisonPulseTween = undefined;
+            this.playerBaseImage.clearTint();
+            this.playerArmImage.clearTint();
+        }
+    }
+
+    private stopSmoke() {
+        this.tweens.add({
+            targets: this.smokePuffSprites,
+            duration: 500 / this.animSpeed,
+            alpha: 0,
             onComplete: () => {
-                avatar.clearTint();
+                this.smokePuffSprites.forEach(s => s.setVisible(false).setAlpha(1.0).anims.stop());
             }
         });
     }
@@ -1996,10 +2092,11 @@ export class GBattleContent extends GContentScene {
                             const chances = [1.0, .66, .33];
                             const chance = chances[this.statusEffectDuration - 1];
                             const roll = RANDOM.randPct();
-                            console.log(`Struggle chance: ${chance} rolled: ${roll}`);
                             const success = roll <= chance;
                             if (success) {
-                                this.doBreakSnare();
+                                this.doBreakSnare(() => {
+                                    this.setCurrentStage(BattleStage.ENEMY_ATTACK);
+                                });
                             } else {
                                 this.setCurrentStage(BattleStage.ENEMY_ATTACK);
                             }
@@ -2010,13 +2107,13 @@ export class GBattleContent extends GContentScene {
         });
     }
 
-    private doBreakSnare() {
+    private doBreakSnare(nextStep: Function) {
         this.getSound().playSound('snare_break');
-        this.snareFullSprite.play('snare_break');
+        this.snareFullSprite.play('snare_burst');
         this.snareFullSprite.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
             this.snareFullSprite.setVisible(false);
             this.removeStatusEffect(() => {
-                this.setCurrentStage(BattleStage.ENEMY_ATTACK);
+                nextStep();
             });
         });
     }
@@ -2034,7 +2131,6 @@ export class GBattleContent extends GContentScene {
             // After animation is done, decrease player's faith:
             this.damagePlayerFaith(result.damage, 'splooge', () => {
                 // Finally, end the enemy's attack by showing the result and allowing player to proceed:
-                console.log('Callback called: ending enemy attack');
                 this.endEnemyAttack(result);
             });
         });
@@ -2043,19 +2139,19 @@ export class GBattleContent extends GContentScene {
     }
 
     private endEnemyAttack(result: EnemyTurnResult) {
-        console.log('endEnemyAttack() called');
-
         // The enemy's attack just ended.
         // The first thing to do is show the result; we'll delay it a little.
         this.time.delayedCall(700 / this.animSpeed, () => {
             this.showEnemyAttackResult();
 
-            // Once the result is shown, determine whether to apply extra damage for a status effect.
+            // Once the result is shown, do any per-round status effect events:
+            if (this.currentStatusEffect && this.currentStatusEffect.roundFunc) {
+                this.currentStatusEffect.roundFunc();
+            }
             if (this.currentStatusEffect && result.statusEffectDamage > 0) {
                 const statusEffect = this.currentStatusEffect;
                 this.time.delayedCall(400 / this.animSpeed, () => {
-                    this.doStatusPulse(statusEffect);
-                    this.damagePlayerFaith(result.statusEffectDamage, statusEffect.sound, () => {
+                    this.damagePlayerFaith(result.statusEffectDamage, statusEffect.roundSound ?? 'splooge', () => {
                         this.setCurrentStage(BattleStage.END_ENEMY_TURN);
                     });
                 });
@@ -2082,15 +2178,30 @@ export class GBattleContent extends GContentScene {
     private doDefeatSequence() {
         this.getSound().fadeOutMusic(500 / this.animSpeed, () => {
             this.getSound().playSound('defeat');
-            // Create tween to retreat player:
-            this.tweens.add({
-                targets: this.playerAvatar,
-                x: -this.playerBaseImage.width,
-                duration: APPROACH_TIME / this.animSpeed,
-                onComplete: () => {
-                    this.setCurrentStage(BattleStage.DEFEAT);
-                }
-            });
+            // Create tween to retreat player
+
+            // If the player is ensnared, play the snare break animation before retreating:
+            if (this.currentStatusEffect === ENSNARE_EFFECT) {
+                this.doBreakSnare(() => {
+                    this.tweens.add({
+                        targets: this.playerAvatar,
+                        x: -this.playerBaseImage.width,
+                        duration: APPROACH_TIME / this.animSpeed,
+                        onComplete: () => {
+                            this.setCurrentStage(BattleStage.DEFEAT);
+                        }
+                    });
+                });
+            } else {
+                this.tweens.add({
+                    targets: this.playerAvatar,
+                    x: -this.playerBaseImage.width,
+                    duration: APPROACH_TIME / this.animSpeed,
+                    onComplete: () => {
+                        this.setCurrentStage(BattleStage.DEFEAT);
+                    }
+                });
+            }
         });
     }
 

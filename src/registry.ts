@@ -20,12 +20,12 @@ export namespace REGISTRY {
         REGISTRY.set('bossDefeated_Apollyon', false);
 
         // Options:
-        REGISTRY.set('talkSpeed', 1.0);
+        REGISTRY.set('talkSpeed', 2.0);
         REGISTRY.set('battleSpeed', 1.0);
         REGISTRY.set('masterVolume', 1.0);
         REGISTRY.set('musicVolume', 0.8);
         REGISTRY.set('sfxVolume', 0.9);
-        REGISTRY.set('speechVolume', 0.6);
+        REGISTRY.set('speechVolume', 0.85);
     }
 
     export function getAll(): {[key: string]: any} {

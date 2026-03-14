@@ -12,6 +12,7 @@ import { GFF } from "./main";
 import { PEOPLE } from "./people";
 import { PHYSICS } from "./physics";
 import { PLAYER } from "./player";
+import { RANDOM } from "./random";
 import { REGISTRY } from "./registry";
 import { IntegerStatName, STATS } from "./stats";
 import { STRONGHOLD } from "./stronghold";
@@ -362,9 +363,27 @@ export namespace CONSOLE {
             playError();
             return `No object for ID: ${id}`;
         },
-        balanceTest(untilLevel: number = 50) {
+        balanceTest(untilLevel: number) {
             BALANCE.test(untilLevel);
             playSuccess();
+            return 'Ok';
+        },
+        speechTest(voice: string) {
+            if (voice === undefined || voice.trim() === '') {
+                playError();
+                return `'voice' required: mvc_# | fvc_# | avc`;
+            }
+            const numSounds = 20;
+            const playFunc = (index: number, total: number) => {
+                GFF.AdventureUI.getSound().playSpeech(voice);
+                GFF.AdventureUI.time.delayedCall(100, () => {
+                    if (index < total - 1) {
+                        playFunc(++index, total);
+                    }
+                });
+            };
+
+            playFunc(0, numSounds);
             return 'Ok';
         }
     };

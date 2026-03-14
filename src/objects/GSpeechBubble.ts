@@ -312,12 +312,19 @@ export class GSpeechBubble extends Phaser.GameObjects.Container implements GBubb
             let timeElapsed: number = Date.now() - this.startTime;
             let wordsToMoment: number = (timeElapsed / 1000) * this.actualSpeed;
             let wordWasSpoken: boolean = false;
-            // Say another word if the time is right and there are more words to say:
+
+            // Say another word if the time is right and there are more words to say
+            // Speak words according to the talk speed, so we'll say less words if speaking at a higher speed.
+            const intTalkSpeed = Math.round(REGISTRY.getNumber('talkSpeed'));
             while (this.wordsSpoken < wordsToMoment && this.sayNextWord()) {
                 this.wordsSpoken++;
                 // We don't want to play a speech sound more than once per step,
-                // so only call pronounce if a word was not already spoken:
-                if (!wordWasSpoken) {
+                // so only call pronounce if a word was not already spoken.
+
+                // Always speak at least one word:
+                if (this.length < intTalkSpeed && this.wordsSpoken === 1) {
+                    this.speaker.pronounceWord();
+                } else if (!wordWasSpoken && this.wordsSpoken % intTalkSpeed === 0) {
                     this.speaker.pronounceWord();
                     wordWasSpoken = true;
                 }

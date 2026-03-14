@@ -126,7 +126,7 @@ export class GPlayerSprite extends GCharSprite {
     }
 
     public getVoiceKey(): string {
-        return 'adam_voice';
+        return 'avc';
     }
 
     protected createNametag(): Phaser.GameObjects.Text {

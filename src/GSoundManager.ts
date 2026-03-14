@@ -1,6 +1,11 @@
 import 'phaser';
 import { GBaseScene } from './scenes/GBaseScene';
 import { REGISTRY } from './registry';
+import { RANDOM } from './random';
+
+const BASE_SPEECH_RATE = 2.5;
+const SPEECH_RATE_VARIANCE = 0.3;
+const SYLLABLES = ['ba', 'be', 'bi', 'bo', 'bu'];
 
 export class GSoundManager {
 
@@ -53,16 +58,20 @@ export class GSoundManager {
         return sound;
     }
 
-    // Speech is treated as a separate category from sound effects, so that it can be adjusted independently.
-    public playSpeech(soundKey: string, volume?: number): Phaser.Sound.BaseSound {
+    /**
+     * Simulate speech by playing a random syllable sound from the specified voice set.
+     * Voices are played at a high rate, to make them sound squeaky and cute, but
+     * with some variance to avoid sounding too robotic.
+     */
+    public playSpeech(voiceKey: string, volume?: number): Phaser.Sound.BaseSound {
         const sound: Phaser.Sound.BaseSound = this.scene.sound.add(
-            soundKey,
+            `${voiceKey}_${RANDOM.randElement(SYLLABLES) as string}`,
             {
                 loop: false,
                 volume: this.getCalculatedSpeechVolume(volume)
             }
         );
-        sound.play();
+        sound.play({ rate: RANDOM.randFloat(BASE_SPEECH_RATE - SPEECH_RATE_VARIANCE, BASE_SPEECH_RATE + SPEECH_RATE_VARIANCE) });
         return sound;
     }
 

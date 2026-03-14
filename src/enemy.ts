@@ -2,6 +2,7 @@ import { GFF } from "./main";
 import { GEnemySprite } from "./objects/chars/GEnemySprite";
 import { PLAYER } from "./player";
 import { RANDOM } from "./random";
+import { REGISTRY } from "./registry";
 import { RefFunction } from "./scenes/GLoadGameContent";
 import { GSpirit } from "./types";
 
@@ -144,7 +145,7 @@ export namespace ENEMY {
     }
 
     export function getBaseDamage() {
-        return GFF.getDifficulty().enemyBaseAttack + (GFF.getDifficulty().enemyAttackPerLevel * spirit.level);
+        return Math.round(GFF.getDifficulty().enemyBaseAttack + (GFF.getDifficulty().enemyAttackPerLevel * spirit.level));
     }
 
     export function getCurrentSpirit(): GSpirit {
@@ -168,18 +169,32 @@ export namespace ENEMY {
         spirit = enemySpirit;
         portrait = enemyPortrait;
         avatar = enemyAvatar;
-        setMaxResistance(GFF.getDifficulty().enemyBaseResist + (GFF.getDifficulty().enemyResistPerLevel * enemySpirit.level));
+        setMaxResistance(Math.round(GFF.getDifficulty().enemyBaseResist + (GFF.getDifficulty().enemyResistPerLevel * enemySpirit.level)));
         setResistance(getMaxResistance());
     }
 
     export function initBoss(bossSpirit: GSpirit) {
         sprite = null;
-        bossSpirit.level = PLAYER.getLevel();
+        bossSpirit.level = getBossLevel();
         spirit = bossSpirit;
         portrait = bossSpirit.portraitKey!;
         avatar = bossSpirit.avatarKey!;
-        setMaxResistance(Math.floor(PLAYER.getMaxFaith() * GFF.getDifficulty().bossResistPct));
+
+        const baseResist = GFF.getDifficulty().enemyBaseResist + (GFF.getDifficulty().enemyResistPerLevel * spirit.level);
+        setMaxResistance(Math.round(baseResist * GFF.getDifficulty().bossResistPct));
         setResistance(getMaxResistance());
+    }
+
+    export function getBossLevel(): number {
+        const bossesDefeated: number =
+            (REGISTRY.get('bossDefeated_Mammon') as boolean ? 1 : 0) +
+            (REGISTRY.get('bossDefeated_Beelzebub') as boolean ? 1 : 0) +
+            (REGISTRY.get('bossDefeated_Belial') as boolean ? 1 : 0) +
+            (REGISTRY.get('bossDefeated_Legion') as boolean ? 1 : 0) +
+            (REGISTRY.get('bossDefeated_Apollyon') as boolean ? 1 : 0);
+
+        const baseLevel = 7 + (bossesDefeated * 7);
+        return Math.ceil((baseLevel + PLAYER.getLevel()) / 2);
     }
 
     /**

@@ -225,7 +225,7 @@ export class GOptionsUI extends GUIScene {
             this.sfxVolumeSlider.setT(.9, false);
             this.sfxVolumeSlider.simEvent('commit');
 
-            this.speechVolumeSlider.setT(.6, false);
+            this.speechVolumeSlider.setT(.85, false);
             this.speechVolumeSlider.simEvent('commit');
         });
         this.resetButton.setPosition(GAMEPLAY_OFFSET_X + PANEL_PADDING, 614);
@@ -311,7 +311,7 @@ export class GOptionsUI extends GUIScene {
             REGISTRY.set('speechVolume', newT);
             // Play a test sound to demonstrate new volume level:
             const soundManager = GFF.AdventureContent.getSound();
-            soundManager.playSpeech('adam_voice');
+            soundManager.playSpeech('avc');
         });
     }
 }

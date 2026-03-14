@@ -74,8 +74,8 @@ export class GThoughtBubble extends Phaser.GameObjects.Container implements GBub
         // Start the timer for words:
         this.startTime = Date.now();
 
-        // Say initial "hmm..." sound:
-        GFF.AdventureContent.getSound().playSound('think', 1.0);
+        // Say initial "hmm..." sound: (or not!)
+        // GFF.AdventureContent.getSound().playSound('think', 1.0);
     }
 
     private createBubble(): void {
