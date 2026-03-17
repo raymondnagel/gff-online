@@ -5,7 +5,7 @@ import { GFF } from "../main";
 import { GStatusAvatar } from "../objects/chars/GStatusAvatar";
 import { KEYS } from "../keys";
 import { PLAYER } from "../player";
-import { GPoint2D, NINE } from "../types";
+import { GPoint2D, NINE, SIX } from "../types";
 import { GUIScene } from "./GUIScene";
 import { ARMORS } from "../armors";
 import { FRUITS } from "../fruits";
@@ -308,7 +308,7 @@ export class GStatusUI extends GUIScene {
         // Armour Items
         for (let i = 1; i <= 6; i++) {
             const itemPoint: GPoint2D = this.getPointForPanelItemNum(i, 2);
-            if (ARMORS.hasArmor(i - 1)) {
+            if (ARMORS.hasArmor(i as SIX)) {
                 this.setItemAt(`arm${i}`, 572, 205, itemPoint.x, itemPoint.y);
             }
         }

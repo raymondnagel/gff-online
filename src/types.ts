@@ -71,6 +71,8 @@ export type GDifficulty = {
     enemyAttackPerLevel: number;
     enemyBaseResist: number;
     enemyResistPerLevel: number;
+    enemyLevelsPerSpecial: number;
+    enemySpecialFrequency: number;
     enemySpeed: number;
     bossResistPct: number;
     minorGraceIncrease: number;

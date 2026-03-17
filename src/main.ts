@@ -137,13 +137,15 @@ export namespace GFF {
         enemyAttackPerLevel: 1.5,
         enemyBaseResist: 20,
         enemyResistPerLevel: 2,
-        enemySpeed: .9,
+        enemyLevelsPerSpecial: 8,
+        enemySpecialFrequency: 0.33,
+        enemySpeed: 0.9,
         bossResistPct: 1.5,
-        minorGraceIncrease: .06,
-        majorGraceIncrease: .12,
+        minorGraceIncrease: 0.06,
+        majorGraceIncrease: 0.12,
         maxRandomEnemies: 1,
         neededXpModifier: 0.75,
-        trapStrengthPct: .05,
+        trapStrengthPct: 0.05,
         expectedBooksAtEnd: 10
     };
     export const DIFFICULTY_DISCIPLE: GDifficulty = {
@@ -154,13 +156,15 @@ export namespace GFF {
         enemyAttackPerLevel: 2,
         enemyBaseResist: 20,
         enemyResistPerLevel: 4,
+        enemyLevelsPerSpecial: 5,
+        enemySpecialFrequency: 0.5,
         enemySpeed: 1.0,
         bossResistPct: 2.0,
-        minorGraceIncrease: .04,
-        majorGraceIncrease: .08,
+        minorGraceIncrease: 0.04,
+        majorGraceIncrease: 0.08,
         maxRandomEnemies: 2,
         neededXpModifier: 1.0,
-        trapStrengthPct: .1,
+        trapStrengthPct: 0.1,
         expectedBooksAtEnd: 30
     };
     export const DIFFICULTY_SOLDIER: GDifficulty = {
@@ -171,13 +175,15 @@ export namespace GFF {
         enemyAttackPerLevel: 3,
         enemyBaseResist: 20,
         enemyResistPerLevel: 6,
+        enemyLevelsPerSpecial: 3,
+        enemySpecialFrequency: 1.0,
         enemySpeed: 1.1,
         bossResistPct: 2.5,
-        minorGraceIncrease: .02,
-        majorGraceIncrease: .04,
+        minorGraceIncrease: 0.02,
+        majorGraceIncrease: 0.04,
         maxRandomEnemies: 3,
         neededXpModifier: 1.25,
-        trapStrengthPct: .2,
+        trapStrengthPct: 0.2,
         expectedBooksAtEnd: 60
     };
 

@@ -79,6 +79,55 @@ export namespace BIBLE {
         return Array.from(kjvXml.querySelectorAll(`testament > book[name="${bookName}"] > chapter > verse`) as NodeListOf<Element>);
     }
 
+    export function getScriptureVerse(bookName: string, chapterNo: number, verseNo: number): GScripture|null {
+        const verseText = getVerseText(bookName, chapterNo, verseNo);
+        if (!verseText) {
+            return null;
+        }
+        return {
+            book: bookName,
+            chapter: chapterNo,
+            verse: verseNo,
+            verseText: verseText
+        };
+    }
+
+    export function getPreviousVerse(bookName: string, chapterNo: number, verseNo: number): GScripture|null {
+        if (verseNo > 1) {
+            // Try to get the previous verse in the same chapter
+            const verseText = getVerseText(bookName, chapterNo, verseNo - 1);
+            if (verseText) {
+                return { book: bookName, chapter: chapterNo, verse: verseNo - 1, verseText };
+            }
+        }
+        if (chapterNo > 1) {
+            // Try to get the last verse of the previous chapter
+            const lastVerseNo = getLastVerseForChapter(bookName, chapterNo - 1);
+            const verseText = getVerseText(bookName, chapterNo - 1, lastVerseNo);
+            if (verseText) {
+                return { book: bookName, chapter: chapterNo - 1, verse: lastVerseNo, verseText };
+            }
+        }
+        return null;
+    }
+
+    export function getNextVerse(bookName: string, chapterNo: number, verseNo: number): GScripture|null {
+        // Try to get the next verse in the same chapter
+        const verseText = getVerseText(bookName, chapterNo, verseNo + 1);
+        if (verseText) {
+            return { book: bookName, chapter: chapterNo, verse: verseNo + 1, verseText };
+        }
+        // Try to get the first verse of the next chapter
+        const lastChapterNo = getLastChapterForBook(bookName);
+        if (chapterNo < lastChapterNo) {
+            const verseText = getVerseText(bookName, chapterNo + 1, 1);
+            if (verseText) {
+                return { book: bookName, chapter: chapterNo + 1, verse: 1, verseText };
+            }
+        }
+        return null;
+    }
+
     export function getRandomVerseFromBook(bookName: string): GScripture {
         // Get all verses from the book:
         const verses: Element[] = getAllVersesForBook(bookName);
@@ -184,7 +233,7 @@ export namespace BIBLE {
         });
     }
 
-    function parseReference(ref: string) {
+    export function parseReference(ref: string) {
         const lastSpace = ref.lastIndexOf(' ');
         if (lastSpace === -1) {
             throw new Error(`Invalid reference: ${ref}`);

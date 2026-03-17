@@ -39,8 +39,8 @@ export namespace ARMORS {
         PLAYER.giveGrace('major');
     }
 
-    export function hasArmor(index: number): boolean {
-        return armors[index];
+    export function hasArmor(num: SIX): boolean {
+        return armors[num - 1];
     }
 
     export function getCount(): number {

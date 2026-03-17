@@ -95,6 +95,9 @@ export namespace BALANCE {
         for (const spirit of ENEMY.getSpirits()) {
             GFF.log(`${spirit.name} @ level ${spirit.level}`);
         }
+
+        // Set Grace to 0
+        PLAYER.setGrace(0);
     }
 
     function getRandomEnemy(): GSpirit {
