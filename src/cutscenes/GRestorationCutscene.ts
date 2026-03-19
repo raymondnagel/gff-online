@@ -66,7 +66,6 @@ export class GRestorationCutscene extends GCutscene {
         // The saints rally to the player:
         const rallyX: number = PLAYER.getSprite().getPhysicalCenter().x;
         const rallyY: number = PLAYER.getSprite().getPhysicalCenter().y;
-        // console.log(`Rallying to ${rallyX}, ${rallyY}`);
         const genericActors: number = this.getGenericActors().length;
         for (let a = 1; a <= genericActors; a++) {
             this.addCutsceneEvent({

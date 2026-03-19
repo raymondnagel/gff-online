@@ -532,7 +532,6 @@ export class GStrongholdArea extends GBuildingArea {
                 for (let x = 0; x < this.getWidth(); x++) {
                 const [r, g, b] = ctx.getImageData(x, y, 1, 1).data;
                 const key = `${r > 100 ? 1 : 0},${g > 100 ? 1 : 0},${b > 100 ? 1 : 0}`;
-                // console.log(`Pixel at (${x},${y},${floorIndex}): ${key}`);
                 switch (key) {
                     case EMPTY_C:
                         break;

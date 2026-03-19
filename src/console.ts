@@ -368,24 +368,70 @@ export namespace CONSOLE {
             playSuccess();
             return 'Ok';
         },
-        speechTest(voice: string) {
-            if (voice === undefined || voice.trim() === '') {
-                playError();
-                return `'voice' required: mvc_# | fvc_# | avc`;
-            }
-            const numSounds = 20;
-            const playFunc = (index: number, total: number) => {
-                GFF.AdventureUI.getSound().playSpeech(voice);
-                GFF.AdventureUI.time.delayedCall(100, () => {
-                    if (index < total - 1) {
-                        playFunc(++index, total);
-                    }
-                });
-            };
+        // speechTest(voice: string) {
+        //     if (voice === undefined || voice.trim() === '') {
+        //         playError();
+        //         return `'voice' required: mvc_# | fvc_# | avc`;
+        //     }
+        //     const numSounds = 20;
+        //     const playFunc = (index: number, total: number) => {
+        //         GFF.AdventureUI.getSound().playSpeech(voice);
+        //         GFF.AdventureUI.time.delayedCall(100, () => {
+        //             if (index < total - 1) {
+        //                 playFunc(++index, total);
+        //             }
+        //         });
+        //     };
 
-            playFunc(0, numSounds);
-            return 'Ok';
-        }
+        //     playFunc(0, numSounds);
+        //     return 'Ok';
+        // },
+        // speechTest(textToSay: string) {
+        //     if (textToSay === undefined || textToSay.trim() === '') {
+        //         playError();
+        //         return `Must say something!`;
+        //     }
+
+        //     const VOICE_KEY = 'vcf_1_';
+        //     const COMPOUND_DELAY = 30; // ms delay between syllables in a compound word
+        //     const WORD_DELAY = 100; // ms delay between letters
+        //     const COMMA_DELAY = 250; // ms delay for commas
+        //     const COLON_DELAY = 325; // ms delay for colons
+        //     const END_DELAY = 500; // ms delay at the end of the sentence
+
+        //     const words: string[] = GFF.AdventureUI.getSound().toPhonetic(textToSay).split(' ');
+        //     console.log('Phonetic breakdown:', words);
+
+        //     const playFunc = (index: number, total: number) => {
+        //         const word = words[index];
+        //         let delay = WORD_DELAY;
+        //         if (word.endsWith(',')) {
+        //             delay = COMMA_DELAY;
+        //         } else if (word.endsWith(':') || word.endsWith(';')) {
+        //             delay = COLON_DELAY;
+        //         } else if (word.endsWith('.') || word.endsWith('!') || word.endsWith('?')) {
+        //             delay = END_DELAY;
+        //         }
+        //         const soundsForWord = GFF.AdventureUI.getSound().getSoundsForWord(word);
+        //         console.log(`Playing word "${word}"(0) with sounds: ${VOICE_KEY}${soundsForWord[0]}`);
+        //         GFF.AdventureUI.getSound().playNewSpeech(`${VOICE_KEY}${soundsForWord[0]}`);
+        //         if (soundsForWord.length > 1) {
+        //             GFF.AdventureUI.time.delayedCall(COMPOUND_DELAY, () => {
+        //                 console.log(`Playing word "${word}"(1) with sounds: ${VOICE_KEY}${soundsForWord[1]}`);
+        //                 GFF.AdventureUI.getSound().playNewSpeech(`${VOICE_KEY}${soundsForWord[1]}`);
+        //             });
+        //         }
+
+        //         GFF.AdventureUI.time.delayedCall(delay, () => {
+        //             if (index < total - 1) {
+        //                 playFunc(++index, total);
+        //             }
+        //         });
+        //     };
+
+        //     playFunc(0, words.length);
+        //     return 'Ok';
+        // }
     };
 
     /**

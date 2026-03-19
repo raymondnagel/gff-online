@@ -120,6 +120,7 @@ const CMD_FUNCTIONS: Record<string, (...args: any[]) => any> = {
         (someone as GPersonSprite).setNewConvert();
         (someone as GPersonSprite).setReadyToTalk(true);
         (someone as GPersonSprite).setSpecialGift('standard');
+        PLAYER.giveGrace('major');
         GFF.AdventureContent.getSound().playSound('hallelujah');
         GFF.AdventureContent.fadeOut(500, COLOR.WHITE.num(), () => {
             GFF.AdventureContent.fadeIn(500, COLOR.WHITE.num());

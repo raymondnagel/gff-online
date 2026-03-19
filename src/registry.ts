@@ -25,7 +25,7 @@ export namespace REGISTRY {
         REGISTRY.set('masterVolume', 1.0);
         REGISTRY.set('musicVolume', 0.8);
         REGISTRY.set('sfxVolume', 0.9);
-        REGISTRY.set('speechVolume', 0.85);
+        REGISTRY.set('speechVolume', 0.65);
     }
 
     export function getAll(): {[key: string]: any} {

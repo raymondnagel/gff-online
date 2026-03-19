@@ -158,7 +158,7 @@ export class GAdventureContent extends GContentScene {
 
         // Check whether we need to play the intro cutscene:
         if (REGISTRY.getBoolean('doIntro')) {
-            console.log('Playing intro cutscene');
+            GFF.log('Playing intro cutscene...');
             REGISTRY.set('doIntro', false);
             const church: GChurch = startRoom.getChurch() as GChurch;
             new GOpeningCutscene(church).play();
@@ -1478,7 +1478,6 @@ export class GAdventureContent extends GContentScene {
                         type: 'item',
                         onCollect: () => {
                             FRUITS.obtainFruit(queuedFruit);
-                            PLAYER.giveGrace('major');
                         }
                     }, () => {
                         this.startChars();

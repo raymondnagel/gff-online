@@ -128,7 +128,7 @@ export class GPersonSprite extends GCharSprite implements GInteractable {
     }
 
     public getVoiceKey(): string {
-        return `${this.person.gender}vc_${this.person.voice}`;
+        return `vc${this.person.gender}_${this.person.voice}`;
     }
 
     protected thinkOfNextGoal(): GGoal|null {

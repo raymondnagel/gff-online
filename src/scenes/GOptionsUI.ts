@@ -210,7 +210,7 @@ export class GOptionsUI extends GUIScene {
 
     private createResetButton(): void {
         this.resetButton = new GTextButton(this, 0, 0, 'Reset to Defaults', () => {
-            this.talkSpeedSlider.setT(0, false);
+            this.talkSpeedSlider.setT(1 / 3, false);
             this.talkSpeedSlider.simEvent('commit');
 
             this.battleAnimationSpeedSlider.setT(0, false);
@@ -225,7 +225,7 @@ export class GOptionsUI extends GUIScene {
             this.sfxVolumeSlider.setT(.9, false);
             this.sfxVolumeSlider.simEvent('commit');
 
-            this.speechVolumeSlider.setT(.85, false);
+            this.speechVolumeSlider.setT(.65, false);
             this.speechVolumeSlider.simEvent('commit');
         });
         this.resetButton.setPosition(GAMEPLAY_OFFSET_X + PANEL_PADDING, 614);
@@ -246,7 +246,7 @@ export class GOptionsUI extends GUIScene {
         this.talkSpeedSlider.setT(t, false);
         // Set up callback to update registry when slider changes:
         this.talkSpeedSlider.setOnCommit((newT) => {
-            const newTalkSpeed = 1 + (newT * 3);
+            const newTalkSpeed = Math.round(1 + (newT * 3));
             REGISTRY.set('talkSpeed', newTalkSpeed);
         });
     }
@@ -258,7 +258,7 @@ export class GOptionsUI extends GUIScene {
         this.battleAnimationSpeedSlider.setT(t, false);
         // Set up callback to update registry when slider changes:
         this.battleAnimationSpeedSlider.setOnCommit((newT) => {
-            const newBattleSpeed = 1 + (newT * 3);
+            const newBattleSpeed = Math.round(1 + (newT * 3));
             REGISTRY.set('battleSpeed', newBattleSpeed);
         });
     }
@@ -311,7 +311,7 @@ export class GOptionsUI extends GUIScene {
             REGISTRY.set('speechVolume', newT);
             // Play a test sound to demonstrate new volume level:
             const soundManager = GFF.AdventureContent.getSound();
-            soundManager.playSpeech('avc');
+            soundManager.playSpeech('vca', 'Test');
         });
     }
 }

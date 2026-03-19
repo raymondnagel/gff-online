@@ -177,11 +177,18 @@ export namespace PLAYER {
         grace = amount;
     }
 
+    /**
+     * Remember that grace increases were changed to be flat rather than
+     * percents. This will make it easier to accumulate grace in the early
+     * game, in order to use it for prayer; but in the late game, it will
+     * accumulate more slowly, to make it more difficult to get to 100%,
+     * at which point the player effectively becomes nearly invincible.
+     */
     export function giveGrace(amount: 'minor'|'major') {
         if (amount === 'minor') {
-            changeGrace(Math.ceil(GFF.getDifficulty().minorGraceIncrease * getMaxGrace()));
+            changeGrace(GFF.getDifficulty().minorGraceIncrease);
         } else if (amount === 'major') {
-            changeGrace(Math.ceil(GFF.getDifficulty().majorGraceIncrease * getMaxGrace()));
+            changeGrace(GFF.getDifficulty().majorGraceIncrease);
         }
     }
 

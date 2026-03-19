@@ -55,16 +55,13 @@ export class GInputMode {
     }
 
     public clearKeypressStates() {
-        // console.log(`${this.name}: cleared key states!`);
         this.heldKeys.clear();
     }
 
     public processKeyDown(keyEvent: KeyboardEvent) {
         if (!this.heldKeys.has(keyEvent.key)) {
-            // Key wasn't already held; hold down and continue:
             this.heldKeys.add(keyEvent.key);
         } else {
-            // console.log(`Key already held! ${keyEvent.key}`);
             // Key was already held...
             if (!this.repeatPressKeys.includes(keyEvent.key)) {
                 // Repeat not allowed for this key; return:
@@ -73,7 +70,6 @@ export class GInputMode {
             // Repeat is allowed for this key; continue
         }
         if (this.onProcessKeyDown !== undefined) {
-            // console.log(`${this.name}: keyDown(${keyEvent.key})`);
             this.onProcessKeyDown.call(this.scene, keyEvent);
         }
     }
@@ -81,7 +77,6 @@ export class GInputMode {
     public processKeyUp(keyEvent: KeyboardEvent) {
         this.heldKeys.delete(keyEvent.key);
         if (this.onProcessKeyUp !== undefined) {
-            // console.log(`${this.name}: keyUp(${keyEvent.key})`);
             this.onProcessKeyUp.call(this.scene, keyEvent);
         }
     }

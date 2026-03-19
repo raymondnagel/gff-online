@@ -32,6 +32,8 @@ export class GSpeechBubble extends Phaser.GameObjects.Container implements GBubb
     private actualSpeed: number;
     private startTime: number;
     private wordsSpoken: number = 0;
+    private lastTextWord: string|undefined = undefined;
+    private lastSpokenWord: string|undefined = undefined;
     private complete: boolean = false;
 
     constructor(speaker: GCharSprite, text: string) {
@@ -64,6 +66,7 @@ export class GSpeechBubble extends Phaser.GameObjects.Container implements GBubb
     }
 
     private createBubble(): void {
+        GFF.log(`Talk speed: ${REGISTRY.getNumber('talkSpeed')}, actual words/sec: ${this.actualSpeed}`);
 
         let speakX: number = this.speaker.getTopCenter().x;
         let speakY: number = this.speaker.y + CHAR_HEAD_SPACE;
@@ -321,11 +324,15 @@ export class GSpeechBubble extends Phaser.GameObjects.Container implements GBubb
                 // We don't want to play a speech sound more than once per step,
                 // so only call pronounce if a word was not already spoken.
 
-                // Always speak at least one word:
-                if (this.length < intTalkSpeed && this.wordsSpoken === 1) {
-                    this.speaker.pronounceWord();
-                } else if (!wordWasSpoken && this.wordsSpoken % intTalkSpeed === 0) {
-                    this.speaker.pronounceWord();
+                // Always speak at least one word.
+
+                // Always speak the first word; it's often a greeting, like "Hi!"
+                if (this.lastTextWord && this.wordsSpoken === 1) {
+                    this.speakWord(this.lastTextWord);
+                    wordWasSpoken = true;
+                // Otherwise, speak according to the talk speed, so we'll say less words if speaking at a higher speed.
+                } else if (this.lastTextWord && !wordWasSpoken && this.wordsSpoken % intTalkSpeed === 0) {
+                    this.speakWord(this.lastTextWord);
                     wordWasSpoken = true;
                 }
             }
@@ -338,6 +345,7 @@ export class GSpeechBubble extends Phaser.GameObjects.Container implements GBubb
         } else {
             this.complete = this.currentWordIndex >= this.length;
             if (this.complete) {
+                this.speakAtLeastOneWord();
                 this.onComplete();
             }
             return this.complete;
@@ -348,11 +356,28 @@ export class GSpeechBubble extends Phaser.GameObjects.Container implements GBubb
         GFF.AdventureUI.showPrompt('Press Enter to continue');
     }
 
+    private speakWord(word: string) {
+        this.speaker.pronounceWord(word);
+        this.lastSpokenWord = word;
+    }
+
+    private speakAtLeastOneWord() {
+        if (this.lastSpokenWord === undefined) {
+            // Just grab the first word and pronounce it, to make sure something is said:
+            const wordObj = this.getAt(1) as Phaser.GameObjects.Text;
+            if (wordObj) {
+                this.speakWord(wordObj.text);
+            }
+        }
+    }
+
     private sayNextWord(): boolean {
         if (this.isComplete()) {
             return false;
         } else {
-            (this.getAt(this.currentWordIndex++) as Phaser.GameObjects.Text).visible = true;
+            const wordObj = this.getAt(this.currentWordIndex++) as Phaser.GameObjects.Text;
+            wordObj.visible = true;
+            this.lastTextWord = wordObj.text;
             return true;
         }
     }

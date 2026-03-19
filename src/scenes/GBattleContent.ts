@@ -2107,7 +2107,7 @@ export class GBattleContent extends GContentScene {
         this.baseDamageCalc.text = `${baseDamage}`;
         this.statusEffectCaption.text = this.currentStatusEffect && statEffDamage > 0 ? `Status: ${this.currentStatusEffect.name}` : '';
         this.statusEffectCalc.text = this.currentStatusEffect && statEffDamage > 0 ? `+ ${statEffDamage}` : '';
-        this.graceProtectionCalc.text = gracePctInt > 0 ? `- ${gracePctInt}%` : '-';
+        this.graceProtectionCalc.text = gracePctInt > 0 ? `- ${gracePctInt}%` : '0%';
         this.finalDamageCalc.text = `${finalDamage}`;
 
         return {
@@ -2465,9 +2465,11 @@ export class GBattleContent extends GContentScene {
                         if (deflectSound) {
                             this.time.delayedCall(100 / this.animSpeed, () => {
                                 this.damagePlayerFaith(result.damage, contactSound, () => {
-                                    // Reset the shield's position:
-                                    this.playerShieldImage.setRotation(Phaser.Math.DegToRad(0));
-                                    this.playerShieldImage.setX(this.playerShieldImage.x - 15);
+                                    // Reset the shield's position (total block duration > 600ms, easily seen):
+                                    this.time.delayedCall(300 / this.animSpeed, () => {
+                                        this.playerShieldImage.setRotation(Phaser.Math.DegToRad(0));
+                                        this.playerShieldImage.setX(this.playerShieldImage.x - 15);
+                                    });
                                     // Finally, end the enemy's attack by showing the result and allowing player to proceed:
                                     this.endEnemyAttack(result);
                                 });
