@@ -537,6 +537,7 @@ export class GBattleContent extends GContentScene {
                     this.checkPeek(keyEvent.key, true);
                     break;
                 case 'Enter':
+                    this.setInputMode(INPUT_DISABLED);
                     if (this.currentStage === BattleStage.END_PLAYER_TURN) {
                         this.setCurrentStage(BattleStage.ENEMY_ATTACK);
                     } else if (this.currentStage === BattleStage.END_ENEMY_TURN) {
@@ -575,6 +576,7 @@ export class GBattleContent extends GContentScene {
                     this.bookWheel.scrollDown(this.bookWheelRepeats);
                     break;
                 case 'Enter':
+                    this.setInputMode(INPUT_DISABLED);
                     this.completeCurrentPart();
                     break;
             }
@@ -597,6 +599,7 @@ export class GBattleContent extends GContentScene {
                     this.checkPeek(keyEvent.key, true);
                     break;
                 case 'Enter':
+                    this.setInputMode(INPUT_DISABLED);
                     this.completeCurrentPart();
                     break;
                 default:
@@ -626,6 +629,7 @@ export class GBattleContent extends GContentScene {
                     this.checkPeek(keyEvent.key, true);
                     break;
                 case 'Enter':
+                    this.setInputMode(INPUT_DISABLED);
                     this.completeCurrentPart();
                     break;
                 default:
@@ -1492,7 +1496,6 @@ export class GBattleContent extends GContentScene {
     }
 
     private startEnemyTurn() {
-        this.setInputMode(INPUT_DISABLED);
         const eligibleAttacks: GEnemyAttack[] = this.enemyAttacks.filter(a => a.condFunc());
         const chosenAttack: GEnemyAttack = RANDOM.randElement(eligibleAttacks);
 
@@ -1718,25 +1721,25 @@ export class GBattleContent extends GContentScene {
     }
 
     private completeCurrentPart() {
+        this.setInputMode(INPUT_DISABLED);
         switch (this.currentStage) {
             case BattleStage.BOOK:
-                this.setInputMode(INPUT_DISABLED);
                 this.setCurrentStage(BattleStage.CHAPTER);
                 break;
             case BattleStage.CHAPTER:
                 if (this.chapterEntry.isEnteredTextValid()) {
-                    this.setInputMode(INPUT_DISABLED);
                     this.setCurrentStage(BattleStage.VERSE);
                 } else {
                     this.getSound().playSound('error_buzz');
+                    this.setInputMode(INPUT_REFCHAPTER);
                 }
                 break;
             case BattleStage.VERSE:
                 if (this.verseEntry.isEnteredTextValid()) {
-                    this.setInputMode(INPUT_DISABLED);
                     this.setCurrentStage(BattleStage.PLAYER_ATTACK);
                 } else {
                     this.getSound().playSound('error_buzz');
+                    this.setInputMode(INPUT_REFVERSE);
                 }
                 break;
             default:
@@ -1744,6 +1747,13 @@ export class GBattleContent extends GContentScene {
     }
 
     private setCurrentStage(newStage: BattleStage) {
+
+        // This is called if the Player loses to Fear, normal damage, or status effect damage
+        const enemyLaughsWhenYouLose: Function = () => {
+            this.getSound().playSound('enemy_laugh').once('complete', () => {
+                this.setInputMode(INPUT_PROMPTENTER);
+            });
+        }
 
         const setup: Function = () => {
             // Set new stage:
@@ -1778,7 +1788,9 @@ export class GBattleContent extends GContentScene {
                     this.finishGuess();
                     break;
                 case BattleStage.END_PLAYER_TURN:
-                    this.showGuessResult();
+                    this.showGuessResult(() => {
+                        this.setInputMode(INPUT_PROMPTENTER);
+                    });
                     break;
                 case BattleStage.ENEMY_ATTACK:
                     this.startEnemyTurn();
@@ -1787,8 +1799,9 @@ export class GBattleContent extends GContentScene {
                     this.setInputMode(INPUT_PROMPTENTER);
                     break;
                 case BattleStage.VICTORY:
-                    this.showGuessResult();
-                    this.setInputMode(INPUT_PROMPTENTER);
+                    this.showGuessResult(() => {
+                        this.setInputMode(INPUT_PROMPTENTER);
+                    });
                     break;
                 case BattleStage.DEFEAT:
                     // If the player fled, don't show enemy attack result;
@@ -1796,17 +1809,16 @@ export class GBattleContent extends GContentScene {
                     // missing under the fear effect, which is a consequence of a bad guess.
                     if (this.eventText.text === FLEE_EVENT_TEXT) {
                         this.enemyResultImage.setVisible(false);
-                        this.showGuessResult();
+                        this.showGuessResult(enemyLaughsWhenYouLose);
                     }
                     // This check is necessary because defeat may be triggered by
                     // status effect damage AFTER the enemy's attack, and in that
                     // case, the enemy result is already shown - don't re-show.
                     else if (!this.enemyResultImage.visible) {
-                        this.showEnemyAttackResult();
+                        this.showEnemyAttackResult(enemyLaughsWhenYouLose);
+                    } else {
+                        enemyLaughsWhenYouLose();
                     }
-                    this.getSound().playSound('enemy_laugh').once('complete', () => {
-                        this.setInputMode(INPUT_PROMPTENTER);
-                    });
                     break;
             }
         };
@@ -1895,7 +1907,6 @@ export class GBattleContent extends GContentScene {
     }
 
     private finishGuess() {
-        this.setInputMode(INPUT_DISABLED);
         this.swordImage.setVisible(true);
         this.swordImage.alpha = 0;
         this.swordImage.setX(SWORD_START_X);
@@ -2017,9 +2028,7 @@ export class GBattleContent extends GContentScene {
         }
     }
 
-    private showGuessResult() {
-        this.setInputMode(INPUT_PROMPTENTER);
-
+    private showGuessResult(nextStep: Function) {
         const perfect: boolean = this.perfectBonusCalc.text === '+ 100';
 
         this.resultImage.setScale(0);
@@ -2032,6 +2041,7 @@ export class GBattleContent extends GContentScene {
                 this.playerReportTexts.forEach(t => t.setVisible(true).setAlpha(1.0));
                 this.perfectBonusCaption.setVisible(perfect).setAlpha(1.0);
                 this.perfectBonusCalc.setVisible(perfect).setAlpha(1.0);
+                nextStep();
             }
         });
     }
@@ -2119,7 +2129,7 @@ export class GBattleContent extends GContentScene {
         }
     }
 
-    private showEnemyAttackResult() {
+    private showEnemyAttackResult(nextStep: Function) {
         const newEffect: boolean = this.attackEffectCaption.text !== '';
         const existingEffect: boolean = this.statusEffectCalc.text !== '';
 
@@ -2134,6 +2144,7 @@ export class GBattleContent extends GContentScene {
                 this.attackEffectCaption.setVisible(newEffect).setAlpha(1.0);
                 this.statusEffectCaption.setVisible(existingEffect).setAlpha(1.0);
                 this.statusEffectCalc.setVisible(existingEffect).setAlpha(1.0);
+                nextStep();
             }
         });
     }
@@ -2495,22 +2506,22 @@ export class GBattleContent extends GContentScene {
         // The enemy's attack just ended.
         // The first thing to do is show the result; we'll delay it a little.
         this.time.delayedCall(700 / this.animSpeed, () => {
-            this.showEnemyAttackResult();
-
-            // Once the result is shown, do any per-round status effect events:
-            if (this.currentStatusEffect && this.currentStatusEffect.roundFunc) {
-                this.currentStatusEffect.roundFunc();
-            }
-            if (this.currentStatusEffect && result.statusEffectDamage > 0) {
-                const statusEffect = this.currentStatusEffect;
-                this.time.delayedCall(400 / this.animSpeed, () => {
-                    this.damagePlayerFaith(result.statusEffectDamage, statusEffect.roundSound ?? 'splooge', () => {
-                        this.setCurrentStage(BattleStage.END_ENEMY_TURN);
+            this.showEnemyAttackResult(() => {
+                // Once the result is shown, do any per-round status effect events:
+                if (this.currentStatusEffect && this.currentStatusEffect.roundFunc) {
+                    this.currentStatusEffect.roundFunc();
+                }
+                if (this.currentStatusEffect && result.statusEffectDamage > 0) {
+                    const statusEffect = this.currentStatusEffect;
+                    this.time.delayedCall(400 / this.animSpeed, () => {
+                        this.damagePlayerFaith(result.statusEffectDamage, statusEffect.roundSound ?? 'splooge', () => {
+                            this.setCurrentStage(BattleStage.END_ENEMY_TURN);
+                        });
                     });
-                });
-            } else {
-                this.setCurrentStage(BattleStage.END_ENEMY_TURN);
-            }
+                } else {
+                    this.setCurrentStage(BattleStage.END_ENEMY_TURN);
+                }
+            });
         });
     }
 

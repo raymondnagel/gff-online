@@ -776,11 +776,19 @@ export class GAdventureContent extends GContentScene {
                     this.spawnCommonChest();
                 }
 
-                // If this is a stronghold, 33% chance to spawn a hidden trap:
+                // If this is a non-safe stronghold room, 33% chance to spawn a hidden trap:
                 if (this.getCurrentArea() instanceof GStrongholdArea && RANDOM.randPct() <= .33) {
                     this.spawnHiddenTrap();
                 }
             }
+
+            // Set player animations based on area:
+            if (this.getCurrentArea() instanceof GStrongholdArea) {
+                this.player.useSoldierAnims();
+            } else {
+                this.player.usePlainAnims();
+            }
+
             this.fadeIn(500, undefined, meanwhile, () => {
                 this.revertInputMode();
             });

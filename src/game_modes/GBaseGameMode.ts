@@ -41,7 +41,7 @@ export abstract class GBaseGameMode {
 
         // Make the new mode the current one:
         this.inputMode = inputMode;
-        GFF.log(`Set to input mode: ${this.inputMode?.getName()}`);
+        GFF.log(`Set input mode: ${this.previousInputMode?.getName()} -> ${this.inputMode?.getName()}`);
     }
 
     public getInputMode(): GInputMode|null {

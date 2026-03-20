@@ -49,7 +49,26 @@ export class GPlayerSprite extends GCharSprite {
         this.createSingleAnimation('preach_sw');
         this.createDirectionalAnimations('interact', 0);
         this.createDirectionalAnimations('run');
+         // Remove default "sit_n" with directional "sit":
+        this.anims.remove('adam_sit_n');
         this.createDirectionalAnimations('sit');
+
+        // We'll use a different set of animations when the player
+        // is in a stronghold, so set those up now. First, we have
+        // to change the prefix so that animations will be created
+        // with the correct keys:
+        this.setSpriteKeyPrefix('adam_soldier');
+        this.createSingleAnimation('carryidle_s');
+        this.createSingleAnimation('kneel_ne');
+        this.createSingleAnimation('rejoice_s');
+        this.createSingleAnimation('sit_n');
+        this.createDirectionalAnimations('idle');
+        this.createDirectionalAnimations('walk');
+        this.createDirectionalAnimations('interact', 0);
+        this.createDirectionalAnimations('run');
+        this.createDirectionalAnimations('sit');
+        // Change the prefix back:
+        this.setSpriteKeyPrefix('adam');
 
         // Starts the player with an "idle_s" animation:
         this.walkDirection(Dir9.NONE);
@@ -58,6 +77,20 @@ export class GPlayerSprite extends GCharSprite {
         if (this.body !== null) {
             this.body.onCollide = true;
             this.setCollideWorldBounds(true, 0, 0, true);
+        }
+    }
+
+    public usePlainAnims() {
+        this.setSpriteKeyPrefix('adam');
+        if (this.anims.currentAnim !== null) {
+            this.play(this.anims.currentAnim.key.replace('adam_soldier', 'adam'), true);
+        }
+    }
+
+    public useSoldierAnims() {
+        this.setSpriteKeyPrefix('adam_soldier');
+        if (this.anims.currentAnim !== null) {
+            this.play(this.anims.currentAnim.key.replace('adam', 'adam_soldier'), true);
         }
     }
 
@@ -101,11 +134,11 @@ export class GPlayerSprite extends GCharSprite {
         // Play the appropriate animation based on direction
         if (direction !== Dir9.NONE) {
             let dirText = DIRECTION.dir9Texts()[direction];
-            this.play(`adam_run_${dirText}`, true);
+            this.play(`${this.getSpriteKeyPrefix()}_run_${dirText}`, true);
         } else {
             // Since the assigned direction is NONE, use the facing direction instead:
             let dirText = DIRECTION.dir9Texts()[this.getDirection()];
-            this.play(`adam_idle_${dirText}`, true);
+            this.play(`${this.getSpriteKeyPrefix()}_idle_${dirText}`, true);
         }
     }
 

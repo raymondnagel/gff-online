@@ -61,6 +61,14 @@ export abstract class GCharSprite extends Phaser.Physics.Arcade.Sprite {
         return this.spriteKeyPrefix;
     }
 
+    /**
+     * This will never be called for most characters,
+     * but it allows the player character to change appearance.
+     */
+    protected setSpriteKeyPrefix(spriteKeyPrefix: string) {
+        this.spriteKeyPrefix = spriteKeyPrefix;
+    }
+
     protected abstract getSpeed(): number;
 
     public abstract getGender(): GGender;
