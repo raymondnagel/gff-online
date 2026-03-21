@@ -102,6 +102,7 @@ export class GAdventureContent extends GContentScene {
 
     private impSpawnTimeEvent: Phaser.Time.TimerEvent;
     private playTimerTick: number = 0;
+    private clearedRooms: Map<GRoom, number> = new Map();
 
     private popup: GPopup|null = null;
     private conversation: GConversation|null = null;
@@ -769,7 +770,20 @@ export class GAdventureContent extends GContentScene {
 
             } else {
                 // Non-safe rooms:
-                this.doEnemySpawns();
+
+                // Decrement the duration of all cleared rooms by 1, and if any reach 0, make them uncleared again:
+                this.clearedRooms.forEach((duration: number, room: GRoom) => {
+                    if (duration <= 0) {
+                        this.clearedRooms.delete(room);
+                    } else {
+                        this.clearedRooms.set(room, duration - 1);
+                    }
+                });
+
+                // Do enemy spawns if the room isn't in the list of cleared rooms:
+                if (!this.clearedRooms.has(this.getCurrentRoom() as GRoom)) {
+                    this.doEnemySpawns();
+                }
 
                 // 33% chance to spawn a common chest:
                 if (RANDOM.randPct() <= .33) {
@@ -1411,6 +1425,12 @@ export class GAdventureContent extends GContentScene {
             if (ENEMY.BOSS_SPIRITS.includes(ENEMY.getCurrentSpirit())) {
                 REGISTRY.set(`bossDefeated_${ENEMY.getCurrentSpirit().name}`, true);
             }
+
+            // If the player defeated all enemies in the room, wait a bit before respawning them:
+            if (this.getEnemies().length === 0) {
+                this.clearedRooms.set(this.getCurrentRoom() as GRoom, GFF.getDifficulty().enemyRespawnWait);
+            }
+
         } else {
             // It wasn't a victory...
             STATS.changeInt('Defeats', 1);

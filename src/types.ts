@@ -74,6 +74,7 @@ export type GDifficulty = {
     enemyLevelsPerSpecial: number;
     enemySpecialFrequency: number;
     enemySpeed: number;
+    enemyRespawnWait: number;
     bossResistPct: number;
     minorGraceIncrease: number;
     majorGraceIncrease: number;
