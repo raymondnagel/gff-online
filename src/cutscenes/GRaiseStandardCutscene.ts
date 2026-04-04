@@ -36,7 +36,7 @@ export class GRaiseStandardCutscene extends GCutscene {
 
         // Permanently place the standard in the room:
         const room: GRoom = GFF.AdventureContent.getCurrentRoom() as GRoom;
-        const plan: GSceneryPlan|null = room.planSceneryDuringGameplay(standardDef, stdX, stdY, 0, 0);
+        const plan: GSceneryPlan|null = room.planSceneryDuringGameplay(standardDef, stdX, stdY, 0, 0, true);
         if (plan !== null) {
             SCENERY.create(plan, room);
         }

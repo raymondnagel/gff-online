@@ -56,6 +56,8 @@ import { GProphetSprite } from '../objects/chars/GProphetSprite';
 import { GOverheadAnimatedDecoration } from '../objects/decorations/GOverheadAnimatedDecoration';
 import { GHiddenTrap } from '../objects/touchables/GHiddenTrap';
 import { SAVE } from '../save';
+import { GPullDownStrongholdCutscene } from '../cutscenes/GPullDownStrongholdCutscene';
+import { GRestorationCutscene } from '../cutscenes/GRestorationCutscene';
 
 const MOUSE_UI_BUTTON: string = 'MOUSE_UI_BUTTON';
 
@@ -79,6 +81,13 @@ const COMPANION_RELATIVE_SPAWN_POINTS: GPoint2D[] = [
     {x: -36, y: 16}, // SW
     {x: -36, y: -16} // NW
 ];
+
+enum RoomTransition {
+    WALK_INTO,
+    FLY_INTO,
+    ENTER_BUILDING,
+    EXIT_BUILDING,
+};
 
 export class GAdventureContent extends GContentScene {
 
@@ -355,9 +364,15 @@ export class GAdventureContent extends GContentScene {
             this.player.faceDirection(Dir9.N);
             this.player.stop();
 
+            // Check whether to begin a cutscene as the room is entered
+            if (this.triggerArrivalCutscene(portalRoom, RoomTransition.ENTER_BUILDING)) {
+                return;
+            }
+
             this.transitionToRoom(portalRoom.getX(), portalRoom.getY(), portalRoom.getFloor(), portalRoom.getArea(), () => {
-                // If the player is entering a church, we need to play the service cutscene:
+                // If the player is entering a church, we need to play the service cutscene;
                 if (room.getChurch() !== null) {
+                    // This happens after the normal room transition, so we don't need triggerArrivalCutscene
                     const church: GChurch = room.getChurch() as GChurch;
                     new GChurchServiceCutscene(church).play();
                 } else {
@@ -384,6 +399,12 @@ export class GAdventureContent extends GContentScene {
             this.player.walkDirection(Dir9.NONE);
             this.player.faceDirection(Dir9.S);
             this.player.stop();
+
+            // Check whether to begin a cutscene as the room is entered
+            if (this.triggerArrivalCutscene(portalRoom, RoomTransition.EXIT_BUILDING)) {
+                return;
+            }
+
             this.transitionToRoom(portalRoom.getX(), portalRoom.getY(), portalRoom.getFloor(), portalRoom.getArea(), () => {
                 // We'll initially hide the player.
                 // When the new room is loaded, his position will cause the door-open trigger,
@@ -415,6 +436,19 @@ export class GAdventureContent extends GContentScene {
         }
     }
 
+    private triggerArrivalCutscene(room: GRoom, _transition: RoomTransition): boolean {
+        // Check whether to begin a cutscene when the given room is entered the specified way
+        if (this.canPullDownStronghold(room)) {
+            this.transitionRoomIntoCutscene(room, new GPullDownStrongholdCutscene(room), false, true, false);
+            return true;
+        }
+        return false;
+    }
+
+    public startRestorationCutscene(intercessor: GPersonSprite) {
+        new GRestorationCutscene(intercessor).play();
+    }
+
     public async doMapExport() {
         const area = this.getCurrentArea();
         const w = area.getWidth();
@@ -434,7 +468,7 @@ export class GAdventureContent extends GContentScene {
 
         const captureRoom = async (x: number, y: number): Promise<void> => {
             return new Promise((resolve) => {
-                this.setCurrentRoom(x, y, this.playerFloor);
+                this.setCurrentRoom(x, y, this.playerFloor, undefined, true, false);
                 this.sys.game.renderer.snapshotArea(
                     0, 0, GFF.ROOM_W, GFF.ROOM_H,
                     async (image: HTMLImageElement | Phaser.Display.Color) => {
@@ -655,6 +689,13 @@ export class GAdventureContent extends GContentScene {
             // Before transitioning, walk NONE to stop moving and remove diagonals:
             this.player.walkDirection(Dir9.NONE);
             this.player.stop();
+
+            // Check whether to begin a cutscene as the room is entered
+            const newRoom: GRoom = this.currentArea.getRoomAt(this.playerFloor, newRoomX, newRoomY) as GRoom;
+            if (this.triggerArrivalCutscene(newRoom, RoomTransition.WALK_INTO)) {
+                return;
+            }
+
             this.transitionToRoom(newRoomX, newRoomY, this.playerFloor, this.currentArea, () => {
                 // Re-position player:
                 let newEdge: Dir9 = DIRECTION.getOpposite(dir) as Dir9;
@@ -684,14 +725,16 @@ export class GAdventureContent extends GContentScene {
         }
     }
 
-    public setCurrentArea(area: GArea) {
+    public setCurrentArea(area: GArea, ignoreMusic: boolean = false) {
         this.currentArea = area;
-        if (this.getSound().isMusicPlaying()) {
-            this.getSound().fadeOutMusic(500, () => {
+        if (!ignoreMusic) {
+            if (this.getSound().isMusicPlaying()) {
+                this.getSound().fadeOutMusic(500, () => {
+                    this.startAreaBgMusic();
+                });
+            } else {
                 this.startAreaBgMusic();
-            });
-        } else {
-            this.startAreaBgMusic();
+            }
         }
     }
 
@@ -710,14 +753,14 @@ export class GAdventureContent extends GContentScene {
         }
     }
 
-    public setCurrentRoom(roomX: number, roomY: number, floor: number, area?: GArea) {
+    public setCurrentRoom(roomX: number, roomY: number, floor: number, area?: GArea, ignoreMusic: boolean = false, showTitle: boolean = true) {
         // Unload the previous room if there is one:
         const prevRoom: GRoom|null = this.getCurrentRoom();
         prevRoom?.unload();
 
         // If an area was specified, set it:
         if (area !== undefined && area !== this.currentArea) {
-            this.setCurrentArea(area);
+            this.setCurrentArea(area, ignoreMusic);
         }
 
         // Set the new coordinates:
@@ -742,7 +785,9 @@ export class GAdventureContent extends GContentScene {
             }
         }
 
-        GFF.AdventureUI.showRegionTitle(prevRoom, currentRoom)
+        if (showTitle) {
+            GFF.AdventureUI.showRegionTitle(prevRoom, currentRoom);
+        }
     }
 
     public getCurrentRoom(): GRoom|null {
@@ -810,27 +855,82 @@ export class GAdventureContent extends GContentScene {
     }
 
     /**
-     * A simpler transition, without fading or input mode change, to be called during cutscenes.
+     * A transition for when we exit a room normally, but a cutscene needs to be started
+     * as we enter the new room. This does the normal fade-out, but starts the cutscene
+     * instead of fading back in to resume gameplay.
+     */
+    public transitionRoomIntoCutscene(room: GRoom, cutscene: GCutscene, spawnDefaultPeople: boolean = true, ignoreMusic: boolean = false, showTitle: boolean = false) {
+        REGISTRY.set('isNametags', false);
+        this.setInputMode(INPUT_DISABLED);
+        this.stopChars();
+        this.impSpawnTimeEvent?.remove();
+        this.fadeOut(500, undefined, () => {
+            this.setCurrentRoom(room.getX(), room.getY(), room.getFloor(), room.getArea(), ignoreMusic, showTitle);
+            if (spawnDefaultPeople) {
+                this.spawnPeopleForRoom();
+            }
+            this.setVisionWithCheck();
+
+            // Set player animations based on area:
+            if (this.getCurrentArea() instanceof GStrongholdArea) {
+                this.player.useSoldierAnims();
+            } else {
+                this.player.usePlainAnims();
+            }
+
+            // Don't fade in; just immediately start the cutscene, which will handle fading itself:
+            cutscene.play();
+        });
+    }
+
+    /**
+     * A simpler transition, without fading or input mode change, to be called in the middle of cutscenes.
      * The cutscene will handle any fading or input mode changes.
      */
-    public transitionRoomDuringCutscene(room: GRoom) {
+    public transitionRoomDuringCutscene(room: GRoom, doSpawns: boolean = true, ignoreMusic: boolean = false, showTitle: boolean = false) {
         REGISTRY.set('isNametags', false);
         this.impSpawnTimeEvent?.remove();
-        this.setCurrentRoom(room.getX(), room.getY(), room.getFloor(), room.getArea());
-        this.spawnPeopleForRoom();
+        this.setCurrentRoom(room.getX(), room.getY(), room.getFloor(), room.getArea(), ignoreMusic, showTitle);
+        if (doSpawns) {
+            this.spawnPeopleForRoom();
+        }
         this.setVisionWithCheck();
 
         if (this.getCurrentRoom()?.isSafe()) {
             // Safe rooms:
         } else {
             // Non-safe rooms:
-            this.doEnemySpawns();
-
-            // 33% chance to spawn a common chest:
-            if (RANDOM.randPct() <= .33) {
-                this.spawnCommonChest();
+            if (doSpawns) {
+                this.doEnemySpawns();
+                // 33% chance to spawn a common chest:
+                if (RANDOM.randPct() <= .33) {
+                    this.spawnCommonChest();
+                }
             }
         }
+    }
+
+    private canPullDownStronghold(inRoom: GRoom): boolean {
+        /**
+         * Pulling down the stronghold is a special cutscene that requires certain conditions.
+         * Most of them are obvious; the main ones are that the prophet must have been met already,
+         * and the stronghold must be clear (boss defeated, treasures obtained, prisoners rescued).
+         * Not all players will accomplish this, so it's almost like an easter egg reward for those
+         * who do fully clear a stronghold.
+         *
+         * We can pull down the stronghold if:
+         * - There is a stronghold in the room
+         * - The player currently has some faith (not in faithless mode)
+         * - The stronghold has not been turned into rubble already
+         * - You have met the prophet already
+         * - The stronghold is clear (all treasures obtained, all prisoners rescued)
+         */
+        const stronghold: GStronghold|null = inRoom.getStronghold();
+        return stronghold !== null
+            && PLAYER.getFaith() > 0
+            && !inRoom.hasPlanKey('stronghold_rubble')
+            && GProphetSprite.getProphetPerson().familiarity > 0
+            && stronghold.getInteriorArea().isClear();
     }
 
     public doEnemySpawns() {
@@ -1156,7 +1256,7 @@ export class GAdventureContent extends GContentScene {
             prisoner.setPrisoner(true);
         } else if (room.isProphetChamber()) {
             // Spawn the prophet if there is one
-            const prophet: GProphetSprite = new GProphetSprite(0, 0)
+            const prophet: GProphetSprite = new GProphetSprite(0, 0, true);
             this.spawnPerson(prophet, {x: 460, y: 300});
         }
     }
@@ -1801,7 +1901,11 @@ export class GAdventureContent extends GContentScene {
         }
 
         // Update special animations:
-        if (this.getCurrentRoom()?.getStronghold()) {
+        const room: GRoom = this.getCurrentRoom() as GRoom;
+        const stronghold = room.getStronghold();
+        // Corruption patches are already removed if the stronghold has been torn down,
+        // but we can check to skip trying to update them:
+        if (stronghold && !room.hasPlanKey('stronghold_rubble')) {
             const corruptionPatches: GCorruptionPatch[] = this.children.list.filter(gameObject =>
                 gameObject instanceof GCorruptionPatch
             ) as GCorruptionPatch[];

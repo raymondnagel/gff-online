@@ -92,6 +92,7 @@
   "json/conversations/player_prayer_conv.json",
   "json/conversations/player_proclaim_liberty.json",
   "json/conversations/play_piano.json",
+  "json/conversations/pull_down_stronghold.json",
   "json/conversations/rescue_conv.json",
   "json/conversations/restoration_conv.json",
   "json/conversations/restoration_prayer.json",

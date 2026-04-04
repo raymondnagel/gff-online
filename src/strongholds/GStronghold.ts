@@ -22,6 +22,10 @@ export abstract class GStronghold implements GSaveable {
         this.interiorArea.setStrongholdIndex(this.index);
     }
 
+    public getInteriorArea(): GStrongholdArea {
+        return this.interiorArea;
+    }
+
     public getName(): string {
         return this.name;
     }

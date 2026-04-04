@@ -13,7 +13,7 @@ import { GContentScene } from "./GContentScene";
 import { STATS } from "../stats";
 import { REGISTRY } from "../registry";
 import { ARMORS } from "../armors";
-import { GColor } from "../colors";
+import { COLOR, GColor } from "../colors";
 import { ANIM } from "../anim";
 import { stat } from "node:fs";
 
@@ -81,6 +81,8 @@ const SCORE_CAPTION_X: number = 424;
 const SCORE_CALC_X: number = 560;
 const PLAYER_PARTICLE_X: number = 120;
 const ENEMY_PARTICLE_X: number = 904;
+const MAX_WORD_TEXTS: number = 200;
+const MAX_WORD_SMOKES: number = 120;
 
 const INPUT_PROMPTENTER: GInputMode = new GInputMode('battle.prompt_enter');
 const INPUT_REFBOOK: GInputMode = new GInputMode('battle.ref_book');
@@ -297,6 +299,8 @@ export class GBattleContent extends GContentScene {
     private poisonVialImage: Phaser.GameObjects.Image;
     private poisonPulseTween: Phaser.Tweens.Tween|null = null;
     private smokePuffSprites: Phaser.GameObjects.Sprite[];
+    private wordSmokeSpritePool: Phaser.GameObjects.Sprite[];
+    private wordTextPool: Phaser.GameObjects.Text[];
     private sweatTimer: Phaser.Time.TimerEvent|null = null;
     private trembleTween: Phaser.Tweens.Tween|null = null;
     private armorSparkImage: Phaser.GameObjects.Image;
@@ -305,6 +309,9 @@ export class GBattleContent extends GContentScene {
     private bookWheelRepeats: number = 0;
 
     private animSpeed: number = 1;
+    private maxDelta = 0;
+    private sampleTimer = 0;
+    private frameRateText: Phaser.GameObjects.Text;
 
     private currentStatusEffect: StatusEffect|null = null;
     private statusEffectIcon: Phaser.GameObjects.Image;
@@ -463,7 +470,7 @@ export class GBattleContent extends GContentScene {
         this.tweens.add({
             targets: this.stageText,
             alpha: { from: 0, to: 1 },
-            duration: 300 / this.animSpeed,
+            duration: 300, // Don't change the speed of flashes with animSpeed
             yoyo: true,
             repeat: -1
         });
@@ -519,12 +526,20 @@ export class GBattleContent extends GContentScene {
             }
         };
 
+        this.createWordPools();
         this.getSound().playMusic('onward');
         this.createAttackAnimations();
         this.createPlayerResult();
         this.createEnemyResult();
         this.loadEnemyAttacks();
         this.showUI();
+
+        this.frameRateText = this.add.text(GFF.RIGHT_BOUND - 10, GFF.TOP_BOUND + 10, '', {
+            fontSize: '32px',
+            color: COLOR.WHITE.str(),
+            fontFamily: 'imposs'
+        }).setShadow(0, 0, '#000000', 6, false, true).setOrigin(1, 0);
+        this.frameRateText.setVisible(REGISTRY.getBoolean('showFrameRate'));
     }
 
     private initInputModes() {
@@ -2104,8 +2119,10 @@ export class GBattleContent extends GContentScene {
         const statEffDamage = this.currentStatusEffect && this.currentStatusEffect.damageFunc ?
             this.currentStatusEffect.damageFunc() : 0;
         const gracePctInt = Math.ceil(PLAYER.getGrace() / 10);
-        const finalBaseDamage = Math.max(baseDamage - Math.ceil((gracePctInt / 100) * baseDamage), 0);
-        const finalEffectDamage = Math.max(statEffDamage - Math.ceil((gracePctInt / 100) * statEffDamage), 0);
+        const graceBaseReduction = Math.round((gracePctInt / 100) * baseDamage);
+        const graceEffectReduction = Math.round((gracePctInt / 100) * statEffDamage);
+        const finalBaseDamage = Math.max(baseDamage - graceBaseReduction, 0);
+        const finalEffectDamage = Math.max(statEffDamage - graceEffectReduction, 0);
         const finalDamage = finalBaseDamage + finalEffectDamage;
 
         // Fill in the values for the report
@@ -2243,20 +2260,34 @@ export class GBattleContent extends GContentScene {
         });
     }
 
-    private removeStatusEffect(nextStep: Function) {
+    /**
+     * If called without a nextStep, we're just calling this to remove any animations
+     * or timers associated with the status effect, most likely as the battle is ending.
+     */
+    private removeStatusEffect(nextStep?: Function) {
         switch (this.currentStatusEffect) {
             case POISON_EFFECT:
                 this.stopPoisonPulse();
                 break;
             case VEIL_EFFECT:
-                this.stopSmoke();
+                this.stopSmoke(nextStep === undefined);
                 break;
             case FEAR_EFFECT:
-                this.stopFear();
+                // We only need to stop fear if the battle isn't ending, because fear is ended
+                // differently for victory vs. defeat, so handled in that code instread.
+                if (nextStep !== undefined) {
+                    this.stopFear();
+                }
                 break;
             default:
         }
         this.currentStatusEffect = null;
+
+        // If there's no next step
+        if (nextStep === undefined) {
+            return;
+        }
+
         this.tweens.add({
             targets: this.statusEffectIcon,
             alpha: 0.0,
@@ -2301,7 +2332,11 @@ export class GBattleContent extends GContentScene {
         }
     }
 
-    private stopSmoke() {
+    private stopSmoke(immediately: boolean = false) {
+        if (immediately) {
+            this.smokePuffSprites.forEach(s => s.setVisible(false).setAlpha(1.0).anims.stop());
+            return;
+        }
         this.tweens.add({
             targets: this.smokePuffSprites,
             duration: 500 / this.animSpeed,
@@ -2526,6 +2561,9 @@ export class GBattleContent extends GContentScene {
     }
 
     private doVictorySequence() {
+        if (this.currentStatusEffect === FEAR_EFFECT) {
+            this.stopFear(true);
+        }
         this.getSound().stopMusic();
         this.getSound().playSound('victory');
         // Create tween to retreat enemy:
@@ -2575,6 +2613,9 @@ export class GBattleContent extends GContentScene {
     }
 
     private endBattle(victory: boolean) {
+        this.removeStatusEffect();
+        this.destroyWordPools();
+        this.reportOrphans();
         this.setInputMode(INPUT_DISABLED);
         this.fadeOut(1200 / this.animSpeed, undefined, () => {
             GFF.AdventureContent.resumeAfterBattlePreFadeIn(victory);
@@ -2583,6 +2624,23 @@ export class GBattleContent extends GContentScene {
                 GFF.AdventureContent.resumeAfterBattlePostFadeIn(victory);
             });
         });
+    }
+
+    private reportOrphans() {
+        const allTweens = this.tweens.tweens;
+
+        console.log(`Total tweens: ${allTweens.length}`);
+
+        allTweens.forEach((t, i) => {
+            console.log(`[Tween ${i}]`, {
+                playing: t.isPlaying(),
+                paused: t.isPaused(),
+                loop: t.loop,
+                targets: t.targets,
+            });
+        });
+
+        // const events = this.time.removeAllEvents();
     }
 
     private getRandomScriptureContext() {
@@ -2604,6 +2662,14 @@ export class GBattleContent extends GContentScene {
         this.servedVerseLines.length = 0;
         this.prevVerseLines.length = 0;
         this.nextVerseLines.length = 0;
+
+        // Clear old text and smoke objects from the containers, but don't destroy them:
+        this.servedVerseContainer.removeAll(false);
+        this.prevVerseContainer.removeAll(false);
+        this.nextVerseContainer.removeAll(false);
+
+        // Reset the objects in the pools so they're ready to be reused:
+        this.resetWordPools();
 
         // Create the texts for the current, previous, and next verses (if they exist);
         // Only the served verse is visible at this point (though its alpha begins at 0 so it can be faded in.)
@@ -2636,7 +2702,7 @@ export class GBattleContent extends GContentScene {
         // Step through each token and create either a text or a smoke, adding it to the current line:
         let currentLine: TextLine = [];
         tokens.forEach((t, i) => {
-            const obj = smokeIndices.has(i) ? this.createSmokeObj() : this.createWordObj(t);
+            const obj = smokeIndices.has(i) ? this.fetchSmokeObj() : this.fetchWordObj(t);
             const lineWidth = this.getLineWidth(currentLine);
             if (lineWidth + obj.width > WORD_WRAP_WIDTH) {
                 // This word would put us over the max width, so start a new line:
@@ -2654,7 +2720,6 @@ export class GBattleContent extends GContentScene {
 
         // Arrange the lines in the container
         // Text is always centered vertically, and centered horizontally if only one line
-        container.removeAll(true);
         const totalHeight: number = lines.length * lines[0][0].height;
         const totalWidth: number = this.getLongestLinePixels(lines);
         const startX: number = lines.length > 1 ? 0 : Math.round((this.scriptureFrame.width / 2) - (totalWidth / 2));
@@ -2690,8 +2755,26 @@ export class GBattleContent extends GContentScene {
         return longest;
     }
 
-    private createWordObj(text: string): Phaser.GameObjects.Text {
-        const wordObj = this.add.text(0, 0, text, {
+    private createWordPools() {
+        this.wordSmokeSpritePool = [];
+        for (let i = 0; i < MAX_WORD_SMOKES; i++) {
+            this.wordSmokeSpritePool.push(this.createSmokeObj());
+        }
+        this.wordTextPool = [];
+        for (let i = 0; i < MAX_WORD_TEXTS; i++) {
+            this.wordTextPool.push(this.createWordObj());
+        }
+    }
+
+    private destroyWordPools() {
+        this.wordSmokeSpritePool.forEach(sprite => sprite.destroy());
+        this.wordSmokeSpritePool = [];
+        this.wordTextPool.forEach(text => text.destroy());
+        this.wordTextPool = [];
+    }
+
+    private createWordObj(): Phaser.GameObjects.Text {
+        const wordObj = this.add.text(0, 0, '', {
             color: SCRIPTURE_COLOR,
             fontFamily: 'averia_serif',
             fontSize: '16px',
@@ -2705,8 +2788,61 @@ export class GBattleContent extends GContentScene {
         return smokeObj;
     }
 
-    public update(_time: number, _delta: number): void {
+    public update(_time: number, delta: number): void {
         this.updateStats();
+        this.updateFrameRate(delta);
+    }
+
+    private resetWordPools() {
+        this.wordSmokeSpritePool.forEach(sprite => sprite.setVisible(false).setAlpha(1.0).anims.stop());
+        this.wordTextPool.forEach(text => text.setVisible(false).setAlpha(1.0).setText(''));
+    }
+
+    private fetchWordObj(text: string): Phaser.GameObjects.Text {
+        return this.wordTextPool.find(textObj => !textObj.visible)!.setVisible(true).setText(text);
+    }
+
+    private fetchSmokeObj(): Phaser.GameObjects.Sprite {
+        return this.wordSmokeSpritePool.find(sprite => !sprite.visible)!.setVisible(true).play('word_smoke');
+    }
+
+    private updateFrameRate(delta: number) {
+        if (!REGISTRY.getBoolean('showFrameRate')) {
+            this.frameRateText.setVisible(false);
+            return;
+        }
+        this.frameRateText.setVisible(true);
+        const fps = this.game.loop.actualFps;
+
+        // track worst frame in this window
+        this.maxDelta = Math.max(this.maxDelta, delta);
+        this.sampleTimer += delta;
+
+        // update once per second
+        if (this.sampleTimer >= 1000) {
+            const worst = this.maxDelta;
+
+            // normalize spike severity (50ms = very bad)
+            const pct = Phaser.Math.Clamp(worst / 50, 0, 1);
+
+            const color = COLOR.getColorByPct(
+                COLOR.WHITE,
+                COLOR.RED,
+                pct
+            );
+
+            this.frameRateText.setColor(color.str());
+
+            this.frameRateText.setText(
+                `FPS: ${Math.floor(fps)}\n` +
+                `Frame: ${delta.toFixed(1)} ms\n` +
+                `Worst: ${worst.toFixed(1)} ms`
+            );
+
+            // reset window
+            this.maxDelta = 0;
+            this.sampleTimer = 0;
+        }
     }
 
     private updateStats() {

@@ -32,9 +32,12 @@ export namespace COLOR {
 
     export const SKY_BLUE       = c(0xbbccff);
 
+    export const GOLD_0         = c(0x433828);
     export const GOLD_1         = c(0xb87b3d);
     export const GOLD_2         = c(0xd7b375);
     export const GOLD_3         = c(0xd7c97f);
+    export const GOLD_4         = c(0xe6c088);
+    export const GOLD_5         = c(0xefd9b9);
 
 
     function c(hexColor: number): GColor {
@@ -106,5 +109,25 @@ export namespace COLOR {
             g: Math.round((g + m) * 255),
             b: Math.round((b + m) * 255),
         };
+    }
+
+    export function getColorByPct(baseColor: GColor, targetColor: GColor, pct: number): GColor {
+        const t = Phaser.Math.Clamp(pct, 0, 1);
+
+        const r1 = (baseColor.num() >> 16) & 0xFF;
+        const g1 = (baseColor.num() >> 8) & 0xFF;
+        const b1 = baseColor.num() & 0xFF;
+
+        const r2 = (targetColor.num() >> 16) & 0xFF;
+        const g2 = (targetColor.num() >> 8) & 0xFF;
+        const b2 = targetColor.num() & 0xFF;
+
+        const r = Math.round(r1 + (r2 - r1) * t);
+        const g = Math.round(g1 + (g2 - g1) * t);
+        const b = Math.round(b1 + (b2 - b1) * t);
+
+        const hex = (r << 16) | (g << 8) | b;
+
+        return new GColor(hex);
     }
 }

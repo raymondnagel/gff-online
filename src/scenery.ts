@@ -286,6 +286,7 @@ export namespace SCENERY {
             { key: 'fortress_front', type: 'custom', body: {x: 0, y: 145, width: 368, height: 197} },
             { key: 'keep_front', type: 'custom', body: {x: 0, y: 204, width: 289, height: 153} },
             { key: 'tower_front', type: 'custom', body: {x: 0, y: 218, width: 176, height: 144} },
+            { key: 'stronghold_rubble', type: 'static', body: {x: 0, y: 96, width: 400, height: 100} },
             // Foreground Decorations:
             { key: 'big_flower', type: 'fg_decor', body: {x: 0, y: 0, width: 20, height: 44} },
             { key: 'cattails', type: 'fg_decor', body: {x: 0, y: 0, width: 66, height: 48} },
@@ -413,7 +414,7 @@ export namespace SCENERY {
         }
     }
 
-    export function create(plan: GSceneryPlan, room: GRoom, decorRenderer?: Phaser.GameObjects.RenderTexture) {
+    export function create(plan: GSceneryPlan, room: GRoom, decorRenderer?: Phaser.GameObjects.RenderTexture): Phaser.GameObjects.GameObject|undefined {
         const sceneryDef: GSceneryDef = def(plan.key);
         const stoneTint = room.getStoneTint();
         let sceneryObj: Phaser.GameObjects.GameObject|undefined;
@@ -560,6 +561,9 @@ export namespace SCENERY {
                 sceneryObj.setTint(stoneTint);
             }
         }
+
+        // Return the object that was created, if any, in case calling code wants to use it
+        return sceneryObj;
     }
 
     /**

@@ -1,11 +1,12 @@
 import { GStrongholdArea } from "../areas/GStrongholdArea";
-import { COLOR } from "../colors";
+import { COLOR, GColor } from "../colors";
 import { GConversation } from "../GConversation";
 import { KEYS } from "../keys";
 import { GFF } from "../main";
 import { GIconBarButton } from "../objects/components/GIconBarButton";
 import { GPopup } from "../objects/components/GPopup";
 import { PLAYER } from "../player";
+import { REGISTRY } from "../registry";
 import { GActionableOption, GPoint2D } from "../types";
 import { GBaseScene } from "./GBaseScene";
 
@@ -44,14 +45,64 @@ export abstract class GUIScene extends GBaseScene {
     protected expMeter: Phaser.GameObjects.Rectangle;
     protected uiButtons: GIconBarButton[] = [];
     protected buttonDefinitions: GActionableOption[];
+    protected frameRateText: Phaser.GameObjects.Text;
+
+    private maxDelta = 0;
+    private sampleTimer = 0;
 
     public create(): void {
         this.handleGeneralKeyInput();
+        this.frameRateText = this.add.text(GFF.RIGHT_BOUND - 10, GFF.TOP_BOUND + 10, '', {
+            fontSize: '32px',
+            color: COLOR.WHITE.str(),
+            fontFamily: 'imposs'
+        }).setShadow(0, 0, '#000000', 6, false, true).setOrigin(1, 0);
+        this.frameRateText.setVisible(REGISTRY.getBoolean('showFrameRate'));
     }
 
-    public update(): void {
+    public update(_time: number, delta: number): void {
         if (this.uiBar !== undefined) {
             this.updateUIBarInfo();
+        }
+        this.updateFrameRate(delta);
+    }
+
+    private updateFrameRate(delta: number) {
+        if (!REGISTRY.getBoolean('showFrameRate')) {
+            this.frameRateText.setVisible(false);
+            return;
+        }
+        this.frameRateText.setVisible(true);
+        const fps = this.game.loop.actualFps;
+
+        // track worst frame in this window
+        this.maxDelta = Math.max(this.maxDelta, delta);
+        this.sampleTimer += delta;
+
+        // update once per second
+        if (this.sampleTimer >= 1000) {
+            const worst = this.maxDelta;
+
+            // normalize spike severity (50ms = very bad)
+            const pct = Phaser.Math.Clamp(worst / 50, 0, 1);
+
+            const color = COLOR.getColorByPct(
+                COLOR.WHITE,
+                COLOR.RED,
+                pct
+            );
+
+            this.frameRateText.setColor(color.str());
+
+            this.frameRateText.setText(
+                `FPS: ${Math.floor(fps)}\n` +
+                `Frame: ${delta.toFixed(1)} ms\n` +
+                `Worst: ${worst.toFixed(1)} ms`
+            );
+
+            // reset window
+            this.maxDelta = 0;
+            this.sampleTimer = 0;
         }
     }
 

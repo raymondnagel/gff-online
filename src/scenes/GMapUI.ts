@@ -150,9 +150,10 @@ export class GMapUI extends GUIScene {
                                         this.lowerTexture.draw(feature, cellX, cellY);
                                     }
                                     break;
-                                // Blue and gold chests are never shown on the map (only in debug):
+                                // Gold chests aren't shown on the map at all, because we want a more permanent mark that will persist
+                                // when the chest is obtained. These rooms have 'map_boss' as their feature instead, marked with a star.
+                                // Blue chests are never shown on the map (only in debug):
                                 case 'map_blue_chest':
-                                case 'map_gold_chest':
                                     break;
                                 default:
                                     // Other features are shown only if the room is discovered:

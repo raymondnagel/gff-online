@@ -80,6 +80,10 @@ export namespace PEOPLE {
         people.push(PREACHER_PERSON);
     }
 
+    export function getPreacher() {
+        return PREACHER_PERSON;
+    }
+
     export function getFormalName(person: GPerson): string {
         if (person.spriteKeyPrefix.includes('_cop_')) {
             return 'Officer ' + person.lastName;

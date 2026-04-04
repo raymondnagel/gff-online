@@ -1,0 +1,15 @@
+[
+  {
+    "id": "prophetLine",
+    "speaker": "other",
+    "hearer": "player",
+    "text": "The time is at hand, brother. The LORD our God hath delivered it into our hands; and in the name of the LORD will we destroy it!",
+    "next": "playerLine"
+  },
+  {
+    "id": "playerLine",
+    "speaker": "player",
+    "hearer": "other",
+    "text": "Amen! By his grace, the gates of hell shall not prevail against us!"
+  }
+]

@@ -6,6 +6,7 @@ import { GGoal } from '../../goals/GGoal';
 import { PHYSICS } from '../../physics';
 import { DEPTH } from '../../depths';
 import { REGISTRY } from '../../registry';
+import { EFFECTS } from '../../effects';
 
 const NAMETAG_SPACE: number = 10;
 const FLOAT_TEXT_SPACE: number = 10;
@@ -14,12 +15,13 @@ export abstract class GCharSprite extends Phaser.Physics.Arcade.Sprite {
 
     private spriteKeyPrefix: string; // Used to determine sprites for appearance
     private goal: GGoal|null = null; // Current goal which the character will try to achieve
-    private direction: Dir9 = Dir9.S; // Current facing direction
+    protected direction: Dir9 = Dir9.S; // Current facing direction
     private immobile: boolean = false; // Prevents or allows the character to think and act
     private controlled: boolean = false; // Prevents automatic movement; char will be controlled externally
     private busyTalking: boolean = false; // Prevents movement and thinking, but allows speaking
     private nametag: Phaser.GameObjects.Text; // Shown above character if global flag is on
     private floatText: Phaser.GameObjects.Text; // Shown above character if active
+    private useAutoDepth: boolean = true; // Whether to automatically set depth based on Y coordinate
 
     constructor(spriteKeyPrefix: string, x: number, y: number) {
         super(GFF.AdventureContent, x, y, `${spriteKeyPrefix}_idle_s`);
@@ -36,7 +38,9 @@ export abstract class GCharSprite extends Phaser.Physics.Arcade.Sprite {
             this.body.setOffset(GFF.CHAR_BODY_X_OFF, GFF.CHAR_BODY_Y_OFF);
             this.body.updateFromGameObject();
             this.body.pushable = false;
-            this.setDepth(this.body.bottom);
+            if (this.useAutoDepth) {
+                this.setDepth(this.body.bottom);
+            }
         }
         this.setCollideWorldBounds(true);
 
@@ -129,6 +133,10 @@ export abstract class GCharSprite extends Phaser.Physics.Arcade.Sprite {
 
     public isControlled() {
         return this.controlled;
+    }
+
+    public setUseAutoDepth(useAutoDepth: boolean) {
+        this.useAutoDepth = useAutoDepth;
     }
 
     public setBusyTalking(busyTalking: boolean) {
@@ -324,6 +332,17 @@ export abstract class GCharSprite extends Phaser.Physics.Arcade.Sprite {
         this.playSingleAnimation('carryidle_s', true);
     }
 
+    public sweat(side: 'left'|'right') {
+        // Sweat a second time when the first one finishes. Since the character may be moving
+        // while sweating, this ensures that the second sweat will appear in the same relative
+        // position as the first one.
+        EFFECTS.doEffect(`sweat_${side}`, GFF.AdventureContent, this.x, this.y, 0, 0)
+            .setDepth(DEPTH.SPECIAL_EFFECT).on('animationcomplete', () => {
+                EFFECTS.doEffect(`sweat_${side}`, GFF.AdventureContent, this.x, this.y, 0, 0)
+                    .setDepth(DEPTH.SPECIAL_EFFECT)
+            });
+    }
+
     protected playSingleAnimation(animName: string, force: boolean = false) {
         this.play(`${this.spriteKeyPrefix}_${animName}`, !force);
     }
@@ -415,7 +434,7 @@ export abstract class GCharSprite extends Phaser.Physics.Arcade.Sprite {
 
     protected preUpdate(time: number, delta: number): void {
         // Update depth ordering:
-        if (this.body !== null) {
+        if (this.body !== null && this.useAutoDepth) {
             this.setDepth(this.body?.bottom);
         }
 

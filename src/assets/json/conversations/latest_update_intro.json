@@ -340,20 +340,40 @@
     "speaker": "player",
     "choice": [
       {
-        "choiceText": "Save/Load System",
+        "choiceText": "Rebalancing",
         "resultId": "update_1"
       },
       {
-        "choiceText": "Options Subscreen",
+        "choiceText": "Armour of God Mechanics",
         "resultId": "update_2"
       },
       {
-        "choiceText": "Title & Loading Backgrounds",
+        "choiceText": "New Enemy Attacks",
         "resultId": "update_3"
       },
       {
-        "choiceText": "Versioning System",
+        "choiceText": "Context Peek",
         "resultId": "update_4"
+      },
+      {
+        "choiceText": "New Speech System",
+        "resultId": "update_5"
+      },
+      {
+        "choiceText": "Adam Armored Inside Strongholds",
+        "resultId": "update_6"
+      },
+      {
+        "choiceText": "Enemy Respawn Delay",
+        "resultId": "update_7"
+      },
+      {
+        "choiceText": "Focus Mode Ready",
+        "resultId": "update_8"
+      },
+      {
+        "choiceText": "New Cutscene",
+        "resultId": "update_9"
       },
       {
         "choiceText": "[back]",
@@ -364,25 +384,55 @@
   {
     "id": "update_1",
     "speaker": "player",
-    "text": "The Save/Load system is now complete! Exit the game using the UI button or 'Q' hotkey, and you'll be asked if you want to save, which will download your save file. To resume your game, choose 'Continue Game' from the title screen and upload your save file.",
+    "text": "The game has gone through a major rebalance, ensuring that the player will be challanged, but hopefully not overwhelmed, at different stages. Balancing of enemies is based on an expected number of equipped books for each difficulty level; in order to keep the number of books flexible, the books multiplier (+100% per book) has been replaced with a bonus of +10% per book. Boss levels and Grace increases have also been rebalanced.",
     "next": "updateMenu"
   },
   {
     "id": "update_2",
     "speaker": "player",
-    "text": "The Options subscreen is now available! You can change conversation and battle animation speeds, adjust audio volumes, and toggle full-screen mode. More options will be added in future updates.",
+    "text": "As Adam equips pieces of the Armour of God, they will actually protect him in battle now! If a piece of armour is struck, it reduces basic damage by 50%. Furthermore, the shield functions independently from the other pieces of armour, and reduces damage by a further 50%. If the armour absorbs AND the shield deflects, the attack will be completely blocked!",
     "next": "updateMenu"
   },
   {
     "id": "update_3",
     "speaker": "player",
-    "text": "The game has a new, more artistic title screen background! Additionally, the loading screens for new and continued games now feature artwork representing different themes of the game (there are 4 scenes in total, randomly chosen).",
+    "text": "5 special attacks can now be used by enemies: Fiery Dart, Snare, Smoke, Poison, and Roar - and they often inflict status effects (which are also new!). Effects may range from recurring damage to hindering your ability to guess correctly. To prevent abuse, common enemies can only use 1 special attack per battle; but be warned: each boss has his own signature attack, and he can use it as many times as he wants!",
     "next": "updateMenu"
   },
   {
     "id": "update_4",
     "speaker": "player",
-    "text": "A versioning system has been implemented! You can now see the current version of the game on the title screen. The first # is the major version; I am working toward an official 1.0 release! The second # is the minor version, representing the addition of new features, content, and fixes. The third # is the build number, which is more for my sanity than for you ;)",
+    "text": "While guessing a reference in battle, you can now hold the Left or Right arrow keys to peek at the previous or next verse, giving you a little help to figure out the context. You can do this as much as you want. However, if you are blinded by Smoke, the context verses will be partially obscured, too.",
+    "next": "updateMenu"
+  },
+  {
+    "id": "update_5",
+    "speaker": "player",
+    "text": "The annoying 'yada-yada' sounds, beloved by none and tolerated by few, have been removed. Instead, characters now have multi-syllable speech sounds, spoken in their own unique voice. They still don't say the actual words, but they sound less robotic and... a little chipmunky? (Trust me, it sounds better than the 'yada-yadas'... maybe even a little adorable!)",
+    "next": "updateMenu"
+  },
+  {
+    "id": "update_6",
+    "speaker": "player",
+    "text": "Adam is now shown dressed in armor as he navigates the strongholds. This is just a visual change, and it happens whether or not he has actually obtained the Armour of God. The sword and shield don't appear while he's walking, though; unfortunately, that is a limitation of the sprite program I used to create the animations.",
+    "next": "updateMenu"
+  },
+  {
+    "id": "update_7",
+    "speaker": "player",
+    "text": "After defeating all enemies in a room, that room will stay cleared for a short time (measured in rooms explored) based on the difficulty level. Enemies will still respawn later, unless the player has raised a standard in that room (which cannot be done inside strongholds). This will allow the player to safely backtrack through cleared areas, without having to immediately battle or evade respawning enemies.",
+    "next": "updateMenu"
+  },
+  {
+    "id": "update_8",
+    "speaker": "player",
+    "text": "Focus verse lists for all 66 books have been curated and added, which means the Focus Mode is fully playable! In Focus Mode, instead of being served any verse from equipped books, you will only see the most famous or most important verses from each book. Great for children, beginners, or anyone looking to memorize scripture.",
+    "next": "updateMenu"
+  },
+  {
+    "id": "update_9",
+    "speaker": "player",
+    "text": "A new, optional cutscene has been added to the game! No spoilers, but it is kind of a reward for completely clearing a stronghold (defeat the boss, obtain all items, rescue all prisoners). You can check with the Prophet in his chamber to see how many treasures remain.",
     "next": "updateMenu"
   },
   {

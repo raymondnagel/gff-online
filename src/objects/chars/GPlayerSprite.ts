@@ -47,6 +47,7 @@ export class GPlayerSprite extends GCharSprite {
         this.createSingleAnimation('bullhorn_sw', 0);
         this.createSingleAnimation('nobullhorn_sw', 0);
         this.createSingleAnimation('preach_sw');
+        this.createSingleAnimation('pull_sw');
         this.createDirectionalAnimations('interact', 0);
         this.createDirectionalAnimations('run');
          // Remove default "sit_n" with directional "sit":
@@ -148,6 +149,10 @@ export class GPlayerSprite extends GCharSprite {
      */
     public handAction() {
         this.playDirectionalAnimation('interact', undefined, true);
+    }
+
+    public pullRopeSW() {
+        this.playSingleAnimation('pull_sw');
     }
 
     protected getSpeed(): number {

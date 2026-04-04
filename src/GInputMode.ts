@@ -32,7 +32,9 @@ export class GInputMode {
     }
 
     public addAllowedEvent(eventType: string) {
-        this.allowedEvents.push(eventType);
+        if (!this.allowedEvents.includes(eventType)) {
+            this.allowedEvents.push(eventType);
+        }
     }
 
     public isEventAllowed(eventType: string): boolean {

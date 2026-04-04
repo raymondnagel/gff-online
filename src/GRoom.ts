@@ -71,6 +71,8 @@ const SHRINE_AREA_HEIGHT: number = 103;
 const SHRINE_BORDER_SIZE: number = 64;
 const SHRINE_FRONT_SPACE: number = 100;
 
+const STRONGHOLD_KEYS: string[] = ['tower_front', 'dungeon_front', 'keep_front', 'fortress_front', 'castle_front'];
+
 type TestZone = GRect &{
     label: string;
     color: GColor;
@@ -120,6 +122,7 @@ export class GRoom implements GSaveable {
     // null = cell planned but no prisoner assigned yet; undefined = no cell planned.
     private prisoner: GPerson|null|undefined = undefined;
     private cellVerseRef: string|null = null;
+    private strongholdObject: GObstacleStatic|null = null;
 
     // Permanent event triggers are added once when the room is planned
     private permanentEventTriggers: GEventTrigger[] = [];
@@ -337,8 +340,8 @@ export class GRoom implements GSaveable {
             return 'map_red_chest';
         } else if (this.hasPlanKey('blue_chest')) {
             return 'map_blue_chest';
-        } else if (this.hasPlanKey('gold_chest')) {
-            return 'map_gold_chest';
+        } else if (this.getArea() instanceof GStrongholdArea && (this.getArea() as GStrongholdArea).getBossRoom() === this) {
+            return 'map_boss';
         } else if (this.isProphetChamber()) {
             return 'map_prophet';
         } else if (this.getPrisoner() !== undefined) {
@@ -599,6 +602,34 @@ export class GRoom implements GSaveable {
         }
     }
 
+    public removeAllPlansByKey(planKey: string) {
+        this.plans = this.plans.filter(plan => plan.key !== planKey);
+    }
+
+    public destroyStronghold() {
+        if (this.strongholdObject) {
+            // Remove the plan so it will be permanently gone
+            this.removePlanByKey(this.strongholdObject.texture.key);
+            // Remove the object from the scene and destroy it
+            GFF.AdventureContent.children.remove(this.strongholdObject);
+            this.strongholdObject.destroy();
+            // Clear the reference
+            this.strongholdObject = null;
+            // Clear the door trigger (it should be the only one)
+            this.permanentEventTriggers.length = 0;
+
+            // Add rubble in its place:
+            const rubblePlan = this.planSceneryDuringGameplay(SCENERY.def('stronghold_rubble'), 512, 480, .5, 1, true) as GSceneryPlan;
+            const rubbleObj = SCENERY.create(rubblePlan, this);
+            // Raise a standard over the rubble:
+            const standardPlan = this.planSceneryDuringGameplay(SCENERY.def('standard'), 512, 390, .5, 1, true) as GSceneryPlan;
+            const standardObj = SCENERY.create(standardPlan, this);
+            if (rubbleObj && standardObj) {
+                (standardObj as GObstacleStatic).setDepth((rubbleObj as GObstacleStatic).depth + 1);
+            }
+        }
+    }
+
     public load() {
         // Set background image from region;
         // if a tint is available (i.e. for stronghold interiors), apply it.
@@ -642,10 +673,31 @@ export class GRoom implements GSaveable {
             GFF.AdventureContent.add.text(z.x + 4, z.y + 4, z.label, { fontSize: '12px', color: z.color.str() }).setOrigin(0, 0);
         }
 
-        // Create scenery objects from plan:
+        // Create scenery objects from plan;
+        let rubbleObj: GObstacleStatic|null = null;
+        let standardObj: GObstacleStatic|null = null;
+        this.strongholdObject = null;
         this.plans.forEach((plan) => {
-            SCENERY.create(plan, this, decorRenderer);
+            const obj = SCENERY.create(plan, this, decorRenderer);
+
+            // save reference to stronghold object if there is one
+            if (obj && STRONGHOLD_KEYS.includes(plan.key)) {
+                this.strongholdObject = (obj as GObstacleStatic);
+                console.log(`Stronghold position: ${this.strongholdObject.x}, ${this.strongholdObject.y} size: ${this.strongholdObject.width}x${this.strongholdObject.height}`);
+            }
+
+            if (plan.key === 'stronghold_rubble') {
+                rubbleObj = (obj as GObstacleStatic);
+            }
+            if (plan.key === 'standard') {
+                standardObj = (obj as GObstacleStatic);
+            }
         });
+
+        // If this room has rubble and a standard, make sure the standard is rendered above the rubble:
+        if (rubbleObj && standardObj) {
+            (standardObj as GObstacleStatic).setDepth((rubbleObj as GObstacleStatic).depth + 1);
+        }
     }
 
     public unload() {
@@ -1324,14 +1376,14 @@ export class GRoom implements GSaveable {
         return RANDOM.randElement(results);
     }
 
-    public planSceneryDuringGameplay(sceneryDef: GSceneryDef, x: number, y: number, originX: number = 0, originY: number = 0): GSceneryPlan|null {
+    public planSceneryDuringGameplay(sceneryDef: GSceneryDef, x: number, y: number, originX: number = 0, originY: number = 0, force: boolean = false): GSceneryPlan|null {
         // If the scenery can be placed at the given location, add it and return the plan.
         // Unlike normal planning, we don't have a list of zones other planned objects;
         // we'll need to check against real, physical objects in the scene.
         const objects: GRect[] = GFF.AdventureContent.getOccupiedPhysicalSpaces();
         const object: GRect = {x: sceneryDef.body.x + x, y: sceneryDef.body.y + y, width: sceneryDef.body.width, height: sceneryDef.body.height};
         for (let otherObject of objects) {
-            if (!(
+            if (!force && !(
                     object.x + object.width <= otherObject.x ||
                     object.x >= otherObject.x + otherObject.width ||
                     object.y + object.height <= otherObject.y ||
@@ -1341,9 +1393,9 @@ export class GRoom implements GSaveable {
                 return null;
             }
         }
-        // if (this.intersectsAny(sceneryDef.body, objects)) {
-        //     return null;
-        // }
+        if (force) {
+            GFF.log(`Forcing placement of scenery ${sceneryDef.key} at ${x},${y}`);
+        }
         // Now that we know the space is clear, we can plan it:
         return this.planPositionedScenery(sceneryDef, x, y, originX, originY);
     }

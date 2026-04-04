@@ -103,21 +103,24 @@ export class GOptionsUI extends GUIScene {
         this.initTalkSpeed();
 
         // Battle animation speed:
-        currentY += SETTING_FONT + TITLE_GAP + this.talkSpeedSlider.height + SETTING_GAP;
-        this.add.text(GAMEPLAY_OFFSET_X + (PANEL_W / 2), currentY, 'Battle Speed', {
-            color: COLOR.GREY_1.str(),
-            fontFamily: 'dyonisius',
-            fontSize: `${SETTING_FONT}px`
-        }).setOrigin(.5, 0);
-        this.battleAnimationSpeedSlider = new GSlider(this, GAMEPLAY_OFFSET_X + PANEL_PADDING, currentY + SETTING_FONT + TITLE_GAP, PANEL_W - (2 * PANEL_PADDING));
-        this.battleAnimationSpeedSlider.setLabels([
-            { t: 0, text: '1x' },
-            { t: .33, text: '2x' },
-            { t: .66, text: '3x' },
-            { t: 1, text: '4x' }
-        ], 'labels');
-        this.add.existing(this.battleAnimationSpeedSlider);
-        this.initBattleSpeed();
+        // I'm removing this for now because it seems to cause performance issues.
+        // It's also a feature that wasn't requested and doesn't look great anyway.
+
+        // currentY += SETTING_FONT + TITLE_GAP + this.talkSpeedSlider.height + SETTING_GAP;
+        // this.add.text(GAMEPLAY_OFFSET_X + (PANEL_W / 2), currentY, 'Battle Speed', {
+        //     color: COLOR.GREY_1.str(),
+        //     fontFamily: 'dyonisius',
+        //     fontSize: `${SETTING_FONT}px`
+        // }).setOrigin(.5, 0);
+        // this.battleAnimationSpeedSlider = new GSlider(this, GAMEPLAY_OFFSET_X + PANEL_PADDING, currentY + SETTING_FONT + TITLE_GAP, PANEL_W - (2 * PANEL_PADDING));
+        // this.battleAnimationSpeedSlider.setLabels([
+        //     { t: 0, text: '1x' },
+        //     { t: .33, text: '2x' },
+        //     { t: .66, text: '3x' },
+        //     { t: 1, text: '4x' }
+        // ], 'labels');
+        // this.add.existing(this.battleAnimationSpeedSlider);
+        // this.initBattleSpeed();
     }
 
     private createAudioPanel(currentY: number): void {
@@ -213,8 +216,8 @@ export class GOptionsUI extends GUIScene {
             this.talkSpeedSlider.setT(1 / 3, false);
             this.talkSpeedSlider.simEvent('commit');
 
-            this.battleAnimationSpeedSlider.setT(0, false);
-            this.battleAnimationSpeedSlider.simEvent('commit');
+            // this.battleAnimationSpeedSlider.setT(0, false);
+            // this.battleAnimationSpeedSlider.simEvent('commit');
 
             this.masterVolumeSlider.setT(1, false);
             this.masterVolumeSlider.simEvent('change');

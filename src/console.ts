@@ -368,6 +368,11 @@ export namespace CONSOLE {
             playSuccess();
             return 'Ok';
         },
+        showFrames(show: boolean) {
+            REGISTRY.set('showFrameRate', show);
+            playSuccess();
+            return 'Ok';
+        },
         // speechTest(voice: string) {
         //     if (voice === undefined || voice.trim() === '') {
         //         playError();

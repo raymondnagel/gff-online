@@ -595,6 +595,20 @@ export class GStrongholdArea extends GBuildingArea {
         return room;
     }
 
+    public isClear(): boolean {
+        // Get rooms that have a book of the Bible:
+        const bookRooms: TEN|0 = this.getRooms(r => r.hasPlanKey('red_chest')).length as TEN|0;
+        // Get rooms that have a commandment:
+        const commandmentRooms: TEN|0 = this.getRooms(r => r.hasPlanKey('purple_chest')).length as TEN|0;
+        // Get rooms that have an armor piece:
+        const armorRooms: TEN|0 = this.getRooms(r => r.hasPlanKey('gold_chest')).length as TEN|0;
+        // Get rooms that have a prisoner:
+        const prisonerRooms: TEN|0 = this.getRooms(r => r.getPrisoner() !== null && r.getPrisoner() !== undefined).length as TEN|0;
+        // Get the total number of treasure rooms:
+        const totalRooms: number =  bookRooms + commandmentRooms + armorRooms + prisonerRooms;
+        return totalRooms === 0;
+    }
+
     public getProphetTreasureText(): string {
         // Get rooms that have a book of the Bible:
         const bookRooms: TEN|0 = this.getRooms(r => r.hasPlanKey('red_chest')).length as TEN|0;

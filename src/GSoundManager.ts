@@ -158,12 +158,13 @@ export class GSoundManager {
         return this.speechVolume;
     }
 
-    public playSound(soundKey: string, volume?: number): Phaser.Sound.BaseSound {
+    public playSound(soundKey: string, volume?: number, rate?: number): Phaser.Sound.BaseSound {
         const sound: Phaser.Sound.BaseSound = this.scene.sound.add(
             soundKey,
             {
                 loop: false,
-                volume: this.getCalculatedSoundVolume(volume)
+                volume: this.getCalculatedSoundVolume(volume),
+                rate: rate ?? 1.0
             }
         );
         sound.play();

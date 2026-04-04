@@ -253,9 +253,7 @@ export abstract class GArea implements GSaveable{
                 const wallSections: boolean[] = dir === Dir9.N || dir === Dir9.S
                 ? this.getRandomWallSections(HORZ_WALL_SECTIONS)
                 : this.getRandomWallSections(VERT_WALL_SECTIONS);
-                room.setWallSections(dir, wallSections);
-                room = room.getNeighbor(dir);
-                room?.setWallSections(DIRECTION.getOpposite(dir) as CardDir, wallSections);
+                this.setPartialWallByRoom(room, dir, wallSections);
             }
         }
     }
@@ -287,6 +285,12 @@ export abstract class GArea implements GSaveable{
                 neighboringRoom.setFullWall(DIRECTION.getOpposite(dir) as CardDir, wall);
             }
         }
+    }
+
+    public setPartialWallByRoom(room: GRoom, dir: CardDir, wallSections: boolean[]) {
+        room.setWallSections(dir, wallSections);
+        const neighboringRoom = room.getNeighbor(dir);
+        neighboringRoom?.setWallSections(DIRECTION.getOpposite(dir) as CardDir, wallSections);
     }
 
     public isSingleWallSection(room: GRoom, dir: CardDir, section: number) : boolean {

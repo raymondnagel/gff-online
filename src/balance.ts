@@ -41,10 +41,10 @@ export namespace BALANCE {
                 GFF.getDifficulty().expectedBooksAtEnd,
                 (estimatedProgress * GFF.getDifficulty().expectedBooksAtEnd) + 1
             );
-            const expectedTotalBooks = 1 + Math.min(65, Math.ceil(estimatedProgress * 65));
-            const expectedFruits = Math.min(9, Math.ceil(estimatedProgress * 9));
-            const expectedCommandments = Math.min(10, Math.ceil(estimatedProgress * 10));
-            const expectedArmors = Math.min(5, Math.ceil(estimatedProgress * 5));
+            const expectedTotalBooks = 1 + Math.min(65, Math.round(estimatedProgress * 65));
+            const expectedFruits = Math.min(9, Math.round(estimatedProgress * 9));
+            const expectedCommandments = Math.min(10, Math.round(estimatedProgress * 10));
+            const expectedArmors = Math.min(5, Math.max(0, Math.floor((level - 1) / 7)));
 
             // Set the player's inventory to match the expected progress:
             while (expectedTotalBooks > BOOKS.getObtainedCount()) {

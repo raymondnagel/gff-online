@@ -329,8 +329,7 @@ export class GPersonSprite extends GCharSprite implements GInteractable {
             if (room.getChurch() !== null) {
                 // If the player has no faith, we'll begin a restoration cutscene:
                 if (PLAYER.getFaith() <= 0) {
-                    const church: GChurch = this.getPerson().homeTown?.getChurch() as GChurch;
-                    new GRestorationCutscene(this).play();
+                    GFF.AdventureContent.startRestorationCutscene(this);
                 } else {
                     // Otherwise, we'll just talk to the saint:
                     GConversation.fromFile('talk_to_saint_conv', [

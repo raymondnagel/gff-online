@@ -26,6 +26,9 @@ export namespace REGISTRY {
         REGISTRY.set('musicVolume', 0.8);
         REGISTRY.set('sfxVolume', 0.9);
         REGISTRY.set('speechVolume', 0.65);
+
+        // Other:
+        REGISTRY.set('showFrameRate', false);
     }
 
     export function getAll(): {[key: string]: any} {

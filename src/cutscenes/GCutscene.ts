@@ -3,6 +3,8 @@ import { GBullhornGoal } from "../goals/GBullhornGoal";
 import { GGoal } from "../goals/GGoal";
 import { GInteractGoal } from "../goals/GInteractGoal";
 import { GNoBullhornGoal } from "../goals/GNoBullhornGoal";
+import { GPullRopeSeGoal } from "../goals/GPullRopeSeGoal";
+import { GPullRopeSwGoal } from "../goals/GPullRopeSwGoal";
 import { GRejoiceGoal } from "../goals/GRejoiceGoal";
 import { GRestGoal } from "../goals/GRestGoal";
 import { GWalkDirGoal } from "../goals/GWalkDirGoal";
@@ -11,6 +13,7 @@ import { GFF } from "../main";
 import { GCharSprite } from "../objects/chars/GCharSprite";
 import { GImpSprite } from "../objects/chars/GImpSprite";
 import { GPersonSprite } from "../objects/chars/GPersonSprite";
+import { GProphetSprite } from "../objects/chars/GProphetSprite";
 import { PHYSICS } from "../physics";
 import { PLAYER } from "../player";
 import { CLabeledChar, Dir9, GActorEvent, GConditionEvent, GCutsceneEvent, GGeneralEvent, GPerson, GSpirit } from "../types";
@@ -27,6 +30,12 @@ export abstract class GCutscene {
     // Use the registry to store any arbitrary data that needs to be accessed by the cutscene:
     protected registry: Map<string, any> = new Map<string, any>();
 
+    /**
+     * 'active' means the cutscene begins in the middle of gameplay action, so the player sprite
+     * is already present and should be used as an actor in the cutscene; otherwise, the cutscene
+     * will start with no actors, and the player sprite will be hidden until it's spawned as part
+     * of the cutscene.
+     */
     constructor(name: string, active: boolean = false) {
         this.name = name;
 
@@ -53,7 +62,7 @@ export abstract class GCutscene {
         // Initialize the cutscene
         this.initialize();
 
-        // this.logCast();
+        this.logCast();
 
         // Start the cutscene by finishing the 'start' event
         this.start();
@@ -90,12 +99,18 @@ export abstract class GCutscene {
      */
     public createActorSprite(actor: GPerson|GSpirit, label?: string): void {
         let sprite: GCharSprite;
-        if ('faith' in actor) {
+        if ('spriteKeyPrefix' in actor && actor.spriteKeyPrefix === 'prophet') {
+            sprite = new GProphetSprite(0, 0, false);
+            GFF.AdventureContent.addPerson(sprite as GProphetSprite);
+            GFF.log(`Create sprite for ${actor.firstName} as GProphetSprite`);
+        } else if ('faith' in actor) {
             sprite = new GPersonSprite(actor, 0, 0);
             GFF.AdventureContent.addPerson(sprite as GPersonSprite);
+            GFF.log(`Create sprite for ${actor.firstName} as GPersonSprite`);
         } else {
             sprite = new GImpSprite(actor, 0, 0);
             GFF.AdventureContent.addEnemy(sprite as GImpSprite);
+            GFF.log(`Create sprite for ${actor.name} as GImpSprite`);
         }
         sprite.setVisible(false);
         sprite.setControlled(true);
@@ -278,9 +293,13 @@ export abstract class GCutscene {
             }
         }
 
+        type ActorCommand = 'spawnAt'|'interact'|'bullhorn'|'nobullhorn'|
+                            'rejoice'|'kneel'|'raiseHands'|'stand'|'faceDir'|
+                            'walkDir'|'walkTo'|'tryWalkTo'|'pullRopeSW'|'pullRopeSE';
+
         // The first token is the command name; use it to determine the type of goal.
         // Some commands will return an event as a function, instead of a character-based goal.
-        switch(commandTokens[0] as 'spawnAt'|'interact'|'bullhorn'|'nobullhorn'|'rejoice'|'kneel'|'raiseHands'|'stand'|'faceDir'|'walkDir'|'walkTo'|'tryWalkTo') {
+        switch(commandTokens[0] as ActorCommand) {
             case 'spawnAt':
                 return () => {
                     const spawnX: number = parseInt(commandTokens[1]);
@@ -325,6 +344,12 @@ export abstract class GCutscene {
                 const dist1: number = Math.abs(Phaser.Math.Distance.BetweenPoints(actorSprite.getPhysicalCenter(), {x: toX1, y: toY1}));
                 const timeout: number = dist1 * 10; // Allow 1 second timeout per 100 pixels
                 return new GWalkToPointGoal(toX1, toY1, 100, timeout);
+            case 'pullRopeSW':
+                const updateAdamRopeFunc = this.registry.get('updateAdamRope') as Function;
+                return new GPullRopeSwGoal(updateAdamRopeFunc);
+            case 'pullRopeSE':
+                const updateProphetRopeFunc = this.registry.get('updateProphetRope') as Function;
+                return new GPullRopeSeGoal(updateProphetRopeFunc);
         }
     }
 

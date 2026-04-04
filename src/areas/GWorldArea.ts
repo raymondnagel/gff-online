@@ -602,6 +602,19 @@ export class GWorldArea extends GArea {
                     && !this.hasNeighboringTown(room)
                 ) {
                     room.setStronghold(stronghold);
+
+                    // For a stronghold room, we can allow a full wall to the south, since they aren't
+                    // too tall. But if there's a partial wall, we don't want it to have any scenery in
+                    // the middle: tall scenery can get in the way of the stronghold destruction cutscene;
+                    // and even worse, chars are placed above scenery (to be in front of the ropes), so they
+                    // could potentially trample tall scenery.
+                    if (!room.hasFullWall(Dir9.S) && room.hasAnyWall(Dir9.S)) {
+                        const wallSections: boolean[] = [
+                            true, true, false, false, false, false, false, false, false, false, false, false, false, false, true, true
+                        ];
+                        this.setPartialWallByRoom(room, Dir9.S, wallSections);
+                    }
+
                     GFF.genLog(`Created stronghold: ${stronghold.getName()} @: ${room.getX()}, ${room.getY()}`);
                     return;
                 }

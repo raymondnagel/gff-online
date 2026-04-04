@@ -177,6 +177,30 @@ export namespace EFFECTS {
                 soundKey: 'trap',
                 hideOnFinish: false
             },
+            {
+                spriteConfig: {
+                    key: 'sweat_left',
+                    frames: GFF.GAME.anims.generateFrameNumbers(
+                        'sweat_left',
+                        { start: 0, end: 6 }
+                    ),
+                    frameRate: 20
+                },
+                soundKey: null, // Sweat is silent
+                hideOnFinish: true
+            },
+            {
+                spriteConfig: {
+                    key: 'sweat_right',
+                    frames: GFF.GAME.anims.generateFrameNumbers(
+                        'sweat_right',
+                        { start: 0, end: 6 }
+                    ),
+                    frameRate: 20
+                },
+                soundKey: null, // Sweat is silent
+                hideOnFinish: true
+            },
         ].forEach(s => {
             SPRITE_EFFECTS.set(s.spriteConfig.key, s as SpriteEffect);
         });
