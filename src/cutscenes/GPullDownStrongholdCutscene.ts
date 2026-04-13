@@ -460,6 +460,8 @@ export class GPullDownStrongholdCutscene extends GCutscene {
                 // Set the updateRope functions in the registry so the goals can call them:
                 this.registry.set('updateAdamRope', () => this.updateRope(0));
                 this.registry.set('updateProphetRope', () => this.updateRope(1));
+                // Ensure the player is visible (he may have been hidden if exiting the stronghold through the portal)
+                this.holders[0].setVisible(true).setAlpha(1);
                 // Now fade in:
                 GFF.AdventureContent.fadeIn(2000, COLOR.BLACK.num());
             },

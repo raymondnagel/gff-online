@@ -929,8 +929,12 @@ export class GAdventureContent extends GContentScene {
         return stronghold !== null
             && PLAYER.getFaith() > 0
             && !inRoom.hasPlanKey('stronghold_rubble')
-            && GProphetSprite.getProphetPerson().familiarity > 0
-            && stronghold.getInteriorArea().isClear();
+            && (
+                REGISTRY.getBoolean('triggerPulldown') || (
+                    GProphetSprite.getProphetPerson().familiarity > 0
+                    && stronghold.getInteriorArea().isClear()
+                )
+            );
     }
 
     public doEnemySpawns() {
