@@ -2,9 +2,12 @@ import { COLOR } from "../colors";
 import { GInputMode } from "../GInputMode";
 import { GFF } from "../main";
 import { GCheckBox } from "../objects/components/GCheckBox";
+import { GRadioGroup } from "../objects/components/GRadioGroup";
+import { GRadioOption } from "../objects/components/GRadioOption";
 import { GSlider } from "../objects/components/GSlider";
 import { GTextButton } from "../objects/components/GTextButton";
 import { REGISTRY } from "../registry";
+import { GKeyVerseEntry } from "../types";
 import { GUIScene } from "./GUIScene";
 
 const INPUT_DEFAULT: GInputMode = new GInputMode('options.default');
@@ -25,6 +28,8 @@ export class GOptionsUI extends GUIScene {
     // Gameplay settings:
     private talkSpeedSlider: GSlider;
     private battleAnimationSpeedSlider: GSlider;
+    private wholeWordsOption: GRadioOption;
+    private firstLettersOption: GRadioOption;
 
     // Audio settings:
     private masterVolumeSlider: GSlider;
@@ -121,6 +126,45 @@ export class GOptionsUI extends GUIScene {
         // ], 'labels');
         // this.add.existing(this.battleAnimationSpeedSlider);
         // this.initBattleSpeed();
+
+        // Key verse entry mode:
+        currentY += SETTING_FONT + TITLE_GAP + this.talkSpeedSlider.height + SETTING_GAP;
+        const keyVerseTitle = this.add.text(GAMEPLAY_OFFSET_X + (PANEL_W / 2), currentY, 'Key Verse Entry', {
+            color: COLOR.GREY_1.str(),
+            fontFamily: 'dyonisius',
+            fontSize: `${SETTING_FONT}px`
+        }).setOrigin(.5, 0);
+        const keyVerseEntryGroup = new GRadioGroup();
+
+        currentY += SETTING_FONT + TITLE_GAP;
+        this.wholeWordsOption = new GRadioOption(this, GAMEPLAY_OFFSET_X + PANEL_PADDING, currentY, 'Type Whole Words', false, true, {
+            color: COLOR.GREY_1.str(),
+            fontFamily: 'dyonisius',
+            fontSize: `${SETTING_FONT - 2}px`
+        });
+        this.wholeWordsOption.setRadioGroup(keyVerseEntryGroup);
+        this.wholeWordsOption.setCheckFunction((_labelText: string) => {
+            REGISTRY.set('keyVerseEntry', 'typeWholeWords');
+        });
+        this.wholeWordsOption.setColorScheme(COLOR.GREY_1, COLOR.GREY_2, COLOR.GREY_3);
+        this.wholeWordsOption.setCheckColor(COLOR.RED);
+
+        currentY += SETTING_FONT + TITLE_GAP;
+        this.firstLettersOption = new GRadioOption(this, GAMEPLAY_OFFSET_X + PANEL_PADDING, currentY, 'Type First Letters Only', false, true, {
+            color: COLOR.GREY_1.str(),
+            fontFamily: 'dyonisius',
+            fontSize: `${SETTING_FONT - 2}px`
+        });
+        this.firstLettersOption.setRadioGroup(keyVerseEntryGroup);
+        this.firstLettersOption.setCheckFunction((_labelText: string) => {
+            REGISTRY.set('keyVerseEntry', 'typeFirstLetters');
+        });
+        this.firstLettersOption.setColorScheme(COLOR.GREY_1, COLOR.GREY_2, COLOR.GREY_3);
+        this.firstLettersOption.setCheckColor(COLOR.RED);
+
+        this.add.existing(this.wholeWordsOption);
+        this.add.existing(this.firstLettersOption);
+        this.initKeyVerseEntry();
     }
 
     private createAudioPanel(currentY: number): void {
@@ -219,6 +263,8 @@ export class GOptionsUI extends GUIScene {
             // this.battleAnimationSpeedSlider.setT(0, false);
             // this.battleAnimationSpeedSlider.simEvent('commit');
 
+            this.wholeWordsOption.onClick(false);
+
             this.masterVolumeSlider.setT(1, false);
             this.masterVolumeSlider.simEvent('change');
 
@@ -264,6 +310,16 @@ export class GOptionsUI extends GUIScene {
             const newBattleSpeed = Math.round(1 + (newT * 3));
             REGISTRY.set('battleSpeed', newBattleSpeed);
         });
+    }
+
+    private initKeyVerseEntry() {
+        // Set initial option from registry:
+        const keyVerseEntry = REGISTRY.getString('keyVerseEntry') as GKeyVerseEntry;
+        if (keyVerseEntry === 'typeWholeWords') {
+            this.wholeWordsOption.setCheckState(true);
+        } else if (keyVerseEntry === 'typeFirstLetters') {
+            this.firstLettersOption.setCheckState(true);
+        }
     }
 
     private initMasterVolume() {

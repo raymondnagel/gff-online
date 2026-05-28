@@ -45,10 +45,12 @@ export class GThoughtBubble extends Phaser.GameObjects.Container implements GBub
     private startTime: number;
     private wordsThought: number = 0;
     private complete: boolean = false;
+    private prompt: string;
 
-    constructor(thinker: GCharSprite, text: string) {
+    constructor(thinker: GCharSprite, text: string, customPrompt: string = 'Press Enter to continue') {
         super(GFF.AdventureContent);
         this.thinker = thinker;
+        this.prompt = customPrompt;
         GFF.AdventureContent.add.existing(this);
         this.setDepth(DEPTH.CONV_BUBBLE);
 
@@ -430,7 +432,7 @@ export class GThoughtBubble extends Phaser.GameObjects.Container implements GBub
     }
 
     private onComplete() {
-        GFF.AdventureUI.showPrompt('Press Enter to continue...');
+        GFF.AdventureUI.showPrompt(this.prompt);
     }
 
     private thinkNextWord(): boolean {

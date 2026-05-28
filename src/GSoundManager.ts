@@ -254,6 +254,22 @@ export class GSoundManager {
         });
     }
 
+    public fadeMusicToVolume(volume: number, overTime: number, onComplete?: Function) {
+        if (this.music === null) {
+            onComplete?.call(this);
+            return;
+        }
+
+        this.scene.tweens.add({
+            targets: this.music,
+            volume: this.getCalculatedMusicVolume(volume),
+            duration: overTime,
+            onComplete: () => {
+                onComplete?.call(this);
+            }
+        });
+    }
+
     private getCalculatedMusicVolume(arbitraryVolume: number = this.musicVolume): number {
         return arbitraryVolume * REGISTRY.get('musicVolume') * REGISTRY.get('masterVolume');
     }

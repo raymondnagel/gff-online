@@ -368,6 +368,19 @@ export namespace CONSOLE {
             playSuccess();
             return 'Ok';
         },
+        endGameSim() {
+            REGISTRY.set('bossDefeated_Mammon', true);
+            REGISTRY.set('bossDefeated_Beelzebub', true);
+            REGISTRY.set('bossDefeated_Belial', true);
+            REGISTRY.set('bossDefeated_Legion', true);
+            REGISTRY.set('bossDefeated_Apollyon', true);
+            BALANCE.test(50);
+            REGISTRY.set('invitedToCave', false);
+            const caveRoom = AREA.CAVE_AREA.getRooms()[0].getPortalRoom() as GRoom;
+            CMD_FUNCTIONS.warp(caveRoom.getX(), caveRoom.getY(), 0); // Warp to the cave entrance
+            playSuccess();
+            return 'Ok';
+        },
         showFrames(show: boolean) {
             REGISTRY.set('showFrameRate', show);
             playSuccess();
@@ -466,8 +479,10 @@ export namespace CONSOLE {
                 }
 
                 // Check if the argument is a boolean (true/false)
-                if (arg.toLowerCase() === 'true' || arg.toLowerCase() === 'false') {
-                    return Boolean(arg);
+                if (arg.toLowerCase() === 'true') {
+                    return true;
+                } else if (arg.toLowerCase() === 'false') {
+                    return false;
                 }
 
                 // Otherwise, parse it as a number

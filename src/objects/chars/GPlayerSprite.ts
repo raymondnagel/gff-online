@@ -48,6 +48,8 @@ export class GPlayerSprite extends GCharSprite {
         this.createSingleAnimation('nobullhorn_sw', 0);
         this.createSingleAnimation('preach_sw');
         this.createSingleAnimation('pull_sw');
+        this.createSingleAnimation('kneel_se'); // Used for picking up items from the ground
+        this.createSingleAnimation('scroll_se', 0);
         this.createDirectionalAnimations('interact', 0);
         this.createDirectionalAnimations('run');
          // Remove default "sit_n" with directional "sit":
@@ -60,7 +62,7 @@ export class GPlayerSprite extends GCharSprite {
         // with the correct keys:
         this.setSpriteKeyPrefix('adam_soldier');
         this.createSingleAnimation('carryidle_s');
-        this.createSingleAnimation('kneel_ne');
+        this.createSingleAnimation('kneel_ne'); // Used to pray while in a stronghold
         this.createSingleAnimation('rejoice_s');
         this.createSingleAnimation('sit_n');
         this.createDirectionalAnimations('idle');
@@ -153,6 +155,14 @@ export class GPlayerSprite extends GCharSprite {
 
     public pullRopeSW() {
         this.playSingleAnimation('pull_sw');
+    }
+
+    public bendDownToPickUp() {
+        this.playSingleAnimation('kneel_se');
+    }
+
+    public openScroll() {
+        this.playSingleAnimation('scroll_se');
     }
 
     protected getSpeed(): number {

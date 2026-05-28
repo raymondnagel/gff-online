@@ -2,11 +2,9 @@ import 'phaser';
 import { GPersonSprite } from './GPersonSprite';
 import { Dir9, GPerson, GPoint2D } from '../../types';
 import { GGoal } from '../../goals/GGoal';
-import { GRestGoal } from '../../goals/GRestGoal';
 import { RANDOM } from '../../random';
 import { GConversation } from '../../GConversation';
 import { GPrayForAdamGoal } from '../../goals/GPrayForAdamGoal';
-import { PLAYER } from '../../player';
 import { GFacePlayerGoal } from '../../goals/GFacePlayerGoal';
 import { DIRECTION } from '../../direction';
 

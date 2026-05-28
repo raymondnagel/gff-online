@@ -58,6 +58,11 @@ import { GHiddenTrap } from '../objects/touchables/GHiddenTrap';
 import { SAVE } from '../save';
 import { GPullDownStrongholdCutscene } from '../cutscenes/GPullDownStrongholdCutscene';
 import { GRestorationCutscene } from '../cutscenes/GRestorationCutscene';
+import { ARMORS } from '../armors';
+import { GInvitationCutscene } from '../cutscenes/GInvitationCutscene';
+import { GCaveArea } from '../areas/GCaveArea';
+import { GEnterTombCutscene } from '../cutscenes/GEnterTombCutscene';
+import { GDragonTransformCutscene } from '../cutscenes/GDragonTransformCutscene';
 
 const MOUSE_UI_BUTTON: string = 'MOUSE_UI_BUTTON';
 
@@ -365,7 +370,7 @@ export class GAdventureContent extends GContentScene {
             this.player.stop();
 
             // Check whether to begin a cutscene as the room is entered
-            if (this.triggerArrivalCutscene(portalRoom, RoomTransition.ENTER_BUILDING)) {
+            if (this.triggerArrivalCutscene(portalRoom, RoomTransition.ENTER_BUILDING, Dir9.N)) {
                 return;
             }
 
@@ -401,7 +406,7 @@ export class GAdventureContent extends GContentScene {
             this.player.stop();
 
             // Check whether to begin a cutscene as the room is entered
-            if (this.triggerArrivalCutscene(portalRoom, RoomTransition.EXIT_BUILDING)) {
+            if (this.triggerArrivalCutscene(portalRoom, RoomTransition.EXIT_BUILDING, Dir9.S)) {
                 return;
             }
 
@@ -410,7 +415,8 @@ export class GAdventureContent extends GContentScene {
                 // When the new room is loaded, his position will cause the door-open trigger,
                 // and we'll make him visible when that animation is finished.
                 // (Since the door-open trigger requires the player to have some faith, this won't work if he's faithless.)
-                this.player.setVisible(false);
+                // Also, an exception must be made for the cave, since there is no door, and therefore no door-opening animation.
+                this.player.setVisible(portalRoom.isCave());
 
                 // Although you left through an exit, you'll actually come out the entrance:
                 const entrance: GBuildingEntrance = this.children.list.find(gameObject =>
@@ -436,10 +442,20 @@ export class GAdventureContent extends GContentScene {
         }
     }
 
-    private triggerArrivalCutscene(room: GRoom, _transition: RoomTransition): boolean {
-        // Check whether to begin a cutscene when the given room is entered the specified way
+    // Check whether to begin a cutscene when the given room is entered the specified way
+    private triggerArrivalCutscene(room: GRoom, _transition: RoomTransition, entryDir: Dir9): boolean {
         if (this.canPullDownStronghold(room)) {
             this.transitionRoomIntoCutscene(room, new GPullDownStrongholdCutscene(room), false, true, false);
+            return true;
+        }
+        if (this.readyForInvitation(room)) {
+            this.transitionRoomIntoCutscene(room, new GInvitationCutscene(room, entryDir), false, true, false);
+            return true;
+        }
+        if (this.canEnterGloomyTomb(room)) {
+            // When the tomb is entered, we don't want a normal transition, because we still need
+            // to do some things in the cutscene before the cave room is loaded.
+            new GEnterTombCutscene().play();
             return true;
         }
         return false;
@@ -660,6 +676,11 @@ export class GAdventureContent extends GContentScene {
         (this.bottomBound.body as Phaser.Physics.Arcade.Body).setEnable(enabled);
     }
 
+    public setScreenBoundsEnabled(enabled: boolean) {
+        this.physics.world.setBoundsCollision(enabled, enabled, enabled, enabled);
+        this.setBottomBoundEnabled(enabled);
+    }
+
     public setVisionWithCheck() {
         const room: GRoom = this.getCurrentRoom() as GRoom;
         if (room.isSafe()) {
@@ -682,8 +703,8 @@ export class GAdventureContent extends GContentScene {
 
     public walkToAdjacentRoom(dir: CardDir) {
         // Move to the adjacent room, if there is one:
-        let newRoomX = this.playerRoomX + DIRECTION.getXInc(dir);
-        let newRoomY = this.playerRoomY + DIRECTION.getYInc(dir);
+        const newRoomX = this.playerRoomX + DIRECTION.getXInc(dir);
+        const newRoomY = this.playerRoomY + DIRECTION.getYInc(dir);
 
         if (this.currentArea.containsRoom(this.playerFloor, newRoomX, newRoomY)) {
             // Before transitioning, walk NONE to stop moving and remove diagonals:
@@ -692,18 +713,18 @@ export class GAdventureContent extends GContentScene {
 
             // Check whether to begin a cutscene as the room is entered
             const newRoom: GRoom = this.currentArea.getRoomAt(this.playerFloor, newRoomX, newRoomY) as GRoom;
-            if (this.triggerArrivalCutscene(newRoom, RoomTransition.WALK_INTO)) {
+            if (this.triggerArrivalCutscene(newRoom, RoomTransition.WALK_INTO, dir)) {
                 return;
             }
 
             this.transitionToRoom(newRoomX, newRoomY, this.playerFloor, this.currentArea, () => {
                 // Re-position player:
-                let newEdge: Dir9 = DIRECTION.getOpposite(dir) as Dir9;
-                let newPlayerX: number =
+                const newEdge: Dir9 = DIRECTION.getOpposite(dir) as Dir9;
+                const newPlayerX: number =
                     (newEdge === Dir9.W || newEdge === Dir9.E)
                     ? DIRECTION.getCharPosForEdge(newEdge)
                     : this.player.x;
-                let newPlayerY: number =
+                const newPlayerY: number =
                     (newEdge === Dir9.N || newEdge === Dir9.S)
                     ? DIRECTION.getCharPosForEdge(newEdge)
                     : this.player.y;
@@ -842,7 +863,8 @@ export class GAdventureContent extends GContentScene {
             }
 
             // Set player animations based on area:
-            if (this.getCurrentArea() instanceof GStrongholdArea) {
+            if (this.getCurrentArea() instanceof GStrongholdArea
+                || (this.getCurrentArea() instanceof GCaveArea && REGISTRY.getBoolean('invitedToCave'))) {
                 this.player.useSoldierAnims();
             } else {
                 this.player.usePlainAnims();
@@ -924,6 +946,8 @@ export class GAdventureContent extends GContentScene {
          * - The stronghold has not been turned into rubble already
          * - You have met the prophet already
          * - The stronghold is clear (all treasures obtained, all prisoners rescued)
+         *
+         * triggerPulldown can be set by the console to bypass the main conditions.
          */
         const stronghold: GStronghold|null = inRoom.getStronghold();
         return stronghold !== null
@@ -935,6 +959,36 @@ export class GAdventureContent extends GContentScene {
                     && stronghold.getInteriorArea().isClear()
                 )
             );
+    }
+
+    private readyForInvitation(inRoom: GRoom): boolean {
+        /**
+         * The invitation cutscene kicks off when the player's main objective is complete, i.e.
+         * he has collected the full armour of God; it begins the end-game quest to meet and
+         * defeat the Devil. There are a few conditions.
+         *
+         * We can trigger the invitation cutscene if:
+         * - The player is in the world area (not a stronghold or church)
+         * - The player currently has some faith (not in faithless mode)
+         * - The player is not in a town
+         * - The invitation cutscene has not been triggered already
+         * - The player has obtained the full armour of God from each of the 5 strongholds
+         *
+         * triggerInvitation can be set by the console to bypass the main condition.
+         */
+        return inRoom.getArea() === AREA.WORLD_AREA
+            && PLAYER.getFaith() > 0
+            && inRoom.getTown() === null
+            && !REGISTRY.getBoolean('invitedToCave')
+            && (
+                REGISTRY.getBoolean('triggerInvitation')
+                || ARMORS.getCount() === 6
+            );
+    }
+
+    private canEnterGloomyTomb(inRoom: GRoom): boolean {
+        return inRoom.getArea() === AREA.CAVE_AREA
+            && REGISTRY.getBoolean('invitedToCave');
     }
 
     public doEnemySpawns() {
@@ -1529,6 +1583,14 @@ export class GAdventureContent extends GContentScene {
             if (ENEMY.BOSS_SPIRITS.includes(ENEMY.getCurrentSpirit())) {
                 REGISTRY.set(`bossDefeated_${ENEMY.getCurrentSpirit().name}`, true);
             }
+            if (ENEMY.getCurrentSpirit().name === 'Lucifer') {
+                REGISTRY.set('defeatedLucifer', true);
+                REGISTRY.set('lostToLucifer', false);
+                // When Lucifer is defeated, restore the player's faith to max,
+                // since there will otherwise be no more opportunity to restore it
+                // before fighting the Dragon.
+                PLAYER.setFaith(PLAYER.getMaxFaith());
+            }
 
             // If the player defeated all enemies in the room, wait a bit before respawning them:
             if (this.getEnemies().length === 0) {
@@ -1538,6 +1600,11 @@ export class GAdventureContent extends GContentScene {
         } else {
             // It wasn't a victory...
             STATS.changeInt('Defeats', 1);
+            if (ENEMY.getCurrentSpirit().name === 'Lucifer') {
+                REGISTRY.set('lostToLucifer', true);
+            } else if (ENEMY.getCurrentSpirit().name === 'Dragon') {
+                REGISTRY.set('lostToDragon', true);
+            }
         }
     }
 
@@ -1549,9 +1616,7 @@ export class GAdventureContent extends GContentScene {
                 if (PLAYER.canLevelUp()) {
                     this.levelUp();
                 } else {
-                    this.startAreaBgMusic();
-                    this.setInputMode(INPUT_ADVENTURING);
-                    this.startChars();
+                    this.resumeAdventuringAfterVictory(false);
                 }
             } else {
                 this.startFaithlessMode();
@@ -1559,13 +1624,42 @@ export class GAdventureContent extends GContentScene {
         });
     }
 
+    public resumeAdventuringAfterVictory(gainedLevel: boolean) {
+        this.startAreaBgMusic();
+
+        console.log('Resuming after battle');
+
+        // If the defeated enemy was an end-game boss, we'll need to start another cutscene instead of resuming adventuring:
+        if (ENEMY.getCurrentSpirit().name === 'Lucifer') {
+            // Start Dragon transformation cutscene:
+            console.log('Starting Dragon transformation cutscene');
+            new GDragonTransformCutscene().play();
+        } else if (ENEMY.getCurrentSpirit().name === 'Dragon') {
+            // Start Victory cutscene:
+            // new GVictoryCutscene().play();
+        } else {
+            // Otherwise, just resume adventuring as normal:
+            this.setInputMode(INPUT_ADVENTURING);
+            this.startChars();
+            // If the player has queued fruit, gain it now:
+            if (gainedLevel) {
+                this.gainQueuedFruit();
+            }
+        }
+    }
+
     public startFaithlessMode() {
         PLAYER.setGrace(0);
         GPopup.createSimplePopup('While you have no faith, enemies will not attack you; however, you cannot open treasure chests or obtain new items.\n\nYou must seek out other believers who can restore you in the spirit of meekness.\n\nBe not faithless, but believing!', 'Where is your faith?').onClose(() => {
-            // If the player loses all faith in a stronghold, he'll be expelled from it:
+            // If the player loses all faith in a stronghold or cave, he'll be expelled from it:
             if (this.getCurrentArea() instanceof GStrongholdArea) {
                 this.setInputMode(INPUT_ADVENTURING);
+                // For a stronghold, get the entrance room and exit to the portal room that it leads back to:
                 this.playerExitBuilding((this.getCurrentArea() as GStrongholdArea).getEntranceRoom().getPortalRoom());
+            } else if (this.getCurrentArea() instanceof GCaveArea) {
+                this.setInputMode(INPUT_ADVENTURING);
+                // For the cave, there's no explicit entrance room, but there's only one room anyway:
+                this.playerExitBuilding((this.getCurrentRoom() as GRoom).getPortalRoom());
             } else {
                 this.setInputMode(INPUT_ADVENTURING);
                 this.startChars();
@@ -1584,11 +1678,7 @@ export class GAdventureContent extends GContentScene {
                     if (PLAYER.canLevelUp()) {
                         this.levelUp();
                     } else {
-                        this.startAreaBgMusic();
-                        this.setInputMode(INPUT_ADVENTURING);
-                        this.startChars();
-                        // If the player has queued fruit, gain it now:
-                        this.gainQueuedFruit();
+                        this.resumeAdventuringAfterVictory(true);
                     }
                 });
             });

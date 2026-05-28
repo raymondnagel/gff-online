@@ -1,5 +1,4 @@
 import { GMenuRadioOption } from "./GMenuRadioOption";
-import { GTextOptionButton } from "./GTextOptionButton";
 
 export class GMenuRadioGroup {
 

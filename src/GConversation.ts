@@ -42,6 +42,9 @@ const CMD_FUNCTIONS: Record<string, (...args: any[]) => any> = {
     playSound: (_player: GPlayerSprite, _someone: GCharSprite, soundName: string) => {
         GFF.AdventureContent.getSound().playSound(soundName);
     },
+    endGame: (_player: GPlayerSprite, _someone: GCharSprite) => {
+        GFF.AdventureContent.endGame();
+    },
     playPiano: (_player: GPlayerSprite, _someone: GCharSprite, songName: string) => {
         GFF.AdventureContent.getSound().setMusicVolume(0.6);
         GFF.AdventureContent.getSound().playMusic(songName);
@@ -486,6 +489,7 @@ export class GConversation {
     private previousMusicVolume: number;
     private advance: boolean = false;
     private convType: ConversationType = 'default';
+    private customPrompt: string|undefined = undefined;
     private faithPerSermonBlurb: number[] = [];
 
     constructor(blurbs: CBlurb[], participants?: CLabeledChar[], convType: ConversationType = 'default') {
@@ -563,7 +567,9 @@ export class GConversation {
             this.setHearer(this.currentBlurb.hearer);
 
             // Orient the participants:
-            this.orientParticipants();
+            if (this.convType !== 'observation') {
+                this.orientParticipants();
+            }
 
             // Create the bubble (can be skipped if no text or choice):
             this.createBubble();
@@ -658,10 +664,13 @@ export class GConversation {
             if (preparedText.startsWith('(T)')) {
                 preparedText = preparedText.replace('(T)', '');
                 // Create thought bubble
-                this.currentBubble = new GThoughtBubble(this.currentSpeaker, preparedText);
+                this.currentBubble = new GThoughtBubble(this.currentSpeaker, preparedText, this.customPrompt);
+                if (this.convType === 'promptonly') {
+                    this.currentBubble.setVisible(false);
+                }
             } else {
                 // Create speech bubble
-                this.currentBubble = new GSpeechBubble(this.currentSpeaker, preparedText);
+                this.currentBubble = new GSpeechBubble(this.currentSpeaker, preparedText, this.customPrompt);
             }
         } else if (this.currentBlurb.id === 'flightMenu') {
             // The flight menu is so dynamic that it's not even worth preparing a structure
@@ -679,7 +688,7 @@ export class GConversation {
                 choice.forEach(c => {
                     c.choiceText = this.replaceLabels(c.choiceText);
                 });
-                this.currentBubble = new GChoiceBubble(this.currentSpeaker, choice);
+                this.currentBubble = new GChoiceBubble(this.currentSpeaker, choice, this.customPrompt);
             } else {
                 // No text or choice; this blurb is empty.
                 this.finishBlurb(false);
@@ -705,6 +714,7 @@ export class GConversation {
             case 'intercessor':
             case 'saint':
             case 'sinner':
+            case 'lucifer':
             case 'other':
                 this.currentSpeaker = this.getRandomCharByLabel(speaker);
                 break;
@@ -724,6 +734,7 @@ export class GConversation {
             case 'intercessor':
             case 'saint':
             case 'sinner':
+            case 'lucifer':
             case 'other':
                 this.currentHearer = this.getRandomCharByLabel(hearer);
                 break;
@@ -871,6 +882,17 @@ export class GConversation {
     public static fromFile(convKey: string, chars?: CLabeledChar[], convType: ConversationType = 'default'): GConversation {
         let blurbs: CBlurb[] = GFF.GAME.cache.json.get(convKey);
         return new GConversation(blurbs, chars, convType);
+    }
+
+    public static promptOnly(customPrompt: string = 'Press Enter to continue'): GConversation {
+        let blurbs: CBlurb[] = [{
+            id: "0",
+            speaker: "player",
+            text: "(T)",
+        }];
+        const fakeConversation = new GConversation(blurbs, undefined, 'promptonly');
+        fakeConversation.customPrompt = customPrompt;
+        return fakeConversation;
     }
 
     private createFlightMenu(): COption[] {

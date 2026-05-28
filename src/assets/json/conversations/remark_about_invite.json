@@ -1,0 +1,13 @@
+[
+    {
+      "id": "1",
+      "speaker": "player",
+      "text": "Hmmm... what an interesting message. Why would an angel want to meet me?",
+      "next": "2"
+    },
+    {
+      "id": "2",
+      "speaker": "player",
+      "text": "I guess I should find this cave and check it out."
+    }
+]

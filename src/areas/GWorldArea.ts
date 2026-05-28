@@ -68,7 +68,9 @@ export class GWorldArea extends GArea {
 
     private regionCenters: GRoom[] = [];
     private townCenters: GRoom[];
+    private strongholdLocations: GRoom[] = [];
     private startRoom: GRoom;
+    private caveRoom: GRoom;
 
     constructor() {
         super(
@@ -89,12 +91,17 @@ export class GWorldArea extends GArea {
         this.fixCornerWallSections();
         this.createCivilization();
         this.createStrongholds();
+        this.createCave();
         this.concealAllRooms(0);
         this.createShrines();
     }
 
     public getStartRoom(): GRoom {
         return this.startRoom;
+    }
+
+    public getCaveRoom(): GRoom {
+        return this.caveRoom;
     }
 
     protected initRoom(room: GRoom): void {
@@ -590,6 +597,7 @@ export class GWorldArea extends GArea {
     private createStronghold(region: GRegion, stronghold: GStronghold) {
         const rooms: GRoom[] = region.getRooms();
         RANDOM.shuffle(rooms);
+        const centers: GRoom[] = this.townCenters.concat(this.strongholdLocations);
 
         // We would prefer a stronghold location as far away as possible from town centers;
         // we'll start at the max distance, and repeat the algorithm with a lower distance
@@ -598,10 +606,11 @@ export class GWorldArea extends GArea {
             // Proceed through the list until we find one far enough away from other centers:
             for (let room of rooms) {
                 if (
-                    this.isFarEnoughFromOtherCenters(room, this.townCenters, d)
+                    this.isFarEnoughFromOtherCenters(room, centers, d)
                     && !this.hasNeighboringTown(room)
                 ) {
                     room.setStronghold(stronghold);
+                    this.strongholdLocations.push(room);
 
                     // For a stronghold room, we can allow a full wall to the south, since they aren't
                     // too tall. But if there's a partial wall, we don't want it to have any scenery in
@@ -622,6 +631,35 @@ export class GWorldArea extends GArea {
         }
 
         GFF.genLog(`Couldn't find a suitable location for ${stronghold.getName()} in ${region.getName()}!`, true);
+    }
+
+    private createCave() {
+        const rooms: GRoom[] = this.getRoomsByFloor(0);
+        RANDOM.shuffle(rooms);
+        const centers: GRoom[] = this.townCenters.concat(this.strongholdLocations);
+
+        // We would prefer a cave location as far away as possible from town centers;
+        // we'll start at the max distance, and repeat the algorithm with a lower distance
+        // until a suitable center is found.
+        for (let d: number = START_DIST_HOLDS_TO_TOWNS; d >= 0; d--) {
+            // Proceed through the list until we find one far enough away from other centers;
+            // another condition is that it must not have a full wall to the east, because the
+            // stone will roll in from off the screen and we don't want it going through a wall.
+            for (let room of rooms) {
+                if (
+                    this.isFarEnoughFromOtherCenters(room, centers, d)
+                    && !this.hasNeighboringTown(room)
+                    && !room.hasFullWall(Dir9.E)
+                ) {
+                    room.setCave();
+                    this.caveRoom = room;
+                    GFF.genLog(`Created cave: ${room.getX()}, ${room.getY()}`);
+                    return;
+                }
+            }
+        }
+
+        GFF.genLog(`Couldn't find a suitable location for a cave!`, true);
     }
 
     private createShrines(): void {
@@ -733,11 +771,13 @@ export class GWorldArea extends GArea {
         return {
             ...parentData,
             startRoom: SAVE.idFor(this.startRoom, ids),
+            caveRoom: SAVE.idFor(this.caveRoom, ids),
         };
     }
 
     public hydrateLoadedObject(context: any, refObj: RefFunction): void {
         super.hydrateLoadedObject(context, refObj);
         this.startRoom = refObj(context.startRoom);
+        this.caveRoom = refObj(context.caveRoom);
     }
 }

@@ -140,6 +140,19 @@ export namespace EFFECTS {
             },
             {
                 spriteConfig: {
+                    key: 'scroll_thud',
+                    frames: GFF.GAME.anims.generateFrameNumbers(
+                        'chest_puff',
+                        { start: 0, end: 9 }
+                    ),
+                    frameRate: 20,
+                    repeat: 0
+                },
+                soundKey: 'thud',
+                hideOnFinish: true
+            },
+            {
+                spriteConfig: {
                     key: 'baptism',
                     frames: GFF.GAME.anims.generateFrameNumbers(
                         'baptism',

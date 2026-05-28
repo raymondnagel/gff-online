@@ -1,0 +1,118 @@
+[
+  {
+    "id": "start",
+    "speaker": "lucifer",
+    "hearer": "player",
+    "fork": "personMet('greetPlayerAgain','greetPlayerInitial')"
+  },
+  {
+    "id": "greetPlayerAgain",
+    "speaker": "lucifer",
+    "hearer": "player",
+    "text": "(NOT IMPLEMENTED YET)",
+    "next": "endConversation"
+  },
+  {
+    "id": "greetPlayerInitial",
+    "speaker": "lucifer",
+    "hearer": "player",
+    "text": "Ah... Adam... Here you are at last. Welcome.\n\nI've heard so much about you. You've become quite the 'man of God', haven't you?",
+    "postCmd": "familiarize()",
+    "next": "playerModest"
+  },
+  {
+    "id": "playerModest",
+    "speaker": "player",
+    "hearer": "lucifer",
+    "text": "By his grace, I am what I am. May the Lord count me faithful.",
+    "next": "luciferTemptation1"
+  },
+  {
+    "id": "luciferTemptation1",
+    "speaker": "lucifer",
+    "hearer": "player",
+    "text": "Of course, of course.\n\nBut... do you really think God can be trusted? I mean... have you ever actually met him? Or even seen him?",
+    "next": "playerChoice1"
+  },
+  {
+    "id": "playerChoice1",
+    "speaker": "player",
+    "hearer": "lucifer",
+    "choice": [
+      { "choiceText": "Hmm... you've got a point there...", "resultId": "playerFail1"},
+      { "choiceText": "I see him by faith!", "resultId": "playerFaithful1"}
+    ]
+  },
+  {
+    "id": "playerFail1",
+    "speaker": "lucifer",
+    "hearer": "player",
+    "text": "Exactly. Why follow someone you can't even see? Follow ME instead...",
+    "next": "luciferFinal1"
+  },
+  {
+    "id": "playerFaithful1",
+    "speaker": "player",
+    "hearer": "lucifer",
+    "text": "I see him by faith; for faith is the evidence of things not seen! And though I have not seen Christ yet with my eyes, I love him; and believing his word, I rejoice with joy unspeakable and full of glory!",
+    "next": "luciferTemptation2"
+  },
+  {
+    "id": "luciferTemptation2",
+    "speaker": "lucifer",
+    "hearer": "player",
+    "text": "But think of all you are leaving behind! So many friends, family, possessions... In fact...\n\nI'll give you even MORE! Riches, honor, friends, fun, and pleasures of the flesh will all be yours, if you just give up this silly little crusade and... serve ME instead.",
+    "next": "playerChoice2"
+  },
+  {
+    "id": "playerChoice2",
+    "speaker": "player",
+    "hearer": "lucifer",
+    "choice": [
+      { "choiceText": "That doesn't sound too bad, actually...", "resultId": "playerFail2"},
+      { "choiceText": "Get thee behind me, Satan!", "resultId": "playerFaithful2"}
+    ]
+  },
+  {
+    "id": "playerFail2",
+    "speaker": "lucifer",
+    "hearer": "player",
+    "text": "Now you're seeing things my way. Your journey ends here, Adam. Stay here with me; eat, drink, be merry...",
+    "next": "luciferFinal2"
+  },
+  {
+    "id": "playerFaithful2",
+    "speaker": "player",
+    "hearer": "lucifer",
+    "text": "Get thee behind me, Satan! You could never offer me more than I have in Jesus Christ! He has shewn me the path of life! In his presence is fullness of joy, and at his right hand are pleasures for evermore! He is my strength and song, and is become my salvation! I will worship and serve him only!",
+    "next": "luciferConcede"
+  },
+  {
+    "id": "luciferConcede",
+    "speaker": "lucifer",
+    "hearer": "player",
+    "text": "Hmm... so you say...",
+    "next": "endConversation"
+  },
+  {
+    "id": "luciferFinal1",
+    "speaker": "lucifer",
+    "hearer": "player",
+    "text": "(T)Your destination will be the same as mine! Ha ha ha!",
+    "postCmd": "playSound('enemy_laugh');endGame()",
+    "next": "endConversation"
+  },
+  {
+    "id": "luciferFinal2",
+    "speaker": "lucifer",
+    "hearer": "player",
+    "text": "(T)...for tomorrow you shall die! Ha ha ha!",
+    "postCmd": "playSound('enemy_laugh');endGame()",
+    "next": "endConversation"
+  },
+  {
+    "id": "endConversation",
+    "speaker": "player",
+    "hearer": "lucifer"
+  }
+]

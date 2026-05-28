@@ -105,12 +105,16 @@ export abstract class GBaseScene extends Phaser.Scene {
     }
 
     public fadeOut(overTime: number, color?: number, onComplete?: Function) {
+        this.fadeOutToAlpha(1, overTime, color, onComplete);
+    }
+
+    public fadeOutToAlpha(alpha: number, overTime: number, color?: number, onComplete?: Function) {
         this.createFadeOverlay(color);
         this.fadeOverlay.setAlpha(0);
         this.fadeOverlay.setVisible(true);
         this.tweens.add({
             targets: this.fadeOverlay,
-            alpha: 1,
+            alpha,
             duration: overTime,
             ease: 'Linear',
             onComplete: () => {

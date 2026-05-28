@@ -2,7 +2,7 @@ import { GRoom } from "../GRoom";
 import { SAVE } from "../save";
 import { RefFunction } from "../scenes/GLoadGameContent";
 import { STRING } from "../string";
-import { GSaveable } from "../types";
+import { Dir9, GSaveable } from "../types";
 
 /**
  * GRegion represents part of a GArea that should
@@ -91,10 +91,15 @@ export abstract class GRegion implements GSaveable {
             room.planStronghold();
         }
 
+        if (room.isCave()) {
+            room.planCave();
+        }
+
         const addInternalObjects =
             room.getChurch() === null
             && room.getTown() === null
-            && room.getStronghold() === null;
+            && room.getStronghold() === null
+            && !room.isCave();
 
         // Now call the region-specific furnishing method
         this._furnishRoom(room, true, addInternalObjects);

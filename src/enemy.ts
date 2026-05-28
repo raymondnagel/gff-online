@@ -18,6 +18,7 @@ export namespace ENEMY {
             introduced: false,
             portraitKey: 'mammon_circle',
             avatarKey: 'battle_mammon',
+            speechOrigin: { x: 147, y: 32 },
         },
         {
             type: 'Beelzebub',
@@ -26,6 +27,7 @@ export namespace ENEMY {
             introduced: false,
             portraitKey: 'beelzebub_circle',
             avatarKey: 'battle_beelzebub',
+            speechOrigin: { x: 125, y: 43 },
         },
         {
             type: 'Belial',
@@ -34,6 +36,7 @@ export namespace ENEMY {
             introduced: false,
             portraitKey: 'belial_circle',
             avatarKey: 'battle_belial',
+            speechOrigin: { x: 139, y: 42 },
         },
         {
             type: 'Legion',
@@ -42,6 +45,7 @@ export namespace ENEMY {
             introduced: false,
             portraitKey: 'legion_circle',
             avatarKey: 'battle_legion',
+            speechOrigin: { x: 109, y: 51 },
         },
         {
             type: 'Apollyon',
@@ -50,6 +54,7 @@ export namespace ENEMY {
             introduced: false,
             portraitKey: 'apollyon_circle',
             avatarKey: 'battle_apollyon',
+            speechOrigin: { x: 123, y: 43 },
         },
         {
             type: 'Lucifer',
@@ -58,6 +63,7 @@ export namespace ENEMY {
             introduced: false,
             portraitKey: 'lucifer_circle',
             avatarKey: 'battle_lucifer',
+            speechOrigin: { x: 143, y: 25 },
         },
         {
             type: 'Dragon',
@@ -65,7 +71,8 @@ export namespace ENEMY {
             level: 0,
             introduced: false,
             portraitKey: 'dragon_circle',
-            avatarKey: 'battle_dragon_upright',
+            avatarKey: 'battle_dragon',
+            speechOrigin: { x: 101, y: 62 },
         },
     ];
 
@@ -85,6 +92,7 @@ export namespace ENEMY {
             introduced: spirit.introduced,
             portraitKey: spirit.portraitKey,
             avatarKey: spirit.avatarKey,
+            speechOrigin: spirit.speechOrigin,
         };
     }
 
@@ -160,6 +168,21 @@ export namespace ENEMY {
         return avatar;
     }
 
+    export function getTaunt(attackName: string): string|undefined {
+        const taunts = GFF.GAME.cache.json.get('enemy_taunts') as Record<string, string[]>;
+        if (!taunts) {
+            return undefined;
+        }
+
+        const key = attackName === 'Basic' ? spirit.name : attackName;
+        const lines = taunts[key];
+        if (!lines || lines.length === 0) {
+            return undefined;
+        }
+
+        return RANDOM.randElement(lines) as string;
+    }
+
     export function getSprite(): GEnemySprite|null {
         return sprite;
     }
@@ -182,6 +205,9 @@ export namespace ENEMY {
 
         const baseResist = GFF.getDifficulty().enemyBaseResist + (GFF.getDifficulty().enemyResistPerLevel * spirit.level);
         setMaxResistance(Math.round(baseResist * GFF.getDifficulty().bossResistPct));
+        if (spirit.name === 'Dragon') {
+            setMaxResistance(100); // Set the Dragon to have low resistance for testing
+        }
         setResistance(getMaxResistance());
     }
 

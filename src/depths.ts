@@ -1,5 +1,7 @@
 export namespace DEPTH {
 
+    export const TOPMOST = 1000000;
+
     export const PLAYER_PRAY_BUBBLE = 100000;
 
     export const TRANSITION = 99999;

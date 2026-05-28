@@ -18,10 +18,14 @@ export namespace REGISTRY {
         REGISTRY.set('bossDefeated_Belial', false);
         REGISTRY.set('bossDefeated_Legion', false);
         REGISTRY.set('bossDefeated_Apollyon', false);
+        REGISTRY.set('lostToLucifer', false);
+        REGISTRY.set('defeatedLucifer', false);
+        REGISTRY.set('lostToDragon', false);
 
         // Options:
         REGISTRY.set('talkSpeed', 2.0);
         REGISTRY.set('battleSpeed', 1.0);
+        REGISTRY.set('keyVerseEntry', 'typeWholeWords');
         REGISTRY.set('masterVolume', 1.0);
         REGISTRY.set('musicVolume', 0.8);
         REGISTRY.set('sfxVolume', 0.9);

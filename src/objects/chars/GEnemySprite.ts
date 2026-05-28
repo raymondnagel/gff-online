@@ -112,7 +112,8 @@ export abstract class GEnemySprite extends GCharSprite {
                 level: 0,
                 introduced: false,
                 portraitKey: null,
-                avatarKey: null
+                avatarKey: null,
+                speechOrigin: { x: 143, y: 26 }
             });
         }
     }

@@ -22,6 +22,8 @@ export interface GSaveable {
 
 export type GSaveableInterface = GPerson|GSpirit;
 
+export type GKeyVerseEntry = 'typeWholeWords'|'typeFirstLetters';
+
 export type GActorEvent = {
     eventId: string,
     actor: string,
@@ -174,6 +176,7 @@ export interface GSpirit {
     introduced: boolean;
     portraitKey: string|null;
     avatarKey: string|null;
+    speechOrigin: GPoint2D;
 }
 
 export enum DirVert {
@@ -421,6 +424,7 @@ export type LeveledDynamicBlurb = {
  * For a 'sermon', faith is restored for every blurb spoken by the preacher.
  * For a 'streetpreach', a preach-sonic effect is shown for every blurb spoken by the player.
  * For a 'playerpray', blurbs are shown on top of everything else, since the screen will be faded out (as though his eyes are closed).
+ * For an 'observation', the speaker is looking at something interesting, so don't re-orient him.
  * For a 'default' conversation, there are no special effects.
  */
-export type ConversationType = 'sermon'|'streetpreach'|'playerpray'|'default';
+export type ConversationType = 'sermon'|'streetpreach'|'playerpray'|'observation'|'promptonly'|'default';

@@ -24,6 +24,7 @@ export namespace BALANCE {
             introduced: false,
             portraitKey: null,
             avatarKey: null,
+            speechOrigin: { x: 0, y: 0 },
         };
 
         // Show a report at each level

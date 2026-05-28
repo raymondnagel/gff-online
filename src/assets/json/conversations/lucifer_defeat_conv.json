@@ -1,0 +1,22 @@
+[
+  {
+    "id": "1",
+    "speaker": "lucifer",
+    "hearer": "player",
+    "text": "Hmmph... how annoying.",
+    "next": "2"
+  },
+  {
+    "id": "2",
+    "speaker": "lucifer",
+    "hearer": "player",
+    "text": "Very well. If I cannot deceive you...",
+    "next": "3"
+  },
+  {
+    "id": "3",
+    "speaker": "lucifer",
+    "hearer": "player",
+    "text": "...then I will DESTROY you!"
+  }
+]

@@ -71,6 +71,7 @@ export namespace SAVE {
             ...AREA.KEEP_AREA.getRooms(),
             ...AREA.FORTRESS_AREA.getRooms(),
             ...AREA.CASTLE_AREA.getRooms(),
+            ...AREA.CAVE_AREA.getRooms(),
             ...AREA.CHURCH_AREAS.flatMap(area => area.getRooms()),
         ];
         const areas = [
@@ -80,6 +81,7 @@ export namespace SAVE {
             AREA.KEEP_AREA,
             AREA.FORTRESS_AREA,
             AREA.CASTLE_AREA,
+            AREA.CAVE_AREA,
             ...AREA.CHURCH_AREAS,
         ];
         const regions = Array.from(new Set(rooms.map(room => room.getRegion())));

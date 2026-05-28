@@ -1,0 +1,13 @@
+[
+    {
+      "id": "1",
+      "speaker": "player",
+      "text": "Huh? What's that?\nSomething just... fell from heaven...",
+      "next": "2"
+    },
+    {
+      "id": "2",
+      "speaker": "player",
+      "text": "It looks like... a scroll...?"
+    }
+]

@@ -15,6 +15,7 @@ import { GFortressRegion } from '../regions/GFortressRegion';
 import { GCastleRegion } from '../regions/GCastleRegion';
 import { RANDOM } from '../random';
 import { COLOR } from '../colors';
+import { GCaveArea } from '../areas/GCaveArea';
 
 type AreaGenInfo = { area: GArea, rooms: number };
 
@@ -167,6 +168,9 @@ export class GWorldBuildContent extends GBaseScene {
             'castle_2',
         ]);
 
+        // Cave Area (will be assigned to the cave once it's created)
+        AREA.CAVE_AREA = new GCaveArea();
+
         // World Area
         AREA.WORLD_AREA = new GWorldArea();
 
@@ -186,9 +190,10 @@ export class GWorldBuildContent extends GBaseScene {
             { area: AREA.KEEP_AREA, rooms: 81 },
             { area: AREA.FORTRESS_AREA, rooms: 83 },
             { area: AREA.CASTLE_AREA, rooms: 113 },
+            { area: AREA.CAVE_AREA, rooms: 1 },
             { area: AREA.WORLD_AREA, rooms: 256 },
         ];
-        // Total rooms: 10 + 63 + 70 + 81 + 83 + 113 + 256 = 676
+        // Total rooms: 10 + 63 + 70 + 81 + 83 + 113 + 1 + 256 = 677
 
         this.buildArea(0);
     }

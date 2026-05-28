@@ -1,3 +1,4 @@
+import { GCaveArea } from "./areas/GCaveArea";
 import { GChurchArea } from "./areas/GChurchArea";
 import { GStrongholdArea } from "./areas/GStrongholdArea";
 import { GWorldArea } from "./areas/GWorldArea";
@@ -13,9 +14,10 @@ export namespace AREA {
     export let KEEP_AREA: GStrongholdArea;
     export let FORTRESS_AREA: GStrongholdArea;
     export let CASTLE_AREA: GStrongholdArea;
+    export let CAVE_AREA: GCaveArea;
 
     // Get a textual representation of the distance/direction between 2 rooms on the same floor
-    export function describeDistanceBetweenRooms(originRoom: GRoom, otherRoom: GRoom) {
+    export function describeDistanceBetweenRooms(originRoom: GRoom, otherRoom: GRoom): string {
         const origin2D: GPoint2D = {x: originRoom.getX(), y: originRoom.getY()};
         const target2D: GPoint2D = {x: otherRoom.getX(), y: otherRoom.getY()};
         const direction: string = DIRECTION.dir9FullTexts()[DIRECTION.getDirectionOf(origin2D, target2D)];
@@ -32,7 +34,7 @@ export namespace AREA {
             distanceText = `some way to the ${direction}`;
         } else if (distance <= 6) {
             distanceText = `a good way off to the ${direction}`;
-        } else if (distance <= 6) {
+        } else if (distance <= 7) {
             distanceText = `quite a long way to the ${direction}`;
         } else {
             distanceText = `very far away to the ${direction}`;

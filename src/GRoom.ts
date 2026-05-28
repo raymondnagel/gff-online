@@ -45,6 +45,8 @@ import { GChurchArea } from "./areas/GChurchArea";
 import { SAVE } from "./save";
 import { RefFunction } from "./scenes/GLoadGameContent";
 import { GColor } from "./colors";
+import { REGISTRY } from "./registry";
+import { GCaveArea } from "./areas/GCaveArea";
 
 const WALL_GUARD_THICK: number = 10;
 const WALL_CTRS: number[] = [
@@ -111,6 +113,7 @@ export class GRoom implements GSaveable {
         [Dir9.W]: null,
     };
     private startRoom: boolean = false;
+    private caveRoom: boolean = false;
     private discovered: boolean = false;
     private travelAgency: boolean = false;
     private chestItem: string|null = null;
@@ -177,6 +180,7 @@ export class GRoom implements GSaveable {
             || this.church !== null
             || this.town !== null
             || this.stronghold !== null
+            || this.caveRoom
             || this.portalRoom !== null
             || (this.getArea() instanceof GStrongholdArea && (this.getArea() as GStrongholdArea).getEntranceRoom() === this)
         );
@@ -189,6 +193,15 @@ export class GRoom implements GSaveable {
 
     public isStart(): boolean {
         return this.startRoom;
+    }
+
+    public setCave() {
+        this.caveRoom = true;
+        GRoom.createPortal(this, AREA.CAVE_AREA.getRoomAt(0, 0, 0) as GRoom);
+    }
+
+    public isCave(): boolean {
+        return this.caveRoom;
     }
 
     public setTravelLocation() {
@@ -334,6 +347,10 @@ export class GRoom implements GSaveable {
             return 'map_town';
         } else if (this.stronghold) {
             return 'map_hold';
+        } else if (this.stronghold) {
+            return 'map_hold';
+        } else if (this.isCave()) {
+            return 'map_cave';
         } else if (this.hasPlanKey('purple_chest')) {
             return 'map_purple_chest';
         } else if (this.hasPlanKey('red_chest')) {
@@ -569,6 +586,7 @@ export class GRoom implements GSaveable {
             || this.hasPlanKey('standard')
             || this.hasPlanKey('shrine_curtain_ctr_gold')
             || this.isProphetChamber()
+            || (this.caveRoom && REGISTRY.get('invitedToCave'))
         ) {
             return true;
         } else {
@@ -578,6 +596,16 @@ export class GRoom implements GSaveable {
 
     public hasPlanKey(planKey: string): boolean {
         return this.plans.some(plan => plan.key === planKey);
+    }
+
+    public getAllPlans(): GSceneryPlan[] {
+        return this.plans;
+    }
+
+    // This should rarely be used (only for grabbing a single-instance scenery object)
+    public getPlanByKey(planKey: string): GSceneryPlan|null {
+        const plan = this.plans.find(plan => plan.key === planKey);
+        return plan ? plan : null;
     }
 
     public hasPremiumChest(): boolean {
@@ -678,6 +706,15 @@ export class GRoom implements GSaveable {
         let standardObj: GObstacleStatic|null = null;
         this.strongholdObject = null;
         this.plans.forEach((plan) => {
+
+            // The cave displays some objects conditionally, based on whether the player has been invited to the cave.
+            if (
+                this.getArea() instanceof GCaveArea
+                && !REGISTRY.getBoolean('invitedToCave')
+                && (plan.key === 'bone_pile')) {
+                return;
+            }
+
             const obj = SCENERY.create(plan, this, decorRenderer);
 
             // save reference to stronghold object if there is one
@@ -2110,6 +2147,24 @@ export class GRoom implements GSaveable {
         this.planPositionedScenery(SCENERY.def('church_pew'), 735, h += 100, .5, .5);
     }
 
+    public planCaveInterior() {
+        this.planPositionedScenery(SCENERY.def('torch_base'), 386, 147, 0, 0);
+        this.planPositionedScenery(SCENERY.def('torch_base'), 590, 147, 0, 0);
+
+        // (Bone piles will be displayed conditionally when loaded)
+        this.planPositionedScenery(SCENERY.def('bone_pile'), 791, 361, 0, 0);
+        this.planPositionedScenery(SCENERY.def('bone_pile'), 842, 198, 0, 0);
+        this.planPositionedScenery(SCENERY.def('bone_pile'), 764, 112, 0, 0);
+        this.planPositionedScenery(SCENERY.def('bone_pile'), 90, 190, 0, 0);
+        this.planPositionedScenery(SCENERY.def('bone_pile'), 122, 115, 0, 0);
+        this.planPositionedScenery(SCENERY.def('bone_pile'), 187, 163, 0, 0);
+        this.planPositionedScenery(SCENERY.def('bone_pile'), 85, 516, 0, 0);
+        this.planPositionedScenery(SCENERY.def('bone_pile'), 855, 467, 0, 0);
+
+        // For the cave, put the vignette as an overhead decoration to really create the mood:
+        this.planPositionedScenery(SCENERY.def('cave_vignette'), 0, 0, 0, 0);
+    }
+
     private planCurbLine(curbKey: string, startX: number, startY: number, inc: 1|-1, target: number) {
         const curbDef: GSceneryDef = SCENERY.def(curbKey);
         const horizontal: boolean = (curbKey.includes('horz'));
@@ -2186,6 +2241,52 @@ export class GRoom implements GSaveable {
         this.noSceneryZones.push({x: 312, y: 128, width: 400, height: 576});
 
         // (A permanent door trigger will be added later)
+    }
+
+    public planCave() {
+        const caveDef: GSceneryDef = SCENERY.def('cave_entrance');
+        const cX: number = GFF.ROOM_X + (GFF.ROOM_W / 2);
+        const bY: number = 420;
+        const shX: number = cX - (caveDef.body.width / 2);
+        const shY: number = bY - caveDef.body.height;
+
+        // Finally, add the cave itself:
+        this.planPositionedScenery(caveDef as GSceneryDef, shX, shY);
+
+        // The cave is an important feature that shouldn't be covered up by random scenery
+        this.noSceneryZones.push({x: 212, y: 128, width: 600, height: 576});
+
+        // No door trigger; a cutscene will roll the stone over it, though.
+    }
+
+    public planInvitationRoom(region: GRegion, entryDir: Dir9) {
+        // Create partial walls that allow passage in all directions through the center:
+        const horzWalls: boolean[] = [
+            true, true, true, true, true, true, false, false, false, false, true, true, true, true, true, true
+        ];
+        const vertWalls: boolean[] = [
+            true, true, true, true, false, false, false, true, true, true, true
+        ];
+
+        // Set up the room like a corridor
+        if (entryDir === Dir9.N || entryDir === Dir9.S) {
+            this.setFullWall(Dir9.E, true);
+            this.setFullWall(Dir9.W, true);
+            this.setWallSections(Dir9.N, horzWalls);
+            this.setWallSections(Dir9.S, horzWalls);
+        } else {
+            this.setFullWall(Dir9.N, true);
+            this.setFullWall(Dir9.S, true);
+            this.setWallSections(Dir9.E, vertWalls);
+            this.setWallSections(Dir9.W, vertWalls);
+        }
+
+        // Add some no-scenery zones to keep the center clear:
+        this.noSceneryZones.push({x: 0, y: 192, width: 1024, height: 320});
+        this.noSceneryZones.push({x: 320, y: 0, width: 384, height: 704});
+
+        // Set the region internally, without calling the setter (which would ADD it to the region):
+        this.region = region;
     }
 
     private simpleFit(objectWidth: number, objectHeight: number, maxTries: number, objects: GRect[], zones: GRect[]): GRect|null {
@@ -2355,6 +2456,7 @@ export class GRoom implements GSaveable {
 
             // Flags
             startRoom: this.startRoom,
+            caveRoom: this.caveRoom,
             discovered: this.discovered,
             travelAgency: this.travelAgency,
             prophetChamber: this.prophetChamber,
@@ -2387,6 +2489,7 @@ export class GRoom implements GSaveable {
         this.cellVerseRef = context.cellVerseRef;
         this.chestItem = context.chestItem;
         this.startRoom = context.startRoom;
+        this.caveRoom = context.caveRoom;
         this.discovered = context.discovered;
         this.travelAgency = context.travelAgency;
         this.prophetChamber = context.prophetChamber;

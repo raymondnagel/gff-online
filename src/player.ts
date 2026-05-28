@@ -6,6 +6,7 @@ import { FRUITS } from "./fruits";
 import { GRoom } from "./GRoom";
 import { GFF } from "./main";
 import { GPlayerSprite } from "./objects/chars/GPlayerSprite";
+import { RANDOM } from "./random";
 import { SAVE } from "./save";
 import { RefFunction } from "./scenes/GLoadGameContent";
 import { GPerson } from "./types";
@@ -89,6 +90,30 @@ export namespace PLAYER {
 
     export function getAvatar(): string {
         return 'battle_amc';
+    }
+
+    function getRandomBattleLine(lines: string[]|undefined): string|undefined {
+        if (!lines || lines.length === 0) {
+            return undefined;
+        }
+
+        return RANDOM.randElement(lines) as string;
+    }
+
+    export function getBattleLine(enemyName: string): string|undefined {
+        const battleLines = GFF.GAME.cache.json.get('player_battle_lines') as Record<string, string[]>;
+        if (!battleLines) {
+            return undefined;
+        }
+
+        const generalLines = battleLines.general;
+        const enemyLines = battleLines[enemyName];
+
+        if (RANDOM.flipCoin()) {
+            return getRandomBattleLine(enemyLines) ?? getRandomBattleLine(generalLines);
+        }
+
+        return getRandomBattleLine(generalLines) ?? getRandomBattleLine(enemyLines);
     }
 
     export function getSprite(): GPlayerSprite {

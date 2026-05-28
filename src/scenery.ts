@@ -68,6 +68,23 @@ export namespace SCENERY {
             { key: 'church_wall_ne_corner', type: 'static', body: {x: 17, y: 0, width: 64, height: 66} },
             { key: 'church_wall_sw_corner', type: 'static', body: {x: 0, y: 0, width: 64, height: 128} },
             { key: 'church_wall_se_corner', type: 'static', body: {x: 0, y: 0, width: 64, height: 128} },
+            // Cave Walls:
+            { key: 'cave_wall_n_left', type: 'static', body: {x: 0, y: 0, width: 485, height: 64} },
+            { key: 'cave_wall_n_right', type: 'static', body: {x: 0, y: 0, width: 485, height: 64} },
+            { key: 'cave_wall_n_mid', type: 'static', body: {x: 0, y: 0, width: 54, height: 64} },
+            { key: 'cave_wall_s_left', type: 'static', body: {x: 0, y: 102, width: 485, height: 26} },
+            { key: 'cave_wall_s_right', type: 'static', body: {x: 0, y: 102, width: 485, height: 26} },
+            { key: 'cave_wall_s_door', type: 'static', body: {x: 0, y: 102, width: 84, height: 26} },
+            { key: 'cave_wall_w_top', type: 'static', body: {x: 0, y: 0, width: 64, height: 236} },
+            { key: 'cave_wall_w_bottom', type: 'static', body: {x: 0, y: 0, width: 64, height: 320} },
+            { key: 'cave_wall_w_mid', type: 'static', body: {x: 0, y: 0, width: 64, height: 148} },
+            { key: 'cave_wall_e_top', type: 'static', body: {x: 0, y: 0, width: 64, height: 236} },
+            { key: 'cave_wall_e_bottom', type: 'static', body: {x: 0, y: 0, width: 64, height: 320} },
+            { key: 'cave_wall_e_mid', type: 'static', body: {x: 0, y: 0, width: 64, height: 148} },
+            { key: 'cave_wall_nw_corner', type: 'static', body: {x: 0, y: 0, width: 64, height: 66} },
+            { key: 'cave_wall_ne_corner', type: 'static', body: {x: 17, y: 0, width: 64, height: 66} },
+            { key: 'cave_wall_sw_corner', type: 'static', body: {x: 0, y: 0, width: 64, height: 128} },
+            { key: 'cave_wall_se_corner', type: 'static', body: {x: 0, y: 0, width: 64, height: 128} },
             // Stronghold Walls:
             { key: 'hold_wall_n_left', type: 'static', body: {x: 0, y: 0, width: 485, height: 64} },
             { key: 'hold_wall_n_right', type: 'static', body: {x: 0, y: 0, width: 485, height: 64} },
@@ -286,6 +303,7 @@ export namespace SCENERY {
             { key: 'fortress_front', type: 'custom', body: {x: 0, y: 145, width: 368, height: 197} },
             { key: 'keep_front', type: 'custom', body: {x: 0, y: 204, width: 289, height: 153} },
             { key: 'tower_front', type: 'custom', body: {x: 0, y: 218, width: 176, height: 144} },
+            { key: 'cave_entrance', type: 'custom', body: {x: 0, y: 188, width: 500, height: 72} },
             { key: 'stronghold_rubble', type: 'static', body: {x: 0, y: 96, width: 400, height: 100} },
             // Foreground Decorations:
             { key: 'big_flower', type: 'fg_decor', body: {x: 0, y: 0, width: 20, height: 44} },
@@ -370,6 +388,7 @@ export namespace SCENERY {
             { key: 'down_hint', type: 'custom', body: {x: 0, y: 0, width: 29, height: 49} },
             { key: 'cobweb_w', type: 'oh_decor', body: {x: 0, y: 0, width: 64, height: 64} },
             { key: 'cobweb_e', type: 'oh_decor', body: {x: 0, y: 0, width: 64, height: 64} },
+            { key: 'cave_vignette', type: 'oh_decor', body: {x: 0, y: 0, width: 1024, height: 704} },
             // Touchables:
             { key: 'black_chest', type: 'custom', body: {x: 0, y: 20, width: 48, height: 20} },
             { key: 'blue_chest', type: 'custom', body: {x: 0, y: 20, width: 48, height: 20} },
@@ -472,6 +491,10 @@ export namespace SCENERY {
                     case 'tower_front':
                         sceneryObj = new GObstacleStatic(sceneryDef, plan.x, plan.y);
                         new GBuildingEntrance(plan.x + 52, plan.y + 362);
+                        break;
+                    case 'cave_entrance':
+                        sceneryObj = new GObstacleStatic(sceneryDef, plan.x, plan.y);
+                        new GBuildingEntrance(plan.x + 226, plan.y + 260);
                         break;
                     case 'church_front':
                         sceneryObj = new GChurchHouse(plan.x, plan.y);

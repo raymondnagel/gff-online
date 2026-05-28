@@ -26,10 +26,12 @@ export class GChoiceBubble extends Phaser.GameObjects.Container implements GBubb
     private longestLinePixels: number = 0;
     private selectedOptionIndex: number = 0;
     private complete: boolean = false;
+    private prompt: string;
 
-    constructor(speaker: GCharSprite, options: COption[]) {
+    constructor(speaker: GCharSprite, options: COption[], customPrompt: string = 'Choose selection ↑↓ and press Enter') {
         super(GFF.AdventureContent);
         this.speaker = speaker;
+        this.prompt = customPrompt;
         GFF.AdventureContent.add.existing(this);
         this.setDepth(DEPTH.CONV_BUBBLE);
 
@@ -48,7 +50,7 @@ export class GChoiceBubble extends Phaser.GameObjects.Container implements GBubb
 
         // Show the prompt now, since there's nothing to wait for:
         this.complete = true;
-        GFF.AdventureUI.showPrompt('Choose selection ↑↓ and press Enter');
+        GFF.AdventureUI.showPrompt(this.prompt);
     }
 
     private createBubble(): void {

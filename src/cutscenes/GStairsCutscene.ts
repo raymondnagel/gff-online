@@ -103,15 +103,6 @@ export class GStairsCutscene extends GCutscene {
             since: 500
         });
 
-        // Stay faded out for a moment:
-        this.addCutsceneEvent({
-            eventId: 'stairwell',
-            eventCode: () => {
-            },
-            after: 'unloadRoom',
-            since: 1000
-        });
-
         // Transition to the destination room:
         this.addCutsceneEvent({
             eventId: 'transitionToDestination',
@@ -138,8 +129,8 @@ export class GStairsCutscene extends GCutscene {
                 PLAYER.getSprite().faceDirection(Dir9.S, true);
                 PLAYER.getSprite().setVisible(true);
             },
-            after: 'stairwell',
-            since: 10
+            after: 'unloadRoom',
+            since: 1000
         });
 
         // Fade into the destination room:

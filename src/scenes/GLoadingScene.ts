@@ -53,13 +53,14 @@ export class GLoadingScene extends GBaseScene {
      * That's fine; we can just load them directly here.
      */
     private loadFontsDirectly() {
-        this.load.font('dyonisius', 'assets/fonts/dyonisius.ttf', 'truetype');
         this.load.font('averia_serif', 'assets/fonts/averia_serif.ttf', 'truetype');
+        this.load.font('dyonisius', 'assets/fonts/dyonisius.ttf', 'truetype');
         this.load.font('imposs', 'assets/fonts/imposs.ttf', 'truetype');
+        this.load.font('mono', 'assets/fonts/nat_mono.ttf', 'truetype');
         this.load.font('olde', 'assets/fonts/olde.ttf', 'truetype');
         this.load.font('oxygen', 'assets/fonts/oxygen.ttf', 'truetype');
+        this.load.font('style_script', 'assets/fonts/style_script.ttf', 'truetype');
         this.load.font('vanilla', 'assets/fonts/vanilla_extract.ttf', 'truetype');
-        this.load.font('mono', 'assets/fonts/nat_mono.ttf', 'truetype');
     }
 
     private createObjects() {

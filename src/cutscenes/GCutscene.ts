@@ -13,7 +13,9 @@ import { GFF } from "../main";
 import { GCharSprite } from "../objects/chars/GCharSprite";
 import { GImpSprite } from "../objects/chars/GImpSprite";
 import { GPersonSprite } from "../objects/chars/GPersonSprite";
+import { GPlayerSprite } from "../objects/chars/GPlayerSprite";
 import { GProphetSprite } from "../objects/chars/GProphetSprite";
+import { GSatanSprite } from "../objects/chars/GSatanSprite";
 import { PHYSICS } from "../physics";
 import { PLAYER } from "../player";
 import { CLabeledChar, Dir9, GActorEvent, GConditionEvent, GCutsceneEvent, GGeneralEvent, GPerson, GSpirit } from "../types";
@@ -97,12 +99,16 @@ export abstract class GCutscene {
      * otherwise, it is generically labeled with 'actor_#'.
      * Sprites are invisible and not placed in a particular location yet.
      */
-    public createActorSprite(actor: GPerson|GSpirit, label?: string): void {
+    public createActorSprite(actor: GPerson|GSpirit, label?: string): GCharSprite {
         let sprite: GCharSprite;
         if ('spriteKeyPrefix' in actor && actor.spriteKeyPrefix === 'prophet') {
             sprite = new GProphetSprite(0, 0, false);
             GFF.AdventureContent.addPerson(sprite as GProphetSprite);
             GFF.log(`Create sprite for ${actor.firstName} as GProphetSprite`);
+        } else if ('spriteKeyPrefix' in actor && actor.spriteKeyPrefix === 'lucifer') {
+            sprite = new GSatanSprite(0, 0, false);
+            GFF.AdventureContent.addPerson(sprite as GSatanSprite);
+            GFF.log(`Create sprite for ${actor.firstName} as GSatanSprite`);
         } else if ('faith' in actor) {
             sprite = new GPersonSprite(actor, 0, 0);
             GFF.AdventureContent.addPerson(sprite as GPersonSprite);
@@ -122,6 +128,8 @@ export abstract class GCutscene {
         } else {
             this.actors.push({ label, char: sprite });
         }
+
+        return sprite;
     }
 
     /**
@@ -293,8 +301,8 @@ export abstract class GCutscene {
             }
         }
 
-        type ActorCommand = 'spawnAt'|'interact'|'bullhorn'|'nobullhorn'|
-                            'rejoice'|'kneel'|'raiseHands'|'stand'|'faceDir'|
+        type ActorCommand = 'spawnAt'|'interact'|'bullhorn'|'nobullhorn'|'rejoice'|'kneel'|
+                            'bendDownToPickUp'|'raiseHands'|'stand'|'faceDir'|'openScroll'|
                             'walkDir'|'walkTo'|'tryWalkTo'|'pullRopeSW'|'pullRopeSE';
 
         // The first token is the command name; use it to determine the type of goal.
@@ -318,6 +326,14 @@ export abstract class GCutscene {
             case 'kneel':
                 return () => {
                     actorSprite.kneel();
+                };
+            case 'bendDownToPickUp':
+                return () => {
+                    (actorSprite as GPlayerSprite).bendDownToPickUp();
+                };
+            case 'openScroll':
+                return () => {
+                    (actorSprite as GPlayerSprite).openScroll();
                 };
             case 'raiseHands':
                 return () => {

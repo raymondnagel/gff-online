@@ -24,6 +24,7 @@ import { GDesertRegion } from '../regions/GDesertRegion';
 import { GMountRegion } from '../regions/GMountRegion';
 import { GStrongholdRegion } from '../regions/GStrongholdRegion';
 import { GChurchRegion } from '../regions/GChurchRegion';
+import { GCaveRegion } from '../regions/GCaveRegion';
 import { GTown } from '../GTown';
 import { GChurch } from '../GChurch';
 import { GStronghold } from '../strongholds/GStronghold';
@@ -47,6 +48,7 @@ import { ARMORS } from '../armors';
 import { BOOKS } from '../books';
 import { RANDOM } from '../random';
 import { COLOR, GColor } from '../colors';
+import { GCaveArea } from '../areas/GCaveArea';
 
 type IdRegistry = Map<number, any>;
 
@@ -400,7 +402,8 @@ export class GLoadGameContent extends GBaseScene {
             level: context.level,
             introduced: context.introduced,
             portraitKey: context.portraitKey,
-            avatarKey: context.avatarKey
+            avatarKey: context.avatarKey,
+            speechOrigin: context.speechOrigin ?? { x: 0, y: 0 }
         };
         ENEMY.addSpirit(spirit);
         return spirit;
@@ -432,6 +435,8 @@ export class GLoadGameContent extends GBaseScene {
                 return new GMountRegion();
             case 'church':
                 return new GChurchRegion();
+            case 'cave':
+                return new GCaveRegion();
         }
         switch (context.fullName) {
             case 'Tower of Deception':
@@ -469,8 +474,8 @@ export class GLoadGameContent extends GBaseScene {
                 AREA.CASTLE_AREA = GLoadGameContent.initStrongholdArea(context, refObj);
                 return AREA.CASTLE_AREA;
             case 'Gloomy Tomb':
-                // Doesn't exist yet; ignore for now
-                // return new GCaveArea();
+                AREA.CAVE_AREA = new GCaveArea();
+                return AREA.CAVE_AREA;
             default:
                 // All other areas in the game are church interiors
                 const churchArea = new GChurchArea();

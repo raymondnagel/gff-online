@@ -35,10 +35,12 @@ export class GSpeechBubble extends Phaser.GameObjects.Container implements GBubb
     private lastTextWord: string|undefined = undefined;
     private lastSpokenWord: string|undefined = undefined;
     private complete: boolean = false;
+    private prompt: string;
 
-    constructor(speaker: GCharSprite, text: string) {
+    constructor(speaker: GCharSprite, text: string, customPrompt: string = 'Press Enter to continue') {
         super(GFF.AdventureContent);
         this.speaker = speaker;
+        this.prompt = customPrompt;
         GFF.AdventureContent.add.existing(this);
         this.setDepth(DEPTH.CONV_BUBBLE);
 
@@ -353,7 +355,7 @@ export class GSpeechBubble extends Phaser.GameObjects.Container implements GBubb
     }
 
     private onComplete() {
-        GFF.AdventureUI.showPrompt('Press Enter to continue');
+        GFF.AdventureUI.showPrompt(this.prompt);
     }
 
     private speakWord(word: string) {

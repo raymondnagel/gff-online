@@ -5,7 +5,8 @@ import { GLOSSARY } from "../../glossary";
 import { GRoom } from "../../GRoom";
 import { GFF } from "../../main";
 import { PLAYER } from "../../player";
-import { GActionableOption, GBookEntry, GGlossaryEntry, GPoint2D } from "../../types";
+import { REGISTRY } from "../../registry";
+import { GActionableOption, GBookEntry, GGlossaryEntry, GKeyVerseEntry, GPoint2D } from "../../types";
 import { GDistributionContainer } from "./GDistributionContainer";
 import { GDynamicPositioner } from "./GDynamicPositioner";
 import { GTextButton } from "./GTextButton";
@@ -433,15 +434,38 @@ export class GPopup extends Phaser.GameObjects.Image {
     }
 
     private enterUnlockCharacter(char: string): boolean {
+        const keyVerseEntry = REGISTRY.getString('keyVerseEntry') as GKeyVerseEntry;
+        const isFirstLettersMode = keyVerseEntry === 'typeFirstLetters';
+
         let charText: Phaser.GameObjects.Text = this.unlockCharacters[this.unlockCursorIndex];
+
         do {
-            // Determine if the character at the current cursor position matches the input character
-            // Don't be case-sensitive.
-            // Also, allow '*' as a wildcard character; this can help to prevent frustration
-            // for players who cannot type well.
-            if (char !== '*' && charText.text.toUpperCase() !== char.toUpperCase()) {
-                // Incorrect character; do nothing
-                return false;
+            const expectedChar = charText.text;
+            const isPunctuation = PUNCTUATION.has(expectedChar);
+            const isSpace = expectedChar === ' ';
+
+            let shouldAutoFill = isPunctuation;
+
+            if (isFirstLettersMode && !shouldAutoFill) {
+                if (isSpace) {
+                    // In first-letters mode, spaces are automatic
+                    shouldAutoFill = true;
+                } else {
+                    // A letter must be typed only if it's the first character of a word
+                    const prevIndex = this.unlockCursorIndex - 1;
+                    const prevChar = prevIndex >= 0 ? this.unlockCharacters[prevIndex].text : null;
+                    const prevIsBoundary = prevChar === null || prevChar === ' ' || PUNCTUATION.has(prevChar);
+
+                    shouldAutoFill = !prevIsBoundary;
+                }
+            }
+
+            if (!shouldAutoFill) {
+                // Player must type this character
+                // Don't be case-sensitive; allow '*' as a wildcard
+                if (char !== '*' && expectedChar.toUpperCase() !== char.toUpperCase()) {
+                    return false;
+                }
             }
 
             // Reveal the character at the current cursor position
@@ -454,19 +478,30 @@ export class GPopup extends Phaser.GameObjects.Image {
             // Advance to next character position
             this.unlockCursorIndex++;
             if (this.unlockCursorIndex >= this.unlockCharacters.length) {
-                // All characters have been entered - unlock complete!
                 this.scene.sound.play('success');
                 return true;
             }
+
             this.positionUnlockCursor();
             this.rotateKey();
 
-            // Get the next character; if it's punctuation, fill it in automatically
+            // Continue auto-filling punctuation, and in first-letters mode,
+            // also spaces and non-initial letters
             charText = this.unlockCharacters[this.unlockCursorIndex];
             char = charText.text;
-        } while (PUNCTUATION.has(char));
 
-        // Play sound effect
+        } while (
+            PUNCTUATION.has(char)
+            || (isFirstLettersMode && (
+                char === ' '
+                || !(
+                    this.unlockCursorIndex === 0
+                    || this.unlockCharacters[this.unlockCursorIndex - 1].text === ' '
+                    || PUNCTUATION.has(this.unlockCharacters[this.unlockCursorIndex - 1].text)
+                )
+            ))
+        );
+
         this.scene.sound.play('type_key');
         return false;
     }

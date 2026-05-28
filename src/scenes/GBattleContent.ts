@@ -7,6 +7,7 @@ import { GFF } from "../main";
 import { GNumberEntry } from "../objects/components/GNumberEntry";
 import { GOptionWheel } from "../objects/components/GOptionWheel";
 import { GTextEntryControl } from "../objects/components/GTextEntryControl";
+import { BattleSpeechBubbleTailSide, GBattleSpeechBubble } from "../objects/GBattleSpeechBubble";
 import { PLAYER } from "../player";
 import { GPoint2D, GScripture } from "../types";
 import { GContentScene } from "./GContentScene";
@@ -15,6 +16,7 @@ import { REGISTRY } from "../registry";
 import { ARMORS } from "../armors";
 import { COLOR, GColor } from "../colors";
 import { ANIM } from "../anim";
+import { DEPTH } from "../depths";
 import { stat } from "node:fs";
 
 type ScrollVerse = 'served'|'prev'|'next';
@@ -23,6 +25,12 @@ const TEXT_SPACE: number = 3;
 const SHOW_SERVED_VERSE_TIME: number = 500;
 const SWITCH_SHOWN_VERSE_TIME: number = 100;
 const FLEE_EVENT_TEXT: string = 'Adam was afraid and fled the battle!';
+const DEVOUR_ATTACK_NAME: string = 'Devour';
+const ADAM_CONQUER_TEXT: string = 'Nay... in all these things... we are more than conquerors... through him that loved us...';
+const CHRIST_INTERVENTION_TEXT: string = 'Fear not, Adam. My grace is sufficient for thee: for my strength is made perfect in weakness.';
+const DRAGON_INTRO_TEXT: string = 'Cower before me, mortal! I am he that hath the power of DEATH!';
+const DRAGON_DEFEAT_TEXT: string = 'Arghh! The Son of God... with power! The spirit of holiness... the resurrection from the dead... the brightness of his glory! I cannot...';
+const DRAGON_DEFEAT_VOICEOVER_TIME: number = 14000;
 
 const BAR_COLOR: number = 0xff0000;
 const GOLD_COLOR: string = '#d5ccb4';
@@ -42,6 +50,8 @@ const ATTACK_CAPTION_COLOR: string = '#a90000';
 const ATTACK_CALC_COLOR: string = '#ff3737';
 const BASE_DAMAGE_COLOR: string = '#a90000';
 const FINAL_DAMAGE_COLOR: string = '#ff3737';
+const JESUS_RESULT_VERSE_COLOR: string = '#a90000';
+const JESUS_RESULT_REFERENCE_COLOR: string = '#000000';
 
 const TOP_MARGIN: number = 10;
 const SIDE_MARGIN: number = 4;
@@ -69,6 +79,8 @@ const RIGHT_ROLL_START_X: number = 529;
 const RIGHT_ROLL_END_X: number = 834;
 const APPROACH_GAP: number = 30;
 const APPROACH_TIME: number = 600;
+const PLAYER_SPEECH_ORIGIN_X: number = 76;
+const PLAYER_SPEECH_ORIGIN_Y: number = 14;
 const GUESS_SCRIPTURE_Y: number = 520;
 const STAGE_TEXT_Y: number = 400;
 const EVENT_TEXT_Y: number = 400;
@@ -123,6 +135,8 @@ type GEnemyAttack = {
     text: string;
     soundKey: string;
     statusEffect: StatusEffect|null;
+    blockable: boolean;
+    showImpactSpark: boolean;
     animFunc: (nextStep: Function) => void;
     damageFunc: () => number;
     condFunc: () => boolean;
@@ -145,7 +159,7 @@ const POISON_EFFECT: StatusEffect = {
     name: 'Poison',
     statusName: 'Poisoned',
     iconKey: 'poison_status',
-    turns: 4,
+    turns: 3,
     roundSound: 'poison',
     damageFunc: () => {
         return RANDOM.randInt(
@@ -159,14 +173,14 @@ const ENSNARE_EFFECT: StatusEffect = {
     name: 'Ensnare',
     statusName: 'Ensnared',
     iconKey: 'ensnare_status',
-    turns: 4, // Effectively 3, because it will tick down at the beginning of the round
+    turns: 3,
 };
 // Inflicted by the Smoke attack
 const VEIL_EFFECT: StatusEffect = {
     name: 'Veil',
     statusName: 'Veiled',
     iconKey: 'veil_status',
-    turns: 4,
+    turns: 3,
 };
 // Inflicted by the Flame Breath attack
 const BURN_EFFECT: StatusEffect = {
@@ -174,7 +188,7 @@ const BURN_EFFECT: StatusEffect = {
     statusName: 'Burning',
     iconKey: 'burn_status',
     turns: 2,
-    roundSound: '',
+    roundSound: 'roast',
     damageFunc: () => {
         return RANDOM.randInt(
             Math.ceil(ENEMY.getBaseDamage() * .5),
@@ -187,7 +201,7 @@ const FEAR_EFFECT: StatusEffect = {
     name: 'Fear',
     statusName: 'Afraid',
     iconKey: 'fear_status',
-    turns: 2,
+    turns: 1,
 };
 
 export class GBattleContent extends GContentScene {
@@ -286,23 +300,35 @@ export class GBattleContent extends GContentScene {
 
     private playerReportTexts: Phaser.GameObjects.Text[];
     private enemyReportTexts: Phaser.GameObjects.Text[];
+    private jesusResultImage: Phaser.GameObjects.Image;
+    private jesusResultTexts: Phaser.GameObjects.Text[];
 
     private playerParticleEmitter: Phaser.GameObjects.Particles.ParticleEmitter;
     private enemyParticleEmitter: Phaser.GameObjects.Particles.ParticleEmitter;
     private poisonVaporEmitter: Phaser.GameObjects.Particles.ParticleEmitter;
 
     private enemyAttacks: GEnemyAttack[];
+    private allEnemyAttacks: GEnemyAttack[];
+    private forcedEnemyAttack: GEnemyAttack|null = null;
+    private lastEnemyAttackName: string|null = null;
     private basicAttackSprite: Phaser.GameObjects.Sprite;
     private fieryDartSprite: Phaser.GameObjects.Sprite;
     private snareProjectileSprite: Phaser.GameObjects.Sprite;
     private snareFullSprite: Phaser.GameObjects.Sprite;
     private poisonVialImage: Phaser.GameObjects.Image;
     private poisonPulseTween: Phaser.Tweens.Tween|null = null;
+    private devourSprite: Phaser.GameObjects.Sprite;
     private smokePuffSprites: Phaser.GameObjects.Sprite[];
+    private lyingWordsImages: Phaser.GameObjects.Image[];
+    private burningFlameSprite: Phaser.GameObjects.Sprite;
+    private floodWaterRect: Phaser.GameObjects.Rectangle;
+    private floodSurfaceSprites: Phaser.GameObjects.Sprite[] = [];
+    private floodWaveSprites: Phaser.GameObjects.Sprite[] = [];
     private wordSmokeSpritePool: Phaser.GameObjects.Sprite[];
     private wordTextPool: Phaser.GameObjects.Text[];
     private sweatTimer: Phaser.Time.TimerEvent|null = null;
     private trembleTween: Phaser.Tweens.Tween|null = null;
+    private dragonRoarTimer: Phaser.Time.TimerEvent|null = null;
     private armorSparkImage: Phaser.GameObjects.Image;
 
     private playerBooks: string[];
@@ -317,7 +343,12 @@ export class GBattleContent extends GContentScene {
     private statusEffectIcon: Phaser.GameObjects.Image;
     private statusEffectDurationText: Phaser.GameObjects.Text;
     private statusEffectDuration: number = 0;
+    private statusEffectJustInflicted: boolean = false;
     private specialAttackUsed: boolean = false;
+    private floodAttackUsed: boolean = false;
+    private battleSpeechBubble: GBattleSpeechBubble|null = null;
+    private dragonResistanceDisplayRatio: number|null = null;
+    private showJesusVictoryResult: boolean = false;
 
     private peekKeysDown: { [key: string]: boolean } = { 'ArrowLeft': false, 'ArrowRight': false };
 
@@ -411,8 +442,8 @@ export class GBattleContent extends GContentScene {
         // Scroll
         this.scrollClosedImage = this.add.image(GFF.GAME_W / 2, SCROLL_Y + 105, 'scroll_closed').setOrigin(.5, .5).setVisible(false);
         this.scrollOpenImage = this.add.image(GFF.GAME_W / 2, SCROLL_Y, 'scroll_open').setOrigin(.5, 0).setVisible(false);
-        this.rightRollImage = this.add.image(GFF.GAME_W / 2, SCROLL_Y, 'roll_right').setOrigin(.5, 0).setVisible(false);
         this.leftRollImage = this.add.image(GFF.GAME_W / 2, SCROLL_Y, 'roll_left').setOrigin(.5, 0).setVisible(false);
+        this.rightRollImage = this.add.image(GFF.GAME_W / 2, SCROLL_Y, 'roll_right').setOrigin(.5, 0).setVisible(false);
 
         // Scripture
         this.scriptureFrame = this.add.rectangle(GFF.GAME_W / 2 - (WORD_WRAP_WIDTH / 2), SCROLL_Y + 55, WORD_WRAP_WIDTH, 100, 0x000000, 0.5)
@@ -519,18 +550,27 @@ export class GBattleContent extends GContentScene {
         this.currentStage = BattleStage.NONE;
         this.currentStatusEffect = null;
         this.specialAttackUsed = false;
+        this.floodAttackUsed = false;
+        this.statusEffectJustInflicted = false;
+        this.forcedEnemyAttack = null;
 
         POISON_EFFECT.roundFunc = () => {
-            if (this.statusEffectDuration < 4) {
-                this.poisonVaporEmitter.explode(20);
-            }
+            this.poisonVaporEmitter.explode(20);
+        };
+        BURN_EFFECT.roundFunc = () => {
+            this.pulseBurnDamage();
         };
 
         this.createWordPools();
-        this.getSound().playMusic('onward');
+        if (ENEMY.getCurrentSpirit().name === 'Dragon') {
+            this.getSound().playMusic('red_dragon');
+        } else {
+            this.getSound().playMusic('onward');
+        }
         this.createAttackAnimations();
         this.createPlayerResult();
         this.createEnemyResult();
+        this.createJesusResult();
         this.loadEnemyAttacks();
         this.showUI();
 
@@ -542,14 +582,29 @@ export class GBattleContent extends GContentScene {
         this.frameRateText.setVisible(REGISTRY.getBoolean('showFrameRate'));
     }
 
+    private scheduleDragonRoar(): void {
+        this.dragonRoarTimer = this.time.delayedCall(RANDOM.randInt(5000, 15000), () => {
+            this.getSound().playSound('dragon_roar');
+            this.scheduleDragonRoar();
+        });
+    }
+
     private initInputModes() {
         // INPUT_PROMPTENTER is active while waiting for the user to press Enter:
         INPUT_PROMPTENTER.setScene(this);
         INPUT_PROMPTENTER.onKeyDown((keyEvent: KeyboardEvent) => {
+            if (this.tryForceEnemyAttack(keyEvent)) {
+                return;
+            }
+
             switch(keyEvent.key) {
                 case 'ArrowLeft':
                 case 'ArrowRight':
                     this.checkPeek(keyEvent.key, true);
+                    break;
+                case '*':
+                    this.setInputMode(INPUT_DISABLED);
+                    this.doVictorySequence();
                     break;
                 case 'Enter':
                     this.setInputMode(INPUT_DISABLED);
@@ -590,6 +645,10 @@ export class GBattleContent extends GContentScene {
                 case 'ArrowDown':
                     this.bookWheel.scrollDown(this.bookWheelRepeats);
                     break;
+                case '*':
+                    this.setInputMode(INPUT_DISABLED);
+                    this.doVictorySequence();
+                    break;
                 case 'Enter':
                     this.setInputMode(INPUT_DISABLED);
                     this.completeCurrentPart();
@@ -612,6 +671,10 @@ export class GBattleContent extends GContentScene {
                 case 'ArrowLeft':
                 case 'ArrowRight':
                     this.checkPeek(keyEvent.key, true);
+                    break;
+                case '*':
+                    this.setInputMode(INPUT_DISABLED);
+                    this.doVictorySequence();
                     break;
                 case 'Enter':
                     this.setInputMode(INPUT_DISABLED);
@@ -642,6 +705,10 @@ export class GBattleContent extends GContentScene {
                 case 'ArrowLeft':
                 case 'ArrowRight':
                     this.checkPeek(keyEvent.key, true);
+                    break;
+                case '*':
+                    this.setInputMode(INPUT_DISABLED);
+                    this.doVictorySequence();
                     break;
                 case 'Enter':
                     this.setInputMode(INPUT_DISABLED);
@@ -817,11 +884,98 @@ export class GBattleContent extends GContentScene {
         this.anims.get('word_smoke').frameRate = 6 * this.animSpeed;
 
         /**
+         * The Burn status uses the same flame animation as scenery torches, stretched
+         * over Adam while the effect is active.
+         */
+        this.burningFlameSprite = this.add.sprite(0, 0, 'torch_flame').setOrigin(0.0, 1.0).setVisible(false);
+        if (!this.anims.exists('torch_flame')) {
+            this.anims.create({
+                key: 'torch_flame',
+                frames: this.anims.generateFrameNumbers(
+                    'torch_flame',
+                    { start: 0, end: 6 }
+                ),
+                frameRate: 10,
+                repeat: -1
+            });
+        }
+        this.anims.get('torch_flame').frameRate = 10 * this.animSpeed;
+
+        /**
+         * The Devour attack uses a ghostly chomp sprite centered over the player.
+         */
+        this.devourSprite = this.add.sprite(0, 0, 'chomp').setOrigin(0.5, 0.5).setVisible(false);
+        if (!this.anims.exists('chomp')) {
+            this.anims.create({
+                key: 'chomp',
+                frames: this.anims.generateFrameNumbers(
+                    'chomp',
+                    { start: 0, end: 6 }
+                )
+            });
+        }
+        this.anims.get('chomp').frameRate = 14 * this.animSpeed;
+
+        /**
+         * The Flood attack fills the bottom of the screen with water before waves crash in.
+         */
+        this.floodWaterRect = this.add.rectangle(0, GFF.GAME_H, GFF.GAME_W, 1, 0x65abd5, 0.8)
+            .setOrigin(0, 1)
+            .setVisible(false);
+        if (!this.anims.exists('flood_surface')) {
+            this.anims.create({
+                key: 'flood_surface',
+                frames: this.anims.generateFrameNumbers(
+                    'flood_surface',
+                    { start: 0, end: 6 }
+                ),
+                repeat: -1
+            });
+        }
+        this.anims.get('flood_surface').frameRate = 10 * this.animSpeed;
+        this.floodSurfaceSprites = [];
+        for (let x = 0; x < GFF.GAME_W; x += 64) {
+            this.floodSurfaceSprites.push(
+                this.add.sprite(x, GFF.GAME_H, 'flood_surface')
+                    .setOrigin(0, 0)
+                    .setVisible(false)
+            );
+        }
+        this.floodWaveSprites = [];
+        for (let i = 0; i < 4; i++) {
+            this.floodWaveSprites.push(
+                this.add.sprite(0, 0, 'flood_wave')
+                    .setOrigin(0, 0)
+                    .setVisible(false)
+            );
+        }
+        if (!this.anims.exists('flood_wave')) {
+            this.anims.create({
+                key: 'flood_wave',
+                frames: this.anims.generateFrameNumbers(
+                    'flood_wave',
+                    { start: 0, end: 3 }
+                ),
+                repeat: -1
+            });
+        }
+        this.anims.get('flood_wave').frameRate = 15 * this.animSpeed;
+
+        /**
          * The Roar attack emits a series of waves that
          * spread out (scale up) as they fade out.
          *
          * An image will be created for each wave when executed.
          */
+
+        /**
+         * The Lying Words attack sends a stream of question marks toward the player's head.
+         */
+        this.lyingWordsImages = [];
+        for (let i = 0; i < 5; i++) {
+            const image = this.add.image(0, 0, 'lw_question').setOrigin(.5, .5).setVisible(false);
+            this.lyingWordsImages.push(image);
+        }
     }
 
     private createPlayerResult() {
@@ -976,6 +1130,76 @@ export class GBattleContent extends GContentScene {
         ];
     }
 
+    private createJesusResult() {
+        const verseTextStyle = {
+            fontFamily: 'dyonisius',
+            fontSize: '20px',
+            color: JESUS_RESULT_VERSE_COLOR,
+            align: 'center',
+        };
+        const referenceTextStyle = {
+            fontFamily: 'dyonisius',
+            fontSize: '16px',
+            color: JESUS_RESULT_REFERENCE_COLOR,
+            align: 'center'
+        };
+
+        this.jesusResultImage = this.add.image(GFF.GAME_W / 2, RESULT_IMG_Y, 'battle_results_jesus')
+            .setOrigin(.5, .5)
+            .setVisible(false);
+
+        const verse1 = this.add.text(
+            GFF.GAME_W / 2,
+            0,
+            'But thanks be to God,\nwhich giveth us the\nvictory through our\nLord Jesus Christ.',
+            verseTextStyle
+        ).setOrigin(.5, 0).setVisible(false);
+        const ref1 = this.add.text(
+            GFF.GAME_W / 2,
+            0,
+            '1 Corinthians 15:57',
+            referenceTextStyle
+        ).setOrigin(.5, 0).setVisible(false);
+        const verse2 = this.add.text(
+            GFF.GAME_W / 2,
+            0,
+            '...for the battle\nis the LORD\'s',
+            verseTextStyle
+        ).setOrigin(.5, 0).setVisible(false);
+        const ref2 = this.add.text(
+            GFF.GAME_W / 2,
+            0,
+            '1 Samuel 17:47',
+            referenceTextStyle
+        ).setOrigin(.5, 0).setVisible(false);
+
+        this.jesusResultTexts = [verse1, ref1, verse2, ref2];
+        this.layoutJesusResult();
+    }
+
+    private layoutJesusResult() {
+        const [verse1, ref1, verse2, ref2] = this.jesusResultTexts;
+        const lineGap: number = 8;
+        const blankLineGap: number = 28;
+        const totalHeight: number =
+            verse1.height +
+            lineGap +
+            ref1.height +
+            blankLineGap +
+            verse2.height +
+            lineGap +
+            ref2.height;
+        let y: number = RESULT_IMG_Y - (totalHeight / 2);
+
+        verse1.setY(y);
+        y += verse1.height + lineGap;
+        ref1.setY(y);
+        y += ref1.height + blankLineGap;
+        verse2.setY(y);
+        y += verse2.height + lineGap;
+        ref2.setY(y);
+    }
+
     private layoutPlayerResult(isPerfect: boolean) {
         const smallGap: number = 18;
         const largeGap: number = 28;
@@ -1075,8 +1299,32 @@ export class GBattleContent extends GContentScene {
             && RANDOM.randPct() < GFF.getDifficulty().enemySpecialFrequency;
     }
 
+    private tryForceEnemyAttack(keyEvent: KeyboardEvent): boolean {
+        if (this.currentStage !== BattleStage.END_PLAYER_TURN || !keyEvent.ctrlKey) {
+            return false;
+        }
+
+        let attackIndex = -1;
+        if (keyEvent.code.startsWith('Digit')) {
+            attackIndex = Number(keyEvent.code.replace('Digit', ''));
+        } else if (keyEvent.code.startsWith('Numpad')) {
+            attackIndex = Number(keyEvent.code.replace('Numpad', ''));
+        }
+
+        const attack = this.allEnemyAttacks[attackIndex];
+        if (!attack) {
+            this.getSound().playSound('error_buzz');
+            return true;
+        }
+
+        this.forcedEnemyAttack = attack;
+        this.setInputMode(INPUT_DISABLED);
+        this.setCurrentStage(BattleStage.ENEMY_ATTACK);
+        return true;
+    }
+
     private loadEnemyAttacks() {
-        const ENEMY_ATTACKS: GEnemyAttack[] = [
+        this.allEnemyAttacks = [
             {
                 attackName: 'Basic',
                 enemies: ['minion', 'Mammon', 'Beelzebub', 'Belial', 'Legion', 'Apollyon', 'Lucifer', 'Dragon'],
@@ -1084,6 +1332,8 @@ export class GBattleContent extends GContentScene {
                 text: '_ attacks!',
                 soundKey: 'kapow',
                 statusEffect: null,
+                blockable: true,
+                showImpactSpark: true,
                 animFunc: (nextStep: Function) => {
                     this.basicAttackSprite.setVisible(true);
                     this.basicAttackSprite.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
@@ -1097,13 +1347,15 @@ export class GBattleContent extends GContentScene {
             },
             {
                 attackName: 'Fiery Dart',
-                enemies: ['minion', 'Beelzebub'],
+                enemies: ['minion', 'Beelzebub', 'Lucifer'],
                 minLevel: GFF.getDifficulty().enemyLevelsPerSpecial * 1,
                 text: '_ hurls a fiery dart!',
                 soundKey: 'fiery_dart',
                 statusEffect: null,
+                blockable: true,
+                showImpactSpark: true,
                 animFunc: (nextStep: Function) => {
-                    this.fieryDartSprite.setPosition(this.enemyAvatar.x + this.enemyAvatar.width / 3, this.enemyAvatar.y + this.enemyAvatar.height / 3);
+                    this.fieryDartSprite.setPosition(this.enemyAvatar.x + this.enemyAvatar.width / 3, this.playerAvatar.y + 100);
                     this.fieryDartSprite.setVisible(true);
                     // The sprite animation rotates 4 frames
                     this.fieryDartSprite.play('fiery_dart');
@@ -1147,6 +1399,8 @@ export class GBattleContent extends GContentScene {
                 text: '_ uses a deadly poison!',
                 soundKey: 'poison',
                 statusEffect: POISON_EFFECT,
+                blockable: false,
+                showImpactSpark: false,
                 animFunc: (nextStep: Function) => {
                     const startY: number = this.enemyAvatar.y + this.enemyAvatar.height / 3;
                     this.poisonVialImage.setPosition(this.enemyAvatar.x + this.enemyAvatar.width / 3, startY).setVisible(true);
@@ -1177,11 +1431,13 @@ export class GBattleContent extends GContentScene {
             },
             {
                 attackName: 'Snare',
-                enemies: ['minion', 'Mammon'],
+                enemies: ['minion', 'Mammon', 'Lucifer'],
                 minLevel: GFF.getDifficulty().enemyLevelsPerSpecial * 2,
                 text: '_ casts a snare!',
                 soundKey: 'miss',
                 statusEffect: ENSNARE_EFFECT,
+                blockable: false,
+                showImpactSpark: false,
                 animFunc: (nextStep: Function) => {
                     const startX: number = this.enemyAvatar.x + (this.enemyAvatar.width * .3);
                     const startY: number = this.playerAvatar.y + (this.playerBaseImage.height * .3);
@@ -1237,6 +1493,8 @@ export class GBattleContent extends GContentScene {
                 text: '_ creates a veiling smoke!',
                 soundKey: 'wind_rush',
                 statusEffect: null,
+                blockable: false,
+                showImpactSpark: false,
                 animFunc: (nextStep: Function) => {
                     this.smokePuffSprites[0].setPosition(this.enemyAvatar.x + (this.enemyAvatar.width * .3), this.enemyAvatar.y + (this.enemyAvatar.height * .3))
                         .setOrigin(0.5, 0.5).setScale(0.1).setVisible(true);
@@ -1287,6 +1545,8 @@ export class GBattleContent extends GContentScene {
                 text: '_ emits a terrifying roar!',
                 soundKey: 'roar',
                 statusEffect: FEAR_EFFECT,
+                blockable: false,
+                showImpactSpark: false,
                 animFunc: (nextStep: Function) => {
                     const startX: number = this.enemyAvatar.x + (this.enemyAvatar.width * 0.3);
                     const startY: number = this.enemyAvatar.y + (this.enemyAvatar.height * 0.3);
@@ -1332,10 +1592,414 @@ export class GBattleContent extends GContentScene {
                 damageFunc: () => {return 0;},
                 condFunc: () => {return this.canDoSpecialAttack(true);},
             },
+            {
+                attackName: 'Lying Words',
+                enemies: ['Lucifer'],
+                minLevel: 0,
+                text: '_ speaks lying words!',
+                soundKey: 'long_hiss',
+                statusEffect: null,
+                blockable: false,
+                showImpactSpark: false,
+                animFunc: (nextStep: Function) => {
+                    const startX: number = this.enemyAvatar.x + 130;
+                    const startY: number = this.enemyAvatar.y + 64;
+                    const targetX: number = this.playerAvatar.x + 80;
+                    const targetY: number = this.playerAvatar.y + 30;
+                    const flightDuration = 2000 / this.animSpeed;
+                    const launchDelay = 400 / this.animSpeed;
+                    const minScale = 0.8;
+                    const maxScale = 1.2;
+                    const sinkScale = 0.15;
+                    const pulseDuration = 400 / this.animSpeed;
+                    const minRotation = Phaser.Math.DegToRad(-20);
+                    const maxRotation = Phaser.Math.DegToRad(20);
+                    let completedMarks = 0;
+
+                    this.lyingWordsImages.forEach((mark, index) => {
+                        mark
+                            .setPosition(startX, startY)
+                            .setAlpha(0)
+                            .setScale(sinkScale)
+                            .setRotation(minRotation)
+                            .setVisible(false);
+
+                        this.time.delayedCall(index * launchDelay, () => {
+                            mark.setVisible(true);
+
+                            this.tweens.add({
+                                targets: mark,
+                                rotation: maxRotation,
+                                duration: pulseDuration,
+                                ease: 'Sine.easeInOut',
+                                yoyo: true,
+                                repeat: -1
+                            });
+
+                            this.tweens.addCounter({
+                                from: 0,
+                                to: 1,
+                                duration: flightDuration,
+                                ease: 'Linear',
+                                onUpdate: (tween) => {
+                                    const t = tween.getValue() as number;
+                                    const bobOffset = -Math.sin(t * Math.PI * 10) * 16;
+                                    const pulseT = (Math.sin((t * flightDuration / pulseDuration) * Math.PI * 2 - Math.PI / 2) + 1) / 2;
+                                    const fadeIn = Phaser.Math.Clamp(t / 0.15, 0, 1);
+                                    const fadeOut = Phaser.Math.Clamp((1 - t) / 0.05, 0, 1);
+                                    const scaleOut = Phaser.Math.Clamp((1 - t) / 0.15, 0, 1);
+                                    const edgeFade = Math.min(fadeIn, fadeOut);
+                                    const edgeScale = Math.min(fadeIn, scaleOut);
+                                    const pulsedScale = Phaser.Math.Linear(minScale, maxScale, pulseT);
+
+                                    mark
+                                        .setPosition(
+                                            Phaser.Math.Linear(startX, targetX, t),
+                                            Phaser.Math.Linear(startY, targetY, t) + bobOffset
+                                        )
+                                        .setAlpha(edgeFade)
+                                        .setScale(Phaser.Math.Linear(sinkScale, pulsedScale, edgeScale));
+                                },
+                                onComplete: () => {
+                                    this.getSound().playSound('lie_hit');
+                                    this.tweens.killTweensOf(mark);
+                                    mark
+                                        .setVisible(false)
+                                        .setAlpha(0)
+                                        .setScale(minScale)
+                                        .setRotation(0);
+
+                                    completedMarks++;
+                                    if (completedMarks === this.lyingWordsImages.length) {
+                                        nextStep();
+                                    }
+                                }
+                            });
+                        });
+                    });
+                },
+                damageFunc: () => {
+                    const pctFaithLost = 1.0 - (PLAYER.getFaith() / PLAYER.getMaxFaith());
+                    return Math.ceil(pctFaithLost * (ENEMY.getBaseDamage() * 5));
+                },
+                condFunc: () => {return this.canDoSpecialAttack(false);},
+            },
+            {
+                attackName: 'Flame Breath',
+                enemies: ['Dragon'],
+                minLevel: 0,
+                text: '_ spews a flaming breath!',
+                soundKey: 'fire_breath',
+                statusEffect: BURN_EFFECT,
+                blockable: false,
+                showImpactSpark: false,
+                animFunc: (nextStep: Function) => {
+                    const startX: number = this.enemyAvatar.x + 56;
+                    const startY: number = this.enemyAvatar.y + 127;
+                    const targetX: number = this.playerAvatar.x + (this.playerBaseImage.width / 4);
+                    const targetY: number = this.playerAvatar.y + this.playerBaseImage.height - 30;
+                    const duration = 2000 / this.animSpeed;
+                    const particleLifespan = 650 / this.animSpeed;
+                    const flameDistance = Phaser.Math.Distance.Between(startX, startY, targetX, targetY);
+                    const flameSpeed = flameDistance / (particleLifespan / 1000);
+                    const flameAngle = Phaser.Math.RadToDeg(Phaser.Math.Angle.Between(startX, startY, targetX, targetY));
+
+                    const flameEmitter = this.add.particles(startX, startY, 'flame_jet', {
+                        frame: [0, 1],
+                        lifespan: particleLifespan,
+                        speed: flameSpeed,
+                        angle: { min: flameAngle - 5, max: flameAngle + 5 },
+                        frequency: 12 / this.animSpeed,
+                        quantity: 4,
+                        scale: { start: 0.5, end: 1.2 },
+                        alpha: { start: 1.0, end: 0.0 },
+                        blendMode: Phaser.BlendModes.ADD,
+                        emitting: true,
+                    });
+
+                    this.time.delayedCall(duration, () => {
+                        flameEmitter.stop();
+                        this.time.delayedCall(particleLifespan, () => {
+                            this.startBurning();
+                            flameEmitter.destroy();
+                            this.createNewStatusEffect(BURN_EFFECT, nextStep);
+                        });
+                    });
+                },
+                damageFunc: () => {return Math.ceil(ENEMY.getBaseDamage() * RANDOM.randFloat(1.3, 1.7));},
+                condFunc: () => {return this.canDoSpecialAttack(true);},
+            },
+            {
+                attackName: 'Flood',
+                enemies: ['Dragon'],
+                minLevel: 0,
+                text: '_ casts water as a flood!',
+                soundKey: 'flood_rush',
+                statusEffect: null,
+                blockable: false,
+                showImpactSpark: false,
+                animFunc: (nextStep: Function) => {
+                    this.floodAttackUsed = true;
+
+                    const startX: number = this.enemyAvatar.x + 78;
+                    const startY: number = this.enemyAvatar.y + 120;
+                    const riseDelay = 700 / this.animSpeed;
+                    const riseDuration = 3300 / this.animSpeed;
+                    const waveDuration = riseDuration / 2.25;
+                    const waveDelay = waveDuration / 2;
+                    const waveRevealDuration = waveDuration / 4;
+                    const drainDelay = 500 / this.animSpeed;
+                    const drainDuration = riseDuration / 3;
+                    const waterHeight = 220;
+                    const waterState = { height: 0 };
+                    const waveWidth = 200;
+                    const waveHeight = 109;
+                    const waveStartBottomY = GFF.GAME_H - waterHeight - 17;
+                    const waveFinalBottomY = GFF.GAME_H - waterHeight + 11;
+                    const waveStartX = this.enemyAvatar.x + 30;
+                    const waveEndX = -waveWidth;
+                    const particleLifespan = 900 / this.animSpeed;
+
+                    const floodEmitter = this.add.particles(startX, startY, 'sweat_drop', {
+                        lifespan: particleLifespan,
+                        speedX: { min: -650 / this.animSpeed, max: -300 / this.animSpeed },
+                        speedY: { min: -80 / this.animSpeed, max: 80 / this.animSpeed },
+                        gravityY: 2200 / this.animSpeed,
+                        frequency: 8 / this.animSpeed,
+                        quantity: 8,
+                        scale: { min: 0.5, max: 1.2 },
+                        alpha: {
+                            onEmit: () => {
+                                return 0;
+                            },
+                            onUpdate: (_particle, _key, t) => {
+                                if (t < 0.12) {
+                                    return Phaser.Math.Linear(0, 0.85, t / 0.12);
+                                }
+                                if (t > 0.72) {
+                                    return Phaser.Math.Linear(0.85, 0, (t - 0.72) / 0.28);
+                                }
+                                return 0.85;
+                            }
+                        },
+                        rotate: {
+                            onEmit: () => {
+                                return 90;
+                            },
+                            onUpdate: (particle) => {
+                                return Phaser.Math.RadToDeg(Math.atan2(particle.velocityY, particle.velocityX)) - 90;
+                            }
+                        },
+                        blendMode: Phaser.BlendModes.NORMAL,
+                        deathZone: {
+                            type: 'onEnter',
+                            source: {
+                                contains: (_x: number, y: number) => {
+                                    return waterState.height > 0 && y >= GFF.GAME_H - waterState.height;
+                                }
+                            }
+                        },
+                        emitting: true,
+                    });
+
+                    this.floodWaterRect
+                        .setPosition(0, GFF.GAME_H)
+                        .setSize(GFF.GAME_W, 1)
+                        .setAlpha(1.0)
+                        .setVisible(false);
+                    this.floodSurfaceSprites.forEach((sprite, index) => {
+                        sprite
+                            .setPosition(index * 64, GFF.GAME_H - 17)
+                            .setFrame(0)
+                            .setVisible(false)
+                            .stop();
+                    });
+                    this.floodWaveSprites.forEach(sprite => {
+                        sprite
+                            .setPosition(waveStartX, waveStartBottomY - 1)
+                            .setAlpha(0)
+                            .setFrame(0)
+                            .setCrop(0, 0, waveWidth, 1)
+                            .setVisible(false)
+                            .stop();
+                    });
+
+                    const updateWaterLevel = () => {
+                        this.floodWaterRect.setSize(GFF.GAME_W, waterState.height);
+                        this.floodSurfaceSprites.forEach(sprite => {
+                            sprite.setY(GFF.GAME_H - waterState.height - 16);
+                        });
+                    };
+
+                    const spawnWave = (sprite: Phaser.GameObjects.Sprite) => {
+                        const waveState = { visibleHeight: 1 };
+
+                        this.getSound().playSound('flood_wave');
+                        sprite
+                            .setPosition(waveStartX, waveStartBottomY - waveState.visibleHeight)
+                            .setAlpha(0)
+                            .setFrame(0)
+                            .setCrop(0, 0, waveWidth, waveState.visibleHeight)
+                            .setVisible(true)
+                            .play('flood_wave');
+                        this.tweens.add({
+                            targets: sprite,
+                            x: waveEndX,
+                            duration: waveDuration,
+                            ease: 'Linear',
+                            onComplete: () => {
+                                sprite
+                                    .setVisible(false)
+                                    .stop()
+                                    .setCrop();
+                            }
+                        });
+                        this.tweens.add({
+                            targets: sprite,
+                            alpha: 1,
+                            duration: waveRevealDuration,
+                            ease: 'Sine.easeInOut',
+                        });
+                        this.tweens.add({
+                            targets: waveState,
+                            visibleHeight: waveHeight,
+                            duration: waveRevealDuration,
+                            ease: 'Sine.easeInOut',
+                            onUpdate: () => {
+                                const revealT = (waveState.visibleHeight - 1) / (waveHeight - 1);
+                                const waveBottomY = Phaser.Math.Linear(waveStartBottomY, waveFinalBottomY, revealT);
+                                sprite
+                                    .setY(waveBottomY - waveState.visibleHeight)
+                                    .setCrop(0, 0, waveWidth, waveState.visibleHeight);
+                            },
+                            onComplete: () => {
+                                sprite
+                                    .setY(waveFinalBottomY - waveHeight)
+                                    .setCrop(0, 0, waveWidth, waveHeight);
+                            }
+                        });
+                    };
+
+                    const drainWater = () => {
+                        this.tweens.add({
+                            targets: waterState,
+                            height: 0,
+                            duration: drainDuration,
+                            ease: 'Sine.easeInOut',
+                            onUpdate: updateWaterLevel,
+                            onComplete: () => {
+                                this.floodWaterRect.setVisible(false);
+                                this.floodSurfaceSprites.forEach(sprite => {
+                                    sprite
+                                        .setVisible(false)
+                                        .stop();
+                                });
+                                floodEmitter.destroy();
+                                nextStep();
+                            }
+                        });
+                    };
+
+                    this.time.delayedCall(riseDelay, () => {
+                        waterState.height = 1;
+                        this.floodWaterRect.setVisible(true);
+                        this.floodSurfaceSprites.forEach(sprite => {
+                            sprite
+                                .setVisible(true)
+                                .play('flood_surface');
+                        });
+                        this.tweens.add({
+                            targets: waterState,
+                            height: waterHeight,
+                            duration: riseDuration,
+                            ease: 'Sine.easeInOut',
+                            onUpdate: updateWaterLevel,
+                            onComplete: () => {
+                                floodEmitter.stop();
+                                this.floodWaveSprites.forEach((sprite, index) => {
+                                    this.time.delayedCall(index * waveDelay, () => {
+                                        spawnWave(sprite);
+                                    });
+                                });
+                                this.time.delayedCall(((this.floodWaveSprites.length - 1) * waveDelay) + waveDuration + drainDelay, () => {
+                                    drainWater();
+                                });
+                            }
+                        });
+                    });
+                },
+                damageFunc: () => {return Math.ceil(ENEMY.getBaseDamage() * 2);},
+                condFunc: () => {return !this.floodAttackUsed && this.canDoSpecialAttack(true) && ENEMY.getResistance() < ENEMY.getMaxResistance() * .4;},
+            },
+            {
+                attackName: 'Devour',
+                enemies: ['Dragon'],
+                minLevel: 0,
+                text: '_ tries to devour Adam!',
+                soundKey: 'devour_growl',
+                statusEffect: null,
+                blockable: false,
+                showImpactSpark: false,
+                animFunc: (nextStep: Function) => {
+                    const chompCount = 4;
+                    let chompsCompleted = 0;
+
+                    const playChomp = () => {
+                        this.getSound().playSound('chomp');
+                        this.devourSprite.play('chomp');
+                    };
+
+                    this.devourSprite
+                        .setPosition(
+                            this.playerAvatar.x + 78,
+                            this.playerAvatar.y + (this.playerBaseImage.height / 2)
+                        )
+                        .setFrame(0)
+                        .setAlpha(0)
+                        .setScale(1.25)
+                        .setVisible(true);
+
+                    this.tweens.add({
+                        targets: this.devourSprite,
+                        alpha: 0.5,
+                        scale: 1.0,
+                        duration: 500 / this.animSpeed,
+                        onComplete: () => {
+                            const handleChompComplete = () => {
+                                chompsCompleted++;
+
+                                if (chompsCompleted < chompCount) {
+                                    playChomp();
+                                    return;
+                                }
+
+                                this.time.delayedCall(250 / this.animSpeed, () => {
+                                    this.tweens.add({
+                                        targets: this.devourSprite,
+                                        alpha: 0,
+                                        duration: 250 / this.animSpeed,
+                                        onComplete: () => {
+                                            this.devourSprite.off(Phaser.Animations.Events.ANIMATION_COMPLETE, handleChompComplete);
+                                            this.devourSprite.setVisible(false).stop();
+                                            nextStep();
+                                        }
+                                    });
+                                });
+                            };
+
+                            this.devourSprite.on(Phaser.Animations.Events.ANIMATION_COMPLETE, handleChompComplete);
+
+                            playChomp();
+                        }
+                    });
+                },
+                damageFunc: () => {return PLAYER.getFaith() - 1;},
+                condFunc: () => {return ENEMY.getResistance() <= 0 && this.currentStatusEffect === null;},
+            },
         ];
 
         this.enemyAttacks = [];
-        ENEMY_ATTACKS.forEach(a => {
+        this.allEnemyAttacks.forEach(a => {
             // Check if the enemy is eligible for this attack:
             if (
                 // Enemy must be in the list:
@@ -1429,20 +2093,52 @@ export class GBattleContent extends GContentScene {
         // (enemies come in different sizes; if the normal size makes him too close, only come as far as the player)
         const enemyDestX: number = Math.max(GFF.GAME_W - APPROACH_GAP - this.enemyAvatar.width, GFF.GAME_W - APPROACH_GAP - this.playerBaseImage.width);
 
+        const enemyFinalDestX: number = ENEMY.getCurrentSpirit().name === 'Dragon'
+            ? enemyDestX - 20
+            : enemyDestX;
+
         // Create tween to advance player:
         this.tweens.add({
             targets: this.playerAvatar,
             x: playerDestX,
             duration: APPROACH_TIME / this.animSpeed,
             onComplete: () => {
-                this.beginRound();
+                this.beginBattleAfterApproach();
             }
         });
         // Create tween to advance enemy:
         this.tweens.add({
             targets: this.enemyAvatar,
-            x: enemyDestX,
+            x: enemyFinalDestX,
             duration: APPROACH_TIME / this.animSpeed
+        });
+    }
+
+    private beginBattleAfterApproach() {
+        if (ENEMY.getCurrentSpirit().type !== 'Dragon') {
+            this.beginRound();
+            return;
+        }
+
+        this.time.delayedCall(500 / this.animSpeed, () => {
+            this.getSound().fadeMusicToVolume(0.3, 500 / this.animSpeed, () => {
+                const voiceover = this.enemySpeak(DRAGON_INTRO_TEXT, undefined, 'cower_before_death');
+                const afterVoiceover = () => {
+                    this.time.delayedCall(500 / this.animSpeed, () => {
+                        this.clearBattleSpeechBubble(true);
+                        this.getSound().fadeMusicToVolume(1.0, 500 / this.animSpeed, () => {
+                            this.scheduleDragonRoar();
+                            this.beginRound();
+                        });
+                    });
+                };
+
+                if (voiceover) {
+                    voiceover.once('complete', afterVoiceover);
+                } else {
+                    afterVoiceover();
+                }
+            });
         });
     }
 
@@ -1511,8 +2207,13 @@ export class GBattleContent extends GContentScene {
     }
 
     private startEnemyTurn() {
+        this.clearBattleSpeechBubble(true);
         const eligibleAttacks: GEnemyAttack[] = this.enemyAttacks.filter(a => a.condFunc());
-        const chosenAttack: GEnemyAttack = RANDOM.randElement(eligibleAttacks);
+        const devourAttack: GEnemyAttack|undefined = ENEMY.getCurrentSpirit().type === 'Dragon' && ENEMY.getResistance() <= 0
+            ? eligibleAttacks.find(a => a.attackName === DEVOUR_ATTACK_NAME)
+            : undefined;
+        const chosenAttack: GEnemyAttack = this.forcedEnemyAttack ?? devourAttack ?? RANDOM.randElement(eligibleAttacks);
+        this.forcedEnemyAttack = null;
 
         this.playerReportTexts.forEach(t => t.setVisible(false));
         this.tweens.add({
@@ -1536,14 +2237,35 @@ export class GBattleContent extends GContentScene {
                 this.eventText.alpha = 1.0;
                 this.eventText.setVisible(true);
                 this.eventText.text = chosenAttack.text.replace('_', ENEMY.getCurrentSpirit().name);
-                this.time.delayedCall(700 / this.animSpeed, () => {
-                    this.doEnemyAttack(chosenAttack);
-                });
+                const taunt = chosenAttack.attackName === DEVOUR_ATTACK_NAME
+                    ? ENEMY.getTaunt(chosenAttack.attackName)
+                    : RANDOM.randPct() < .3 ? ENEMY.getTaunt(chosenAttack.attackName) : undefined;
+                if (taunt) {
+                    this.enemySpeak(taunt, undefined, chosenAttack.attackName === DEVOUR_ATTACK_NAME ? null : 'imp_growl');
+                }
+
+                const beginAttack = () => {
+                    this.time.delayedCall(700 / this.animSpeed, () => {
+                        this.doEnemyAttack(chosenAttack);
+                    });
+                };
+
+                if (chosenAttack.attackName === DEVOUR_ATTACK_NAME) {
+                    this.stopDragonRoarTimer();
+                    this.getSound().fadeMusicToVolume(0.3, 500 / this.animSpeed, () => {
+                        this.getSound().playSound('dragon_wrath').once('complete', beginAttack);
+                    });
+                } else {
+                    beginAttack();
+                }
             }
         });
     }
 
     private finishEnemyTurn() {
+        this.clearBattleSpeechBubble(true);
+        const lastEnemyAttackName = this.lastEnemyAttackName;
+        this.lastEnemyAttackName = null;
         this.enemyReportTexts.forEach(t => t.setVisible(false));
         this.tweens.add({
             targets: this.enemyResultImage,
@@ -1561,26 +2283,16 @@ export class GBattleContent extends GContentScene {
             duration: 500 / this.animSpeed,
             alpha: 0.0,
             onComplete: () => {
-                this.beginRound();
+                if (lastEnemyAttackName === DEVOUR_ATTACK_NAME) {
+                    this.doPostDevourSequence();
+                } else {
+                    this.beginRound();
+                }
             }
         });
     }
 
     private beginRound() {
-        // Tick down status effect duration and remove if expired:
-        if (this.statusEffectDuration > 0) {
-            this.statusEffectDuration--;
-            const text = `${this.currentStatusEffect === ENSNARE_EFFECT ? this.statusEffectDuration - 1 : this.statusEffectDuration}`;
-            this.statusEffectDurationText.setText(text);
-            if (this.statusEffectDuration === 0) {
-                this.removeStatusEffect(() => {
-                    this.time.delayedCall(500 / this.animSpeed, () => {
-                        this.serveScroll();
-                    });
-                });
-                return;
-            }
-        }
         if (this.currentStatusEffect === ENSNARE_EFFECT) {
             this.doSnareStruggle();
         } else {
@@ -1751,6 +2463,12 @@ export class GBattleContent extends GContentScene {
                 break;
             case BattleStage.VERSE:
                 if (this.verseEntry.isEnteredTextValid()) {
+                    if (this.bookText.text === this.servedVerse.book && RANDOM.randPct() < .3) {
+                        const battleLine = PLAYER.getBattleLine(ENEMY.getCurrentSpirit().name);
+                        if (battleLine) {
+                            this.playerSpeak(battleLine);
+                        }
+                    }
                     this.setCurrentStage(BattleStage.PLAYER_ATTACK);
                 } else {
                     this.getSound().playSound('error_buzz');
@@ -1814,9 +2532,15 @@ export class GBattleContent extends GContentScene {
                     this.setInputMode(INPUT_PROMPTENTER);
                     break;
                 case BattleStage.VICTORY:
-                    this.showGuessResult(() => {
-                        this.setInputMode(INPUT_PROMPTENTER);
-                    });
+                    if (this.showJesusVictoryResult) {
+                        this.showJesusResult(() => {
+                            this.setInputMode(INPUT_PROMPTENTER);
+                        });
+                    } else {
+                        this.showGuessResult(() => {
+                            this.setInputMode(INPUT_PROMPTENTER);
+                        });
+                    }
                     break;
                 case BattleStage.DEFEAT:
                     // If the player fled, don't show enemy attack result;
@@ -2061,11 +2785,25 @@ export class GBattleContent extends GContentScene {
         });
     }
 
+    private showJesusResult(nextStep: Function) {
+        this.jesusResultImage.setScale(0);
+        this.jesusResultImage.setVisible(true).setAlpha(1.0);
+        this.tweens.add({
+            targets: this.jesusResultImage,
+            duration: 200 / this.animSpeed,
+            scale: 1.0,
+            onComplete: () => {
+                this.jesusResultTexts.forEach(t => t.setVisible(true).setAlpha(1.0));
+                nextStep();
+            }
+        });
+    }
+
     private evaluateEnemyAttack(attack: GEnemyAttack): EnemyTurnResult {
         // Get the attack's raw damage:
         const damage: number = attack.damageFunc();
-        // An attack with no innate damage (e.g. a pure status effect) can't be blocked by armor or shield
-        const cannotBlock: boolean = damage === 0;
+        // Some attacks are too indirect, spiritual, or overwhelming to be blocked by the shield.
+        const cannotBlock: boolean = damage === 0 || !attack.blockable;
 
         // Create the layout for the enemy's attack result, which will show after the attack animation:
         this.layoutEnemyResult(attack.statusEffect !== null, this.currentStatusEffect !== null);
@@ -2113,12 +2851,13 @@ export class GBattleContent extends GContentScene {
         }
         GFF.log(`Enemy attack rolled ${struckPart} (${armorPart}); armorAbsorb: ${armorAbsorb}, shieldDeflect: ${shieldDeflect})`);
 
+        const devour = attack.attackName === 'Devour';
         const armorAmt = Math.ceil(armorAbsorb ? .5 * damage : 0);
         const shieldAmt = Math.ceil(shieldDeflect ? .5 * damage : 0);
         const baseDamage = Math.max(damage - armorAmt - shieldAmt, 0);
         const statEffDamage = this.currentStatusEffect && this.currentStatusEffect.damageFunc ?
             this.currentStatusEffect.damageFunc() : 0;
-        const gracePctInt = Math.ceil(PLAYER.getGrace() / 10);
+        const gracePctInt = devour ? 0 : Math.ceil(PLAYER.getGrace() / 10);
         const graceBaseReduction = Math.round((gracePctInt / 100) * baseDamage);
         const graceEffectReduction = Math.round((gracePctInt / 100) * statEffDamage);
         const finalBaseDamage = Math.max(baseDamage - graceBaseReduction, 0);
@@ -2134,7 +2873,7 @@ export class GBattleContent extends GContentScene {
         this.baseDamageCalc.text = `${baseDamage}`;
         this.statusEffectCaption.text = this.currentStatusEffect && statEffDamage > 0 ? `Status: ${this.currentStatusEffect.name}` : '';
         this.statusEffectCalc.text = this.currentStatusEffect && statEffDamage > 0 ? `+ ${statEffDamage}` : '';
-        this.graceProtectionCalc.text = gracePctInt > 0 ? `- ${gracePctInt}%` : '0%';
+        this.graceProtectionCalc.text = devour ? 'MAX!' : (gracePctInt > 0 ? `- ${gracePctInt}%` : '0%');
         this.finalDamageCalc.text = `${finalDamage}`;
 
         return {
@@ -2225,7 +2964,7 @@ export class GBattleContent extends GContentScene {
                     alpha: 0,
                     duration: 1000 / this.animSpeed,
                     onComplete: () => {
-                        if (ENEMY.getResistance() <= 0) {
+                        if (ENEMY.getResistance() <= 0 && ENEMY.getCurrentSpirit().type !== 'Dragon') {
                             this.doVictorySequence();
                         } else {
                             this.setCurrentStage(BattleStage.END_PLAYER_TURN);
@@ -2239,6 +2978,7 @@ export class GBattleContent extends GContentScene {
     private createNewStatusEffect(statusEffect: StatusEffect, nextStep: Function) {
         this.currentStatusEffect = statusEffect;
         this.statusEffectDuration = statusEffect.turns;
+        this.statusEffectJustInflicted = true;
         this.statusEffectIcon.setTexture(statusEffect.iconKey);
         this.statusEffectIcon.setScale(0.1).setAlpha(1.0).setVisible(true);
         this.tweens.add({
@@ -2251,8 +2991,7 @@ export class GBattleContent extends GContentScene {
                     scale: .5,
                     duration: 200 / this.animSpeed,
                     onComplete: () => {
-                        const text = `${statusEffect === ENSNARE_EFFECT ? this.statusEffectDuration - 1 : this.statusEffectDuration}`;
-                        this.statusEffectDurationText.setText(text).setVisible(true);
+                        this.statusEffectDurationText.setText(`${this.statusEffectDuration}`).setVisible(true);
                         nextStep();
                     }
                 });
@@ -2269,6 +3008,9 @@ export class GBattleContent extends GContentScene {
             case POISON_EFFECT:
                 this.stopPoisonPulse();
                 break;
+            case BURN_EFFECT:
+                this.stopBurning(nextStep === undefined);
+                break;
             case VEIL_EFFECT:
                 this.stopSmoke(nextStep === undefined);
                 break;
@@ -2282,6 +3024,7 @@ export class GBattleContent extends GContentScene {
             default:
         }
         this.currentStatusEffect = null;
+        this.statusEffectJustInflicted = false;
 
         // If there's no next step
         if (nextStep === undefined) {
@@ -2330,6 +3073,77 @@ export class GBattleContent extends GContentScene {
             this.playerBaseImage.clearTint();
             this.playerArmImage.clearTint();
         }
+    }
+
+    private startBurning() {
+        this.getSound().playSound('engulf');
+        const targetWidth = 140;
+        const targetHeight = this.playerBaseImage.height * 0.8;
+        const targetScaleX = targetWidth / this.burningFlameSprite.width;
+        const targetScaleY = targetHeight / this.burningFlameSprite.height;
+
+        this.burningFlameSprite
+            .setPosition(
+                this.playerAvatar.x,
+                this.playerAvatar.y + this.playerBaseImage.height
+            )
+            .setAlpha(1.0)
+            .setScale(targetScaleX, 0.01)
+            .setVisible(true)
+            .play('torch_flame');
+
+        this.tweens.add({
+            targets: this.burningFlameSprite,
+            scaleY: targetScaleY,
+            duration: 400 / this.animSpeed,
+            ease: 'Cubic.easeOut'
+        });
+    }
+
+    private stopBurning(immediately: boolean = false) {
+        if (immediately) {
+            this.burningFlameSprite.setVisible(false).setAlpha(1.0).anims.stop();
+            return;
+        }
+
+        this.tweens.add({
+            targets: this.burningFlameSprite,
+            alpha: 0,
+            duration: 1000 / this.animSpeed,
+            onComplete: () => {
+                this.burningFlameSprite.setVisible(false).setAlpha(1.0).anims.stop();
+            }
+        });
+    }
+
+    private pulseBurnDamage() {
+        const tintColor = new GColor(0xff2222);
+        const startColor = Phaser.Display.Color.ValueToColor(0xffffff);
+        const endColor = tintColor.phaser();
+        const tintState = { t: 0 };
+
+        this.tweens.add({
+            targets: tintState,
+            t: 100,
+            duration: 150 / this.animSpeed,
+            yoyo: true,
+            repeat: 1,
+            onUpdate: () => {
+                const c = Phaser.Display.Color.Interpolate.ColorWithColor(
+                    startColor,
+                    endColor,
+                    100,
+                    tintState.t
+                );
+                const tint = Phaser.Display.Color.GetColor(c.r, c.g, c.b);
+                this.playerBaseImage.setTint(tint);
+                this.playerArmImage.setTint(tint);
+            },
+            onComplete: () => {
+                this.playerBaseImage.clearTint();
+                this.playerArmImage.clearTint();
+            }
+        });
     }
 
     private stopSmoke(immediately: boolean = false) {
@@ -2459,6 +3273,8 @@ export class GBattleContent extends GContentScene {
     }
 
     private doEnemyAttack(attack: GEnemyAttack) {
+        this.lastEnemyAttackName = attack.attackName;
+
         // Determine if this is a special attack; minions can use only one special attack per battle
         if (attack.attackName !== 'Basic' && ENEMY.getCurrentSpirit().type === 'minion') {
             this.specialAttackUsed = true;
@@ -2467,8 +3283,11 @@ export class GBattleContent extends GContentScene {
         // Evaluate the attack to get the amount of damage it will do:
         const result: EnemyTurnResult = this.evaluateEnemyAttack(attack);
 
-        // The attack's sound play's immediately, as the animation begins:
-        this.getSound().playSound(attack.soundKey);
+        // The attack's sound plays immediately as the animation begins unless the
+        // attack handles more precise sound timing internally.
+        if (attack.soundKey !== '') {
+            this.getSound().playSound(attack.soundKey);
+        }
 
         // There are four possibilities for sound(s) at the end:
         // 1) unprotected = 'splooge'
@@ -2490,7 +3309,7 @@ export class GBattleContent extends GContentScene {
 
         attack.animFunc(() => {
             // If armor or shield is involved, show the armor_spark animation
-            if (result.armorAbsorb || result.shieldDeflect) {
+            if (attack.showImpactSpark && (result.armorAbsorb || result.shieldDeflect)) {
                 // If shield deflects, play that sound right away
                 if (deflectSound) {
                     this.getSound().playSound(deflectSound);
@@ -2542,28 +3361,239 @@ export class GBattleContent extends GContentScene {
         // The first thing to do is show the result; we'll delay it a little.
         this.time.delayedCall(700 / this.animSpeed, () => {
             this.showEnemyAttackResult(() => {
-                // Once the result is shown, do any per-round status effect events:
-                if (this.currentStatusEffect && this.currentStatusEffect.roundFunc) {
-                    this.currentStatusEffect.roundFunc();
-                }
+                const finishEnemyAttack = () => {
+                    this.tickDownStatusEffectAfterEnemyAttack(() => {
+                        this.setCurrentStage(BattleStage.END_ENEMY_TURN);
+                    });
+                };
+
                 if (this.currentStatusEffect && result.statusEffectDamage > 0) {
                     const statusEffect = this.currentStatusEffect;
                     this.time.delayedCall(400 / this.animSpeed, () => {
+                        if (statusEffect.roundFunc) {
+                            statusEffect.roundFunc();
+                        }
                         this.damagePlayerFaith(result.statusEffectDamage, statusEffect.roundSound ?? 'splooge', () => {
-                            this.setCurrentStage(BattleStage.END_ENEMY_TURN);
+                            finishEnemyAttack();
                         });
                     });
                 } else {
-                    this.setCurrentStage(BattleStage.END_ENEMY_TURN);
+                    finishEnemyAttack();
                 }
             });
         });
     }
 
-    private doVictorySequence() {
+    private tickDownStatusEffectAfterEnemyAttack(nextStep: Function) {
+        if (!this.currentStatusEffect || this.statusEffectDuration <= 0) {
+            nextStep();
+            return;
+        }
+
+        if (this.statusEffectJustInflicted) {
+            this.statusEffectJustInflicted = false;
+            nextStep();
+            return;
+        }
+
+        this.statusEffectDuration--;
+        this.statusEffectDurationText.setText(`${this.statusEffectDuration}`);
+
+        if (this.statusEffectDuration === 0) {
+            this.removeStatusEffect(nextStep);
+            return;
+        }
+
+        nextStep();
+    }
+
+    private doPostDevourSequence() {
+        const voiceover = this.playerSpeak(ADAM_CONQUER_TEXT, undefined, 'adam_conquer');
+        const afterVoiceover = () => {
+            this.time.delayedCall(500 / this.animSpeed, () => {
+                this.clearBattleSpeechBubble(true);
+                this.time.delayedCall(2000 / this.animSpeed, () => {
+                    this.doLightningFlash(() => {
+                        this.fadeOutToAlpha(0.8, 1500 / this.animSpeed, undefined, () => {
+                            this.time.delayedCall(1000 / this.animSpeed, () => {
+                                this.showChristInterventionText();
+                            });
+                        });
+                    });
+                });
+            });
+        };
+
+        if (voiceover) {
+            voiceover.once('complete', afterVoiceover);
+        } else {
+            afterVoiceover();
+        }
+    }
+
+    private doLightningFlash(onComplete: Function) {
+        const flash = this.add.rectangle(0, 0, GFF.GAME_W, GFF.GAME_H, 0xffffff)
+            .setOrigin(0, 0)
+            .setAlpha(0)
+            .setDepth(DEPTH.TRANSITION)
+            .setData('permanent', true);
+
+        this.getSound().stopMusic();
+        this.getSound().playSound('thunder_clap');
+        this.tweens.add({
+            targets: flash,
+            alpha: 1,
+            duration: 50,
+            ease: 'Linear',
+            onComplete: () => {
+                this.tweens.add({
+                    targets: flash,
+                    alpha: 0,
+                    duration: 50,
+                    ease: 'Linear',
+                    onComplete: () => {
+                        flash.destroy();
+                        onComplete();
+                    }
+                });
+            }
+        });
+    }
+
+    private showChristInterventionText() {
+        const text = this.add.text(
+            GFF.GAME_W / 2,
+            SCROLL_Y + 105,
+            CHRIST_INTERVENTION_TEXT,
+            {
+                color: '#ffffff',
+                fontFamily: 'dyonisius',
+                fontSize: '26px',
+                align: 'center',
+                wordWrap: {
+                    width: WORD_WRAP_WIDTH,
+                    useAdvancedWrap: true
+                }
+            }
+        )
+            .setShadow(0, 0, '#000000', 3, false, true)
+            .setOrigin(.5, .5)
+            .setAlpha(0)
+            .setDepth(DEPTH.TRANSITION + 1)
+            .setData('permanent', true);
+
+        this.tweens.add({
+            targets: text,
+            alpha: 1,
+            duration: 1500 / this.animSpeed,
+            ease: 'Linear',
+            onComplete: () => {
+                this.getSound().playSound('jesus_power').once('complete', () => {
+                    this.fadeOutChristIntervention(text);
+                });
+            }
+        });
+    }
+
+    private fadeOutChristIntervention(text: Phaser.GameObjects.Text) {
+        this.tweens.add({
+            targets: [
+                text,
+                this.getFadeOverlay()
+            ],
+            alpha: 0,
+            duration: 1500 / this.animSpeed,
+            ease: 'Linear',
+            onComplete: () => {
+                text.destroy();
+                this.beginAdamRestorationGlow();
+            }
+        });
+    }
+
+    private beginAdamRestorationGlow() {
+        const glow = this.add.image(
+            this.playerAvatar.x + (this.playerBaseImage.width / 2) + 6,
+            this.playerAvatar.y + (this.playerBaseImage.height / 2),
+            'adam_glow'
+        )
+            .setOrigin(.5, .5)
+            .setAlpha(0)
+            .setScale(1.0)
+            .setData('permanent', true);
+
+        const faithWrapper: { value: number } = { value: PLAYER.getFaith() };
+        this.getSound().playSound('ahh');
+        this.tweens.add({
+            targets: [glow, faithWrapper],
+            alpha: .8,
+            value: PLAYER.getMaxFaith(),
+            duration: 1000 / this.animSpeed,
+            ease: 'Linear',
+            onUpdate: () => {
+                PLAYER.setFaith(Math.floor(faithWrapper.value));
+            },
+            onComplete: () => {
+                PLAYER.setFaith(PLAYER.getMaxFaith());
+                const hallelujah = this.getSound().playSound('hallelujah');
+                this.tweens.add({
+                    targets: glow,
+                    alpha: .3,
+                    scale: .95,
+                    duration: 200 / this.animSpeed,
+                    ease: 'Sine.easeInOut',
+                    yoyo: true,
+                    repeat: -1
+                });
+                hallelujah.once('complete', () => {
+                    this.time.delayedCall(500 / this.animSpeed, () => {
+                        this.doDragonDefeatDeclaration();
+                    });
+                });
+            }
+        });
+    }
+
+    private doDragonDefeatDeclaration() {
+        const voiceover = this.enemySpeak(DRAGON_DEFEAT_TEXT, undefined, 'dragon_defeat');
+        this.dragonResistanceDisplayRatio = 1;
+
+        const afterVoiceover = () => {
+            this.drainDragonResistanceDisplay(() => {
+                this.clearBattleSpeechBubble(true);
+                this.doVictorySequence(true);
+            });
+        };
+
+        if (voiceover) {
+            voiceover.once('complete', afterVoiceover);
+        } else {
+            this.time.delayedCall(DRAGON_DEFEAT_VOICEOVER_TIME / this.animSpeed, afterVoiceover);
+        }
+    }
+
+    private drainDragonResistanceDisplay(onComplete: Function) {
+        const displayWrapper: { value: number } = { value: this.dragonResistanceDisplayRatio ?? 1 };
+        this.tweens.add({
+            targets: displayWrapper,
+            value: 0,
+            duration: 500 / this.animSpeed,
+            ease: 'Linear',
+            onUpdate: () => {
+                this.dragonResistanceDisplayRatio = displayWrapper.value;
+            },
+            onComplete: () => {
+                this.dragonResistanceDisplayRatio = 0;
+                onComplete();
+            }
+        });
+    }
+
+    private doVictorySequence(showJesusResult: boolean = false) {
         if (this.currentStatusEffect === FEAR_EFFECT) {
             this.stopFear(true);
         }
+        this.showJesusVictoryResult = showJesusResult;
         this.getSound().stopMusic();
         this.getSound().playSound('victory');
         // Create tween to retreat enemy:
@@ -2613,6 +3643,8 @@ export class GBattleContent extends GContentScene {
     }
 
     private endBattle(victory: boolean) {
+        this.stopDragonRoarTimer();
+        this.clearBattleSpeechBubble();
         this.removeStatusEffect();
         this.destroyWordPools();
         this.reportOrphans();
@@ -2624,6 +3656,50 @@ export class GBattleContent extends GContentScene {
                 GFF.AdventureContent.resumeAfterBattlePostFadeIn(victory);
             });
         });
+    }
+
+    private playerSpeak(text: string, resolveFunc?: Function, soundKey: string|null = 'adam_battle_grunt'): Phaser.Sound.BaseSound|null {
+        const sound = soundKey ? this.getSound().playSound(soundKey) : null;
+        this.showBattleSpeechBubble(
+            this.playerAvatar.x + PLAYER_SPEECH_ORIGIN_X,
+            this.playerAvatar.y + PLAYER_SPEECH_ORIGIN_Y,
+            text,
+            'right',
+            resolveFunc
+        );
+        return sound;
+    }
+
+    private enemySpeak(text: string, resolveFunc?: Function, soundKey: string|null = 'imp_growl'): Phaser.Sound.BaseSound|null {
+        const sound = soundKey ? this.getSound().playSound(soundKey) : null;
+        const speechOrigin = ENEMY.getCurrentSpirit().speechOrigin;
+        this.showBattleSpeechBubble(
+            this.enemyAvatar.x + speechOrigin.x,
+            this.enemyAvatar.y + speechOrigin.y,
+            text,
+            'left',
+            resolveFunc
+        );
+        return sound;
+    }
+
+    private showBattleSpeechBubble(speakX: number, speakY: number, text: string, tailSide: BattleSpeechBubbleTailSide, resolveFunc?: Function) {
+        this.clearBattleSpeechBubble();
+        this.battleSpeechBubble = new GBattleSpeechBubble(this, speakX, speakY, text, tailSide, resolveFunc);
+    }
+
+    private clearBattleSpeechBubble(fadeOut: boolean = false) {
+        if (fadeOut) {
+            this.battleSpeechBubble?.fadeOutAndDestroy();
+        } else {
+            this.battleSpeechBubble?.destroy();
+        }
+        this.battleSpeechBubble = null;
+    }
+
+    private stopDragonRoarTimer() {
+        this.dragonRoarTimer?.remove();
+        this.dragonRoarTimer = null;
     }
 
     private reportOrphans() {
@@ -2854,10 +3930,21 @@ export class GBattleContent extends GContentScene {
         this.playerMeterTextShadow.text = this.playerMeterText.text;
 
         // Update enemy:
+        // If enemy is the Dragon, hide resistance unless the final sequence is visibly draining it.
         const enemyRatio: number = ENEMY.getResistance() / ENEMY.getMaxResistance();
-        const adjEnemyMeterWidth: number = BAR_WIDTH * enemyRatio;
-        this.enemyBar.width = adjEnemyMeterWidth;
-        this.enemyMeterText.text = `Resistance: ${ENEMY.getResistance()}/${ENEMY.getMaxResistance()}`;
+        const dragonDisplayRatio: number = this.dragonResistanceDisplayRatio ?? 1;
+        const adjEnemyMeterWidth: number = ENEMY.getCurrentSpirit().name === 'Dragon'
+            ? BAR_WIDTH * dragonDisplayRatio
+            : BAR_WIDTH * enemyRatio;
+        this.enemyBar.setSize(adjEnemyMeterWidth, BAR_HEIGHT);
+        this.enemyBar.setOrigin(1, 0);
+        const enemyRes = ENEMY.getCurrentSpirit().name === 'Dragon'
+            ? '???'
+            : ENEMY.getResistance();
+        const enemyMaxRes = ENEMY.getCurrentSpirit().name === 'Dragon'
+            ? '???'
+            : ENEMY.getMaxResistance();
+        this.enemyMeterText.text = `Resistance: ${enemyRes}/${enemyMaxRes}`;
         this.enemyMeterTextShadow.text = this.enemyMeterText.text;
     }
 }
