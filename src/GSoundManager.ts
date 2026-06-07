@@ -171,6 +171,48 @@ export class GSoundManager {
         return sound;
     }
 
+    public playJingle(soundKey: string, volume?: number, fadeInTime: number = 0): Phaser.Sound.BaseSound {
+        const targetVolume = this.getCalculatedMusicVolume(volume);
+        const jingle = this.scene.sound.add(
+            soundKey,
+            {
+                loop: false,
+                volume: fadeInTime > 0 ? 0 : targetVolume
+            }
+        );
+        jingle.play();
+
+        if (fadeInTime > 0 && 'volume' in jingle) {
+            this.scene.tweens.add({
+                targets: jingle,
+                volume: targetVolume,
+                duration: fadeInTime,
+                ease: 'Linear'
+            });
+        }
+
+        return jingle;
+    }
+
+    public fadeOutJingle(jingle: Phaser.Sound.BaseSound, overTime: number, onComplete?: Function): void {
+        if (!('volume' in jingle)) {
+            jingle.stop();
+            onComplete?.call(this);
+            return;
+        }
+
+        this.scene.tweens.add({
+            targets: jingle,
+            volume: 0,
+            duration: overTime,
+            ease: 'Linear',
+            onComplete: () => {
+                jingle.stop();
+                onComplete?.call(this);
+            }
+        });
+    }
+
     /**
      * Simulate speech by interpreting a word as a syllable sound from the specified voice set.
      * Voices are played at a high rate, to make them sound squeaky and cute, but
@@ -195,12 +237,12 @@ export class GSoundManager {
         return this.music;
     }
 
-    public playMusic(soundKey: string, volume?: number): Phaser.Sound.BaseSound {
+    public playMusic(soundKey: string, volume?: number, loop: boolean = true): Phaser.Sound.BaseSound {
         this.stopMusic();
         this.music = this.scene.sound.add(
             soundKey,
             {
-                loop: true,
+                loop,
                 volume: this.getCalculatedMusicVolume(volume)
             }
         );
@@ -220,15 +262,15 @@ export class GSoundManager {
         this.music?.stop();
     }
 
-    public fadeInMusic(overTime: number, soundKey?: string, onComplete?: Function) {
+    public fadeInMusic(overTime: number, soundKey?: string, onComplete?: Function, loop: boolean = true): Phaser.Sound.BaseSound|null {
         if (soundKey === undefined) {
             if (this.music === null) {
-                return;
+                return null;
             }
             soundKey = this.music.key;
         }
         this.stopMusic();
-        this.playMusic(soundKey);
+        this.playMusic(soundKey, undefined, loop);
         this.scene.tweens.add({
             targets: this.music,
             volume: this.getCalculatedMusicVolume(),
@@ -237,6 +279,7 @@ export class GSoundManager {
                 onComplete?.call(this);
             }
         });
+        return this.music;
     }
 
     public fadeOutMusic(overTime: number, onComplete?: Function) {

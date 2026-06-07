@@ -63,6 +63,7 @@ import { GInvitationCutscene } from '../cutscenes/GInvitationCutscene';
 import { GCaveArea } from '../areas/GCaveArea';
 import { GEnterTombCutscene } from '../cutscenes/GEnterTombCutscene';
 import { GDragonTransformCutscene } from '../cutscenes/GDragonTransformCutscene';
+import { GFinalVictoryCutscene } from '../cutscenes/GFinalVictoryCutscene';
 
 const MOUSE_UI_BUTTON: string = 'MOUSE_UI_BUTTON';
 
@@ -1590,6 +1591,11 @@ export class GAdventureContent extends GContentScene {
                 // since there will otherwise be no more opportunity to restore it
                 // before fighting the Dragon.
                 PLAYER.setFaith(PLAYER.getMaxFaith());
+            } else if (ENEMY.getCurrentSpirit().name === 'Dragon') {
+                // If the Dragon was defeated, we're going to the victory cutscene after fading in,
+                // and we need to adjust the player's position a little so he can walk straight to
+                // the right and stomp on the serpent's head.
+                this.player.setY(this.player.y + 16);
             }
 
             // If the player defeated all enemies in the room, wait a bit before respawning them:
@@ -1636,7 +1642,7 @@ export class GAdventureContent extends GContentScene {
             new GDragonTransformCutscene().play();
         } else if (ENEMY.getCurrentSpirit().name === 'Dragon') {
             // Start Victory cutscene:
-            // new GVictoryCutscene().play();
+            new GFinalVictoryCutscene().play();
         } else {
             // Otherwise, just resume adventuring as normal:
             this.setInputMode(INPUT_ADVENTURING);

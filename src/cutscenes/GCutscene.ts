@@ -1,5 +1,6 @@
 import { DIRECTION } from "../direction";
 import { GBullhornGoal } from "../goals/GBullhornGoal";
+import { GFootStompGoal } from "../goals/GFootStompGoal";
 import { GGoal } from "../goals/GGoal";
 import { GInteractGoal } from "../goals/GInteractGoal";
 import { GNoBullhornGoal } from "../goals/GNoBullhornGoal";
@@ -303,7 +304,7 @@ export abstract class GCutscene {
 
         type ActorCommand = 'spawnAt'|'interact'|'bullhorn'|'nobullhorn'|'rejoice'|'kneel'|
                             'bendDownToPickUp'|'raiseHands'|'stand'|'faceDir'|'openScroll'|
-                            'walkDir'|'walkTo'|'tryWalkTo'|'pullRopeSW'|'pullRopeSE';
+                            'footStomp'|'walkDir'|'walkTo'|'tryWalkTo'|'pullRopeSW'|'pullRopeSE';
 
         // The first token is the command name; use it to determine the type of goal.
         // Some commands will return an event as a function, instead of a character-based goal.
@@ -335,6 +336,8 @@ export abstract class GCutscene {
                 return () => {
                     (actorSprite as GPlayerSprite).openScroll();
                 };
+            case 'footStomp':
+                return new GFootStompGoal();
             case 'raiseHands':
                 return () => {
                     actorSprite.raiseHands();
@@ -398,6 +401,14 @@ export abstract class GCutscene {
     private spawnActorAt(actorSprite: GCharSprite, x: number, y: number): void {
         actorSprite.setVisible(true);
         actorSprite.setImmobile(false);
+        if (actorSprite.body === undefined || actorSprite.body === null) {
+            GFF.AdventureContent.physics.add.existing(actorSprite);
+            const body = actorSprite.body as unknown as Phaser.Physics.Arcade.Body;
+            body.setSize(GFF.CHAR_BODY_W, GFF.CHAR_BODY_H);
+            body.setOffset(GFF.CHAR_BODY_X_OFF, GFF.CHAR_BODY_Y_OFF);
+            body.updateFromGameObject();
+            body.pushable = false;
+        }
         actorSprite.getBody().setEnable(true);
         PHYSICS.centerPhysically(actorSprite, {x, y});
     }

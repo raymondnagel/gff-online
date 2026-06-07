@@ -70,6 +70,10 @@ export class GPlayerSprite extends GCharSprite {
         this.createDirectionalAnimations('interact', 0);
         this.createDirectionalAnimations('run');
         this.createDirectionalAnimations('sit');
+        this.createSingleAnimation('raisefoot_se', 0);
+        this.createSingleAnimation('stomp_se', 0);
+        this.anims.get('adam_soldier_stomp_se').frameRate = 30;
+        this.createSingleAnimation('pause_se');
         // Change the prefix back:
         this.setSpriteKeyPrefix('adam');
 
@@ -163,6 +167,26 @@ export class GPlayerSprite extends GCharSprite {
 
     public openScroll() {
         this.playSingleAnimation('scroll_se');
+    }
+
+    public footStomp(onImpact?: Function, onComplete?: Function) {
+        this.play('adam_soldier_raisefoot_se');
+        this.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
+            GFF.AdventureContent.time.delayedCall(300, () => {
+                GFF.AdventureContent.getSound().playSound('miss');
+                this.play('adam_soldier_stomp_se');
+                const stompAnim = this.anims.get('adam_soldier_stomp_se');
+                const impactDelay = Math.max(0, ((stompAnim.frames.length - 1) / stompAnim.frameRate) * 1000);
+                GFF.AdventureContent.time.delayedCall(impactDelay, () => {
+                    onImpact?.call(this);
+                });
+                this.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
+                    GFF.AdventureContent.time.delayedCall(500, () => {
+                        onComplete?.call(this);
+                    });
+                });
+            });
+        });
     }
 
     protected getSpeed(): number {

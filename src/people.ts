@@ -2,6 +2,7 @@ import { AREA } from "./area";
 import { GChurch } from "./GChurch";
 import { GTown } from "./GTown";
 import { GFF } from "./main";
+import { GPersonSprite } from "./objects/chars/GPersonSprite";
 import { PLAYER } from "./player";
 import { RANDOM } from "./random";
 import { SAVE } from "./save";
@@ -38,6 +39,10 @@ export namespace PEOPLE {
 
     export function getPersons() {
         return people;
+    }
+
+    export function getPlayerConverts(): GPerson[] {
+        return people.filter(person => person.convert);
     }
 
     export function toSaveObject(person: GPerson, ids: Map<any, number>): object {
@@ -180,6 +185,23 @@ export namespace PEOPLE {
             hearer,
             other
         );
+    }
+
+    /**
+     * Converts a number of people for use in simulations. Does not complete the normal
+     * conversion process, which requires a sprite for each person.
+     */
+    export function convertSim(count: number) {
+        // Filter to people who are not reprobate, not captive, and not already converted:
+        const potentialConverts: GPerson[] = people.filter(p => !p.reprobate && !p.convert && !p.captive && p.faith < 100 && p.homeTown !== null);
+        // Convert up to "count" of them, or all if there are fewer than "count":
+        for (let i = 0; i < count && potentialConverts.length > 0; i++) {
+            const convert: GPerson = potentialConverts[i];
+            const town: GTown = convert.homeTown as GTown;
+            town.transferPersonToChurch(convert);
+            convert.preferredName = PEOPLE.getSaintName(convert);
+            convert.convert = true;
+        }
     }
 
     export function replaceLabels(text: string, speaker: GPerson, hearer?: GPerson, other?: GPerson): string {

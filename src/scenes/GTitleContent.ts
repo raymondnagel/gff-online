@@ -25,12 +25,12 @@ export class GTitleContent extends GContentScene {
         GFF.setMouseVisible(false);
 
         // Create the background image, set it invisible initially
-        const background = this.add.image(0, 0, 'title_bg');
+        const background = this.add.image(0, 0, 'title_bg_new');
         background.setOrigin(0, 0);
         background.setVisible(false);
 
         // Create the title image, set it invisible initially
-        const titleImage = this.add.image(centerX, centerY - 20, 'title_overlay');
+        const titleImage = this.add.image(centerX, centerY - 40, 'title_logo');
         titleImage.setAlpha(0);
 
         // Create the prompt image, set it invisible initially

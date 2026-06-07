@@ -14,6 +14,8 @@ const RUBBLE_CHUNKS = ['rubble_chunk_1', 'rubble_chunk_2', 'rubble_chunk_3'];
 const STRONGHOLD_BASE_Y: number = 480;
 const PLAYER_SPAWN_PT: GPoint2D = {x: 382, y: STRONGHOLD_BASE_Y + 10};
 const PROPHET_SPAWN_PT: GPoint2D = {x: 642, y: STRONGHOLD_BASE_Y + 10};
+const TITLE_DEPTH: number = DEPTH.FLOAT_TEXT + 200;
+const TITLE_LINE_HEIGHT: number = 64;
 
 export class GPullDownStrongholdCutscene extends GCutscene {
 
@@ -341,40 +343,58 @@ export class GPullDownStrongholdCutscene extends GCutscene {
         });
     }
 
-    private showTitle1() {
-        const title = GFF.AdventureContent.add.text(512, 100, 'Mighty through God', {
-            fontFamily: 'olde',
-            fontSize: '72px',
-            color: COLOR.GOLD_5.str(),
-            stroke: COLOR.BLACK.str(),
-            strokeThickness: 8
-        }).setOrigin(0.5).setDepth(DEPTH.FLOAT_TEXT + 200).setAlpha(0).setPadding({
-            left: 20,
-            right: 20,
-            top: 0,
-            bottom: 0
+    private createTitleTextLines(text: string, centerY: number): Phaser.GameObjects.Text[] {
+        const textObjects: Phaser.GameObjects.Text[] = [];
+        const lines = text.split('\n');
+        const startY = centerY - (((lines.length - 1) * TITLE_LINE_HEIGHT) / 2);
+
+        lines.forEach((line, index) => {
+            const y = startY + (index * TITLE_LINE_HEIGHT);
+            const halo = GFF.AdventureContent.add.text(512, y, line, {
+                fontFamily: 'olde',
+                fontSize: '72px',
+                color: COLOR.BLACK.str(),
+                stroke: COLOR.BLACK.str(),
+                strokeThickness: 14,
+                align: 'center'
+            }).setOrigin(0.5).setDepth(TITLE_DEPTH - 1).setAlpha(0).setShadow(0, 0, COLOR.BLACK.str(), 18, true, true).setPadding({
+                left: 60,
+                right: 60,
+                top: 40,
+                bottom: 40
+            });
+            const title = GFF.AdventureContent.add.text(512, y, line, {
+                fontFamily: 'olde',
+                fontSize: '72px',
+                color: COLOR.GOLD_5.str(),
+                stroke: COLOR.BLACK.str(),
+                strokeThickness: 6,
+                align: 'center'
+            }).setOrigin(0.5).setDepth(TITLE_DEPTH).setAlpha(0).setPadding({
+                left: 20,
+                right: 20,
+                top: 0,
+                bottom: 0
+            });
+
+            textObjects.push(halo, title);
         });
+
+        return textObjects;
+    }
+
+    private showTitle1() {
+        const titleObjects = this.createTitleTextLines('Mighty through God', 100);
         GFF.AdventureContent.tweens.add({
-            targets: title,
+            targets: titleObjects,
             alpha: 1,
             duration: 1500
         });
     }
     private showTitle2() {
-        const title = GFF.AdventureContent.add.text(512, 172, 'to the pulling down of strongholds!', {
-            fontFamily: 'olde',
-            fontSize: '72px',
-            color: COLOR.GOLD_5.str(),
-            stroke: COLOR.BLACK.str(),
-            strokeThickness: 8
-        }).setOrigin(0.5).setDepth(DEPTH.FLOAT_TEXT + 200).setAlpha(0).setPadding({
-            left: 20,
-            right: 20,
-            top: 0,
-            bottom: 0
-        });
+        const titleObjects = this.createTitleTextLines('to the pulling down of strongholds!', 172);
         GFF.AdventureContent.tweens.add({
-            targets: title,
+            targets: titleObjects,
             alpha: 1,
             duration: 1500
         });

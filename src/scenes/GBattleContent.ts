@@ -349,6 +349,8 @@ export class GBattleContent extends GContentScene {
     private battleSpeechBubble: GBattleSpeechBubble|null = null;
     private dragonResistanceDisplayRatio: number|null = null;
     private showJesusVictoryResult: boolean = false;
+    private victoryFanfareSound: Phaser.Sound.BaseSound|null = null;
+    private victoryFanfareDone: boolean = true;
 
     private peekKeysDown: { [key: string]: boolean } = { 'ArrowLeft': false, 'ArrowRight': false };
 
@@ -2534,11 +2536,11 @@ export class GBattleContent extends GContentScene {
                 case BattleStage.VICTORY:
                     if (this.showJesusVictoryResult) {
                         this.showJesusResult(() => {
-                            this.setInputMode(INPUT_PROMPTENTER);
+                            this.enableVictoryInputAfterFanfare();
                         });
                     } else {
                         this.showGuessResult(() => {
-                            this.setInputMode(INPUT_PROMPTENTER);
+                            this.enableVictoryInputAfterFanfare();
                         });
                     }
                     break;
@@ -3546,7 +3548,7 @@ export class GBattleContent extends GContentScene {
                     repeat: -1
                 });
                 hallelujah.once('complete', () => {
-                    this.time.delayedCall(500 / this.animSpeed, () => {
+                    this.time.delayedCall(1000 / this.animSpeed, () => {
                         this.doDragonDefeatDeclaration();
                     });
                 });
@@ -3595,7 +3597,12 @@ export class GBattleContent extends GContentScene {
         }
         this.showJesusVictoryResult = showJesusResult;
         this.getSound().stopMusic();
-        this.getSound().playSound('victory');
+        this.victoryFanfareDone = false;
+        this.victoryFanfareSound = this.getSound().playSound('battle_victory_fanfare');
+        this.victoryFanfareSound.once('complete', () => {
+            this.victoryFanfareDone = true;
+            this.victoryFanfareSound = null;
+        });
         // Create tween to retreat enemy:
         this.tweens.add({
             targets: this.enemyAvatar,
@@ -3603,6 +3610,19 @@ export class GBattleContent extends GContentScene {
             duration: APPROACH_TIME / this.animSpeed,
             onComplete: () => {
                 this.setCurrentStage(BattleStage.VICTORY);
+            }
+        });
+    }
+
+    private enableVictoryInputAfterFanfare(): void {
+        if (this.victoryFanfareDone || this.victoryFanfareSound === null) {
+            this.setInputMode(INPUT_PROMPTENTER);
+            return;
+        }
+
+        this.victoryFanfareSound.once('complete', () => {
+            if (this.currentStage === BattleStage.VICTORY) {
+                this.setInputMode(INPUT_PROMPTENTER);
             }
         });
     }
@@ -3658,7 +3678,7 @@ export class GBattleContent extends GContentScene {
         });
     }
 
-    private playerSpeak(text: string, resolveFunc?: Function, soundKey: string|null = 'adam_battle_grunt'): Phaser.Sound.BaseSound|null {
+    private playerSpeak(text: string, resolveFunc?: Function, soundKey: string|null = 'battle_shout'): Phaser.Sound.BaseSound|null {
         const sound = soundKey ? this.getSound().playSound(soundKey) : null;
         this.showBattleSpeechBubble(
             this.playerAvatar.x + PLAYER_SPEECH_ORIGIN_X,

@@ -5,6 +5,7 @@ import { BOOKS } from "./books";
 import { CHURCH } from "./church";
 import { COMMANDMENTS } from "./commandments";
 import { FRUITS } from "./fruits";
+import { GFinalVictoryCutscene } from "./cutscenes/GFinalVictoryCutscene";
 import { GChurch } from "./GChurch";
 import { GLOSSARY } from "./glossary";
 import { GRoom } from "./GRoom";
@@ -324,18 +325,32 @@ export namespace CONSOLE {
                 return `Invalid stronghold number: ${holdNum}`;
             }
         },
-        church(name: string) {
-            const town = TOWN.getTowns().find(t => t.getName().toLowerCase() === name.toLowerCase());
-            const church = town ? town.getChurch() : null;
-            if (church) {
-                const room = church.getWorldRoom();
-                GFF.AdventureContent.hideTestConsole();
-                GFF.AdventureContent.warpToRoom(room);
-                playSuccess();
-                return 'Ok';
+        church(name: string|number) {
+            if (typeof name === 'number') {
+                const churchNum = CHURCH.getChurches()[name - 1];
+                if (churchNum) {
+                    const room = churchNum.getWorldRoom();
+                    GFF.AdventureContent.hideTestConsole();
+                    GFF.AdventureContent.warpToRoom(room);
+                    playSuccess();
+                    return 'Ok';
+                } else {
+                    playError();
+                    return `Invalid church number: ${name}`;
+                }
             } else {
-                playError();
-                return `Church not found: ${name}`;
+                const town = TOWN.getTowns().find(t => t.getName().toLowerCase() === name.toLowerCase());
+                const church = town ? town.getChurch() : null;
+                if (church) {
+                    const room = church.getWorldRoom();
+                    GFF.AdventureContent.hideTestConsole();
+                    GFF.AdventureContent.warpToRoom(room);
+                    playSuccess();
+                    return 'Ok';
+                } else {
+                    playError();
+                    return `Church not found: ${name}`;
+                }
             }
         },
         listObjects() {
@@ -378,6 +393,16 @@ export namespace CONSOLE {
             REGISTRY.set('invitedToCave', false);
             const caveRoom = AREA.CAVE_AREA.getRooms()[0].getPortalRoom() as GRoom;
             CMD_FUNCTIONS.warp(caveRoom.getX(), caveRoom.getY(), 0); // Warp to the cave entrance
+            playSuccess();
+            return 'Ok';
+        },
+        ending() {
+            GFF.AdventureContent.getSound().stopMusic();
+            REGISTRY.set('skipFinalVictoryToCaveExterior', true);
+            PEOPLE.convertSim(60);
+            PLAYER.getSprite().useSoldierAnims();
+            GFF.AdventureContent.hideTestConsole();
+            new GFinalVictoryCutscene().play();
             playSuccess();
             return 'Ok';
         },
