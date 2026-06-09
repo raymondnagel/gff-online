@@ -399,7 +399,7 @@ export namespace CONSOLE {
         ending() {
             GFF.AdventureContent.getSound().stopMusic();
             REGISTRY.set('skipFinalVictoryToCaveExterior', true);
-            PEOPLE.convertSim(60);
+            PEOPLE.convertSim(20);
             PLAYER.getSprite().useSoldierAnims();
             GFF.AdventureContent.hideTestConsole();
             new GFinalVictoryCutscene().play();

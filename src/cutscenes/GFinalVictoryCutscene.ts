@@ -3,15 +3,27 @@ import { COLOR, GColor } from "../colors";
 import { DEPTH } from "../depths";
 import { GRoom } from "../GRoom";
 import { GFF } from "../main";
+import { GCharSprite } from "../objects/chars/GCharSprite";
+import { GSaintSprite } from "../objects/chars/GSaintSprite";
 import { GSerpentSprite } from "../objects/chars/GSerpentSprite";
 import { PEOPLE } from "../people";
 import { PLAYER } from "../player";
+import { RANDOM } from "../random";
 import { REGISTRY } from "../registry";
 import { Dir9, GPerson, GPoint2D, GSceneryPlan } from "../types";
 import { GCutscene } from "./GCutscene";
 
 type CongregationSlot = {
     point: GPoint2D
+};
+
+type HeavenAssemblySlot = {
+    point: GPoint2D,
+    direction: Dir9
+};
+
+type CrownTargetPoint = GPoint2D & {
+    maskY: number
 };
 
 const SERPENT_TRANSFORM_ANIM: string = 'serpent_transform';
@@ -25,8 +37,43 @@ const FINAL_SCENE_DEPTH: number = DEPTH.BACKGROUND;
 const THE_LAMB_DEPTH: number = DEPTH.SPECIAL_EFFECT;
 const SHINING_BURST_DEPTH: number = THE_LAMB_DEPTH + 1;
 const RAINBOW_SPARKLE_DEPTH: number = SHINING_BURST_DEPTH + 2;
+const HEAVEN_THRONE_KEY: string = 'heaven_throne';
+const HEAVEN_THRONE_X: number = 398;
+const HEAVEN_THRONE_Y: number = 236;
+const HEAVEN_THRONE_DEPTH: number = THE_LAMB_DEPTH - 50;
+const CROWN_TARGET_MASK_KEY: string = 'crown_target_mask';
+const CROWN_TARGET_BEHIND_THRONE_MASK_Y: number = 30;
+const CROWN_BEHIND_THRONE_DEPTH: number = HEAVEN_THRONE_DEPTH - 1;
+const CROWN_FRONT_THRONE_DEPTH: number = HEAVEN_THRONE_DEPTH + 1;
+const CROWN_SPIN_1_KEY: string = 'crown_spin_1';
+const CROWN_SPIN_2_KEY: string = 'crown_spin_2';
+const CROWN_SPIN_1_ANIM: string = 'crown_spin_1_anim';
+const CROWN_SPIN_1_FRAME_RATE: number = 20;
+const CROWN_PROJECTILE_START_DISTANCE: number = 40;
+const CROWN_PROJECTILE_FLIGHT_TIME: number = 900;
+const CROWN_PROJECTILE_ARC_HEIGHT: number = 70;
+const CROWN_PROJECTILE_START_SCALE: number = .8;
+const CROWN_PROJECTILE_PEAK_SCALE: number = 1.2;
+const CROWN_PROJECTILE_END_SCALE: number = .8;
+const CROWN_PROJECTILE_SCALE_UP_END: number = .25;
+const CROWN_PROJECTILE_SCALE_DOWN_START: number = .75;
+const CROWN_PROJECTILE_ROTATION_SPEED: number = 10;
+const CROWN_BIG_BOUNCE_TIME: number = 360;
+const CROWN_BIG_BOUNCE_ARC_HEIGHT: number = 6;
+const CROWN_BIG_BOUNCE_MIN_DISTANCE: number = 4;
+const CROWN_BIG_BOUNCE_MAX_DISTANCE: number = 5;
+const CROWN_BIG_BOUNCE_RANDOM_ANGLE: number = 45;
+const CROWN_SMALL_BOUNCE_TIME: number = 260;
+const CROWN_SMALL_BOUNCE_ARC_HEIGHT: number = 3;
+const CROWN_SMALL_BOUNCE_MIN_DISTANCE: number = 2;
+const CROWN_SMALL_BOUNCE_MAX_DISTANCE: number = 3;
+const CELESTIAL_SAINT_BASE_DEPTH: number = HEAVEN_THRONE_DEPTH - 1000;
 const THE_LAMB_X: number = 512;
 const THE_LAMB_Y: number = 324;
+const HEAVEN_ASSEMBLY_SAINTS_PER_SIDE: number = 15;
+const HEAVEN_ASSEMBLY_MASK_KEY: string = 'other_saints_mask';
+const HEAVEN_ASSEMBLY_INNER_FACE_DISTANCE: number = 130;
+const HEAVEN_ASSEMBLY_DIAGONAL_FACE_DISTANCE: number = 250;
 const HEAVEN_CONGREGATION_BODY_WIDTH: number = 36;
 const HEAVEN_CONGREGATION_BODY_HEIGHT: number = 16;
 const HEAVEN_CONGREGATION_ZONE = {
@@ -45,8 +92,35 @@ const HEAVEN_PROCESSION_STAGGER: number = 350;
 const RAINBOW_SPARKLE_MASK_KEY: string = 'rainbow_sparkle_mask';
 const RAINBOW_SPARKLE_KEY: string = 'emerald_sparkle';
 const RAINBOW_SPARKLE_SAMPLE_RATE: number = 1;
+const SAINT_SHINING_KEY: string = 'saint_shining';
+const SAINT_TRANSFORM_TIME: number = 400;
+const SAINT_SHINING_TARGET_ALPHA: number = 1;
+const CROWN_CAST_MIN_STAGGER: number = 150;
+const CROWN_CAST_MAX_STAGGER: number = 400;
+const CROWN_CAST_HOLD_TIME: number = 500;
+const WORSHIP_ACTION_MIN_STAGGER: number = 5;
+const WORSHIP_ACTION_MAX_STAGGER: number = 50;
+const WORSHIP_PRAISE_MIN_DELAY: number = 300;
+const WORSHIP_PRAISE_MAX_DELAY: number = 800;
 const TITLE_LINE_HEIGHT: number = 64;
 const RESURRECTION_TEXT_LINE_HEIGHT: number = 52;
+const WORSHIP_PRAISE_LINES: string[] = [
+    'Praise the Lord!',
+    'Alleluia!',
+    'Worthy is the Lamb!',
+    'The Lord God omnipotent reigneth!',
+    'Blessed Redeemer!',
+    'Thou art worthy, O Lord!',
+    'King of kings and Lord of lords!',
+    'O worship the King!',
+    'My Lord and my God!',
+    'Blessed art thou, O Lord!',
+    'Jesus Christ is Lord!',
+    'Thou hast redeemed us!',
+    'I love thee, Lord Jesus!',
+    'Thine is the kingdom!',
+    'Bless the LORD, O my soul!'
+];
 const PLAYER_REJOICE_PARTIAL_ANIM: string = 'adam_soldier_rejoice_s_partial';
 const RESURRECTION_GLOW_KEY: string = 'adam_resurrection_glow';
 const RESURRECTION_GLOW_X_OFFSET: number = -3;
@@ -95,6 +169,10 @@ export class GFinalVictoryCutscene extends GCutscene {
     private rollingStone: Phaser.GameObjects.Image;
     private rollingStoneLight: Phaser.GameObjects.Image;
     private rainbowSparklePoints: GPoint2D[] = [];
+    private crownTargetPoints: CrownTargetPoint[] = [];
+    private celestialSaints: GSaintSprite[] = [];
+    private crownCastingOrder: GSaintSprite[] = [];
+    private saintShiningImages: Phaser.GameObjects.Image[] = [];
 
     constructor() {
         super('final victory cutscene', true);
@@ -463,14 +541,23 @@ export class GFinalVictoryCutscene extends GCutscene {
             GFF.AdventureContent.add.image(0, 0, 'heaven_bg')
                 .setOrigin(0, 0)
                 .setDepth(FINAL_SCENE_DEPTH);
+            this.placeHeavenThrone();
+            this.crownTargetPoints = this.getCrownTargetPoints();
             GFF.AdventureContent.add.image(THE_LAMB_X, THE_LAMB_Y, 'the_lamb')
                 .setOrigin(0.5, 0.5)
                 .setDepth(THE_LAMB_DEPTH);
+            this.placeHeavenAssemblySaints();
             this.startShiningGlory();
             this.startRainbowSparkles();
         }, () => {
             this.registry.set('finalSceneFadedIn', true);
         });
+    }
+
+    private placeHeavenThrone(): void {
+        const throne = GFF.AdventureContent.add.image(HEAVEN_THRONE_X, HEAVEN_THRONE_Y, HEAVEN_THRONE_KEY)
+            .setOrigin(0, 0);
+        throne.setDepth(HEAVEN_THRONE_DEPTH);
     }
 
     private startRainbowSparkles(): void {
@@ -566,7 +653,152 @@ export class GFinalVictoryCutscene extends GCutscene {
                     burst.setAlpha(Phaser.Math.FloatBetween(.75, .95));
                     burst.setScale(Phaser.Math.FloatBetween(.8, 1));
                 });
+                this.saintShiningImages.forEach(shiningImage => {
+                    shiningImage.setAngle(Phaser.Math.Between(0, 359));
+                    shiningImage.setAlpha(Phaser.Math.FloatBetween(.8, 1));
+                    shiningImage.setScale(Phaser.Math.FloatBetween(.85, 1));
+                });
             }
+        });
+    }
+
+    private getHeavenAssemblyDirection(point: GPoint2D): Dir9 {
+        const distanceFromCenter = Math.abs(point.x - THE_LAMB_X);
+
+        if (distanceFromCenter < HEAVEN_ASSEMBLY_INNER_FACE_DISTANCE) {
+            return Dir9.S;
+        }
+
+        if (distanceFromCenter < HEAVEN_ASSEMBLY_DIAGONAL_FACE_DISTANCE) {
+            return point.x < THE_LAMB_X ? Dir9.SE : Dir9.SW;
+        }
+
+        return point.x < THE_LAMB_X ? Dir9.E : Dir9.W;
+    }
+
+    private getHeavenAssemblySlots(): HeavenAssemblySlot[] {
+        return this.getBlackDotMaskPoints(HEAVEN_ASSEMBLY_MASK_KEY, 'Heaven assembly mask')
+            .map(point => ({
+                point,
+                direction: this.getHeavenAssemblyDirection(point)
+            }))
+            .sort((a, b) => a.point.y === b.point.y
+            ? a.point.x - b.point.x
+            : a.point.y - b.point.y
+        );
+    }
+
+    private getCrownTargetPoints(): CrownTargetPoint[] {
+        if (!GFF.AdventureContent.textures.exists(CROWN_TARGET_MASK_KEY)) {
+            GFF.log(`Crown target mask "${CROWN_TARGET_MASK_KEY}" was not found.`);
+            return [];
+        }
+
+        const maskTexture = GFF.AdventureContent.textures.get(CROWN_TARGET_MASK_KEY);
+        const maskImage = maskTexture.getSourceImage() as HTMLImageElement | HTMLCanvasElement;
+        const throneTexture = GFF.AdventureContent.textures.get(HEAVEN_THRONE_KEY);
+        const throneImage = throneTexture.getSourceImage() as HTMLImageElement | HTMLCanvasElement;
+        const maskX = HEAVEN_THRONE_X;
+        const maskY = HEAVEN_THRONE_Y + throneImage.height - maskImage.height;
+
+        return this.getBlackDotMaskPoints(CROWN_TARGET_MASK_KEY, 'Crown target mask')
+            .map(point => ({
+                x: maskX + point.x,
+                y: maskY + point.y,
+                maskY: point.y
+            }));
+    }
+
+    private getBlackDotMaskPoints(maskKey: string, logName: string): GPoint2D[] {
+        if (!GFF.AdventureContent.textures.exists(maskKey)) {
+            GFF.log(`${logName} "${maskKey}" was not found.`);
+            return [];
+        }
+
+        const maskTexture = GFF.AdventureContent.textures.get(maskKey);
+        const maskImage = maskTexture.getSourceImage() as HTMLImageElement | HTMLCanvasElement;
+        const visited = new Set<string>();
+        const points: GPoint2D[] = [];
+
+        for (let y = 0; y < maskImage.height; y++) {
+            for (let x = 0; x < maskImage.width; x++) {
+                if (visited.has(`${x},${y}`) || !this.isBlackMaskPixel(maskKey, x, y)) {
+                    continue;
+                }
+
+                points.push(this.getBlackMaskBlobCenter(maskKey, x, y, visited));
+            }
+        }
+
+        return points;
+    }
+
+    private isBlackMaskPixel(maskKey: string, x: number, y: number): boolean {
+        const color = GFF.AdventureContent.textures.getPixel(x, y, maskKey);
+        return color !== null && color.alpha > 64 && color.red < 10 && color.green < 10 && color.blue < 10;
+    }
+
+    private getBlackMaskBlobCenter(maskKey: string, startX: number, startY: number, visited: Set<string>): GPoint2D {
+        const maskTexture = GFF.AdventureContent.textures.get(maskKey);
+        const maskImage = maskTexture.getSourceImage() as HTMLImageElement | HTMLCanvasElement;
+        const pointsToCheck: GPoint2D[] = [{ x: startX, y: startY }];
+        let pointCount = 0;
+        let xTotal = 0;
+        let yTotal = 0;
+
+        while (pointsToCheck.length > 0) {
+            const point = pointsToCheck.pop() as GPoint2D;
+            if (
+                point.y < 0 ||
+                point.y >= maskImage.height ||
+                point.x < 0 ||
+                point.x >= maskImage.width ||
+                visited.has(`${point.x},${point.y}`) ||
+                !this.isBlackMaskPixel(maskKey, point.x, point.y)
+            ) {
+                continue;
+            }
+
+            visited.add(`${point.x},${point.y}`);
+            pointCount++;
+            xTotal += point.x;
+            yTotal += point.y;
+
+            pointsToCheck.push(
+                { x: point.x - 1, y: point.y },
+                { x: point.x + 1, y: point.y },
+                { x: point.x, y: point.y - 1 },
+                { x: point.x, y: point.y + 1 }
+            );
+        }
+
+        return {
+            x: Math.round(xTotal / pointCount),
+            y: Math.round(yTotal / pointCount)
+        };
+    }
+
+    private placeHeavenAssemblySaints(): void {
+        const saints = PEOPLE.getPersons()
+            .filter(person => person.faith >= 100 && !person.convert)
+            .slice(0, HEAVEN_ASSEMBLY_SAINTS_PER_SIDE * 2);
+        const slots = this.getHeavenAssemblySlots();
+        const saintsToPlace = saints.slice(0, slots.length);
+
+        if (slots.length < saints.length) {
+            GFF.log(`Heaven assembly mask provided ${slots.length} slots for ${saints.length} saints.`);
+        }
+
+        saintsToPlace.forEach((saint, index) => {
+            const slot = slots[index];
+            const actor = this.createActorSprite(saint, `assembly_${index + 1}`);
+            actor.centerPhysically(slot.point);
+            actor.setVisible(true);
+            actor.setImmobile(true);
+            actor.setUseAutoDepth(true);
+            actor.setDepth(actor.getBody().bottom);
+            actor.faceDirection(slot.direction, true);
+            actor.getBody().setEnable(false);
         });
     }
 
@@ -603,9 +835,9 @@ export class GFinalVictoryCutscene extends GCutscene {
         const usableWidth = HEAVEN_CONGREGATION_ZONE.width - HEAVEN_CONGREGATION_BODY_WIDTH;
         const usableHeight = HEAVEN_CONGREGATION_ZONE.height - HEAVEN_CONGREGATION_BODY_HEIGHT;
         const maxCols = Math.floor(usableWidth / HEAVEN_CONGREGATION_MIN_HORZ_SPACE) + 1;
-        const frontRowCount = Math.max(1, cols - Math.floor(rows / 2));
+        const backRowCount = Math.max(1, cols - Math.floor(rows / 2));
         let rowCounts = Array.from({ length: rows }, (_, row) =>
-            Math.min(maxCols, frontRowCount + row)
+            Math.min(maxCols, backRowCount + (rows - row - 1))
         );
 
         if (rowCounts[0] % 2 === 0 && rowCounts[0] > 1) {
@@ -613,7 +845,7 @@ export class GFinalVictoryCutscene extends GCutscene {
         }
 
         if (rowCounts.reduce((total, rowCount) => total + rowCount, 0) < count) {
-            for (let row = rows - 1; row >= 0; row--) {
+            for (let row = 0; row < rows; row++) {
                 while (
                     rowCounts.reduce((total, rowCount) => total + rowCount, 0) < count &&
                     rowCounts[row] < maxCols
@@ -694,6 +926,16 @@ export class GFinalVictoryCutscene extends GCutscene {
         return slots.slice(0, count);
     }
 
+    private getHeavenCongregationDirection(point: GPoint2D): 'n'|'ne'|'nw' {
+        if (point.x < THE_LAMB_X - 200) {
+            return 'ne';
+        }
+        if (point.x > THE_LAMB_X + 200) {
+            return 'nw';
+        }
+        return 'n';
+    }
+
     private prepareHeavenProcession(converts: GPerson[]): void {
         converts.forEach(convert => {
             this.createActorSprite(convert);
@@ -709,6 +951,375 @@ export class GFinalVictoryCutscene extends GCutscene {
                 body.checkCollision.none = true;
             }
         });
+    }
+
+    private transformSaintsInTwinkling(): void {
+        const advScene = GFF.AdventureContent;
+        const earthlySaints = this.getAllActors();
+
+        advScene.getSound().playSound('ahh');
+
+        earthlySaints.forEach((earthlySaint: GCharSprite) => {
+            const direction = earthlySaint.getDirection();
+            const saintDepth = CELESTIAL_SAINT_BASE_DEPTH + earthlySaint.depth;
+            const saint = new GSaintSprite(earthlySaint.getGender(), earthlySaint.x, earthlySaint.y)
+                .setDepth(saintDepth)
+                .setAlpha(0);
+
+            saint.centerPhysically(earthlySaint.getPhysicalCenter());
+            saint.crownIdle(direction);
+            this.celestialSaints.push(saint);
+
+            let shiningImage: Phaser.GameObjects.Image|null = null;
+            if (advScene.textures.exists(SAINT_SHINING_KEY)) {
+                shiningImage = advScene.add.image(
+                    saint.x + (saint.width / 2),
+                    saint.y + (saint.height / 2),
+                    SAINT_SHINING_KEY
+                )
+                    .setOrigin(0.5, 0.5)
+                    .setDepth(saint.depth + .1)
+                    .setAlpha(0);
+            } else {
+                GFF.log(`Saint shining image "${SAINT_SHINING_KEY}" was not found.`);
+            }
+
+            advScene.tweens.add({
+                targets: earthlySaint,
+                alpha: 0,
+                duration: SAINT_TRANSFORM_TIME,
+                ease: 'Linear',
+                onComplete: () => {
+                    earthlySaint.setVisible(false);
+                    const body = earthlySaint.body as Phaser.Physics.Arcade.Body | undefined | null;
+                    body?.setEnable(false);
+                }
+            });
+
+            advScene.tweens.add({
+                targets: saint,
+                alpha: 1,
+                duration: SAINT_TRANSFORM_TIME,
+                ease: 'Linear'
+            });
+
+            if (shiningImage !== null) {
+                advScene.tweens.add({
+                    targets: shiningImage,
+                    alpha: SAINT_SHINING_TARGET_ALPHA,
+                    duration: SAINT_TRANSFORM_TIME,
+                    ease: 'Linear',
+                    onComplete: () => {
+                        this.saintShiningImages.push(shiningImage as Phaser.GameObjects.Image);
+                    }
+                });
+            }
+        });
+    }
+
+    private startCrownCasting(): void {
+        if (this.celestialSaints.length === 0) {
+            this.registry.set('crownCastingDone', true);
+            this.registry.set('allCrownsDone', true);
+            return;
+        }
+
+        const advScene = GFF.AdventureContent;
+        const castingOrder = [...this.celestialSaints];
+        let delay = 0;
+        let completedCasts = 0;
+
+        RANDOM.shuffle(castingOrder);
+        this.crownCastingOrder = castingOrder;
+        this.registry.set('crownsDoneMoving', 0);
+        this.registry.set('totalCrowns', castingOrder.length);
+
+        castingOrder.forEach(saint => {
+            delay += RANDOM.randInt(CROWN_CAST_MIN_STAGGER, CROWN_CAST_MAX_STAGGER);
+            advScene.time.delayedCall(delay, () => {
+                saint.castCrown(undefined, () => {
+                    this.launchCrownProjectile(saint);
+                    advScene.time.delayedCall(CROWN_CAST_HOLD_TIME, () => {
+                        saint.idle();
+                        completedCasts++;
+
+                        if (completedCasts === castingOrder.length) {
+                            this.registry.set('crownCastingDone', true);
+                        }
+                    });
+                });
+            });
+        });
+    }
+
+    private startStaggeredWorshipAction(
+        actionName: 'raiseHands'|'kneel',
+        doneRegistryKey: string
+    ): void {
+        const saints = this.crownCastingOrder.length > 0
+            ? this.crownCastingOrder
+            : this.celestialSaints;
+
+        if (saints.length === 0) {
+            this.registry.set(doneRegistryKey, true);
+            return;
+        }
+
+        let delay = 0;
+        let completedActions = 0;
+
+        saints.forEach(saint => {
+            delay += RANDOM.randInt(WORSHIP_ACTION_MIN_STAGGER, WORSHIP_ACTION_MAX_STAGGER);
+            GFF.AdventureContent.time.delayedCall(delay, () => {
+                saint[actionName]();
+                completedActions++;
+
+                if (completedActions === saints.length) {
+                    this.registry.set(doneRegistryKey, true);
+                }
+            });
+        });
+    }
+
+    private startWorshipPraiseLoop(): void {
+        this.scheduleWorshipPraise();
+    }
+
+    private scheduleWorshipPraise(): void {
+        if (this.celestialSaints.length === 0) {
+            return;
+        }
+
+        GFF.AdventureContent.time.delayedCall(
+            RANDOM.randInt(WORSHIP_PRAISE_MIN_DELAY, WORSHIP_PRAISE_MAX_DELAY),
+            () => {
+                const saint = RANDOM.randElement(this.celestialSaints) as GSaintSprite;
+                const praiseLine = RANDOM.randElement(WORSHIP_PRAISE_LINES) as string;
+                saint.showFloatingText(praiseLine, 'phrase');
+                this.scheduleWorshipPraise();
+            }
+        );
+    }
+
+    private launchCrownProjectile(saint: GSaintSprite): void {
+        if (this.crownTargetPoints.length === 0) {
+            this.markCrownDoneMoving();
+            return;
+        }
+
+        const advScene = GFF.AdventureContent;
+        const saintCenter = {
+            x: saint.x + (saint.width / 2),
+            y: saint.y + (saint.height / 2)
+        };
+        const target = this.getNearestCrownTargetPoint(saintCenter);
+        const distanceToThrone = Phaser.Math.Distance.Between(saintCenter.x, saintCenter.y, THE_LAMB_X, THE_LAMB_Y);
+        const startRatio = distanceToThrone === 0
+            ? 0
+            : CROWN_PROJECTILE_START_DISTANCE / distanceToThrone;
+        const start = {
+            x: Phaser.Math.Linear(saintCenter.x, THE_LAMB_X, startRatio),
+            y: Phaser.Math.Linear(saintCenter.y, THE_LAMB_Y, startRatio)
+        };
+        const crown = this.createCrownProjectile();
+        const spinDirection = RANDOM.flipCoin() ? 1 : -1;
+        const spinSpeed = CROWN_PROJECTILE_ROTATION_SPEED * spinDirection;
+        const flight = { t: 0 };
+
+        crown.setPosition(start.x, start.y)
+            .setOrigin(0.5, 0.5)
+            .setScale(CROWN_PROJECTILE_START_SCALE)
+            .setDepth(target.maskY <= CROWN_TARGET_BEHIND_THRONE_MASK_Y
+                ? CROWN_BEHIND_THRONE_DEPTH
+                : CROWN_FRONT_THRONE_DEPTH
+            );
+
+        advScene.tweens.add({
+            targets: flight,
+            t: 1,
+            duration: CROWN_PROJECTILE_FLIGHT_TIME,
+            ease: 'Sine.easeInOut',
+            onUpdate: () => {
+                const t = flight.t;
+                const baseX = Phaser.Math.Linear(start.x, target.x, t);
+                const baseY = Phaser.Math.Linear(start.y, target.y, t);
+                const height = Math.sin(Math.PI * t) * CROWN_PROJECTILE_ARC_HEIGHT;
+                const scale = this.getCrownProjectileScale(t);
+
+                crown.setPosition(baseX, baseY - height);
+                crown.setScale(scale);
+
+                if (crown.texture.key === CROWN_SPIN_2_KEY) {
+                    crown.angle += spinSpeed;
+                }
+            },
+            onComplete: () => {
+                crown.setPosition(target.x, target.y);
+                crown.setScale(CROWN_PROJECTILE_END_SCALE);
+                this.startCrownBigBounce(crown, start, target, spinSpeed);
+            }
+        });
+    }
+
+    private startCrownBigBounce(
+        crown: Phaser.GameObjects.Image|Phaser.GameObjects.Sprite,
+        flightStart: GPoint2D,
+        impactPoint: GPoint2D,
+        spinSpeed: number
+    ): void {
+        const incomingAngle = Phaser.Math.Angle.Between(flightStart.x, flightStart.y, impactPoint.x, impactPoint.y);
+        const bounceAngle = incomingAngle + Math.PI + Phaser.Math.DegToRad(
+            Phaser.Math.Between(-CROWN_BIG_BOUNCE_RANDOM_ANGLE, CROWN_BIG_BOUNCE_RANDOM_ANGLE)
+        );
+        const bounceDistance = RANDOM.randInt(CROWN_BIG_BOUNCE_MIN_DISTANCE, CROWN_BIG_BOUNCE_MAX_DISTANCE);
+        const bounceEnd = {
+            x: impactPoint.x + (Math.cos(bounceAngle) * bounceDistance),
+            y: impactPoint.y + (Math.sin(bounceAngle) * bounceDistance)
+        };
+
+        this.animateCrownBounce(
+            crown,
+            impactPoint,
+            bounceEnd,
+            CROWN_BIG_BOUNCE_TIME,
+            CROWN_BIG_BOUNCE_ARC_HEIGHT,
+            spinSpeed,
+            .5,
+            () => this.startCrownSmallBounce(crown, bounceEnd, spinSpeed)
+        );
+    }
+
+    private startCrownSmallBounce(
+        crown: Phaser.GameObjects.Image|Phaser.GameObjects.Sprite,
+        bounceStart: GPoint2D,
+        spinSpeed: number
+    ): void {
+        const bounceAngle = Phaser.Math.FloatBetween(0, Math.PI * 2);
+        const bounceDistance = RANDOM.randInt(CROWN_SMALL_BOUNCE_MIN_DISTANCE, CROWN_SMALL_BOUNCE_MAX_DISTANCE);
+        const bounceEnd = {
+            x: bounceStart.x + (Math.cos(bounceAngle) * bounceDistance),
+            y: bounceStart.y + (Math.sin(bounceAngle) * bounceDistance)
+        };
+
+        this.animateCrownBounce(
+            crown,
+            bounceStart,
+            bounceEnd,
+            CROWN_SMALL_BOUNCE_TIME,
+            CROWN_SMALL_BOUNCE_ARC_HEIGHT,
+            spinSpeed,
+            .25,
+            () => {
+                crown.setPosition(bounceEnd.x, bounceEnd.y);
+                crown.setScale(CROWN_PROJECTILE_END_SCALE);
+                if (crown instanceof Phaser.GameObjects.Sprite) {
+                    crown.stop();
+                }
+                this.markCrownDoneMoving();
+            }
+        );
+    }
+
+    private animateCrownBounce(
+        crown: Phaser.GameObjects.Image|Phaser.GameObjects.Sprite,
+        start: GPoint2D,
+        end: GPoint2D,
+        duration: number,
+        arcHeight: number,
+        spinSpeed: number,
+        spinScale: number,
+        onComplete: Function
+    ): void {
+        const bounce = { t: 0 };
+
+        if (crown instanceof Phaser.GameObjects.Sprite) {
+            crown.anims.timeScale = spinScale;
+        }
+
+        GFF.AdventureContent.tweens.add({
+            targets: bounce,
+            t: 1,
+            duration,
+            ease: 'Sine.easeOut',
+            onUpdate: () => {
+                const t = bounce.t;
+                const baseX = Phaser.Math.Linear(start.x, end.x, t);
+                const baseY = Phaser.Math.Linear(start.y, end.y, t);
+                const height = Math.sin(Math.PI * t) * arcHeight;
+                const scale = CROWN_PROJECTILE_END_SCALE + (Math.sin(Math.PI * t) * .12);
+
+                crown.setPosition(baseX, baseY - height);
+                crown.setScale(scale);
+
+                if (crown.texture.key === CROWN_SPIN_2_KEY) {
+                    crown.angle += spinSpeed * spinScale;
+                }
+            },
+            onComplete: () => {
+                onComplete();
+            }
+        });
+    }
+
+    private markCrownDoneMoving(): void {
+        const crownsDoneMoving = (this.registry.get('crownsDoneMoving') ?? 0) + 1;
+        const totalCrowns = this.registry.get('totalCrowns') ?? 0;
+
+        this.registry.set('crownsDoneMoving', crownsDoneMoving);
+        if (crownsDoneMoving >= totalCrowns) {
+            this.registry.set('allCrownsDone', true);
+        }
+    }
+
+    private getCrownProjectileScale(t: number): number {
+        if (t <= CROWN_PROJECTILE_SCALE_UP_END) {
+            return Phaser.Math.Linear(
+                CROWN_PROJECTILE_START_SCALE,
+                CROWN_PROJECTILE_PEAK_SCALE,
+                t / CROWN_PROJECTILE_SCALE_UP_END
+            );
+        }
+
+        if (t >= CROWN_PROJECTILE_SCALE_DOWN_START) {
+            return Phaser.Math.Linear(
+                CROWN_PROJECTILE_PEAK_SCALE,
+                CROWN_PROJECTILE_END_SCALE,
+                (t - CROWN_PROJECTILE_SCALE_DOWN_START) / (1 - CROWN_PROJECTILE_SCALE_DOWN_START)
+            );
+        }
+
+        return CROWN_PROJECTILE_PEAK_SCALE;
+    }
+
+    private getNearestCrownTargetPoint(point: GPoint2D): CrownTargetPoint {
+        return this.crownTargetPoints.reduce((nearest, target) => {
+            const nearestDistance = Phaser.Math.Distance.Between(point.x, point.y, nearest.x, nearest.y);
+            const targetDistance = Phaser.Math.Distance.Between(point.x, point.y, target.x, target.y);
+            return targetDistance < nearestDistance ? target : nearest;
+        });
+    }
+
+    private createCrownProjectile(): Phaser.GameObjects.Image|Phaser.GameObjects.Sprite {
+        const advScene = GFF.AdventureContent;
+
+        if (RANDOM.flipCoin()) {
+            if (!advScene.anims.exists(CROWN_SPIN_1_ANIM)) {
+                advScene.anims.create({
+                    key: CROWN_SPIN_1_ANIM,
+                    frames: advScene.anims.generateFrameNumbers(CROWN_SPIN_1_KEY),
+                    frameRate: CROWN_SPIN_1_FRAME_RATE,
+                    repeat: -1
+                });
+            }
+
+            const crown = advScene.add.sprite(0, 0, CROWN_SPIN_1_KEY, 0);
+            crown.setAngle(Phaser.Math.Between(0, 359));
+            crown.play(CROWN_SPIN_1_ANIM);
+            return crown;
+        }
+
+        return advScene.add.image(0, 0, CROWN_SPIN_2_KEY)
+            .setAngle(Phaser.Math.Between(0, 359));
     }
 
     private addHeavenProcessionEvents(): void {
@@ -750,7 +1361,7 @@ export class GFinalVictoryCutscene extends GCutscene {
         this.addCutsceneEvent({
             eventId: 'adamHeavenFaceThrone',
             actor: 'player',
-            command: 'faceDir(n)',
+            command: `faceDir(${this.getHeavenCongregationDirection(adamSlot.point)})`,
             after: 'adamHeavenWalkToPlace',
             since: 1
         });
@@ -784,7 +1395,7 @@ export class GFinalVictoryCutscene extends GCutscene {
             this.addCutsceneEvent({
                 eventId: `heavenConvert_${actorNumber}FaceThrone`,
                 actor: `actor_${actorNumber}`,
-                command: 'faceDir(n)',
+                command: `faceDir(${this.getHeavenCongregationDirection(slot.point)})`,
                 after: `heavenConvert_${actorNumber}WalkToPlace`,
                 since: 1
             });
@@ -795,6 +1406,79 @@ export class GFinalVictoryCutscene extends GCutscene {
             condition: () => this.registry.get('heavenProcessionArrivedCount') as number === groupSize,
             after: 'prepareHeavenProcession',
             since: 1
+        });
+
+        this.addCutsceneEvent({
+            eventId: 'transformSaintsInTwinkling',
+            eventCode: () => {
+                this.transformSaintsInTwinkling();
+            },
+            after: 'heavenProcessionArrived',
+            since: 3000
+        });
+
+        this.addCutsceneEvent({
+            eventId: 'startCrownCasting',
+            eventCode: () => {
+                this.startCrownCasting();
+            },
+            after: 'transformSaintsInTwinkling',
+            since: 3000
+        });
+
+        this.addCutsceneEvent({
+            eventId: 'crownCastingDone',
+            condition: () => this.registry.has('crownCastingDone'),
+            after: 'startCrownCasting',
+            since: 1
+        });
+
+        this.addCutsceneEvent({
+            eventId: 'allCrownsDone',
+            condition: () => this.registry.has('allCrownsDone'),
+            after: 'startCrownCasting',
+            since: 1
+        });
+
+        this.addCutsceneEvent({
+            eventId: 'raiseHands',
+            eventCode: () => {
+                this.startStaggeredWorshipAction('raiseHands', 'raiseHandsDone');
+            },
+            after: 'allCrownsDone',
+            since: 3000
+        });
+
+        this.addCutsceneEvent({
+            eventId: 'raiseHandsDone',
+            condition: () => this.registry.has('raiseHandsDone'),
+            after: 'raiseHands',
+            since: 1
+        });
+
+        this.addCutsceneEvent({
+            eventId: 'kneelInWorship',
+            eventCode: () => {
+                this.startStaggeredWorshipAction('kneel', 'kneelInWorshipDone');
+            },
+            after: 'raiseHandsDone',
+            since: 3000
+        });
+
+        this.addCutsceneEvent({
+            eventId: 'kneelInWorshipDone',
+            condition: () => this.registry.has('kneelInWorshipDone'),
+            after: 'kneelInWorship',
+            since: 1
+        });
+
+        this.addCutsceneEvent({
+            eventId: 'startWorshipPraise',
+            eventCode: () => {
+                this.startWorshipPraiseLoop();
+            },
+            after: 'kneelInWorshipDone',
+            since: 2000
         });
     }
 
@@ -1154,7 +1838,7 @@ export class GFinalVictoryCutscene extends GCutscene {
             eventCode: () => {
                 this.end();
             },
-            after: 'heavenProcessionArrived',
+            after: 'startWorshipPraise',
             since: 10000
         });
     }
