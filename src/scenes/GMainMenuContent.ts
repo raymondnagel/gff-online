@@ -139,7 +139,11 @@ export class GMainMenuContent extends GContentScene {
 
         optionY = OPTION_GAP + this.mainMenuSection.addOption(this.initTextOption(CENTER_X, optionY, "Credits", 'md',
             `View a list of people who worked hard to create this game`, () => {
-            console.log('Credits - (not implemented yet)');
+            GFF.CREDITS_MODE.setExitDestination('mainMenu');
+            this.getSound().fadeOutMusic(1000);
+            this.fadeOut(1000, undefined, () => {
+                GFF.CREDITS_MODE.switchTo(GFF.MAINMENU_MODE);
+            });
         }));
 
         optionY = OPTION_GAP + this.mainMenuSection.addOption(this.initTextOption(CENTER_X, optionY, "Exit Game", 'md',

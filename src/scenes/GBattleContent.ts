@@ -344,6 +344,7 @@ export class GBattleContent extends GContentScene {
     private statusEffectDurationText: Phaser.GameObjects.Text;
     private statusEffectDuration: number = 0;
     private statusEffectJustInflicted: boolean = false;
+    private needsCleanTurnAfterStatusRecovery: boolean = false;
     private specialAttackUsed: boolean = false;
     private floodAttackUsed: boolean = false;
     private battleSpeechBubble: GBattleSpeechBubble|null = null;
@@ -1298,6 +1299,7 @@ export class GBattleContent extends GContentScene {
     private canDoSpecialAttack(disallowIfStatusEffect: boolean): boolean {
         return !this.specialAttackUsed
             && (!disallowIfStatusEffect || this.currentStatusEffect === null)
+            && (!disallowIfStatusEffect || !this.needsCleanTurnAfterStatusRecovery)
             && RANDOM.randPct() < GFF.getDifficulty().enemySpecialFrequency;
     }
 
@@ -2465,6 +2467,7 @@ export class GBattleContent extends GContentScene {
                 break;
             case BattleStage.VERSE:
                 if (this.verseEntry.isEnteredTextValid()) {
+                    this.needsCleanTurnAfterStatusRecovery = false;
                     if (this.bookText.text === this.servedVerse.book && RANDOM.randPct() < .3) {
                         const battleLine = PLAYER.getBattleLine(ENEMY.getCurrentSpirit().name);
                         if (battleLine) {
@@ -3006,6 +3009,8 @@ export class GBattleContent extends GContentScene {
      * or timers associated with the status effect, most likely as the battle is ending.
      */
     private removeStatusEffect(nextStep?: Function) {
+        const statusEffectRemovedDuringBattle = this.currentStatusEffect !== null && nextStep !== undefined;
+
         switch (this.currentStatusEffect) {
             case POISON_EFFECT:
                 this.stopPoisonPulse();
@@ -3027,6 +3032,9 @@ export class GBattleContent extends GContentScene {
         }
         this.currentStatusEffect = null;
         this.statusEffectJustInflicted = false;
+        if (statusEffectRemovedDuringBattle) {
+            this.needsCleanTurnAfterStatusRecovery = true;
+        }
 
         // If there's no next step
         if (nextStep === undefined) {

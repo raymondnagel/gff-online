@@ -104,6 +104,13 @@ const WORSHIP_PRAISE_MIN_DELAY: number = 300;
 const WORSHIP_PRAISE_MAX_DELAY: number = 800;
 const TITLE_LINE_HEIGHT: number = 64;
 const RESURRECTION_TEXT_LINE_HEIGHT: number = 52;
+const RESURRECTION_VOICEOVER_DELAY: number = 500;
+const RESURRECTION_MUSIC_DUCK_VOLUME: number = .5;
+const RESURRECTION_MUSIC_DUCK_TIME: number = 500;
+const HEAVEN_MUSIC_START_LEAD_TIME: number = 1000;
+const HEAVEN_NEXT_SONG_DELAY: number = 1000;
+const HEAVEN_SONG_ACTION_DELAY: number = 3000;
+const HEAVEN_TO_CREDITS_FADE_TIME: number = 1500;
 const WORSHIP_PRAISE_LINES: string[] = [
     'Praise the Lord!',
     'Alleluia!',
@@ -121,6 +128,8 @@ const WORSHIP_PRAISE_LINES: string[] = [
     'Thine is the kingdom!',
     'Bless the LORD, O my soul!'
 ];
+const FINAL_WORSHIP_TITLE_TEXT: string = '...and so shall we ever be with the Lord.';
+const FINAL_WORSHIP_TITLE_Y: number = 70;
 const PLAYER_REJOICE_PARTIAL_ANIM: string = 'adam_soldier_rejoice_s_partial';
 const RESURRECTION_GLOW_KEY: string = 'adam_resurrection_glow';
 const RESURRECTION_GLOW_X_OFFSET: number = -3;
@@ -173,6 +182,8 @@ export class GFinalVictoryCutscene extends GCutscene {
     private celestialSaints: GSaintSprite[] = [];
     private crownCastingOrder: GSaintSprite[] = [];
     private saintShiningImages: Phaser.GameObjects.Image[] = [];
+    private worshipPraiseActive: boolean = false;
+    private endingStarted: boolean = false;
 
     constructor() {
         super('final victory cutscene', true);
@@ -518,6 +529,10 @@ export class GFinalVictoryCutscene extends GCutscene {
             advScene.fadeOut(4000, COLOR.WHITE.num(), () => {
                 player.setVisible(false);
                 player.getBody().setEnable(false);
+                advScene.getSound().fadeMusicToVolume(
+                    RESURRECTION_MUSIC_DUCK_VOLUME,
+                    RESURRECTION_MUSIC_DUCK_TIME
+                );
                 this.registry.set('screenFadedToWhite', true);
             });
         });
@@ -1082,23 +1097,47 @@ export class GFinalVictoryCutscene extends GCutscene {
     }
 
     private startWorshipPraiseLoop(): void {
+        this.worshipPraiseActive = true;
+        GFF.AdventureContent.input.keyboard?.once('keydown-ENTER', () => {
+            this.finishFinalVictoryCutscene();
+        });
         this.scheduleWorshipPraise();
     }
 
     private scheduleWorshipPraise(): void {
-        if (this.celestialSaints.length === 0) {
+        if (!this.worshipPraiseActive || this.celestialSaints.length === 0) {
             return;
         }
 
         GFF.AdventureContent.time.delayedCall(
             RANDOM.randInt(WORSHIP_PRAISE_MIN_DELAY, WORSHIP_PRAISE_MAX_DELAY),
             () => {
+                if (!this.worshipPraiseActive) return;
                 const saint = RANDOM.randElement(this.celestialSaints) as GSaintSprite;
                 const praiseLine = RANDOM.randElement(WORSHIP_PRAISE_LINES) as string;
                 saint.showFloatingText(praiseLine, 'phrase');
                 this.scheduleWorshipPraise();
             }
         );
+    }
+
+    private playHeavenSong(soundKey: string, doneRegistryKey: string): void {
+        const song = GFF.AdventureContent.getSound().playMusic(soundKey, undefined, false);
+        song.once('complete', () => {
+            this.registry.set(doneRegistryKey, true);
+        });
+    }
+
+    private finishFinalVictoryCutscene(): void {
+        if (this.endingStarted) return;
+        this.endingStarted = true;
+        this.worshipPraiseActive = false;
+        GFF.AdventureContent.fadeOut(HEAVEN_TO_CREDITS_FADE_TIME, COLOR.BLACK.num(), () => {
+            GFF.AdventureContent.getSound().stopMusic();
+            GFF.CREDITS_MODE.setExitDestination('gameOver');
+            this.end();
+            GFF.CREDITS_MODE.switchTo(GFF.ADVENTURE_MODE);
+        });
     }
 
     private launchCrownProjectile(saint: GSaintSprite): void {
@@ -1409,12 +1448,21 @@ export class GFinalVictoryCutscene extends GCutscene {
         });
 
         this.addCutsceneEvent({
+            eventId: 'markHeavenProcessionArrived',
+            eventCode: () => {
+                this.registry.set('heavenProcessionArrived', true);
+            },
+            after: 'heavenProcessionArrived',
+            since: 1
+        });
+
+        this.addCutsceneEvent({
             eventId: 'transformSaintsInTwinkling',
             eventCode: () => {
                 this.transformSaintsInTwinkling();
             },
-            after: 'heavenProcessionArrived',
-            since: 3000
+            after: 'readyForSaintTransformation',
+            since: 1
         });
 
         this.addCutsceneEvent({
@@ -1422,8 +1470,8 @@ export class GFinalVictoryCutscene extends GCutscene {
             eventCode: () => {
                 this.startCrownCasting();
             },
-            after: 'transformSaintsInTwinkling',
-            since: 3000
+            after: 'startImmanuel',
+            since: HEAVEN_SONG_ACTION_DELAY
         });
 
         this.addCutsceneEvent({
@@ -1480,10 +1528,41 @@ export class GFinalVictoryCutscene extends GCutscene {
             after: 'kneelInWorshipDone',
             since: 2000
         });
+
+        this.addCutsceneEvent({
+            eventId: 'showFinalWorshipTitle',
+            eventCode: () => {
+                this.showFinalWorshipTitle();
+            },
+            after: 'startWorshipPraise',
+            since: 3000
+        });
     }
 
     private showResurrectionTextSequence(): void {
         this.showResurrectionText(0);
+    }
+
+    private showFinalWorshipTitle(): void {
+        const titleObjects = this.createTitleTextLines(
+            FINAL_WORSHIP_TITLE_TEXT,
+            FINAL_WORSHIP_TITLE_Y,
+            '54px',
+            WHITE_SCREEN_TEXT_DEPTH + 1,
+            RESURRECTION_TEXT_LINE_HEIGHT,
+            3,
+            7,
+            9,
+            COLOR.GOLD_2,
+            COLOR.GOLD_0
+        );
+
+        GFF.AdventureContent.tweens.add({
+            targets: titleObjects,
+            alpha: 1,
+            duration: 500,
+            ease: 'Linear'
+        });
     }
 
     private showResurrectionText(index: number): void {
@@ -1513,6 +1592,9 @@ export class GFinalVictoryCutscene extends GCutscene {
             duration: 500,
             ease: 'Linear',
             onComplete: () => {
+                advScene.time.delayedCall(RESURRECTION_VOICEOVER_DELAY, () => {
+                    advScene.getSound().playSound(`res_${index + 1}`);
+                });
                 advScene.time.delayedCall(resurrectionText.holdTime, () => {
                     advScene.tweens.add({
                         targets: titleObjects,
@@ -1520,6 +1602,9 @@ export class GFinalVictoryCutscene extends GCutscene {
                         duration: 500,
                         ease: 'Linear',
                         onComplete: () => {
+                            if (index === RESURRECTION_TEXTS.length - 1) {
+                                advScene.getSound().fadeMusicToVolume(1, RESURRECTION_MUSIC_DUCK_TIME);
+                            }
                             titleObjects.forEach(textObject => textObject.destroy());
                             advScene.time.delayedCall(1000, () => {
                                 this.showResurrectionText(index + 1);
@@ -1816,12 +1901,21 @@ export class GFinalVictoryCutscene extends GCutscene {
         });
 
         this.addCutsceneEvent({
+            eventId: 'startGetToHeaven',
+            eventCode: () => {
+                this.playHeavenSong('get_to_heaven', 'getToHeavenDone');
+            },
+            after: 'readyForFinalScene',
+            since: 100
+        });
+
+        this.addCutsceneEvent({
             eventId: 'finalSceneFadeIn',
             eventCode: () => {
                 this.fadeInFinalScene();
             },
-            after: 'readyForFinalScene',
-            since: 100
+            after: 'startGetToHeaven',
+            since: HEAVEN_MUSIC_START_LEAD_TIME
         });
 
         this.addCutsceneEvent({
@@ -1834,12 +1928,58 @@ export class GFinalVictoryCutscene extends GCutscene {
         this.addHeavenProcessionEvents();
 
         this.addCutsceneEvent({
+            eventId: 'getToHeavenDone',
+            condition: () => this.registry.has('getToHeavenDone'),
+            after: 'startGetToHeaven',
+            since: 1
+        });
+
+        this.addCutsceneEvent({
+            eventId: 'startWearACrown',
+            eventCode: () => {
+                this.playHeavenSong('wear_a_crown', 'wearACrownDone');
+            },
+            after: 'getToHeavenDone',
+            since: HEAVEN_NEXT_SONG_DELAY
+        });
+
+        this.addCutsceneEvent({
+            eventId: 'readyForSaintTransformation',
+            condition: () => this.registry.has('heavenProcessionArrived'),
+            after: 'startWearACrown',
+            since: HEAVEN_SONG_ACTION_DELAY
+        });
+
+        this.addCutsceneEvent({
+            eventId: 'wearACrownDone',
+            condition: () => this.registry.has('wearACrownDone'),
+            after: 'startWearACrown',
+            since: 1
+        });
+
+        this.addCutsceneEvent({
+            eventId: 'startImmanuel',
+            eventCode: () => {
+                this.playHeavenSong('immanuel', 'immanuelDone');
+            },
+            after: 'wearACrownDone',
+            since: HEAVEN_NEXT_SONG_DELAY
+        });
+
+        this.addCutsceneEvent({
+            eventId: 'immanuelDone',
+            condition: () => this.registry.has('immanuelDone'),
+            after: 'startImmanuel',
+            since: 1
+        });
+
+        this.addCutsceneEvent({
             eventId: 'endCutscene',
             eventCode: () => {
-                this.end();
+                this.finishFinalVictoryCutscene();
             },
-            after: 'startWorshipPraise',
-            since: 10000
+            after: 'immanuelDone',
+            since: 1
         });
     }
 

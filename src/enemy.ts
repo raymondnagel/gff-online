@@ -205,9 +205,9 @@ export namespace ENEMY {
 
         const baseResist = GFF.getDifficulty().enemyBaseResist + (GFF.getDifficulty().enemyResistPerLevel * spirit.level);
         setMaxResistance(Math.round(baseResist * GFF.getDifficulty().bossResistPct));
-        if (spirit.name === 'Dragon') {
-            setMaxResistance(100); // Set the Dragon to have low resistance for testing
-        }
+        // if (spirit.name === 'Dragon') {
+        //     setMaxResistance(100); // Set the Dragon to have low resistance for testing
+        // }
         setResistance(getMaxResistance());
     }
 

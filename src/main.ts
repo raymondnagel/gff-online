@@ -30,6 +30,10 @@ import { GWorldBuildContent } from './scenes/GWorldBuildContent';
 import { REGISTRY } from './registry';
 import { GLoadGameMode } from './game_modes/GLoadGameMode';
 import { GLoadGameContent } from './scenes/GLoadGameContent';
+import { GCreditsMode } from './game_modes/GCreditsMode';
+import { GCreditsContent } from './scenes/GCreditsContent';
+import { GGameOverMode } from './game_modes/GGameOverMode';
+import { GGameOverContent } from './scenes/GGameOverContent';
 
 const gameWidth: number = 1024;
 const gameHeight: number = 768;
@@ -51,6 +55,8 @@ let configObject: Phaser.Types.Core.GameConfig = {
         GLoadingScene,
         GTitleContent,
         GMainMenuContent,
+        GCreditsContent,
+        GGameOverContent,
         GWorldBuildContent,
         GLoadGameContent,
         GAdventureContent, GAdventureUI,
@@ -117,6 +123,8 @@ export namespace GFF {
      */
     export const TITLE_MODE: GTitleMode = new GTitleMode();
     export const MAINMENU_MODE: GMainMenuMode = new GMainMenuMode();
+    export const CREDITS_MODE: GCreditsMode = new GCreditsMode();
+    export const GAMEOVER_MODE: GGameOverMode = new GGameOverMode();
     export const WORLDBUILD_MODE: GWorldBuildMode = new GWorldBuildMode();
     export const LOADGAME_MODE: GLoadGameMode = new GLoadGameMode();
     export const ADVENTURE_MODE: GAdventureMode = new GAdventureMode();
