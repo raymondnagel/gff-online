@@ -83,13 +83,53 @@ export class GMountRegion extends GOutsideRegion{
         if (partialWalls) {
             room.planPartialWallScenery([
                 SCENERY.def('boulder'),
-                SCENERY.def('pine_tree')
+                SCENERY.def('small_pine')
             ]);
         }
 
         if (internalObjects) {
-            // Peak: 100% chance to add 1-7
-            room.planSceneryChanceForBatch(SCENERY.def('peak'), 1.0, 1, 7, objectBounds, zoneRects);
+            // Mountain scene type:
+            switch (RANDOM.randInt(1, 7)) {
+                case 1:
+                case 2:
+                case 3:
+                    // Peaks are HUGE - only place one if the room doesn't have a special feature, since we will ignore zones for this.
+                    if (!room.hasSpecialFeature()) {
+                        // Mountain Peak:
+                        // Peak: 100% chance to add 1 (in a custom center zone)
+                        room.planSceneryChanceForEach(SCENERY.def('peak'), 1.0, 1, objectBounds, SCENERY.getSceneryZoneTemplate('center'));
+                    }
+                    break;
+                case 4:
+                case 5:
+                case 6:
+                    // Craggy Mountains:
+                    // Crag: 100% chance to add 3-4
+                    room.planSceneryChanceForBatch(SCENERY.def('crag'), 1.0, 3, 4, objectBounds, SCENERY.getSceneryZoneTemplate('widecenter'));
+                    break;
+                case 7:
+                    // Volcanic Area:
+                    // Volcano: 100% chance to add 1-3
+                    room.planSceneryChanceForBatch(SCENERY.def('volcano'), 1.0, 1, 3, objectBounds, SCENERY.getSceneryZoneTemplate('widecenter'));
+                    // Lava Crack: 100% chance to add 2-4
+                    room.planSceneryChanceForBatch(SCENERY.def('lava_crack'), 1.0, 2, 4, objectBounds);
+                    break;
+            }
+
+            // Crag: 100% chance to add 2-4
+            room.planSceneryChanceForBatch(SCENERY.def('crag'), 1.0, 2, 4, objectBounds, zoneRects);
+            // Small Pine: 50% chance to add 2-5
+            room.planSceneryChanceForBatch(SCENERY.def('small_pine'), 0.5, 2, 8, objectBounds, zoneRects);
+            // Earthy Pit: 15% chance each to add 1-2
+            room.planSceneryChanceForEach(SCENERY.def('earthy_pit'), .15, 2, objectBounds, zoneRects);
+            // Campfire: 10% chance each to add 1
+            room.planSceneryChanceForEach(SCENERY.def('campfire'), .1, 1, objectBounds, zoneRects);
+            // Boulders: 30% chance to add 1-4
+            room.planSceneryChanceForBatch(SCENERY.def('boulder'), .3, 1, 4, objectBounds, zoneRects);
+            // Flower Patch 1: 15% chance to add 1-3;
+            room.planSceneryChanceForBatch(SCENERY.def('flower_patch_1'), .15, 1, 3, objectBounds);
+            // Flower Patch 2: 15% chance to add 1-3;
+            room.planSceneryChanceForBatch(SCENERY.def('flower_patch_2'), .15, 1, 3, objectBounds);
         }
     }
 }

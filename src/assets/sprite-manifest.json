@@ -4349,7 +4349,9 @@
   "sprites/scenery/campfire-116x150.png",
   "sprites/scenery/down_hint-29x49.png",
   "sprites/scenery/lava-64x64.png",
+  "sprites/scenery/lava_crack-140x113.png",
   "sprites/scenery/torch_flame-48x72.png",
   "sprites/scenery/trap_shut-64x64.png",
-  "sprites/scenery/up_hint-29x49.png"
+  "sprites/scenery/up_hint-29x49.png",
+  "sprites/scenery/volcano-286x180.png"
 ]

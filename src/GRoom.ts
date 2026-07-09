@@ -100,6 +100,7 @@ export class GRoom implements GSaveable {
     private stronghold: GStronghold|null = null;
     private portalRoom: GRoom|null = null;
     private walls: GRoomWalls;
+    private townEdgeSections: GRoomWalls;
     private doorways: GDoorways = {
         [Dir9.N]: false,
         [Dir9.E]: false,
@@ -134,6 +135,7 @@ export class GRoom implements GSaveable {
 
     private testZones: TestZone[] = [];
     private yards: GRect[] = [];
+    private partialWallSceneryDefs: GSceneryDef[]|null = null;
     private roomLog: string[] = [];
 
     constructor(floor: number, x: number, y: number, area: GArea) {
@@ -143,6 +145,16 @@ export class GRoom implements GSaveable {
         this.y = y;
         this.addRoomLogEntry(`*** Room @ ${x},${y}...`);
         this.walls = {
+            [Dir9.N]: new Array(HORZ_WALL_SECTIONS).fill(false),
+            [Dir9.E]: new Array(VERT_WALL_SECTIONS).fill(false),
+            [Dir9.S]: new Array(HORZ_WALL_SECTIONS).fill(false),
+            [Dir9.W]: new Array(VERT_WALL_SECTIONS).fill(false)
+        };
+        this.townEdgeSections = GRoom.createEmptyWallSections();
+    }
+
+    private static createEmptyWallSections(): GRoomWalls {
+        return {
             [Dir9.N]: new Array(HORZ_WALL_SECTIONS).fill(false),
             [Dir9.E]: new Array(VERT_WALL_SECTIONS).fill(false),
             [Dir9.S]: new Array(HORZ_WALL_SECTIONS).fill(false),
@@ -394,6 +406,7 @@ export class GRoom implements GSaveable {
     }
 
     public setFullWall(dir: CardDir, wall: boolean) {
+        this.clearTownEdgeSections(dir);
         const sections = new Array(this.walls[dir].length).fill(wall);
         this.setWallSections(dir, sections);
     }
@@ -404,6 +417,67 @@ export class GRoom implements GSaveable {
         } else {
             throw new Error(`Wall (${DIRECTION.dir9Texts()[dir]}) sections (${sections.length}) length mismatch!`);
         }
+    }
+
+    public setTownFullBlockWall(dir: CardDir) {
+        this.area.setWallByRoom(this, dir, true);
+        this.claimTownEdgeSections(dir, 0, this.townEdgeSections[dir].length - 1);
+    }
+
+    public hasTownFullBlockWall(dir: CardDir): boolean {
+        return this.hasFullWall(dir) && this.isTownEdgeFullyClaimed(dir);
+    }
+
+    private clearTownEdgeSections(dir: CardDir) {
+        this.townEdgeSections[dir] = new Array(this.townEdgeSections[dir].length).fill(false);
+    }
+
+    private claimTownEdgeSections(dir: CardDir, startSection: number, endSection: number, passageSections?: boolean[]) {
+        const sections: boolean[] = this.townEdgeSections[dir];
+        const start: number = Math.max(0, startSection);
+        const end: number = Math.min(sections.length - 1, endSection);
+        const neighbor: GRoom|null = this.getNeighbor(dir);
+        const oppositeDir: CardDir = DIRECTION.getOpposite(dir) as CardDir;
+        const newlyMirroredSections: number[] = [];
+        for (let s: number = start; s <= end; s++) {
+            if (passageSections && !passageSections[s]) {
+                continue;
+            }
+            sections[s] = true;
+            this.walls[dir][s] = true;
+            if (neighbor && !neighbor.walls[oppositeDir][s]) {
+                newlyMirroredSections.push(s);
+                neighbor.walls[oppositeDir][s] = true;
+            }
+        }
+        this.removeSceneryPlansFromEdgeSections(dir, start, end);
+        if (neighbor?.getTown() === null) {
+            neighbor.planAdditionalWallSceneryForSections(oppositeDir, newlyMirroredSections);
+        }
+    }
+
+    private hasAnyTownEdgeSection(dir: CardDir): boolean {
+        return this.townEdgeSections[dir].some(section => section);
+    }
+
+    private isTownEdgeFullyClaimed(dir: CardDir): boolean {
+        return this.townEdgeSections[dir].every(section => section);
+    }
+
+    private getUnclaimedWallSections(dir: CardDir): boolean[] {
+        return this.walls[dir].map((section, index) => section && !this.townEdgeSections[dir][index]);
+    }
+
+    private planAdditionalWallSceneryForSections(dir: CardDir, sections: number[]) {
+        if (this.partialWallSceneryDefs === null || sections.length === 0) {
+            return;
+        }
+
+        const wallSections: boolean[] = new Array(this.walls[dir].length).fill(false);
+        sections.forEach(section => {
+            wallSections[section] = this.walls[dir][section] && !this.townEdgeSections[dir][section];
+        });
+        this.planWallSections(dir, this.partialWallSceneryDefs, false, false, wallSections);
     }
 
     public getWallSections(dir: CardDir): boolean[] {
@@ -465,6 +539,39 @@ export class GRoom implements GSaveable {
                     y: findNearest(this.getWallSections(wallDir), point.y) as number
                 };
         }
+    }
+
+    public getAdjustedArrivalPosition(wallDir: CardDir, point: GPoint2D): GPoint2D {
+        if (this.shouldUseTownRoadArrivalCenters(wallDir)) {
+            return this.getNearestTownRoadArrivalCenter(wallDir as Dir9.N|Dir9.S, point);
+        }
+        return this.getNearestWallCenter(wallDir, point);
+    }
+
+    private shouldUseTownRoadArrivalCenters(wallDir: CardDir): boolean {
+        if (this.town === null) {
+            return false;
+        }
+        switch (wallDir) {
+            case Dir9.N:
+                return this.getNeighbor(Dir9.N)?.getTown() !== null;
+            case Dir9.S:
+                return this.getNeighbor(Dir9.S)?.getTown() !== null;
+            default:
+                return false;
+        }
+    }
+
+    private getNearestTownRoadArrivalCenter(wallDir: Dir9.N|Dir9.S, point: GPoint2D): GPoint2D {
+        const centerX: number = point.x < GFF.ROOM_W / 2
+            ? WALL_CTRS[7]
+            : WALL_CTRS[8];
+        return {
+            x: centerX,
+            y: wallDir === Dir9.N
+                ? GFF.TOP_BOUND + (GFF.TILE_H / 2)
+                : GFF.BOTTOM_BOUND - (GFF.TILE_H / 2)
+        };
     }
 
     public setDoorway(dir: CardDir, hasDoorway: boolean) {
@@ -790,33 +897,37 @@ export class GRoom implements GSaveable {
         const westWall: boolean = this.hasFullWall(Dir9.W);
         const eastWall: boolean = this.hasFullWall(Dir9.E);
         const southWall: boolean = this.hasFullWall(Dir9.S);
+        const northTownEdge: boolean = this.hasAnyTownEdgeSection(Dir9.N);
+        const westTownEdge: boolean = this.hasAnyTownEdgeSection(Dir9.W);
+        const eastTownEdge: boolean = this.hasAnyTownEdgeSection(Dir9.E);
+        const southTownEdge: boolean = this.hasAnyTownEdgeSection(Dir9.S);
         const wallSet: Record<Dir9, GSceneryDef|null> = region.getWalls();
 
         // Add cardinal walls:
-        if (northWall) {
+        if (northWall && !northTownEdge) {
             new GWallNorth(wallSet[Dir9.N] as GSceneryDef);
         }
-        if (westWall) {
+        if (westWall && !westTownEdge) {
             new GWallWest(wallSet[Dir9.W] as GSceneryDef);
         }
-        if (eastWall) {
+        if (eastWall && !eastTownEdge) {
             new GWallEast(wallSet[Dir9.E] as GSceneryDef);
         }
-        if (southWall) {
+        if (southWall && !southTownEdge) {
             new GWallSouth(wallSet[Dir9.S] as GSceneryDef);
         }
 
         // Add any required corner pieces (for aesthetics):
-        if (northWall && westWall) {
+        if (northWall && westWall && !northTownEdge && !westTownEdge) {
             new GWallNW(wallSet[Dir9.NW] as GSceneryDef);
         }
-        if (northWall && eastWall) {
+        if (northWall && eastWall && !northTownEdge && !eastTownEdge) {
             new GWallNE(wallSet[Dir9.NE] as GSceneryDef);
         }
-        if (southWall && westWall) {
+        if (southWall && westWall && !southTownEdge && !westTownEdge) {
             new GWallSW(wallSet[Dir9.SW] as GSceneryDef);
         }
-        if (southWall && eastWall) {
+        if (southWall && eastWall && !southTownEdge && !eastTownEdge) {
             new GWallSE(wallSet[Dir9.SE] as GSceneryDef);
         }
     }
@@ -1195,7 +1306,47 @@ export class GRoom implements GSaveable {
         this.plans = [];
     }
 
+    private removeSceneryPlansFromEdgeSections(dir: CardDir, startSection: number, endSection: number) {
+        this.plans = this.plans.filter(plan => {
+            const def: GSceneryDef = SCENERY.def(plan.key);
+            const planBounds: GRect = {
+                x: plan.x + def.body.x,
+                y: plan.y + def.body.y,
+                width: def.body.width,
+                height: def.body.height
+            };
+
+            for (let section: number = startSection; section <= endSection; section++) {
+                if (this.rectsOverlap(planBounds, this.getEdgeSectionRect(dir, section))) {
+                    return false;
+                }
+            }
+            return true;
+        });
+    }
+
+    private getEdgeSectionRect(dir: CardDir, section: number): GRect {
+        switch (dir) {
+            case Dir9.N:
+                return { x: section * GFF.TILE_W, y: GFF.TOP_BOUND, width: GFF.TILE_W, height: GFF.TILE_H };
+            case Dir9.E:
+                return { x: GFF.ROOM_AREA_RIGHT, y: section * GFF.TILE_H, width: GFF.TILE_W, height: GFF.TILE_H };
+            case Dir9.S:
+                return { x: section * GFF.TILE_W, y: GFF.ROOM_AREA_BOTTOM, width: GFF.TILE_W, height: GFF.TILE_H };
+            case Dir9.W:
+                return { x: GFF.LEFT_BOUND, y: section * GFF.TILE_H, width: GFF.TILE_W, height: GFF.TILE_H };
+        }
+    }
+
+    private rectsOverlap(a: GRect, b: GRect): boolean {
+        return a.x < b.x + b.width
+            && a.x + a.width > b.x
+            && a.y < b.y + b.height
+            && a.y + a.height > b.y;
+    }
+
     public planPartialWallScenery(sceneryDefs: GSceneryDef[]) {
+        this.partialWallSceneryDefs = sceneryDefs;
         this.addRoomLogEntry(`Planning partial-wall scenery...`);
 
         // Omit first/last section of N/S walls IF there is a full wall next to it:
@@ -1219,12 +1370,36 @@ export class GRoom implements GSaveable {
         }
     }
 
-    private shouldPlanPartialWallScenery(dir: CardDir): boolean {
-        return this.hasAnyWall(dir) && !this.hasFullWall(dir);// && !this.hasTownAndTownNeighbor(dir);
+    private planTownClaimedFullWallRemainders() {
+        if (this.partialWallSceneryDefs === null) {
+            return;
+        }
+
+        for (let d = 0; d < 4; d++) {
+            const dir: CardDir = DIRECTION.cardDirFrom4(d as 0|1|2|3);
+            if (
+                this.hasFullWall(dir)
+                && this.hasAnyTownEdgeSection(dir)
+                && !this.isTownEdgeFullyClaimed(dir)
+            ) {
+                this.planWallSections(dir, this.partialWallSceneryDefs, false, false);
+            }
+        }
     }
 
-    private planWallSections(dir: CardDir, sceneryPool: GSceneryDef[], omitFirst: boolean, omitLast: boolean) {
-        let wallSections: boolean[] = this.getWallSections(dir);
+    private shouldPlanPartialWallScenery(dir: CardDir): boolean {
+        const fullWallHandledByWallObject: boolean = this.hasFullWall(dir) && !this.hasAnyTownEdgeSection(dir);
+        return this.getUnclaimedWallSections(dir).some(section => section) && !fullWallHandledByWallObject;
+    }
+
+    private planWallSections(
+        dir: CardDir,
+        sceneryPool: GSceneryDef[],
+        omitFirst: boolean,
+        omitLast: boolean,
+        sections?: boolean[]
+    ) {
+        let wallSections: boolean[] = sections ?? this.getUnclaimedWallSections(dir);
         if (omitLast) {
             wallSections = wallSections.slice(0, -1);
         }
@@ -1481,6 +1656,20 @@ export class GRoom implements GSaveable {
         }
     }
 
+    public planTileSceneryPatch(key: string, minTiles: number, maxTiles: number, objects: GRect[], zones?: GRect[]): void {
+        const targetTiles = RANDOM.randInt(minTiles, maxTiles);
+        const tilePoints = this.fitTileSceneryPatch(targetTiles, objects, zones);
+        if (tilePoints.length < minTiles) {
+            return;
+        }
+
+        for (let tilePoint of tilePoints) {
+            const tileRect = this.getTileArea(tilePoint.x, tilePoint.y, 1, 1);
+            objects.push(tileRect);
+            this.planTileScenery(key, tilePoint.x, tilePoint.y);
+        }
+    }
+
     public fitScenery(objectWidth: number, objectHeight: number, objects: GRect[], zones?: GRect[]): GRect|null {
         // Create a default zone if zones is undefined;
         // The default zone allows space for walls around the perimeter.
@@ -1505,6 +1694,101 @@ export class GRoom implements GSaveable {
 
         // Will return null if no placement was available
         return placement;
+    }
+
+    private fitTileSceneryPatch(targetTiles: number, objects: GRect[], zones?: GRect[]): GPoint2D[] {
+        if (zones === undefined) {
+            zones = [ {x: GFF.ROOM_AREA_LEFT, y: GFF.ROOM_AREA_TOP, width: GFF.ROOM_AREA_WIDTH, height: GFF.ROOM_AREA_HEIGHT} ];
+        }
+
+        for (let nsz of this.noSceneryZones) {
+            if (!objects.includes(nsz)) {
+                objects.push(nsz);
+            }
+        }
+
+        const availableTiles = this.getAvailableTilePatchPoints(objects, zones);
+        if (availableTiles.length === 0) {
+            return [];
+        }
+
+        const availableTileKeys = new Set(availableTiles.map(p => `${p.x},${p.y}`));
+        let bestPatch: GPoint2D[] = [];
+
+        for (let attempt = 0; attempt < 20; attempt++) {
+            const patch: GPoint2D[] = [RANDOM.randElement(availableTiles)];
+            const patchKeys = new Set<string>([`${patch[0].x},${patch[0].y}`]);
+
+            while (patch.length < targetTiles) {
+                const neighborOptions = this.getTilePatchNeighborOptions(patch, patchKeys, availableTileKeys);
+                if (neighborOptions.length === 0) {
+                    break;
+                }
+                const nextTile = RANDOM.randElement(neighborOptions) as GPoint2D;
+                patch.push(nextTile);
+                patchKeys.add(`${nextTile.x},${nextTile.y}`);
+            }
+
+            if (patch.length > bestPatch.length) {
+                bestPatch = patch;
+            }
+            if (bestPatch.length >= targetTiles) {
+                break;
+            }
+        }
+
+        return bestPatch;
+    }
+
+    private getAvailableTilePatchPoints(objects: GRect[], zones: GRect[]): GPoint2D[] {
+        const availableTiles: GPoint2D[] = [];
+        const roomTileWidth = GFF.ROOM_W / GFF.TILE_W;
+        const roomTileHeight = GFF.ROOM_H / GFF.TILE_H;
+
+        for (let y = 0; y < roomTileHeight; y++) {
+            for (let x = 0; x < roomTileWidth; x++) {
+                const tileRect = this.getTileArea(x, y, 1, 1);
+                if (
+                    this.isRectInsideAnyZone(tileRect, zones)
+                    && !this.intersectsAny(tileRect, objects)
+                ) {
+                    availableTiles.push({x, y});
+                }
+            }
+        }
+
+        return availableTiles;
+    }
+
+    private getTilePatchNeighborOptions(patch: GPoint2D[], patchKeys: Set<string>, availableTileKeys: Set<string>): GPoint2D[] {
+        const neighborOptions: GPoint2D[] = [];
+        for (let tilePoint of patch) {
+            for (let neighborPoint of [
+                {x: tilePoint.x, y: tilePoint.y - 1},
+                {x: tilePoint.x + 1, y: tilePoint.y},
+                {x: tilePoint.x, y: tilePoint.y + 1},
+                {x: tilePoint.x - 1, y: tilePoint.y},
+            ]) {
+                const neighborKey = `${neighborPoint.x},${neighborPoint.y}`;
+                if (
+                    availableTileKeys.has(neighborKey)
+                    && !patchKeys.has(neighborKey)
+                    && !neighborOptions.some(p => p.x === neighborPoint.x && p.y === neighborPoint.y)
+                ) {
+                    neighborOptions.push(neighborPoint);
+                }
+            }
+        }
+        return neighborOptions;
+    }
+
+    private isRectInsideAnyZone(rect: GRect, zones: GRect[]): boolean {
+        return zones.some(z => (
+            rect.x >= z.x
+            && rect.y >= z.y
+            && rect.x + rect.width <= z.x + z.width
+            && rect.y + rect.height <= z.y + z.height
+        ));
     }
 
     public planRandomPremiumChestShrine(itemName: string, color: 'blue'|'red'|'purple'|'gold') {
@@ -1761,6 +2045,52 @@ export class GRoom implements GSaveable {
             ARRAY.removeObject(seVert, cityBlocks);
         }
 
+        const northPassageSections: boolean[] = new Array(HORZ_WALL_SECTIONS).fill(true);
+        const southPassageSections: boolean[] = new Array(HORZ_WALL_SECTIONS).fill(true);
+        if (roadNorth) {
+            northPassageSections[7] = false;
+            northPassageSections[8] = false;
+        }
+        if (cityBlocks.includes(nwHorz) || cityBlocks.includes(nwVert)) {
+            northPassageSections[6] = false;
+        }
+        if (cityBlocks.includes(neHorz) || cityBlocks.includes(neVert)) {
+            northPassageSections[9] = false;
+        }
+        if (roadSouth) {
+            southPassageSections[7] = false;
+            southPassageSections[8] = false;
+        }
+        if (cityBlocks.includes(swHorz) || cityBlocks.includes(swVert)) {
+            southPassageSections[6] = false;
+        }
+        if (cityBlocks.includes(seHorz) || cityBlocks.includes(seVert)) {
+            southPassageSections[9] = false;
+        }
+
+        if (!this.church) {
+            cityBlocks.forEach(block => this.claimTownEdgesForBlock(block, northPassageSections, roadEast, southPassageSections, roadWest));
+            if (cityBlocks.includes(fullNorthHorzBlock)) {
+                this.setTownFullBlockWall(Dir9.N);
+            }
+            if (cityBlocks.includes(fullSouthHorzBlock)) {
+                this.setTownFullBlockWall(Dir9.S);
+            }
+            if (cityBlocks.includes(fullWestVertBlock)) {
+                this.setTownFullBlockWall(Dir9.W);
+            }
+            if (cityBlocks.includes(fullEastVertBlock)) {
+                this.setTownFullBlockWall(Dir9.E);
+            }
+            if (roadNorth) {
+                this.applyTownRoadPassageSections(Dir9.N, northPassageSections);
+            }
+            if (roadSouth) {
+                this.applyTownRoadPassageSections(Dir9.S, southPassageSections);
+            }
+            this.planTownClaimedFullWallRemainders();
+        }
+
         // This method is only called on town rooms, so there will always be
         // at least one road from an edge to the center. Therfore, ALWAYS put
         // a no-scenery zone in the center:
@@ -1943,6 +2273,56 @@ export class GRoom implements GSaveable {
             }
         }
         return cityBlocks;
+    }
+
+    private claimTownEdgesForBlock(
+        block: GCityBlock,
+        northPassageSections: boolean[],
+        roadEast: boolean,
+        southPassageSections: boolean[],
+        roadWest: boolean
+    ) {
+        const blockRight: number = block.dimension.x + block.dimension.width;
+        const blockBottom: number = block.dimension.y + block.dimension.height;
+
+        if (block.dimension.y <= GFF.TOP_BOUND) {
+            const range = this.getWallSectionRange(block.dimension.x, blockRight, GFF.TILE_W, HORZ_WALL_SECTIONS);
+            this.claimTownEdgeSections(Dir9.N, range.start, range.end, northPassageSections);
+        }
+        if (blockRight >= GFF.RIGHT_BOUND) {
+            const range = this.getWallSectionRange(block.dimension.y, blockBottom, GFF.TILE_H, VERT_WALL_SECTIONS);
+            this.claimTownEdgeSections(Dir9.E, range.start, range.end, roadEast ? VERT_ROAD_PASSAGE_SECTION : undefined);
+        }
+        if (blockBottom >= GFF.BOTTOM_BOUND) {
+            const range = this.getWallSectionRange(block.dimension.x, blockRight, GFF.TILE_W, HORZ_WALL_SECTIONS);
+            this.claimTownEdgeSections(Dir9.S, range.start, range.end, southPassageSections);
+        }
+        if (block.dimension.x <= GFF.LEFT_BOUND) {
+            const range = this.getWallSectionRange(block.dimension.y, blockBottom, GFF.TILE_H, VERT_WALL_SECTIONS);
+            this.claimTownEdgeSections(Dir9.W, range.start, range.end, roadWest ? VERT_ROAD_PASSAGE_SECTION : undefined);
+        }
+    }
+
+    private applyTownRoadPassageSections(dir: CardDir, passageSections: boolean[]) {
+        const neighbor: GRoom|null = this.getNeighbor(dir);
+        const oppositeDir: CardDir = DIRECTION.getOpposite(dir) as CardDir;
+        for (let s: number = 0; s < passageSections.length; s++) {
+            if (!passageSections[s]) {
+                this.walls[dir][s] = false;
+                this.townEdgeSections[dir][s] = false;
+                if (neighbor) {
+                    neighbor.walls[oppositeDir][s] = false;
+                    neighbor.townEdgeSections[oppositeDir][s] = false;
+                }
+            }
+        }
+    }
+
+    private getWallSectionRange(startPx: number, endPx: number, sectionSize: number, sectionCount: number): { start: number, end: number } {
+        return {
+            start: Math.max(0, Math.floor(startPx / sectionSize)),
+            end: Math.min(sectionCount - 1, Math.ceil(endPx / sectionSize) - 1)
+        };
     }
 
     private createCurbs(roadNorth: boolean, roadEast: boolean, roadSouth: boolean, roadWest: boolean) {
@@ -2475,6 +2855,7 @@ export class GRoom implements GSaveable {
 
             // Arrays
             walls: this.walls,
+            townEdgeSections: this.townEdgeSections,
             doorways: this.doorways,
             lockedDoors: this.lockedDoors,
             yards: this.yards,
@@ -2500,6 +2881,15 @@ export class GRoom implements GSaveable {
         this.region = refObj(context.region);
         this.sector = refObj(context.sector);
         this.walls = context.walls;
+        this.townEdgeSections = context.townEdgeSections ?? GRoom.createEmptyWallSections();
+        if (context.townFullBlockWalls) {
+            for (let d = 0; d < 4; d++) {
+                const dir: CardDir = DIRECTION.cardDirFrom4(d as 0|1|2|3);
+                if (context.townFullBlockWalls[dir]) {
+                    this.townEdgeSections[dir].fill(true);
+                }
+            }
+        }
         this.doorways = context.doorways;
         this.lockedDoors = context.lockedDoors;
         this.yards = context.yards;

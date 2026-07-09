@@ -28,7 +28,7 @@ export class GGameOverContent extends GContentScene {
             align: 'center'
         }).setOrigin(0.5, 0.5);
 
-        this.add.text(GFF.GAME_W / 2, GFF.GAME_H / 2 + 52, 'The grace of our Lord Jesus Christ be with you all. Amen.', {
+        this.add.text(GFF.GAME_W / 2, GFF.GAME_H / 2 + 52, 'The grace of our Lord Jesus Christ be with you. Amen.', {
             color: COLOR.GOLD_1.str(),
             fontFamily: 'averia_serif',
             fontSize: '26px',

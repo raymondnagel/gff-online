@@ -147,5 +147,9 @@
   "json/scenery_zone_templates/zone_template_5.json",
   "json/scenery_zone_templates/zone_template_6.json",
   "json/scenery_zone_templates/zone_template_7.json",
-  "json/scenery_zone_templates/zone_template_8.json"
+  "json/scenery_zone_templates/zone_template_8.json",
+  "json/scenery_zone_templates/zone_template_center.json",
+  "json/scenery_zone_templates/zone_template_narrow_corridors.json",
+  "json/scenery_zone_templates/zone_template_uneven_blocks.json",
+  "json/scenery_zone_templates/zone_template_widecenter.json"
 ]

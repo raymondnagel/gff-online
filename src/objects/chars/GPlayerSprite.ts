@@ -52,7 +52,7 @@ export class GPlayerSprite extends GCharSprite {
         this.createSingleAnimation('scroll_se', 0);
         this.createDirectionalAnimations('interact', 0);
         this.createDirectionalAnimations('run');
-         // Remove default "sit_n" with directional "sit":
+         // Replace default "sit_n" with directional "sit":
         this.anims.remove('adam_sit_n');
         this.createDirectionalAnimations('sit');
 
@@ -64,7 +64,6 @@ export class GPlayerSprite extends GCharSprite {
         this.createSingleAnimation('carryidle_s');
         this.createSingleAnimation('kneel_ne'); // Used to pray while in a stronghold
         this.createSingleAnimation('rejoice_s');
-        this.createSingleAnimation('sit_n');
         this.createDirectionalAnimations('idle');
         this.createDirectionalAnimations('walk');
         this.createDirectionalAnimations('interact', 0);

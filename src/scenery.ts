@@ -185,22 +185,26 @@ export namespace SCENERY {
             { key: 'cell_right', type: 'static', body: {x: 0, y: 100, width: 19, height: 29} },
             { key: 'church_pew', type: 'static', body: {x: 0, y: 55, width: 318, height: 10} },
             { key: 'church_pulpit', type: 'static', body: {x: 0, y: 50, width: 72, height: 37} },
+            { key: 'crag', type: 'static', body: {x: 0, y: 100, width: 229, height: 66} },
             { key: 'cypress_tree', type: 'static', body: {x: 44, y: 207, width: 144, height: 20} },
             { key: 'desert_boulder', type: 'static', body: {x: 0, y: 22, width: 64, height: 24} },
+            { key: 'earthy_pit', type: 'static', body: {x: 0, y: 0, width: 154, height: 112} },
             { key: 'help_sign', type: 'static', body: {x: 52, y: 72, width: 12, height: 8} },
             { key: 'lava', type: 'custom', body: {x: 0, y: 0, width: 64, height: 64} },
             { key: 'abyss', type: 'custom', body: {x: 0, y: 0, width: 64, height: 64} },
+            { key: 'bog_water', type: 'custom', body: {x: 0, y: 0, width: 64, height: 64} },
             { key: 'oak_tree', type: 'static', body: {x: 76, y: 200, width: 116, height: 36} },
             { key: 'obelisk', type: 'static', body: {x: 0, y: 126, width: 64, height: 38}, tint: true },
             { key: 'paddle_cactus', type: 'static', body: {x: 8, y: 81, width: 102, height: 30} },
             { key: 'palm_tree', type: 'static', body: {x: 95, y: 179, width: 30, height: 22} },
-            { key: 'peak', type: 'static', body: {x: 0, y: 167, width: 300, height: 116} },
-            { key: 'pine_tree', type: 'static', body: {x: 70, y: 264, width: 78, height: 36} },
+            { key: 'peak', type: 'static', body: {x: 0, y: 318, width: 500, height: 130} },
+            { key: 'pine_tree', type: 'static', body: {x: 71, y: 253, width: 56, height: 27} },
             { key: 'prophet_bed', type: 'static', body: {x: 0, y: 49, width: 141, height: 46} },
             { key: 'prophet_table', type: 'static', body: {x: 0, y: 58, width: 104, height: 36} },
             { key: 'rock_column', type: 'static', body: {x: 0, y: 240, width: 159, height: 40} },
             { key: 'shrine_pillar', type: 'static', body: {x: 0, y: 119, width: 64, height: 21} },
             { key: 'shrub', type: 'static', body: {x: 0, y: 41, width: 64, height: 16} },
+            { key: 'small_pine', type: 'static', body: {x: 25, y: 184, width: 39, height: 16} },
             { key: 'snowman', type: 'static', body: {x: 9, y: 64, width: 49, height: 26} },
             { key: 'snowy_boulder', type: 'static', body: {x: 0, y: 55, width: 95, height: 26} },
             { key: 'snowy_dead_tree', type: 'static', body: {x: 36, y: 183, width: 111, height: 37} },
@@ -213,6 +217,7 @@ export namespace SCENERY {
             { key: 'torch_base', type: 'custom', body: {x: 0, y: 45, width: 48, height: 24}, tint: true },
             { key: 'torch_flame', type: 'custom', body: {x: 0, y: 0, width: 48, height: 72} },
             { key: 'tree_stump', type: 'static', body: {x: 0, y: 20, width: 115, height: 36} },
+            { key: 'volcano', type: 'custom', body: {x: 0, y: 100, width: 286, height: 80} },
             { key: 'wall_block', type: 'static', body: {x: 0, y: 64, width: 64, height: 64}, tint: true },
             { key: 'willow_tree', type: 'static', body: {x: 44, y: 209, width: 131, height: 21} },
             { key: 'wonky_tree', type: 'static', body: {x: 54, y: 130, width: 64, height: 30} },
@@ -337,6 +342,7 @@ export namespace SCENERY {
             { key: 'entrance_mat', type: 'bg_decor', body: {x: 0, y: 0, width: 192, height: 128}, tint: true },
             { key: 'flower_patch_1', type: 'bg_decor', body: {x: 0, y: 0, width: 40, height: 30} },
             { key: 'flower_patch_2', type: 'bg_decor', body: {x: 0, y: 0, width: 50, height: 44} },
+            { key: 'lava_crack', type: 'custom', body: {x: 0, y: 0, width: 140, height: 113} },
             { key: 'shrine_pedestal', type: 'bg_decor', body: {x: 0, y: 0, width: 64, height: 14} },
             { key: 'steer_skull', type: 'bg_decor', body: {x: 0, y: 0, width: 64, height: 32} },
             { key: 'street_curve_ne_inner', type: 'bg_decor', body: {x: 0, y: 0, width: 64, height: 64} },
@@ -369,6 +375,9 @@ export namespace SCENERY {
             { key: 'street_vert_sw_int', type: 'bg_decor', body: {x: 0, y: 0, width: 64, height: 64} },
             { key: 'street_vert_w', type: 'bg_decor', body: {x: 0, y: 0, width: 64, height: 64} },
             { key: 'statue_pedestal', type: 'bg_decor', body: {x: 0, y: 0, width: 64, height: 14}, tint: true },
+            { key: 'swamp_puddle_sm', type: 'bg_decor', body: {x: 0, y: 0, width: 71, height: 40} },
+            { key: 'swamp_puddle_md', type: 'bg_decor', body: {x: 0, y: 0, width: 107, height: 60} },
+            { key: 'swamp_puddle_lg', type: 'bg_decor', body: {x: 0, y: 0, width: 182, height: 90} },
             { key: 'grate', type: 'bg_decor', body: {x: 0, y: 0, width: 64, height: 64}, tint: true },
             // Overhead Decorations:
             { key: 'shrine_curtain_ctr_red', type: 'oh_decor', body: {x: 0, y: 0, width: 86, height: 48} },
@@ -389,6 +398,7 @@ export namespace SCENERY {
             { key: 'cobweb_w', type: 'oh_decor', body: {x: 0, y: 0, width: 64, height: 64} },
             { key: 'cobweb_e', type: 'oh_decor', body: {x: 0, y: 0, width: 64, height: 64} },
             { key: 'cave_vignette', type: 'oh_decor', body: {x: 0, y: 0, width: 1024, height: 704} },
+            { key: 'smoke_puff', type: 'custom', body: {x: 0, y: 0, width: 150, height: 150} },
             // Touchables:
             { key: 'black_chest', type: 'custom', body: {x: 0, y: 20, width: 48, height: 20} },
             { key: 'blue_chest', type: 'custom', body: {x: 0, y: 20, width: 48, height: 20} },
@@ -428,6 +438,8 @@ export namespace SCENERY {
                 return SCENERY_DEFS.get('abyss') as GSceneryDef;
             case 'stairs_up_false':
                 return SCENERY_DEFS.get('stairs_up') as GSceneryDef;
+            case 'volcano_smoke':
+                return SCENERY_DEFS.get('smoke_puff') as GSceneryDef;
             default:
                 return SCENERY_DEFS.get(key) as GSceneryDef;
         }
@@ -460,6 +472,10 @@ export namespace SCENERY {
                 switch(plan.key) {
                     case 'campfire':
                         sceneryObj = new GObstacleSprite(def('campfire') as GSceneryDef, plan.x, plan.y, 7, 10);
+                        break;
+                    case 'volcano':
+                        sceneryObj = new GObstacleSprite(def('volcano') as GSceneryDef, plan.x, plan.y, 4, 6);
+                        const smoke = new GOverheadAnimatedDecoration(def('volcano_smoke') as GSceneryDef, plan.x + 60, plan.y - 78, 10, 10);
                         break;
                     case 'brown_chest':
                     case 'blue_chest':
@@ -546,6 +562,10 @@ export namespace SCENERY {
                         const flame = new GForegroundAnimatedDecoration(def('torch_flame') as GSceneryDef, plan.x, plan.y - 52, 7, 10);
                         flame.setDepth((sceneryObj as GObstacleStatic).depth + 1);
                         break;
+                    case 'lava_crack':
+                        // Player can walk on crack because the lava is underneath.
+                        sceneryObj = new GBackgroundAnimatedDecoration(def('lava_crack') as GSceneryDef, plan.x, plan.y, 6, 6);
+                        break;
                     case 'grated_lava':
                         // Player can walk on grate because the lava is just a decoration underneath.
                         sceneryObj = new GBackgroundAnimatedDecoration(def('lava') as GSceneryDef, plan.x, plan.y, 7, 10);
@@ -557,7 +577,7 @@ export namespace SCENERY {
                         createChasm(plan, sceneryObj, 'chasm', stoneTint);
                         break;
                     case 'grated_abyss':
-                        // Player can walk on grate because the lava is just a decoration underneath.
+                        // Player can walk on grate because the abyss is just a decoration underneath.
                         sceneryObj = new GBackgroundAnimatedDecoration(def('abyss') as GSceneryDef, plan.x, plan.y, 11, 10);
                         new GBackgroundDecoration('grate', plan.x, plan.y, decorRenderer!, stoneTint);
                         break;
@@ -565,6 +585,11 @@ export namespace SCENERY {
                         // Player can't walk on normal abyss because it's an obstacle.
                         sceneryObj = new GObstacleSprite(def('abyss') as GSceneryDef, plan.x, plan.y, 11, 10);
                         createChasm(plan, sceneryObj, 'chasm', stoneTint);
+                        break;
+                    case 'bog_water':
+                        // Player can't walk on bog water because it's an obstacle.
+                        sceneryObj = new GObstacleStatic(def('bog_water') as GSceneryDef, plan.x, plan.y);
+                        createChasm(plan, sceneryObj, 'bog', undefined);
                         break;
                     case 'hidden_trap':
                         sceneryObj = new GHiddenTrap(plan.x, plan.y, stoneTint);
@@ -611,10 +636,12 @@ export namespace SCENERY {
                 const edgeObj = new GForegroundDecoration(edgeDef, chasmTilePlan.x, chasmTilePlan.y);
                 (chasmTileObject as GObstacleStatic).depth = DEPTH.BG_SUBDECOR;
                 edgeObj.depth = DEPTH.BG_DECOR;
-                edgeObj.setTint(stoneTint);
+                if (stoneTint !== undefined) {
+                    edgeObj.setTint(stoneTint);
+                }
             }
         }
-        // Check each diagnoal direction;
+        // Check each diagonal direction;
         for (let dir of [Dir9.NE, Dir9.SE, Dir9.SW, Dir9.NW]) {
             if (!chasmTilePlan.joins[dir as Dir8]) {
                 // No join in this diagonal direction; check adjacents.
@@ -626,7 +653,9 @@ export namespace SCENERY {
                     const edgeObj = new GForegroundDecoration(edgeDef, chasmTilePlan.x, chasmTilePlan.y);
                     (chasmTileObject as GObstacleStatic).depth = DEPTH.BG_SUBDECOR;
                     edgeObj.depth = DEPTH.BG_DECOR;
-                    edgeObj.setTint(stoneTint);
+                    if (stoneTint !== undefined) {
+                        edgeObj.setTint(stoneTint);
+                    }
                 }
             }
         }
@@ -634,5 +663,9 @@ export namespace SCENERY {
 
     export function getRandomSceneryZoneTemplate(): GRect[] {
         return GFF.GAME.cache.json.get('zone_template_' + RANDOM.randInt(1, 8));
+    }
+
+    export function getSceneryZoneTemplate(templateName: string): GRect[] {
+        return GFF.GAME.cache.json.get('zone_template_' + templateName);
     }
 }

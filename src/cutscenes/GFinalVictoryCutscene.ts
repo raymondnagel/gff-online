@@ -1548,7 +1548,7 @@ export class GFinalVictoryCutscene extends GCutscene {
             FINAL_WORSHIP_TITLE_TEXT,
             FINAL_WORSHIP_TITLE_Y,
             '54px',
-            WHITE_SCREEN_TEXT_DEPTH + 1,
+            DEPTH.TRANSITION - 10,
             RESURRECTION_TEXT_LINE_HEIGHT,
             3,
             7,

@@ -6,6 +6,7 @@ import { GRoom } from "../../GRoom";
 import { GFF } from "../../main";
 import { PLAYER } from "../../player";
 import { REGISTRY } from "../../registry";
+import { STATS } from "../../stats";
 import { GActionableOption, GBookEntry, GGlossaryEntry, GKeyVerseEntry, GPoint2D } from "../../types";
 import { GDistributionContainer } from "./GDistributionContainer";
 import { GDynamicPositioner } from "./GDynamicPositioner";
@@ -479,6 +480,7 @@ export class GPopup extends Phaser.GameObjects.Image {
             this.unlockCursorIndex++;
             if (this.unlockCursorIndex >= this.unlockCharacters.length) {
                 this.scene.sound.play('success');
+                STATS.changeInt('KeyVersesUsed', 1);
                 return true;
             }
 

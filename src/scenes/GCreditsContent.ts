@@ -128,8 +128,14 @@ const CREDIT_BLOCKS: CreditBlock[] = [
     },
     {
         lines: [
-            `In Loving Memory of Sister Kate Decker, our most enthusiastic supporter,`,
+            `In loving memory of Sister Kate Decker, our most enthusiastic supporter,`,
             `who went before us into the presence of the Lord Jesus.`,
+        ]
+    },
+    {
+        lines: [
+            `Thanks for playing!`,
+            `(Please share the game with all your friends!)`,
         ]
     }
 ];
@@ -178,7 +184,7 @@ export class GCreditsContent extends GContentScene {
             stroke: COLOR.BLACK.str(),
             strokeThickness: 6,
             align: 'center'
-        }).setOrigin(0.5, 0.5).setDepth(CREDITS_TITLE_DEPTH);
+        }).setOrigin(0.5, 0.5).setDepth(CREDITS_TITLE_DEPTH).setShadow(2, 2, COLOR.GOLD_4.str(), 4, false, true);
 
         this.createCreditTexts();
         this.startCreditsMusic();
@@ -219,9 +225,9 @@ export class GCreditsContent extends GContentScene {
 
         let y = 0;
         CREDIT_BLOCKS.forEach((block, blockIndex) => {
-            const isLastBlock = blockIndex === CREDIT_BLOCKS.length - 1;
-            const fontSize = isLastBlock ? CREDITS_SMALL_FONT_SIZE : CREDITS_FONT_SIZE;
-            const wrapWidth = isLastBlock ? CREDITS_MEMORIAL_WRAP_W : CREDITS_WRAP_W;
+            const isLastTwoBlocks = blockIndex >= CREDIT_BLOCKS.length - 2;
+            const fontSize = isLastTwoBlocks ? CREDITS_SMALL_FONT_SIZE : CREDITS_FONT_SIZE;
+            const wrapWidth = isLastTwoBlocks ? CREDITS_MEMORIAL_WRAP_W : CREDITS_WRAP_W;
 
             if (block.title) {
                 const title = this.add.text(GFF.GAME_W / 2, y, block.title, {

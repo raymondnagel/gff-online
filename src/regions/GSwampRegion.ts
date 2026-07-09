@@ -51,14 +51,14 @@ export class GSwampRegion extends GOutsideRegion{
 
     public getWalls(): Record<Dir9, GSceneryDef|null> {
         return {
-            [Dir9.N]: SCENERY.def('swamp_wall_n'),
-            [Dir9.E]: SCENERY.def('swamp_wall_e'),
-            [Dir9.S]: SCENERY.def('swamp_wall_s'),
-            [Dir9.W]: SCENERY.def('swamp_wall_w'),
-            [Dir9.NE]: SCENERY.def('swamp_wall_ne'),
-            [Dir9.SE]: SCENERY.def('swamp_wall_se'),
-            [Dir9.SW]: SCENERY.def('swamp_wall_sw'),
-            [Dir9.NW]: SCENERY.def('swamp_wall_nw'),
+            [Dir9.N]: SCENERY.def('rock_wall_n'),
+            [Dir9.E]: SCENERY.def('rock_wall_e'),
+            [Dir9.S]: SCENERY.def('rock_wall_s'),
+            [Dir9.W]: SCENERY.def('rock_wall_w'),
+            [Dir9.NE]: SCENERY.def('rock_wall_ne'),
+            [Dir9.SE]: SCENERY.def('rock_wall_se'),
+            [Dir9.SW]: SCENERY.def('rock_wall_sw'),
+            [Dir9.NW]: SCENERY.def('rock_wall_nw'),
             [Dir9.NONE]: null,
         };
     }
@@ -93,15 +93,22 @@ export class GSwampRegion extends GOutsideRegion{
         }
 
         if (internalObjects) {
+            // Cypress Trees: 40% chance to add 1-4
+            room.planSceneryChanceForBatch(SCENERY.def('cypress_tree'), .4, 1, 4, objectBounds, zoneRects);
+            // Willow Trees: 40% chance to add 1-4
+            room.planSceneryChanceForBatch(SCENERY.def('willow_tree'), .4, 1, 4, objectBounds, zoneRects);
+            // Large Puddle: 50% chance each to add up to 2
+            room.planSceneryChanceForEach(SCENERY.def('swamp_puddle_lg'), .5, 2, objectBounds, zoneRects);
+            // Medium Puddle: 50% chance each to add up to 3
+            room.planSceneryChanceForEach(SCENERY.def('swamp_puddle_md'), .5, 3, objectBounds, zoneRects);
+            // Small Puddle: 50% chance each to add up to 5
+            room.planSceneryChanceForEach(SCENERY.def('swamp_puddle_sm'), .5, 5, objectBounds, zoneRects);
+
             // Cattails: 100% chance to add 10-20;
             room.planSceneryChanceForBatch(SCENERY.def('cattails'), 1, 10, 20, objectBounds);
             // Mushrooms: 50% chance to add 1-5;
             room.planSceneryChanceForBatch(SCENERY.def('mushrooms'), .5, 1, 5, objectBounds);
 
-            // Cypress Trees: 20% chance to add 1-4
-            room.planSceneryChanceForBatch(SCENERY.def('cypress_tree'), .2, 1, 4, objectBounds, zoneRects);
-            // Willow Trees: 20% chance to add 1-4
-            room.planSceneryChanceForBatch(SCENERY.def('willow_tree'), .2, 1, 4, objectBounds, zoneRects);
             // Palm Trees: 20% chance to add 1-2
             room.planSceneryChanceForBatch(SCENERY.def('palm_tree'), .2, 1, 2, objectBounds, zoneRects);
             // Wonky Trees: 20% chance to add 1-4

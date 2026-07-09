@@ -737,7 +737,7 @@ export class GAdventureContent extends GContentScene {
                 const room: GRoom = this.getCurrentRoom() as GRoom;
                 if (!room.getRegion().isInterior()) {
                     const playerCtr: GPoint2D = this.player.getPhysicalCenter();
-                    const wallCtr: GPoint2D = room.getNearestWallCenter(DIRECTION.getOpposite(dir) as CardDir, playerCtr);
+                    const wallCtr: GPoint2D = room.getAdjustedArrivalPosition(DIRECTION.getOpposite(dir) as CardDir, playerCtr);
                     this.player.centerPhysically(wallCtr);
                 }
 

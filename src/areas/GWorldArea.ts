@@ -90,6 +90,7 @@ export class GWorldArea extends GArea {
         this.createOuterBorder(0);
         this.fixCornerWallSections();
         this.createCivilization();
+        this.verifyWorldRoomConnectivity();
         this.createStrongholds();
         this.createCave();
         this.concealAllRooms(0);
@@ -408,6 +409,37 @@ export class GWorldArea extends GArea {
 
         // Plan streets for each town room:
         this.createTownDistricts();
+    }
+
+    private verifyWorldRoomConnectivity(): void {
+        const rooms: GRoom[] = this.getRoomsByFloor(0);
+        if (rooms.length === 0) {
+            GFF.genLog('World room connectivity check failed: no rooms were found.', true);
+            return;
+        }
+
+        const visited: Set<GRoom> = new Set();
+        const frontier: GRoom[] = [rooms[0]];
+        visited.add(rooms[0]);
+
+        while (frontier.length > 0) {
+            const room: GRoom = frontier.shift() as GRoom;
+            for (let d: number = 0; d < 4; d++) {
+                const dir: CardDir = DIRECTION.cardDirFrom4(d as 0|1|2|3);
+                const neighbor: GRoom|null = room.getNeighbor(dir);
+                if (neighbor && !visited.has(neighbor) && room.isAccessible(dir)) {
+                    visited.add(neighbor);
+                    frontier.push(neighbor);
+                }
+            }
+        }
+
+        const inaccessibleRooms: number = rooms.length - visited.size;
+        if (inaccessibleRooms === 0) {
+            GFF.genLog(`World room connectivity verified: all ${rooms.length} rooms are connected.`);
+        } else {
+            GFF.genLog(`World room connectivity check failed: ${inaccessibleRooms} of ${rooms.length} rooms are inaccessible.`, true);
+        }
     }
 
     private createTowns(numTowns: number): boolean {

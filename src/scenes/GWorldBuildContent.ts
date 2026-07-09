@@ -195,6 +195,9 @@ export class GWorldBuildContent extends GBaseScene {
         ];
         // Total rooms: 10 + 63 + 70 + 81 + 83 + 113 + 1 + 256 = 677
 
+        // There's also the 1 fake room created for the invitation cutscene, so the Status
+        // screen may eventually show 678 rooms explored, even though there are only 677.
+
         this.buildArea(0);
     }
 
