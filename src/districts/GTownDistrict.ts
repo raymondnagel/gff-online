@@ -1,6 +1,6 @@
 import { ARRAY } from "../array";
 import { COLOR } from "../colors";
-import { GLot } from "../GLot";
+import { GLot, YardBorderSide } from "../GLot";
 import { GRoom } from "../GRoom";
 import { GFF } from "../main";
 import { RANDOM } from "../random";
@@ -129,12 +129,17 @@ export abstract class GTownDistrict {
             } else {
                 // Select a random building from the list
                 const buildingDef = SCENERY.def(RANDOM.randElement(keyList));
+                const partnerDef = block.orientation === 'front'
+                    ? GTownDistrict.getPartnerBuildingDef(buildingDef.key)
+                    : undefined;
                 // If the selected building is single-instance, remove it from the list
                 if (this.singleInstanceKeys.includes(buildingDef.key)) {
                     ARRAY.removeObject(buildingDef.key, keyList);
                 }
                 // Create the lot, either front or back
-                const lot = block.orientation === 'front' ? GLot.createFrontBuildingLot(buildingDef, room, this) : GLot.createBackBuildingLot(buildingDef, room, this);
+                const lot = block.orientation === 'front'
+                    ? GLot.createFrontBuildingLot(buildingDef, room, this, undefined, partnerDef)
+                    : GLot.createBackBuildingLot(buildingDef, room, this);
 
                 // Get its width and add it to the running total
                 totalLotsWidth += lot.getPhysicalBounds().width;
@@ -145,12 +150,11 @@ export abstract class GTownDistrict {
 
         // Shuffle the array to add variety, making sure whole lots are not on the edge
         GTownDistrict.shuffleLotsForBlock(lots, block);
-
-        // We'll also have to figure out what to do with partner buildings;
-        // probably add the partner building as an optional argument alongside the main building,
-        // and have it included in the same lot.
+        GTownDistrict.addExposedYardBorders(lots, block, room);
 
         // We'll place the lots one after another to fill the block
+
+        totalLotsWidth = GTownDistrict.getTotalLotWidth(lots);
 
         // totalLotsWidth is now larger than blockWidth; get the difference:
         const spaceDiff = totalLotsWidth - blockWidth;
@@ -217,8 +221,11 @@ export abstract class GTownDistrict {
 
         // Shuffle the array to add variety, making sure whole lots are not on the edge
         GTownDistrict.shuffleLotsForBlock(lots, block);
+        GTownDistrict.addExposedYardBorders(lots, block, room);
 
         // Side-facing buildings don't have partner buildings or travel agencies, so don't worry about that
+
+        totalLotsHeight = GTownDistrict.getTotalLotHeight(lots);
 
         // totalLotsHeight is now larger than blockHeight; get the difference:
         const spaceDiff = totalLotsHeight - blockHeight;
@@ -300,6 +307,52 @@ export abstract class GTownDistrict {
                 ARRAY.swap(lots, wholeIndex, lots.length - 2);
             }
         }
+    }
+
+    private static addExposedYardBorders(lots: GLot[], block: GCityBlock, room: GRoom) {
+        if (lots.length === 0 || block.name.includes('full')) {
+            return;
+        }
+
+        const borderSide: YardBorderSide|null = GTownDistrict.getExposedYardBorderSide(block);
+        if (!borderSide) {
+            return;
+        }
+
+        const lotIndex: number = borderSide === 'left' || borderSide === 'top' ? 0 : lots.length - 1;
+        lots[lotIndex].addYardBorder(borderSide, room);
+    }
+
+    private static getExposedYardBorderSide(block: GCityBlock): YardBorderSide|null {
+        if (block.orientation === 'side') {
+            if (block.start === GFF.ROOM_Y && block.end < GFF.ROOM_H) {
+                return 'bottom';
+            }
+            if (block.start > GFF.ROOM_Y && block.end === GFF.ROOM_H) {
+                return 'top';
+            }
+        } else {
+            if (block.start === GFF.ROOM_X && block.end < GFF.ROOM_W) {
+                return 'right';
+            }
+            if (block.start > GFF.ROOM_X && block.end === GFF.ROOM_W) {
+                return 'left';
+            }
+        }
+        return null;
+    }
+
+    private static getTotalLotWidth(lots: GLot[]): number {
+        return lots.reduce((sum, lot) => sum + lot.getPhysicalBounds().width, 0);
+    }
+
+    private static getTotalLotHeight(lots: GLot[]): number {
+        return lots.reduce((sum, lot) => sum + lot.getPhysicalBounds().height, 0);
+    }
+
+    private static getPartnerBuildingDef(buildingKey: string): GSceneryDef|undefined {
+        const partner = GTownDistrict.partnerBuildings.find(p => p.mainKey === buildingKey);
+        return partner ? SCENERY.def(partner.partnerKey) : undefined;
     }
 
     public abstract getFenceStyle(): 'fence_link'|'fence_stockade'|'fence_picket';
