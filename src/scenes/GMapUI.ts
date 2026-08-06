@@ -139,7 +139,7 @@ export class GMapUI extends GUIScene {
                     // Draw feature, if applicable:
                     if (feature) {
                         // If debug mode, always draw feature.
-                        if (REGISTRY.getBoolean('isDebug')) {
+                        if (false) { // REGISTRY.getBoolean('isDebug')) { // Uncomment to show all features in debug mode
                             this.lowerTexture.draw(feature, cellX, cellY);
                         } else {
                             switch (feature) {

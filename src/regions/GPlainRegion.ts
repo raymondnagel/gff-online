@@ -2,7 +2,7 @@ import { RANDOM } from "../random";
 import { GRoom } from "../GRoom";
 import { SCENERY } from "../scenery";
 import { Dir9, GRect, GSceneryDef } from "../types";
-import { GOutsideRegion } from "./GOutsideRegion";
+import { GOutsideRegion, GParkNaturalSceneryContext, GYardScenery } from "./GOutsideRegion";
 
 const STOCK_REGIONS = [
     { name: 'Abel', adjective: 'Abelite' },
@@ -99,6 +99,21 @@ export class GPlainRegion extends GOutsideRegion{
 
     public getTemperature(): number {
         return RANDOM.randInt(15, 25); // Plains are generally temperate and sunny.
+    }
+
+    public getYardScenery(): GYardScenery {
+        return {
+            border: ['bush', 'shrub', 'boulder', 'small_pine'],
+            adjacent: [],
+            middle: ['swimming_pool', 'clothesline', 'oak_tree', 'pine_tree'],
+            edge: ['oak_tree', 'pine_tree', 'bush', 'shrub', 'boulder', 'small_pine'],
+        };
+    }
+
+    public addNaturalParkScenery(context: GParkNaturalSceneryContext): void {
+        this.addParkEdgeScenery(context, ['bush', 'shrub', 'boulder', 'tree_stump', 'small_pine'], 1, 7, 10);
+        this.addParkEdgeScenery(context, ['oak_tree', 'pine_tree'], .25, 1, 2, 128, ['north', 'west', 'east']);
+        this.addParkSparseScenery(context, ['grass_tuft', 'field_grass', 'flower_patch_1', 'flower_patch_2', 'big_flower'], .65, 2, 6);
     }
 
     protected _furnishRoom(room: GRoom, partialWalls: boolean = true, internalObjects: boolean = true) {

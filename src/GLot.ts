@@ -1,6 +1,7 @@
 import { GTownDistrict } from "./districts/GTownDistrict";
 import { GRoom } from "./GRoom";
 import { RANDOM } from "./random";
+import { GOutsideRegion, GYardScenery } from "./regions/GOutsideRegion";
 import { SCENERY } from "./scenery";
 import { CardDir, Dir9, GAnchorSide, GBuildingOrientation, GRect, GSceneryDef, GSceneryPlan } from "./types";
 
@@ -19,6 +20,13 @@ type YardBorder = {
     keys: string[];
 };
 
+type YardSceneryPart = 'adjacent'|'middle'|'edge';
+
+type YardPlacementZone = GRect & {
+    adjacentAnchor: GAnchorSide;
+    edgeAnchor: GAnchorSide;
+};
+
 type DrivewayGate = {
     direction: CardDir;
     center: number;
@@ -33,8 +41,10 @@ export type FenceStyle = {
     rightHorz: string;
     leftVert: string;
     rightVert: string;
-    leftVertEnd: string;
-    rightVertEnd: string;
+    leftVertTop: string;
+    rightVertTop: string;
+    leftVertBottom: string;
+    rightVertBottom: string;
 }
 
 /**
@@ -53,6 +63,14 @@ const DRIVEWAY_CURB_OVERLAP = 6;
 const GATE_CLEARANCE = 8;
 
 /**
+ * Foot gates are used for fenced buildings that don't have driveways.
+ */
+const FOOT_GATE_WIDTH = 96;
+
+/**
+ * Clear space immediately inside the yard so a driveway/gate can be entered.
+ */
+/**
  * Gap (in pixels) between a building and a fence between it and the road.
  *
  * (Fence lengths on the sides of a building are in fence sections, not pixels,
@@ -67,11 +85,39 @@ const FENCE_BUILDING_GAP = 20;
  */
 const NS_LOT_HEIGHT = 256;
 const WE_LOT_WIDTH = 416;
+const YARD_MIDDLE_INSET = 8;
+const YARD_MIDDLE_COMFORT_MARGIN = 10;
 
-const YARD_BORDER_POOLS: YardBorder[] = [
-    { orientation: 'horizontal', keys: ['bush', 'shrub', 'boulder'] },
-    { orientation: 'vertical', keys: ['bush', 'shrub', 'boulder'] },
-];
+const GENERIC_YARD_SCENERY: GYardScenery = {
+    border: [],
+    adjacent: ['trash', 'grill_1', 'grill_2'],
+    middle: ['picnic_table'],
+    edge: [],
+};
+
+const YARD_SCENERY_ALLOW_MULTIPLE: { [key: string]: boolean } = {
+    trash: false,
+    swimming_pool: false,
+    clothesline: false,
+    picnic_table: false,
+    grill_1: false,
+    grill_2: false,
+    igloo: false,
+    camp_tent: false,
+};
+
+/**
+ * Entrance center X, measured from the building image origin.
+ */
+const BUILDING_ENTRANCE_X: { [key: string]: number } = {
+    factory_front: 155,
+    warehouse_front: 162,
+    police_station_front: 189,
+    school_front: 139,
+    apartments_front: 165,
+    cottage_front: 121,
+    mansion_front: 232,
+};
 
 const FENCE_STYLES: { [key: string]: FenceStyle } = {
     'fence_link': {
@@ -81,8 +127,10 @@ const FENCE_STYLES: { [key: string]: FenceStyle } = {
         rightHorz: 'fence_link_h_right',
         leftVert: 'fence_link_v_left',
         rightVert: 'fence_link_v_right',
-        leftVertEnd: 'fence_link_vend_left',
-        rightVertEnd: 'fence_link_vend_right'
+        leftVertTop: 'fence_link_vtop_left',
+        rightVertTop: 'fence_link_vtop_right',
+        leftVertBottom: 'fence_link_vbottom_left',
+        rightVertBottom: 'fence_link_vbottom_right'
     },
     'fence_stockade': {
         frontHorz: 'fence_stockade_h',
@@ -91,8 +139,10 @@ const FENCE_STYLES: { [key: string]: FenceStyle } = {
         rightHorz: 'fence_stockade_h_right',
         leftVert: 'fence_stockade_v_left',
         rightVert: 'fence_stockade_v_right',
-        leftVertEnd: 'fence_stockade_vend_left',
-        rightVertEnd: 'fence_stockade_vend_right'
+        leftVertTop: 'fence_stockade_vend_left',
+        rightVertTop: 'fence_stockade_vend_right',
+        leftVertBottom: 'fence_stockade_vend_left',
+        rightVertBottom: 'fence_stockade_vend_right'
     },
     'fence_picket': {
         frontHorz: 'fence_picket_h',
@@ -101,8 +151,10 @@ const FENCE_STYLES: { [key: string]: FenceStyle } = {
         rightHorz: 'fence_picket_h_right',
         leftVert: 'fence_picket_v_left',
         rightVert: 'fence_picket_v_right',
-        leftVertEnd: 'fence_picket_vend_left',
-        rightVertEnd: 'fence_picket_vend_right'
+        leftVertTop: 'fence_picket_vend_left',
+        rightVertTop: 'fence_picket_vend_right',
+        leftVertBottom: 'fence_picket_vend_left',
+        rightVertBottom: 'fence_picket_vend_right'
     },
 };
 
@@ -124,6 +176,7 @@ const FENCE_STYLES: { [key: string]: FenceStyle } = {
 export class GLot {
 
     private buildingPlan: LotPlan|null;
+    private partnerBuildingPlans: LotPlan[] = [];
     private objectPlans: LotPlan[] = [];
     private decorationPlans: LotPlan[] = [];
     private layoutBounds: GRect[] = [];
@@ -179,6 +232,7 @@ export class GLot {
             case 'fenced':
                 // We'll enclose the building with a fence around the perimeter
                 lot.fenced = true;
+                lot.reserveBuildingEntranceGate();
                 const fenceBoxStyle: string = GLot.getFenceForBuilding(buildingDef.key, district);
                 const leftSegments: number = district.getFenceSpacing();
                 const rightSegments: number = district.getFenceSpacing();
@@ -340,13 +394,52 @@ export class GLot {
         }
 
         const orientation: YardBorderOrientation = side === 'left' || side === 'right' ? 'vertical' : 'horizontal';
-        const border: YardBorder = RANDOM.randElement(YARD_BORDER_POOLS.filter(pool => pool.orientation === orientation));
+        const region = room.getRegion();
+        const regionScenery: GYardScenery|null = region instanceof GOutsideRegion
+            ? region.getYardScenery()
+            : null;
+        const keys: string[] = [
+            ...GENERIC_YARD_SCENERY.border,
+            ...(regionScenery?.border ?? [])
+        ];
+        if (keys.length === 0) {
+            return;
+        }
+
+        const border: YardBorder = { orientation, keys };
         room.addRoomLogEntry(`Adding ${side} yard border from ${border.keys.join(', ')}`);
 
         if (orientation === 'vertical') {
             this.addVerticalYardBorder(border, side, borderRect);
         } else {
             this.addHorizontalYardBorder(border, side, borderRect);
+        }
+    }
+
+    public addBackyardScenery(room: GRoom) {
+        const region = room.getRegion();
+        if (!this.buildingPlan || !this.facingDirection || !(region instanceof GOutsideRegion)) {
+            return;
+        }
+        if (!GLot.canHaveBackyardScenery(this.buildingPlan.key)) {
+            return;
+        }
+
+        const yardZones: YardPlacementZone[] = this.getYardPlacementZones();
+        if (yardZones.length === 0) {
+            return;
+        }
+
+        const regionScenery: GYardScenery = region.getYardScenery();
+        const parts: YardSceneryPart[] = ['middle', 'adjacent'];
+        const edgeAttempts: number = RANDOM.randInt(1, 3);
+
+        for (let attempt = 0; attempt < edgeAttempts; attempt++) {
+            parts.push('edge');
+        }
+
+        for (const part of parts) {
+            this.tryAddBackyardScenery(part, yardZones, regionScenery);
         }
     }
 
@@ -491,6 +584,7 @@ export class GLot {
     private addSidePartnerBuilding(partnerDef: GSceneryDef): LotPlan {
         const building: LotPlan = this.buildingPlan!;
         const partner: LotPlan = this.addObjectPlan(partnerDef);
+        this.partnerBuildingPlans.push(partner);
 
         partner.x = RANDOM.flipCoin()
             ? building.x - partner.body.width
@@ -521,6 +615,24 @@ export class GLot {
             direction: Dir9.S,
             center: garage.x + (garage.body.width / 2),
             width: stripDef.body.width + GATE_CLEARANCE
+        };
+    }
+
+    private reserveBuildingEntranceGate() {
+        if (this.facingDirection !== Dir9.S) {
+            return;
+        }
+
+        const building: LotPlan = this.buildingPlan!;
+        const entranceX: number|undefined = BUILDING_ENTRANCE_X[building.key];
+        if (entranceX === undefined) {
+            return;
+        }
+
+        this.drivewayGate = {
+            direction: Dir9.S,
+            center: building.x - building.body.x + entranceX,
+            width: FOOT_GATE_WIDTH
         };
     }
 
@@ -680,6 +792,268 @@ export class GLot {
         }
     }
 
+    private tryAddBackyardScenery(part: YardSceneryPart, yardZones: YardPlacementZone[], regionScenery: GYardScenery): boolean {
+        const keys: string[] = [
+            ...GENERIC_YARD_SCENERY[part],
+            ...regionScenery[part]
+        ].filter(key => this.canAddYardSceneryKey(key));
+        if (keys.length === 0) {
+            return false;
+        }
+
+        RANDOM.shuffle(keys);
+
+        for (const key of keys) {
+            const def: GSceneryDef = SCENERY.def(key);
+            const zones: YardPlacementZone[] = this.getYardPlacementZonesForPart(part, yardZones, def);
+            if (zones.length === 0) {
+                continue;
+            }
+
+            const placement: GRect|null = this.fitObjectInYardPart(part, def, zones, this.getOccupiedRects());
+            if (!placement) {
+                continue;
+            }
+
+            const plan: LotPlan = GLot.isDecorationDef(def)
+                ? this.addDecorationPlan(def)
+                : this.addObjectPlan(def);
+            plan.x = placement.x;
+            plan.y = placement.y;
+            return true;
+        }
+
+        return false;
+    }
+
+    private canAddYardSceneryKey(key: string): boolean {
+        if (YARD_SCENERY_ALLOW_MULTIPLE[key] ?? true) {
+            return true;
+        }
+        return !this.objectPlans.some(obj => obj.key === key)
+            && !this.decorationPlans.some(obj => obj.key === key);
+    }
+
+    private getYardPlacementZones(): YardPlacementZone[] {
+        const building: GRect = this.getBuildingClusterBounds();
+        const lotRect: GRect|null = this.getFullYardRect();
+        if (!lotRect) {
+            return [];
+        }
+
+        const buildingLeft: number = building.x;
+        const buildingRight: number = building.x + building.width;
+        const buildingTop: number = building.y;
+        const buildingBottom: number = building.y + building.height;
+        const lotRight: number = lotRect.x + lotRect.width;
+        const lotBottom: number = lotRect.y + lotRect.height;
+        const zones: YardPlacementZone[] = [];
+
+        switch (this.facingDirection) {
+            case Dir9.S:
+                zones.push(
+                    { x: lotRect.x, y: lotRect.y, width: lotRect.width, height: buildingTop - lotRect.y, adjacentAnchor: 'bottom', edgeAnchor: 'top' },
+                    { x: lotRect.x, y: buildingTop, width: buildingLeft - lotRect.x, height: building.height, adjacentAnchor: 'right', edgeAnchor: 'left' },
+                    { x: buildingRight, y: buildingTop, width: lotRight - buildingRight, height: building.height, adjacentAnchor: 'left', edgeAnchor: 'right' },
+                );
+                break;
+            case Dir9.N:
+                zones.push(
+                    { x: lotRect.x, y: buildingBottom, width: lotRect.width, height: lotBottom - buildingBottom, adjacentAnchor: 'top', edgeAnchor: 'bottom' },
+                    { x: lotRect.x, y: buildingTop, width: buildingLeft - lotRect.x, height: building.height, adjacentAnchor: 'right', edgeAnchor: 'left' },
+                    { x: buildingRight, y: buildingTop, width: lotRight - buildingRight, height: building.height, adjacentAnchor: 'left', edgeAnchor: 'right' },
+                );
+                break;
+            case Dir9.E:
+                zones.push(
+                    { x: lotRect.x, y: lotRect.y, width: buildingLeft - lotRect.x, height: lotRect.height, adjacentAnchor: 'right', edgeAnchor: 'left' },
+                    { x: buildingLeft, y: lotRect.y, width: building.width, height: buildingTop - lotRect.y, adjacentAnchor: 'bottom', edgeAnchor: 'top' },
+                    { x: buildingLeft, y: buildingBottom, width: building.width, height: lotBottom - buildingBottom, adjacentAnchor: 'top', edgeAnchor: 'bottom' },
+                );
+                break;
+            case Dir9.W:
+                zones.push(
+                    { x: buildingRight, y: lotRect.y, width: lotRight - buildingRight, height: lotRect.height, adjacentAnchor: 'left', edgeAnchor: 'right' },
+                    { x: buildingLeft, y: lotRect.y, width: building.width, height: buildingTop - lotRect.y, adjacentAnchor: 'bottom', edgeAnchor: 'top' },
+                    { x: buildingLeft, y: buildingBottom, width: building.width, height: lotBottom - buildingBottom, adjacentAnchor: 'top', edgeAnchor: 'bottom' },
+                );
+                break;
+        }
+
+        return zones.filter(zone => zone.width > 0 && zone.height > 0);
+    }
+
+    private getBuildingClusterBounds(): GRect {
+        const buildings: LotPlan[] = [
+            this.buildingPlan!,
+            ...this.partnerBuildingPlans
+        ];
+        const minX = Math.min(...buildings.map(obj => obj.x));
+        const minY = Math.min(...buildings.map(obj => obj.y));
+        const maxX = Math.max(...buildings.map(obj => obj.x + obj.body.width));
+        const maxY = Math.max(...buildings.map(obj => obj.y + obj.body.height));
+
+        return {
+            x: minX,
+            y: minY,
+            width: maxX - minX,
+            height: maxY - minY
+        };
+    }
+
+    private getFullYardRect(): GRect|null {
+        const building: LotPlan = this.buildingPlan!;
+        const lotBounds: GRect = this.getPhysicalBounds();
+
+        switch (this.facingDirection) {
+            case Dir9.S:
+                return {
+                    x: lotBounds.x,
+                    y: building.y - (NS_LOT_HEIGHT - building.body.height),
+                    width: lotBounds.width,
+                    height: NS_LOT_HEIGHT
+                };
+            case Dir9.N:
+                return {
+                    x: lotBounds.x,
+                    y: building.y,
+                    width: lotBounds.width,
+                    height: NS_LOT_HEIGHT
+                };
+            case Dir9.E:
+                return {
+                    x: building.x - (WE_LOT_WIDTH - building.body.width),
+                    y: lotBounds.y,
+                    width: WE_LOT_WIDTH,
+                    height: lotBounds.height
+                };
+            case Dir9.W:
+                return {
+                    x: building.x,
+                    y: lotBounds.y,
+                    width: WE_LOT_WIDTH,
+                    height: lotBounds.height
+                };
+        }
+        return null;
+    }
+
+    private getYardPlacementZonesForPart(part: YardSceneryPart, yardZones: YardPlacementZone[], def: GSceneryDef): YardPlacementZone[] {
+        return yardZones
+            .filter(zone => this.yardPlacementZoneHasRoom(part, zone, def))
+            .map(zone => this.getAdjustedYardPlacementZone(part, zone))
+            .filter(zone => zone.width >= def.body.width && zone.height >= def.body.height);
+    }
+
+    private yardPlacementZoneHasRoom(part: YardSceneryPart, zone: YardPlacementZone, def: GSceneryDef): boolean {
+        const margin: number = part === 'middle' ? YARD_MIDDLE_COMFORT_MARGIN : 0;
+        return zone.width >= def.body.width + (margin * 2)
+            && zone.height >= def.body.height + (margin * 2);
+    }
+
+    private getAdjustedYardPlacementZone(part: YardSceneryPart, zone: YardPlacementZone): YardPlacementZone {
+        if (part !== 'middle') {
+            return zone;
+        }
+
+        const inset: number = Math.min(YARD_MIDDLE_INSET, Math.floor(Math.min(zone.width, zone.height) / 4));
+        return {
+            ...zone,
+            x: zone.x + inset,
+            y: zone.y + inset,
+            width: Math.max(0, zone.width - (inset * 2)),
+            height: Math.max(0, zone.height - (inset * 2))
+        };
+    }
+
+    private getOccupiedRects(): GRect[] {
+        return [
+            ...this.objectPlans.map(obj => ({ x: obj.x, y: obj.y, width: obj.body.width, height: obj.body.height })),
+            ...this.decorationPlans.map(obj => ({ x: obj.x, y: obj.y, width: obj.body.width, height: obj.body.height })),
+            ...this.layoutBounds,
+            ...this.getDrivewayAccessRects()
+        ];
+    }
+
+    private getDrivewayAccessRects(): GRect[] {
+        if (!this.drivewayGate) {
+            return [];
+        }
+
+        const lotRect: GRect|null = this.getFullYardRect();
+        if (!lotRect) {
+            return [];
+        }
+
+        switch (this.drivewayGate.direction) {
+            case Dir9.N:
+            case Dir9.S:
+                return [{
+                    x: this.drivewayGate.center - (this.drivewayGate.width / 2),
+                    y: lotRect.y,
+                    width: this.drivewayGate.width,
+                    height: lotRect.height
+                }];
+            case Dir9.E:
+            case Dir9.W:
+                return [{
+                    x: lotRect.x,
+                    y: this.drivewayGate.center - (this.drivewayGate.width / 2),
+                    width: lotRect.width,
+                    height: this.drivewayGate.width
+                }];
+        }
+    }
+
+    private fitObjectInYardPart(part: YardSceneryPart, def: GSceneryDef, zones: YardPlacementZone[], occupiedRects: GRect[]): GRect|null {
+        const maxAttempts: number = 10;
+        for (let attempt = 0; attempt < maxAttempts; attempt++) {
+            const zone: YardPlacementZone = RANDOM.randElement(zones);
+            const placement: GRect = part === 'middle'
+                ? this.getRandomYardPlacement(def, zone)
+                : this.getAnchoredYardPlacement(def, zone, part === 'adjacent' ? zone.adjacentAnchor : zone.edgeAnchor);
+
+            if (!occupiedRects.some(rect => GLot.rectsOverlap(placement, rect))) {
+                return placement;
+            }
+        }
+        return null;
+    }
+
+    private getRandomYardPlacement(def: GSceneryDef, zone: GRect): GRect {
+        return {
+            x: RANDOM.randInt(Math.ceil(zone.x), Math.floor(zone.x + zone.width - def.body.width)),
+            y: RANDOM.randInt(Math.ceil(zone.y), Math.floor(zone.y + zone.height - def.body.height)),
+            width: def.body.width,
+            height: def.body.height
+        };
+    }
+
+    private getAnchoredYardPlacement(def: GSceneryDef, zone: GRect, anchor: GAnchorSide): GRect {
+        const xMin: number = Math.ceil(zone.x);
+        const xMax: number = Math.floor(zone.x + zone.width - def.body.width);
+        const yMin: number = Math.ceil(zone.y);
+        const yMax: number = Math.floor(zone.y + zone.height - def.body.height);
+
+        switch (anchor) {
+            case 'top':
+                return { x: RANDOM.randInt(xMin, xMax), y: zone.y, width: def.body.width, height: def.body.height };
+            case 'bottom':
+                return { x: RANDOM.randInt(xMin, xMax), y: zone.y + zone.height - def.body.height, width: def.body.width, height: def.body.height };
+            case 'left':
+                return { x: zone.x, y: RANDOM.randInt(yMin, yMax), width: def.body.width, height: def.body.height };
+            case 'right':
+                return { x: zone.x + zone.width - def.body.width, y: RANDOM.randInt(yMin, yMax), width: def.body.width, height: def.body.height };
+        }
+    }
+
+    private static rectsOverlap(a: GRect, b: GRect): boolean {
+        return a.x < b.x + b.width
+            && a.x + a.width > b.x
+            && a.y < b.y + b.height
+            && a.y + a.height > b.y;
+    }
+
     private getYardBorderRect(side: YardBorderSide): GRect|null {
         const building: LotPlan = this.buildingPlan!;
         const lotBounds: GRect = this.getPhysicalBounds();
@@ -753,9 +1127,19 @@ export class GLot {
 
         while (y < endY) {
             const def: GSceneryDef = SCENERY.def(RANDOM.randElement(border.keys));
-            const plan: LotPlan = this.addObjectPlan(def);
-            plan.x = side === 'left' ? borderRect.x : borderRect.x + borderRect.width - def.body.width;
-            plan.y = y;
+            const placement: GRect = {
+                x: side === 'left' ? borderRect.x : borderRect.x + borderRect.width - def.body.width,
+                y,
+                width: def.body.width,
+                height: def.body.height
+            };
+
+            if (!this.getOccupiedRects().some(rect => GLot.rectsOverlap(placement, rect))) {
+                const plan: LotPlan = this.addObjectPlan(def);
+                plan.x = placement.x;
+                plan.y = placement.y;
+            }
+
             y += def.body.height;
         }
     }
@@ -766,9 +1150,19 @@ export class GLot {
 
         while (x < endX) {
             const def: GSceneryDef = SCENERY.def(RANDOM.randElement(border.keys));
-            const plan: LotPlan = this.addObjectPlan(def);
-            plan.x = x;
-            plan.y = side === 'top' ? borderRect.y : borderRect.y + borderRect.height - def.body.height;
+            const placement: GRect = {
+                x,
+                y: side === 'top' ? borderRect.y : borderRect.y + borderRect.height - def.body.height,
+                width: def.body.width,
+                height: def.body.height
+            };
+
+            if (!this.getOccupiedRects().some(rect => GLot.rectsOverlap(placement, rect))) {
+                const plan: LotPlan = this.addObjectPlan(def);
+                plan.x = placement.x;
+                plan.y = placement.y;
+            }
+
             x += def.body.width;
         }
     }
@@ -901,14 +1295,17 @@ export class GLot {
     ): number {
         const fenceStyle = FENCE_STYLES[fenceType];
         const mainDef = SCENERY.def(rightSide ? fenceStyle.rightVert : fenceStyle.leftVert);
-        const endDef = SCENERY.def(rightSide ? fenceStyle.rightVertEnd : fenceStyle.leftVertEnd);
+        const topEndDef = SCENERY.def(rightSide ? fenceStyle.rightVertTop : fenceStyle.leftVertTop);
+        const bottomEndDef = SCENERY.def(rightSide ? fenceStyle.rightVertBottom : fenceStyle.leftVertBottom);
         const segmentHeight = mainDef.body.height;
 
         let y: number = startY;
         let plan: LotPlan;
         for (let s: number = 0; s < segments; s++) {
-            if (addEndPosts && (s === 0 || s === segments - 1)) {
-                plan = this.addObjectPlan(endDef);
+            if (addEndPosts && s === 0) {
+                plan = this.addObjectPlan(dirY === 1 ? topEndDef : bottomEndDef);
+            } else if (addEndPosts && s === segments - 1) {
+                plan = this.addObjectPlan(dirY === 1 ? bottomEndDef : topEndDef);
             } else {
                 plan = this.addObjectPlan(mainDef);
             }
@@ -1016,7 +1413,8 @@ export class GLot {
     ): number {
         const fenceStyle = FENCE_STYLES[fenceType];
         const mainDef = SCENERY.def(rightSide ? fenceStyle.rightVert : fenceStyle.leftVert);
-        const endDef = SCENERY.def(rightSide ? fenceStyle.rightVertEnd : fenceStyle.leftVertEnd);
+        const topEndDef = SCENERY.def(rightSide ? fenceStyle.rightVertTop : fenceStyle.leftVertTop);
+        const bottomEndDef = SCENERY.def(rightSide ? fenceStyle.rightVertBottom : fenceStyle.leftVertBottom);
         const segmentHeight = mainDef.body.height;
         const gateStart = gate.center - (gate.width / 2);
         const gateEnd = gate.center + (gate.width / 2);
@@ -1039,7 +1437,13 @@ export class GLot {
                 continue;
             }
 
-            const def = s === firstSkipped - 1 || s === lastSkipped + 1 ? endDef : slots[s].def;
+            let def = slots[s].def;
+            if (s === firstSkipped - 1) {
+                def = dirY === 1 ? bottomEndDef : topEndDef;
+            } else if (s === lastSkipped + 1) {
+                def = dirY === 1 ? topEndDef : bottomEndDef;
+            }
+
             const plan = this.addObjectPlan(def);
             plan.x = baseX;
             plan.y = slots[s].y - segmentHeight;
@@ -1372,5 +1776,15 @@ export class GLot {
 
     private static canHaveDriveway(buildingKey: string): boolean {
         return buildingKey.startsWith('house_');
+    }
+
+    private static canHaveBackyardScenery(buildingKey: string): boolean {
+        return buildingKey.startsWith('house_');
+    }
+
+    private static isDecorationDef(def: GSceneryDef): boolean {
+        return def.type === 'bg_decor'
+            || def.type === 'fg_decor'
+            || def.type === 'oh_decor';
     }
 }

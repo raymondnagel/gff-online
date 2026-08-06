@@ -2,7 +2,7 @@ import { RANDOM } from "../random";
 import { GRoom } from "../GRoom";
 import { SCENERY } from "../scenery";
 import { Dir9, GRect, GSceneryDef } from "../types";
-import { GOutsideRegion } from "./GOutsideRegion";
+import { GOutsideRegion, GParkNaturalSceneryContext, GYardScenery } from "./GOutsideRegion";
 
 const STOCK_REGIONS = [
     { name: 'Paran', adjective: 'Paranite' },
@@ -63,6 +63,21 @@ export class GDesertRegion extends GOutsideRegion{
 
     public getTemperature(): number {
         return RANDOM.randInt(30, 40); // Deserts are hot!
+    }
+
+    public getYardScenery(): GYardScenery {
+        return {
+            border: ['barrel_cactus', 'paddle_cactus', 'desert_boulder', 'spines_rocks'],
+            adjacent: [],
+            middle: ['swimming_pool', 'clothesline', 'tall_cactus', 'palm_tree'],
+            edge: ['tall_cactus', 'palm_tree', 'barrel_cactus', 'paddle_cactus', 'desert_boulder', 'spines_rocks'],
+        };
+    }
+
+    public addNaturalParkScenery(context: GParkNaturalSceneryContext): void {
+        this.addParkEdgeScenery(context, ['barrel_cactus', 'paddle_cactus', 'desert_boulder', 'spines_rocks'], 1, 3, 6);
+        this.addParkCornerScenery(context, ['tall_cactus', 'palm_tree', 'rock_column'], .55, 1, 2);
+        this.addParkSceneryEach(context, ['steer_skull', 'spines_rocks'], .2, 2, [context.rect]);
     }
 
     protected _furnishRoom(room: GRoom, partialWalls: boolean = true, internalObjects: boolean = true) {

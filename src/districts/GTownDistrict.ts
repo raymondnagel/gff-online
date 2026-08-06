@@ -151,6 +151,7 @@ export abstract class GTownDistrict {
         // Shuffle the array to add variety, making sure whole lots are not on the edge
         GTownDistrict.shuffleLotsForBlock(lots, block);
         GTownDistrict.addExposedYardBorders(lots, block, room);
+        lots.forEach(lot => lot.addBackyardScenery(room));
 
         // We'll place the lots one after another to fill the block
 
@@ -222,6 +223,7 @@ export abstract class GTownDistrict {
         // Shuffle the array to add variety, making sure whole lots are not on the edge
         GTownDistrict.shuffleLotsForBlock(lots, block);
         GTownDistrict.addExposedYardBorders(lots, block, room);
+        lots.forEach(lot => lot.addBackyardScenery(room));
 
         // Side-facing buildings don't have partner buildings or travel agencies, so don't worry about that
 

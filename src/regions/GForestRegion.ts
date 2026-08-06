@@ -2,7 +2,7 @@ import { RANDOM } from "../random";
 import { GRoom } from "../GRoom";
 import { SCENERY } from "../scenery";
 import { Dir9, GRect, GSceneryDef } from "../types";
-import { GOutsideRegion } from "./GOutsideRegion";
+import { GOutsideRegion, GParkNaturalSceneryContext, GYardScenery } from "./GOutsideRegion";
 
 const STOCK_REGIONS = [
     { name: 'Lebanon', adjective: 'Lebanonian' },
@@ -62,6 +62,22 @@ export class GForestRegion extends GOutsideRegion{
 
     public getTemperature(): number {
         return RANDOM.randInt(10, 20); // Forests are generally temperate and shaded.
+    }
+
+    public getYardScenery(): GYardScenery {
+        return {
+            border: ['bush', 'shrub', 'boulder', 'small_pine'],
+            adjacent: [],
+            middle: ['swimming_pool', 'clothesline', 'oak_tree', 'pine_tree', 'camp_tent'],
+            edge: ['oak_tree', 'pine_tree', 'bush', 'shrub', 'boulder', 'small_pine'],
+        };
+    }
+
+    public addNaturalParkScenery(context: GParkNaturalSceneryContext): void {
+        this.addParkEdgeScenery(context, ['oak_tree', 'pine_tree'], 1, 4, 7, 128, ['north', 'west', 'east']);
+        this.addParkEdgeScenery(context, ['small_pine'], 1, 3, 6);
+        this.addParkEdgeScenery(context, ['tree_stump', 'boulder', 'bush', 'shrub'], 1, 3, 6);
+        this.addParkSparseScenery(context, ['tree_stump', 'bush', 'shrub'], .35, 1, 2);
     }
 
     protected _furnishRoom(room: GRoom, partialWalls: boolean = true, internalObjects: boolean = true) {

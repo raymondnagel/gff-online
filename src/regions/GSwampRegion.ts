@@ -2,7 +2,7 @@ import { RANDOM } from "../random";
 import { GRoom } from "../GRoom";
 import { SCENERY } from "../scenery";
 import { Dir9, GRect, GSceneryDef } from "../types";
-import { GOutsideRegion } from "./GOutsideRegion";
+import { GOutsideRegion, GParkNaturalSceneryContext, GYardScenery } from "./GOutsideRegion";
 
 const STOCK_REGIONS = [
     { name: 'Siddim', adjective: 'Siddimite' },
@@ -65,6 +65,22 @@ export class GSwampRegion extends GOutsideRegion{
 
     public getTemperature(): number {
         return RANDOM.randInt(20, 30); // Swamps are generally warm and humid.
+    }
+
+    public getYardScenery(): GYardScenery {
+        return {
+            border: ['bush', 'shrub', 'boulder'],
+            adjacent: [],
+            middle: ['swimming_pool', 'clothesline', 'cypress_tree', 'willow_tree', 'palm_tree', 'wonky_tree'],
+            edge: ['cypress_tree', 'willow_tree', 'palm_tree', 'wonky_tree', 'bush', 'shrub', 'boulder'],
+        };
+    }
+
+    public addNaturalParkScenery(context: GParkNaturalSceneryContext): void {
+        this.addParkEdgeScenery(context, ['cypress_tree', 'willow_tree', 'palm_tree'], 1, 3, 6, 128, ['north', 'west', 'east']);
+        this.addParkEdgeScenery(context, ['wonky_tree', 'bush', 'shrub', 'boulder'], 1, 4, 7);
+        this.addParkSparseScenery(context, ['swamp_puddle_sm', 'swamp_puddle_md', 'cattails', 'mushrooms'], .65, 2, 5);
+        this.addParkSceneryEach(context, ['swamp_puddle_lg'], .2, 1, [context.rect]);
     }
 
     protected _furnishRoom(room: GRoom, partialWalls: boolean = true, internalObjects: boolean = true) {

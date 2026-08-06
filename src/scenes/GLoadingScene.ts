@@ -40,7 +40,7 @@ export class GLoadingScene extends GBaseScene {
         this.loadFontsDirectly();
         this.load.json('json-manifest', 'assets/json-manifest.json');
         this.load.json('image-manifest', 'assets/image-manifest.json');
-        this.load.json('scenery-manifest', 'assets/scenery-manifest.json');
+        // this.load.json('scenery-manifest', 'assets/scenery-manifest.json');
         this.load.json('sprite-manifest', 'assets/sprite-manifest.json');
         this.load.json('audio-manifest', 'assets/audio-manifest.json');
         this.load.xml('kjv', 'assets/xml/kjv.xml');
@@ -185,6 +185,10 @@ export class GLoadingScene extends GBaseScene {
             const key = file.replace(/\.[^/.]+$/, "").split('/').pop() as string;
             this.load.image(key, 'assets/' + file);
         });
+
+        // Special cases (i.e. reloading images as different keys)
+        this.load.image('fence_link_vbottom_left', 'assets/images/scenery/town/fences/fence_link_vtop_left.png');
+        this.load.image('fence_link_vbottom_right', 'assets/images/scenery/town/fences/fence_link_vtop_right.png');
     }
 
     private loadSpritesheets() {

@@ -34,9 +34,9 @@ const IMAGES_PATH = `${ASSETS_PATH}/images`;
 const IMAGE_MANIFEST_NAME = 'image-manifest.json';
 const IMAGE_MANIFEST_PATH = `${ASSETS_PATH}/${IMAGE_MANIFEST_NAME}`;
 
-const SCENERY_PATH = `${IMAGES_PATH}/scenery/new_scenery_objects`;
-const SCENERY_MANIFEST_NAME = 'scenery-manifest.json';
-const SCENERY_MANIFEST_PATH = `${ASSETS_PATH}/${SCENERY_MANIFEST_NAME}`;
+// const SCENERY_PATH = `${IMAGES_PATH}/scenery/new_scenery_objects`;
+// const SCENERY_MANIFEST_NAME = 'scenery-manifest.json';
+// const SCENERY_MANIFEST_PATH = `${ASSETS_PATH}/${SCENERY_MANIFEST_NAME}`;
 
 const SPRITES_PATH = `${ASSETS_PATH}/sprites`;
 const SPRITE_MANIFEST_NAME = 'sprite-manifest.json';
@@ -58,9 +58,9 @@ const FONT_MANIFEST_PATH = `${ASSETS_PATH}/${FONT_MANIFEST_NAME}`;
 if (existsSync(IMAGE_MANIFEST_PATH)) {
     unlinkSync(IMAGE_MANIFEST_PATH);
 }
-if (existsSync(SCENERY_MANIFEST_PATH)) {
-    unlinkSync(SCENERY_MANIFEST_PATH);
-}
+// if (existsSync(SCENERY_MANIFEST_PATH)) {
+//     unlinkSync(SCENERY_MANIFEST_PATH);
+// }
 if (existsSync(SPRITE_MANIFEST_PATH)) {
     unlinkSync(SPRITE_MANIFEST_PATH);
 }
@@ -81,12 +81,12 @@ if (!existsSync(IMAGE_MANIFEST_PATH)) {
     console.log('Image Manifest created @ ' + IMAGE_MANIFEST_PATH);
 }
 
-const sceneryAssetList = getFilenamesOnly(SCENERY_PATH, '.png');
+// const sceneryAssetList = getFilenamesOnly(SCENERY_PATH, '.png');
 
-if (!existsSync(SCENERY_MANIFEST_PATH)) {
-    writeFileSync(SCENERY_MANIFEST_PATH, JSON.stringify(sceneryAssetList, null, 2));
-    console.log('Scenery Manifest created @ ' + SCENERY_MANIFEST_PATH);
-}
+// if (!existsSync(SCENERY_MANIFEST_PATH)) {
+//     writeFileSync(SCENERY_MANIFEST_PATH, JSON.stringify(sceneryAssetList, null, 2));
+//     console.log('Scenery Manifest created @ ' + SCENERY_MANIFEST_PATH);
+// }
 
 const spriteAssetList = getFiles(SPRITES_PATH, '.png');
 

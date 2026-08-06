@@ -113,7 +113,6 @@ export class GAdventureContent extends GContentScene {
     private impsGroup: Phaser.GameObjects.Group;
     private devilsGroup: Phaser.GameObjects.Group;
     private touchablesGroup: Phaser.GameObjects.Group;
-    private yardsGroup: Phaser.GameObjects.Group;
 
     private impSpawnTimeEvent: Phaser.Time.TimerEvent;
     private playTimerTick: number = 0;
@@ -135,7 +134,6 @@ export class GAdventureContent extends GContentScene {
         this.impsGroup = this.add.group();
         this.devilsGroup = this.add.group();
         this.touchablesGroup = this.add.group();
-        this.yardsGroup = this.add.group();
     }
 
     public create(): void {
@@ -541,7 +539,6 @@ export class GAdventureContent extends GContentScene {
         this.physics.add.collider(this.player, this.devilsGroup);
         this.physics.add.collider(this.player, this.obstaclesGroup);
         this.physics.add.collider(this.player, this.touchablesGroup);
-        this.physics.add.collider(this.player, this.yardsGroup);
         this.physics.add.collider(this.personsGroup, this.bottomBound);
         this.physics.add.collider(this.personsGroup, this.personsGroup);
         this.physics.add.collider(this.personsGroup, this.obstaclesGroup);
@@ -1493,10 +1490,6 @@ export class GAdventureContent extends GContentScene {
 
     public addTouchable(touchable: GTouchable) {
         this.touchablesGroup.add(touchable);
-    }
-
-    public addYard(yard: Phaser.GameObjects.Rectangle) {
-        this.yardsGroup.add(yard);
     }
 
     public getOccupiedPhysicalSpaces(): GRect[] {

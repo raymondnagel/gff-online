@@ -177,7 +177,7 @@ export namespace SCENERY {
             { key: 'bone_pile', type: 'static', body: {x: 11, y: 14, width: 42, height: 15} },
             { key: 'boulder', type: 'static', body: {x: 0, y: 22, width: 64, height: 24} },
             { key: 'bush', type: 'static', body: {x: 0, y: 36, width: 64, height: 16} },
-            { key: 'campfire', type: 'custom', body: {x: 0, y: 98, width: 112, height: 50} },
+            { key: 'campfire', type: 'custom', body: {x: 0, y: 58, width: 70, height: 36} },
             { key: 'cell_back', type: 'static', body: {x: 0, y: 98, width: 140, height: 7} },
             { key: 'cell_front_left', type: 'static', body: {x: 0, y: 98, width: 52, height: 7} },
             { key: 'cell_front_right', type: 'static', body: {x: 0, y: 98, width: 54, height: 7} },
@@ -228,9 +228,11 @@ export namespace SCENERY {
             { key: 'church_front', type: 'custom', body: {x: 20, y: 233, width: 356, height: 176} },
             { key: 'classic_1_front', type: 'static', body: {x: 0, y: 177, width: 344, height: 170} },
             { key: 'classic_2_front', type: 'static', body: {x: 0, y: 179, width: 346, height: 170} },
-            { key: 'convertible_1', type: 'static', body: {x: 0, y: 49, width: 214, height: 32} },
-            { key: 'convertible_2', type: 'static', body: {x: 0, y: 49, width: 214, height: 32} },
-            { key: 'convertible_3', type: 'static', body: {x: 0, y: 49, width: 214, height: 32} },
+            { key: 'clothesline_left', type: 'static', body: {x: 7, y: 80, width: 13, height: 9} },
+            { key: 'clothesline_right', type: 'static', body: {x: 7, y: 80, width: 13, height: 9} },
+            { key: 'convertible_1', type: 'static', body: {x: 0, y: 44, width: 180, height: 24} },
+            { key: 'convertible_2', type: 'static', body: {x: 0, y: 44, width: 180, height: 24} },
+            { key: 'convertible_3', type: 'static', body: {x: 0, y: 44, width: 180, height: 24} },
             { key: 'cottage_front', type: 'static', body: {x: 5, y: 127, width: 233, height: 120} },
             { key: 'dead_end_sign', type: 'static', body: {x: 0, y: 124, width: 79, height: 16} },
             { key: 'factory_front', type: 'static', body: {x: 0, y: 157, width: 309, height: 196} },
@@ -239,8 +241,10 @@ export namespace SCENERY {
             { key: 'fence_link_h_right', type: 'static', body: {x: 0, y: 84, width: 15, height: 16} },
             { key: 'fence_link_v_left', type: 'static', body: {x: 0, y: 92, width: 15, height: 16} },
             { key: 'fence_link_v_right', type: 'static', body: {x: 0, y: 92, width: 15, height: 16} },
-            { key: 'fence_link_vend_left', type: 'static', body: {x: 0, y: 92, width: 15, height: 16} },
-            { key: 'fence_link_vend_right', type: 'static', body: {x: 0, y: 92, width: 15, height: 16} },
+            { key: 'fence_link_vbottom_left', type: 'static', body: {x: 0, y: 92, width: 15, height: 16} },
+            { key: 'fence_link_vbottom_right', type: 'static', body: {x: 0, y: 92, width: 15, height: 16} },
+            { key: 'fence_link_vtop_left', type: 'static', body: {x: 0, y: 84, width: 15, height: 16} },
+            { key: 'fence_link_vtop_right', type: 'static', body: {x: 0, y: 84, width: 15, height: 16} },
             { key: 'fence_picket_h', type: 'static', body: {x: 0, y: 84, width: 19, height: 16} },
             { key: 'fence_picket_h_left', type: 'static', body: {x: 0, y: 84, width: 17, height: 16} },
             { key: 'fence_picket_h_right', type: 'static', body: {x: 0, y: 84, width: 17, height: 16} },
@@ -267,6 +271,8 @@ export namespace SCENERY {
             { key: 'generic_2_back', type: 'static', body: {x: 0, y: 65, width: 233, height: 167} },
             { key: 'generic_3_back', type: 'static', body: {x: 0, y: 38, width: 247, height: 175} },
             { key: 'generic_4_back', type: 'static', body: {x: 2, y: 20, width: 325, height: 163} },
+            { key: 'grill_1', type: 'static', body: {x: 0, y: 45, width: 52, height: 15} },
+            { key: 'grill_2', type: 'static', body: {x: 0, y: 45, width: 52, height: 15} },
             { key: 'house_1_back', type: 'static', body: {x: 3, y: 120, width: 215, height: 114} },
             { key: 'house_1_front', type: 'static', body: {x: 5, y: 115, width: 209, height: 124} },
             { key: 'house_1_side_tall', type: 'static', body: {x: 5, y: 168, width: 270, height: 136} },
@@ -280,24 +286,28 @@ export namespace SCENERY {
             { key: 'house_3_side', type: 'static', body: {x: 8, y: 89, width: 260, height: 144} },
             { key: 'house_4_front', type: 'static', body: {x: 6, y: 87, width: 282, height: 156} },
             { key: 'house_5_front', type: 'static', body: {x: 0, y: 120, width: 224, height: 119} },
+            { key: 'igloo', type: 'static', body: {x: 0, y: 64, width: 147, height: 56} },
             { key: 'lamp_post', type: 'static', body: {x: 0, y: 111, width: 36, height: 16} },
             { key: 'mailbox_in', type: 'static', body: {x: 0, y: 44, width: 40, height: 16} },
             { key: 'mailbox_out', type: 'static', body: {x: 0, y: 46, width: 55, height: 24} },
             { key: 'mansion_front', type: 'static', body: {x: 10, y: 213, width: 444, height: 178} },
             { key: 'monument', type: 'static', body: {x: 0, y: 152, width: 92, height: 48} },
-            { key: 'pickup_1', type: 'static', body: {x: 0, y: 66, width: 256, height: 32} },
-            { key: 'pickup_2', type: 'static', body: {x: 0, y: 66, width: 256, height: 32} },
-            { key: 'pickup_3', type: 'static', body: {x: 0, y: 66, width: 256, height: 32} },
+            { key: 'pickup_1', type: 'static', body: {x: 0, y: 52, width: 195, height: 24} },
+            { key: 'pickup_2', type: 'static', body: {x: 0, y: 52, width: 195, height: 24} },
+            { key: 'pickup_3', type: 'static', body: {x: 0, y: 52, width: 195, height: 24} },
             { key: 'picnic_table', type: 'static', body: {x: 0, y: 42, width: 127, height: 38} },
             { key: 'police_station_front', type: 'static', body: {x: 5, y: 164, width: 368, height: 166} },
             { key: 'school_front', type: 'static', body: {x: 0, y: 162, width: 278, height: 160} },
-            { key: 'sedan_1', type: 'static', body: {x: 0, y: 54, width: 250, height: 32} },
-            { key: 'sedan_2', type: 'static', body: {x: 0, y: 52, width: 250, height: 34} },
-            { key: 'sedan_3', type: 'static', body: {x: 0, y: 52, width: 250, height: 34} },
+            { key: 'sedan_1', type: 'static', body: {x: 0, y: 46, width: 203, height: 24} },
+            { key: 'sedan_2', type: 'static', body: {x: 0, y: 46, width: 203, height: 24} },
+            { key: 'sedan_3', type: 'static', body: {x: 0, y: 46, width: 203, height: 24} },
+            { key: 'seesaw', type: 'static', body: {x: 0, y: 37, width: 140, height: 30} },
             { key: 'shop_front', type: 'static', body: {x: 9, y: 72, width: 193, height: 135} },
             { key: 'skyscraper_front', type: 'static', body: {x: 0, y: 509, width: 281, height: 177} },
+            { key: 'spring_horse', type: 'static', body: {x: 0, y: 44, width: 86, height: 36} },
             { key: 'stop_sign', type: 'static', body: {x: 0, y: 120, width: 74, height: 16} },
             { key: 'supermarket_front', type: 'static', body: {x: 0, y: 77, width: 412, height: 148} },
+            { key: 'swimming_pool', type: 'static', body: {x: 0, y: 24, width: 263, height: 135} },
             { key: 'swingset', type: 'static', body: {x: 0, y: 123, width: 194, height: 32} },
             { key: 'trash', type: 'static', body: {x: 0, y: 53, width: 75, height: 20} },
             { key: 'travel_agency_front', type: 'custom', body: {x: 0, y: 175, width: 328, height: 144} },
@@ -325,6 +335,7 @@ export namespace SCENERY {
             { key: 'chasm_ne', type: 'fg_decor', body: {x: 0, y: 0, width: 64, height: 64}, tint: true },
             { key: 'chasm_se', type: 'fg_decor', body: {x: 0, y: 0, width: 64, height: 64}, tint: true },
             { key: 'chasm_sw', type: 'fg_decor', body: {x: 0, y: 0, width: 64, height: 64}, tint: true },
+            { key: 'clothesline_middle', type: 'fg_decor', body: {x: 0, y: 0, width: 114, height: 43} },
             // Background Decorations:
             { key: 'curb_bend_ne', type: 'bg_decor', body: {x: 0, y: 0, width: 74, height: 82} },
             { key: 'curb_bend_nw', type: 'bg_decor', body: {x: 0, y: 0, width: 74, height: 82} },
@@ -351,6 +362,7 @@ export namespace SCENERY {
             { key: 'lava_crack', type: 'custom', body: {x: 0, y: 0, width: 140, height: 113} },
             { key: 'shrine_pedestal', type: 'bg_decor', body: {x: 0, y: 0, width: 64, height: 14} },
             { key: 'steer_skull', type: 'bg_decor', body: {x: 0, y: 0, width: 64, height: 32} },
+            { key: 'stone_path', type: 'bg_decor', body: {x: 0, y: 0, width: 64, height: 64} },
             { key: 'street_curve_ne_inner', type: 'bg_decor', body: {x: 0, y: 0, width: 64, height: 64} },
             { key: 'street_curve_ne_major', type: 'bg_decor', body: {x: 0, y: 0, width: 64, height: 64} },
             { key: 'street_curve_ne_minor', type: 'bg_decor', body: {x: 0, y: 0, width: 64, height: 64} },
@@ -422,6 +434,7 @@ export namespace SCENERY {
             // Interactables:
             { key: 'church_piano', type: 'custom', body: {x: 0, y: 50, width: 128, height: 50} },
             // Special Cases:
+            { key: 'clothesline', type: 'custom', body: {x: 7, y: 80, width: 140, height: 9} },
             { key: 'corruption_patch', type: 'custom', body: {x: 0, y: 0, width: 200, height: 200} },
             { key: 'stairs_down', type: 'custom', body: {x: 0, y: 0, width: 100, height: 84}, tint: true },
             { key: 'stairs_up', type: 'custom', body: {x: 0, y: 0, width: 100, height: 84}, tint: true },
@@ -479,9 +492,15 @@ export namespace SCENERY {
                     case 'campfire':
                         sceneryObj = new GObstacleSprite(def('campfire') as GSceneryDef, plan.x, plan.y, 7, 10);
                         break;
+                    case 'clothesline':
+                        sceneryObj = new GObstacleStatic(def('clothesline_left') as GSceneryDef, plan.x, plan.y);
+                        new GObstacleStatic(def('clothesline_right') as GSceneryDef, plan.x + 127, plan.y);
+                        const clothesline = new GForegroundDecoration(def('clothesline_middle') as GSceneryDef, plan.x + 21, plan.y + 8);
+                        clothesline.setDepth((sceneryObj as GObstacleStatic).depth + 1);
+                        break;
                     case 'volcano':
                         sceneryObj = new GObstacleSprite(def('volcano') as GSceneryDef, plan.x, plan.y, 4, 6);
-                        const smoke = new GOverheadAnimatedDecoration(def('volcano_smoke') as GSceneryDef, plan.x + 60, plan.y - 78, 10, 10);
+                        new GOverheadAnimatedDecoration(def('volcano_smoke') as GSceneryDef, plan.x + 60, plan.y - 78, 10, 10);
                         break;
                     case 'brown_chest':
                     case 'blue_chest':

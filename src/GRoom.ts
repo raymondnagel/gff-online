@@ -28,7 +28,7 @@ import { GDungeonDoorTrigger } from "./triggers/GDungeonDoorTrigger";
 import { GKeepDoorTrigger } from "./triggers/GKeepDoorTrigger";
 import { GFortressDoorTrigger } from "./triggers/GFortressDoorTrigger";
 import { GCastleDoorTrigger } from "./triggers/GCastleDoorTrigger";
-import { GOutsideRegion } from "./regions/GOutsideRegion";
+import { GOutsideRegion, type GParkOrientation } from "./regions/GOutsideRegion";
 import { GObstacleStatic } from "./objects/obstacles/GObstacleStatic";
 import { AREA } from "./area";
 import { GBuildingExit } from "./objects/touchables/GBuildingExit";
@@ -62,6 +62,11 @@ const HORZ_WALL_SECTIONS: number = 16;
 const VERT_WALL_SECTIONS: number = 11;
 const TERRAIN_FADE_ALPHA: number = .5;
 const MIN_SCENERY_GAP: number = 16;
+const TOWN_LOT_ROAD_GAP: number = 32; // Matches DIST_TO_ROAD in GLot.
+const SHOW_TOWN_BEND_PARK_TEST_ZONES: boolean = false;
+const TOWN_BEND_PATH_GATE_CLEARANCE: number = 32;
+const TOWN_BEND_PATH_GATE_WIDTH: number = 64;
+const TOWN_UNFENCED_PARK_EDGE_BUFFER: number = 64;
 
 const NORTH_DOOR_X: number = 448;
 const SOUTH_DOOR_X: number = 470;
@@ -78,6 +83,31 @@ const STRONGHOLD_KEYS: string[] = ['tower_front', 'dungeon_front', 'keep_front',
 type TestZone = GRect &{
     label: string;
     color: GColor;
+};
+
+type TownBendCorner = 'nw'|'ne'|'sw'|'se';
+type TownBendCornerArea = 'horz'|'vert';
+type TownParkType = 'camp'|'play'|'classy';
+type TownBendParkGateSide = 'top'|'bottom'|'left'|'right';
+type TownBendParkPath = GRect & {
+    gateSide: TownBendParkGateSide;
+    gateCenter: number;
+};
+type TownBendParkFencePlan = {
+    fenceRects: GRect[];
+    enclosure: GRect;
+};
+type TownParkFeatureGroupMember = {
+    key: string;
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+};
+type TownParkFeatureGroup = {
+    width: number;
+    height: number;
+    members: TownParkFeatureGroupMember[];
 };
 
 /**
@@ -134,7 +164,6 @@ export class GRoom implements GSaveable {
     private temporaryEventTriggers: GEventTrigger[] = [];
 
     private testZones: TestZone[] = [];
-    private yards: GRect[] = [];
     private partialWallSceneryDefs: GSceneryDef[]|null = null;
     private roomLog: string[] = [];
 
@@ -456,6 +485,28 @@ export class GRoom implements GSaveable {
         }
     }
 
+    private claimTownEdgeSectionsForRect(rect: GRect) {
+        const rectRight: number = rect.x + rect.width;
+        const rectBottom: number = rect.y + rect.height;
+
+        if (rect.y <= GFF.TOP_BOUND) {
+            const range = this.getWallSectionRange(rect.x, rectRight, GFF.TILE_W, HORZ_WALL_SECTIONS);
+            this.claimTownEdgeSections(Dir9.N, range.start, range.end);
+        }
+        if (rectRight >= GFF.RIGHT_BOUND) {
+            const range = this.getWallSectionRange(rect.y, rectBottom, GFF.TILE_H, VERT_WALL_SECTIONS);
+            this.claimTownEdgeSections(Dir9.E, range.start, range.end);
+        }
+        if (rectBottom >= GFF.BOTTOM_BOUND) {
+            const range = this.getWallSectionRange(rect.x, rectRight, GFF.TILE_W, HORZ_WALL_SECTIONS);
+            this.claimTownEdgeSections(Dir9.S, range.start, range.end);
+        }
+        if (rect.x <= GFF.LEFT_BOUND) {
+            const range = this.getWallSectionRange(rect.y, rectBottom, GFF.TILE_H, VERT_WALL_SECTIONS);
+            this.claimTownEdgeSections(Dir9.W, range.start, range.end);
+        }
+    }
+
     private hasAnyTownEdgeSection(dir: CardDir): boolean {
         return this.townEdgeSections[dir].some(section => section);
     }
@@ -504,41 +555,52 @@ export class GRoom implements GSaveable {
     }
 
     public getNearestWallCenter(wallDir: CardDir, point: GPoint2D): GPoint2D {
-        const findNearest = (wallSections: boolean[], target: number): number|undefined => {
-            const limit = Math.min(WALL_CTRS.length, wallSections.length);
-            return WALL_CTRS.slice(0, limit).reduce((prev, curr, index) => {
-                if (wallSections[index]){
-                    return prev;
-                }
-                if (prev === undefined) {
-                    return curr;
-                }
-                return Math.abs(curr - target) < Math.abs(prev - target) ? curr : prev;
-            }, undefined as number | undefined);
-        };
-
         switch (wallDir) {
             case Dir9.N:
                 return {
-                    x: findNearest(this.getWallSections(wallDir), point.x) as number,
+                    x: this.findNearestOpenWallCenter(wallDir, point.x),
                     y: GFF.TOP_BOUND + (GFF.TILE_H / 2)
                 };
             case Dir9.E:
                 return {
                     x: GFF.RIGHT_BOUND - (GFF.TILE_H / 2),
-                    y: findNearest(this.getWallSections(wallDir), point.y) as number
+                    y: this.findNearestOpenWallCenter(wallDir, point.y)
                 };
             case Dir9.S:
                 return {
-                    x: findNearest(this.getWallSections(wallDir), point.x) as number,
+                    x: this.findNearestOpenWallCenter(wallDir, point.x),
                     y: GFF.BOTTOM_BOUND - (GFF.TILE_H / 2)
                 };
             case Dir9.W:
                 return {
                     x: GFF.LEFT_BOUND + (GFF.TILE_H / 2),
-                    y: findNearest(this.getWallSections(wallDir), point.y) as number
+                    y: this.findNearestOpenWallCenter(wallDir, point.y)
                 };
         }
+    }
+
+    private findNearestOpenWallCenter(wallDir: CardDir, target: number): number {
+        const safeSection: number|undefined = this.findNearestOpenWallSection(wallDir, target, true);
+        const fallbackSection: number|undefined = safeSection ?? this.findNearestOpenWallSection(wallDir, target, false);
+        return fallbackSection === undefined ? target : WALL_CTRS[fallbackSection];
+    }
+
+    private findNearestOpenWallSection(wallDir: CardDir, target: number, avoidScenery: boolean): number|undefined {
+        const wallSections: boolean[] = this.getWallSections(wallDir);
+        const limit: number = Math.min(WALL_CTRS.length, wallSections.length);
+        let nearestSection: number|undefined = undefined;
+
+        for (let section: number = 0; section < limit; section++) {
+            if (wallSections[section] || (avoidScenery && this.edgeSectionIntersectsScenery(wallDir, section))) {
+                continue;
+            }
+
+            if (nearestSection === undefined || Math.abs(WALL_CTRS[section] - target) < Math.abs(WALL_CTRS[nearestSection] - target)) {
+                nearestSection = section;
+            }
+        }
+
+        return nearestSection;
     }
 
     public getAdjustedArrivalPosition(wallDir: CardDir, point: GPoint2D): GPoint2D {
@@ -563,11 +625,13 @@ export class GRoom implements GSaveable {
     }
 
     private getNearestTownRoadArrivalCenter(wallDir: Dir9.N|Dir9.S, point: GPoint2D): GPoint2D {
-        const centerX: number = point.x < GFF.ROOM_W / 2
-            ? WALL_CTRS[7]
-            : WALL_CTRS[8];
+        const targetSection: number = point.x < GFF.ROOM_W / 2 ? 7 : 8;
+        const alternateSection: number = targetSection === 7 ? 8 : 7;
+        const section: number|undefined = [targetSection, alternateSection].find(candidate => (
+            !this.getWallSections(wallDir)[candidate] && !this.edgeSectionIntersectsScenery(wallDir, candidate)
+        ));
         return {
-            x: centerX,
+            x: WALL_CTRS[section ?? targetSection],
             y: wallDir === Dir9.N
                 ? GFF.TOP_BOUND + (GFF.TILE_H / 2)
                 : GFF.BOTTOM_BOUND - (GFF.TILE_H / 2)
@@ -796,15 +860,14 @@ export class GRoom implements GSaveable {
         // Create full wall objects:
         this.addFullWallObjects();
 
-        // Create yard areas (impassable for player, but not for other people)
-        this.addYards();
-
         // Create partial wall indicators (TEST):
         // this.addPartialWallIndicators();
 
         // Create test zones (TEST):
         for (let z of this.testZones) {
-            GFF.AdventureContent.add.rectangle(z.x, z.y, z.width, z.height, z.color.num()).setOrigin(0, 0);
+            GFF.AdventureContent.add.rectangle(z.x, z.y, z.width, z.height, z.color.num())
+                .setOrigin(0, 0)
+                .setAlpha(0.25);
             GFF.AdventureContent.add.text(z.x + 4, z.y + 4, z.label, { fontSize: '12px', color: z.color.str() }).setOrigin(0, 0);
         }
 
@@ -849,10 +912,8 @@ export class GRoom implements GSaveable {
 
         // Destroy everything in the scene not marked as 'permanent':
         for (let n = objs.length - 1; n >= 0; n--) {
-            if (objs[n].data !== undefined) {
-                if (!objs[n].data?.get('permanent')) {
-                    objs[n].destroy();
-                }
+            if (!objs[n].data?.get('permanent')) {
+                objs[n].destroy();
             }
         }
 
@@ -1220,10 +1281,6 @@ export class GRoom implements GSaveable {
         return zone;
     }
 
-    public createYard(dimension: GRect) {
-        this.yards.push(dimension);
-    }
-
     private addPartialWallGuards() {
         const northWall: boolean[] = this.getWallSections(Dir9.N);
         const westWall: boolean[] = this.getWallSections(Dir9.W);
@@ -1282,15 +1339,6 @@ export class GRoom implements GSaveable {
         return (this.town !== null && wallCheck && this.hasNeighbor(dir) && (this.getNeighbor(dir) as GRoom).getTown() !== null);
     }
 
-    public addYards() {
-        for (let y of this.yards) {
-            const yard = GFF.AdventureContent.add.rectangle(y.x, y.y, y.width, y.height, undefined, 0).setOrigin(0, 0);
-            GFF.AdventureContent.physics.add.existing(yard, false);
-            (yard.body as Phaser.Physics.Arcade.Body).setImmovable(true);
-            GFF.AdventureContent.addYard(yard);
-        }
-    }
-
     /**
      * Adds a scenery plan by its visual x/y coordinates.
      * To position physically, the body's coordinates must be translated
@@ -1306,15 +1354,37 @@ export class GRoom implements GSaveable {
         this.plans = [];
     }
 
-    private removeSceneryPlansFromEdgeSections(dir: CardDir, startSection: number, endSection: number) {
+    private removeSceneryPlansFromRects(rects: GRect[], shouldRemovePlan?: (plan: GSceneryPlan) => boolean) {
         this.plans = this.plans.filter(plan => {
-            const def: GSceneryDef = SCENERY.def(plan.key);
-            const planBounds: GRect = {
-                x: plan.x + def.body.x,
-                y: plan.y + def.body.y,
-                width: def.body.width,
-                height: def.body.height
-            };
+            if (shouldRemovePlan && !shouldRemovePlan(plan)) {
+                return true;
+            }
+
+            const planBounds: GRect = this.getSceneryPlanBounds(plan);
+
+            return !rects.some(rect => this.rectsOverlap(planBounds, rect));
+        });
+    }
+
+    private removePartialWallSceneryPlansFromRects(rects: GRect[]) {
+        this.removeSceneryPlansFromRects(
+            rects,
+            plan => this.isPartialWallSceneryPlan(plan)
+        );
+    }
+
+    private removeSceneryPlansFromEdgeSections(
+        dir: CardDir,
+        startSection: number,
+        endSection: number,
+        shouldRemovePlan?: (plan: GSceneryPlan) => boolean
+    ) {
+        this.plans = this.plans.filter(plan => {
+            if (shouldRemovePlan && !shouldRemovePlan(plan)) {
+                return true;
+            }
+
+            const planBounds: GRect = this.getSceneryPlanBounds(plan);
 
             for (let section: number = startSection; section <= endSection; section++) {
                 if (this.rectsOverlap(planBounds, this.getEdgeSectionRect(dir, section))) {
@@ -1323,6 +1393,29 @@ export class GRoom implements GSaveable {
             }
             return true;
         });
+    }
+
+    private removePartialWallSceneryPlansFromEdgeSections(dir: CardDir, startSection: number, endSection: number) {
+        this.removeSceneryPlansFromEdgeSections(
+            dir,
+            startSection,
+            endSection,
+            plan => this.isPartialWallSceneryPlan(plan)
+        );
+    }
+
+    private isPartialWallSceneryPlan(plan: GSceneryPlan): boolean {
+        return this.partialWallSceneryDefs?.some(def => def.key === plan.key) ?? false;
+    }
+
+    private getSceneryPlanBounds(plan: GSceneryPlan): GRect {
+        const def: GSceneryDef = SCENERY.def(plan.key);
+        return {
+            x: plan.x + def.body.x,
+            y: plan.y + def.body.y,
+            width: def.body.width,
+            height: def.body.height
+        };
     }
 
     private getEdgeSectionRect(dir: CardDir, section: number): GRect {
@@ -1338,11 +1431,30 @@ export class GRoom implements GSaveable {
         }
     }
 
+    private getEdgeRects(dir: CardDir): GRect[] {
+        return this.walls[dir].map((_section, index) => this.getEdgeSectionRect(dir, index));
+    }
+
     private rectsOverlap(a: GRect, b: GRect): boolean {
         return a.x < b.x + b.width
             && a.x + a.width > b.x
             && a.y < b.y + b.height
             && a.y + a.height > b.y;
+    }
+
+    private edgeSectionIntersectsScenery(dir: CardDir, section: number): boolean {
+        const sectionRect: GRect = this.getEdgeSectionRect(dir, section);
+        return this.plans.some(plan => {
+            const def: GSceneryDef = SCENERY.def(plan.key);
+            if (def.type !== 'static' && def.type !== 'custom') {
+                return false;
+            }
+
+            const planBounds: GRect = this.getSceneryPlanBounds(plan);
+            return planBounds.width > 0
+                && planBounds.height > 0
+                && this.rectsOverlap(sectionRect, planBounds);
+        });
     }
 
     public planPartialWallScenery(sceneryDefs: GSceneryDef[]) {
@@ -1478,6 +1590,7 @@ export class GRoom implements GSaveable {
                 const sections: boolean[] = dir === Dir9.N || dir === Dir9.S
                     ? HORZ_ROAD_PASSAGE_SECTION
                     : VERT_ROAD_PASSAGE_SECTION;
+                this.removePartialWallSceneryPlansFromEdgeSections(dir, 0, this.walls[dir].length - 1);
                 this.setWallSections(dir, sections);
             }
         }
@@ -2091,10 +2204,24 @@ export class GRoom implements GSaveable {
             this.planTownClaimedFullWallRemainders();
         }
 
-        // This method is only called on town rooms, so there will always be
-        // at least one road from an edge to the center. Therfore, ALWAYS put
-        // a no-scenery zone in the center:
-        this.noSceneryZones.push(this.getTileArea(7, 4, 2, 3));
+        const roadZones: GRect[] = [this.getTileArea(7, 4, 2, 3)];
+        if (roadNorth) {
+            roadZones.push(this.getTileArea(7, 0, 2, 4));
+        }
+        if (roadSouth) {
+            roadZones.push(this.getTileArea(7, 7, 2, 4));
+        }
+        if (roadWest) {
+            roadZones.push(this.getTileArea(0, 4.5, 7, 2));
+        }
+        if (roadEast) {
+            roadZones.push(this.getTileArea(9, 4.5, 7, 2));
+        }
+        const roadEdgeZones: GRect[] = this.getTownRoadEdgeSceneryClearZones(roadNorth, roadEast, roadSouth, roadWest);
+        const roadClearZones: GRect[] = [...roadZones, ...roadEdgeZones];
+        this.removeSceneryPlansFromRects(roadClearZones);
+        this.noSceneryZones.push(...roadClearZones);
+        this.planTownBendCornerPlaceholder(roadNorth, roadEast, roadSouth, roadWest);
 
         // Roads toward other town rooms
         // These are unaffected by intersection tiles in the center;
@@ -2104,14 +2231,12 @@ export class GRoom implements GSaveable {
                 this.planTileScenery('street_vert_w', 7, y);
                 this.planTileScenery('street_vert_e', 8, y);
             }
-            this.noSceneryZones.push(this.getTileArea(7, 0, 2, 4));
         }
         if (roadSouth) {
             for (let y: number = 7; y <= 10; y++) {
                 this.planTileScenery('street_vert_w', 7, y);
                 this.planTileScenery('street_vert_e', 8, y);
             }
-            this.noSceneryZones.push(this.getTileArea(7, 7, 2, 4));
         }
         if (roadWest) {
             for (let x: number = 0; x <= 6; x++) {
@@ -2119,7 +2244,6 @@ export class GRoom implements GSaveable {
                 this.planTileScenery('street_horz_c', x, 5);
                 this.planTileScenery('street_horz_s', x, 6);
             }
-            this.noSceneryZones.push(this.getTileArea(0, 4.5, 7, 2));
         }
         if (roadEast) {
             for (let x: number = 9; x <= 15; x++) {
@@ -2127,7 +2251,6 @@ export class GRoom implements GSaveable {
                 this.planTileScenery('street_horz_c', x, 5);
                 this.planTileScenery('street_horz_s', x, 6);
             }
-            this.noSceneryZones.push(this.getTileArea(9, 4.5, 7, 2));
         }
 
         // Test for different types of intersections, from most directions to least.
@@ -2265,14 +2388,24 @@ export class GRoom implements GSaveable {
         // Add curbs along the edges of all roads
         this.createCurbs(roadNorth, roadEast, roadSouth, roadWest);
 
-        // We know which blocks are used, so we can create yards for them now
-        // (skip church rooms - they don't have real blocks)
-        if (!this.church) {
-            for (let block of cityBlocks) {
-                this.createYard(block.dimension);
-            }
-        }
         return cityBlocks;
+    }
+
+    private getTownRoadEdgeSceneryClearZones(roadNorth: boolean, roadEast: boolean, roadSouth: boolean, roadWest: boolean): GRect[] {
+        const zones: GRect[] = [];
+        if (roadNorth) {
+            zones.push(...this.getEdgeRects(Dir9.N));
+        }
+        if (roadEast) {
+            zones.push(...this.getEdgeRects(Dir9.E));
+        }
+        if (roadSouth) {
+            zones.push(...this.getEdgeRects(Dir9.S));
+        }
+        if (roadWest) {
+            zones.push(...this.getEdgeRects(Dir9.W));
+        }
+        return zones;
     }
 
     private claimTownEdgesForBlock(
@@ -2306,6 +2439,8 @@ export class GRoom implements GSaveable {
     private applyTownRoadPassageSections(dir: CardDir, passageSections: boolean[]) {
         const neighbor: GRoom|null = this.getNeighbor(dir);
         const oppositeDir: CardDir = DIRECTION.getOpposite(dir) as CardDir;
+        this.removePartialWallSceneryPlansFromEdgeSections(dir, 0, this.walls[dir].length - 1);
+        neighbor?.removePartialWallSceneryPlansFromEdgeSections(oppositeDir, 0, neighbor.walls[oppositeDir].length - 1);
         for (let s: number = 0; s < passageSections.length; s++) {
             if (!passageSections[s]) {
                 this.walls[dir][s] = false;
@@ -2316,6 +2451,778 @@ export class GRoom implements GSaveable {
                 }
             }
         }
+    }
+
+    private planTownBendCornerPlaceholder(roadNorth: boolean, roadEast: boolean, roadSouth: boolean, roadWest: boolean) {
+        if (this.church) {
+            return;
+        }
+
+        const corner: TownBendCorner|null = this.getTownBendFillCorner(roadNorth, roadEast, roadSouth, roadWest);
+        if (!corner) {
+            return;
+        }
+
+        const area: TownBendCornerArea = RANDOM.randElement(['horz', 'vert']) as TownBendCornerArea;
+        const parkRect: GRect = this.getTownBendCornerArea(corner, area);
+        const fenced: boolean = RANDOM.flipCoin();
+        if (fenced) {
+            this.claimTownEdgeSectionsForRect(parkRect);
+            this.openTownBendParkEdgePassage(this.getTownBendParkOpenEdge(corner, area));
+        }
+        const path: TownBendParkPath|null = fenced ? this.planTownBendCornerPath(corner, area, parkRect) : null;
+
+        if (SHOW_TOWN_BEND_PARK_TEST_ZONES) {
+            this.createTestZone(parkRect.x, parkRect.y, parkRect.width, parkRect.height, `${corner} park ${area}`, new GColor(0x00ffff));
+        }
+        let featureRect: GRect = fenced ? parkRect : this.getTownBendUnfencedParkFeatureRect(parkRect);
+        if (path && fenced) {
+            const fencePlan: TownBendParkFencePlan = this.planTownBendParkFence(parkRect, path);
+            featureRect = this.getTownBendParkFenceContentRect(fencePlan.enclosure);
+            this.removeSceneryPlansFromRects(
+                [parkRect, fencePlan.enclosure],
+                plan => !this.isTownBendParkFencePlan(plan) && plan.key !== 'stone_path'
+            );
+        }
+
+        this.createTownBendPark(featureRect, area, fenced, path ? [path] : []);
+    }
+
+    private getTownBendParkFenceContentRect(enclosure: GRect): GRect {
+        const horzFence = SCENERY.def('fence_link_h');
+        const vertFence = SCENERY.def('fence_link_v_left');
+
+        return {
+            x: enclosure.x + vertFence.body.width,
+            y: enclosure.y + horzFence.body.height,
+            width: enclosure.width - (vertFence.body.width * 2),
+            height: enclosure.height - (horzFence.body.height * 2),
+        };
+    }
+
+    private getTownBendUnfencedParkFeatureRect(rect: GRect): GRect {
+        let left: number = rect.x;
+        let right: number = rect.x + rect.width;
+        let top: number = rect.y;
+        let bottom: number = rect.y + rect.height;
+
+        if (rect.y <= GFF.TOP_BOUND) {
+            top += TOWN_UNFENCED_PARK_EDGE_BUFFER;
+        }
+        if (rect.x + rect.width >= GFF.RIGHT_BOUND) {
+            right -= TOWN_UNFENCED_PARK_EDGE_BUFFER;
+        }
+        if (rect.y + rect.height >= GFF.BOTTOM_BOUND) {
+            bottom -= TOWN_UNFENCED_PARK_EDGE_BUFFER;
+        }
+        if (rect.x <= GFF.LEFT_BOUND) {
+            left += TOWN_UNFENCED_PARK_EDGE_BUFFER;
+        }
+
+        if (right <= left || bottom <= top) {
+            return rect;
+        }
+
+        return {
+            x: left,
+            y: top,
+            width: right - left,
+            height: bottom - top,
+        };
+    }
+
+    private createTownBendPark(rect: GRect, orientation: GParkOrientation, fenced: boolean, occupiedRects: GRect[]): void {
+        const parkType: TownParkType = RANDOM.randElement(['camp', 'play', 'classy']) as TownParkType;
+
+        switch (parkType) { // replace with parkType when ready to randomize
+            case 'camp':
+                this.createCampPark(rect, orientation, fenced, occupiedRects);
+                break;
+            case 'play':
+                this.createPlayPark(rect, orientation, fenced, occupiedRects);
+                break;
+            case 'classy':
+                this.createClassyPark(rect, orientation, fenced, occupiedRects);
+                break;
+        }
+    }
+
+    private createCampPark(rect: GRect, orientation: GParkOrientation, fenced: boolean, occupiedRects: GRect[]): void {
+        const firstFeatureRectIndex: number = occupiedRects.length;
+        const tentGroup: TownParkFeatureGroup = this.createCampParkTentGroup();
+        let featureGroups: TownParkFeatureGroup[] = [tentGroup];
+
+        if (RANDOM.flipCoin()) {
+            featureGroups = [tentGroup, this.createCampParkPicnicTableGroup()];
+        }
+
+        if (!this.doLinearParkFeatureGroupsFit(rect, orientation, featureGroups, occupiedRects)) {
+            featureGroups = [tentGroup];
+        }
+
+        this.addLinearParkFeatureGroups(rect, orientation, featureGroups, occupiedRects);
+        this.addNaturalParkScenery(rect, orientation, fenced, occupiedRects, occupiedRects.slice(firstFeatureRectIndex));
+    }
+
+    private createPlayPark(rect: GRect, orientation: GParkOrientation, fenced: boolean, occupiedRects: GRect[]): void {
+        const firstFeatureRectIndex: number = occupiedRects.length;
+        const featureKeys: string[] = ['swingset', 'swimming_pool', 'seesaw', 'spring_horse'];
+        RANDOM.shuffle(featureKeys);
+        const targetFeatureCount: number = RANDOM.randElementWeighted([
+            { element: 2, weight: 5 },
+            { element: 3, weight: 4 },
+            { element: 1, weight: 1 },
+            { element: 4, weight: 1 },
+        ]);
+        const selectedFeatureKeys: string[] = featureKeys.slice(0, targetFeatureCount);
+        const swingsetIndex: number = orientation === 'vert' ? selectedFeatureKeys.indexOf('swingset') : -1;
+        if (swingsetIndex > 0) {
+            selectedFeatureKeys.splice(swingsetIndex, 1);
+            selectedFeatureKeys.unshift('swingset');
+        }
+
+        this.addLinearParkFeatures(rect, orientation, selectedFeatureKeys, occupiedRects);
+        this.addNaturalParkScenery(rect, orientation, fenced, occupiedRects, occupiedRects.slice(firstFeatureRectIndex));
+    }
+
+    private createClassyPark(rect: GRect, orientation: GParkOrientation, fenced: boolean, occupiedRects: GRect[]): void {
+        this.addNaturalParkScenery(rect, orientation, fenced, occupiedRects, []);
+    }
+
+    private createCampParkTentGroup(): TownParkFeatureGroup {
+        const tentDef: GSceneryDef = SCENERY.def('camp_tent');
+        const campfireDef: GSceneryDef = SCENERY.def('campfire');
+        const gap: number = RANDOM.randInt(20, 40);
+        const width: number = Math.max(tentDef.body.width, campfireDef.body.width);
+        const height: number = tentDef.body.height + gap + campfireDef.body.height;
+
+        return {
+            width,
+            height,
+            members: [
+                {
+                    key: tentDef.key,
+                    x: (width - tentDef.body.width) / 2,
+                    y: 0,
+                    width: tentDef.body.width,
+                    height: tentDef.body.height,
+                },
+                {
+                    key: campfireDef.key,
+                    x: (width - campfireDef.body.width) / 2,
+                    y: tentDef.body.height + gap,
+                    width: campfireDef.body.width,
+                    height: campfireDef.body.height,
+                },
+            ],
+        };
+    }
+
+    private createCampParkPicnicTableGroup(): TownParkFeatureGroup {
+        const tableDef: GSceneryDef = SCENERY.def('picnic_table');
+        const grillKey: string|null = RANDOM.flipCoin()
+            ? (RANDOM.flipCoin() ? 'grill_1' : 'grill_2')
+            : null;
+        const grillDef: GSceneryDef|null = grillKey !== null ? SCENERY.def(grillKey) : null;
+        const gap: number = grillDef !== null ? RANDOM.randInt(20, 40) : 0;
+        const width: number = grillDef !== null ? Math.max(tableDef.body.width, grillDef.body.width) : tableDef.body.width;
+        const height: number = grillDef !== null
+            ? tableDef.body.height + gap + grillDef.body.height
+            : tableDef.body.height;
+        const members: TownParkFeatureGroupMember[] = [
+            {
+                key: tableDef.key,
+                x: (width - tableDef.body.width) / 2,
+                y: 0,
+                width: tableDef.body.width,
+                height: tableDef.body.height,
+            },
+        ];
+
+        if (grillDef !== null) {
+            members.push({
+                key: grillDef.key,
+                x: (width - grillDef.body.width) / 2,
+                y: tableDef.body.height + gap,
+                width: grillDef.body.width,
+                height: grillDef.body.height,
+            });
+        }
+
+        return { width, height, members };
+    }
+
+    private doLinearParkFeatureGroupsFit(
+        rect: GRect,
+        orientation: GParkOrientation,
+        groups: TownParkFeatureGroup[],
+        occupiedRects: GRect[]
+    ): boolean {
+        const usedSpace: number = groups.reduce((total, group) => {
+            return total + (orientation === 'vert' ? group.height : group.width);
+        }, 0);
+        const availableSpace: number = orientation === 'vert' ? rect.height : rect.width;
+        const gap: number = (availableSpace - usedSpace) / (groups.length + 1);
+
+        if (gap < MIN_SCENERY_GAP) {
+            return false;
+        }
+
+        return groups.every(group => {
+            return orientation === 'vert'
+                ? group.width <= rect.width
+                : group.height <= rect.height;
+        }) && this.getLinearParkFeatureGroupRects(rect, orientation, groups).every(groupRect => {
+            return !this.intersectsAny(groupRect, occupiedRects, MIN_SCENERY_GAP);
+        });
+    }
+
+    private addLinearParkFeatureGroups(
+        rect: GRect,
+        orientation: GParkOrientation,
+        groups: TownParkFeatureGroup[],
+        occupiedRects: GRect[]
+    ): boolean {
+        const groupRects: GRect[] = this.getLinearParkFeatureGroupRects(rect, orientation, groups);
+        const plannedRects: GRect[] = [];
+
+        for (let i = 0; i < groups.length; i++) {
+            const group: TownParkFeatureGroup = groups[i];
+            const groupRect: GRect = groupRects[i];
+            for (const member of group.members) {
+                const memberRect: GRect = {
+                    x: groupRect.x + member.x,
+                    y: groupRect.y + member.y,
+                    width: member.width,
+                    height: member.height,
+                };
+
+                if (!this.isRectInsideAnyZone(memberRect, [rect]) || this.intersectsAny(memberRect, occupiedRects, MIN_SCENERY_GAP) || this.intersectsAny(memberRect, plannedRects, MIN_SCENERY_GAP)) {
+                    return false;
+                }
+
+                plannedRects.push(memberRect);
+            }
+        }
+
+        for (let i = 0; i < groups.length; i++) {
+            const group: TownParkFeatureGroup = groups[i];
+            const groupRect: GRect = groupRects[i];
+            for (const member of group.members) {
+                occupiedRects.push(this.addSceneryPlanAtBody(member.key, groupRect.x + member.x, groupRect.y + member.y));
+            }
+        }
+
+        return true;
+    }
+
+    private getLinearParkFeatureGroupRects(
+        rect: GRect,
+        orientation: GParkOrientation,
+        groups: TownParkFeatureGroup[]
+    ): GRect[] {
+        const usedSpace: number = groups.reduce((total, group) => {
+            return total + (orientation === 'vert' ? group.height : group.width);
+        }, 0);
+        const availableSpace: number = orientation === 'vert' ? rect.height : rect.width;
+        const gap: number = (availableSpace - usedSpace) / (groups.length + 1);
+        const start: number = orientation === 'vert' ? rect.y : rect.x;
+        let usedBefore: number = 0;
+
+        return groups.map(group => {
+            const mainAxisPosition: number = start + (gap * (groups.indexOf(group) + 1)) + usedBefore;
+            const groupRect: GRect = {
+                x: orientation === 'vert'
+                    ? rect.x + ((rect.width - group.width) / 2)
+                    : mainAxisPosition,
+                y: orientation === 'vert'
+                    ? mainAxisPosition
+                    : rect.y + ((rect.height - group.height) / 2),
+                width: group.width,
+                height: group.height,
+            };
+            usedBefore += orientation === 'vert' ? group.height : group.width;
+            return groupRect;
+        });
+    }
+
+    private addParkFeatureAtBodyIfFits(key: string, bodyX: number, bodyY: number, zone: GRect, occupiedRects: GRect[]): GRect|null {
+        const def: GSceneryDef = SCENERY.def(key);
+        const featureRect: GRect = {
+            x: bodyX,
+            y: bodyY,
+            width: def.body.width,
+            height: def.body.height,
+        };
+
+        if (!this.isRectInsideAnyZone(featureRect, [zone]) || this.intersectsAny(featureRect, occupiedRects, MIN_SCENERY_GAP)) {
+            return null;
+        }
+
+        occupiedRects.push(featureRect);
+        this.addSceneryPlanAtBody(key, bodyX, bodyY);
+        return featureRect;
+    }
+
+    private addNaturalParkScenery(
+        rect: GRect,
+        orientation: GParkOrientation,
+        fenced: boolean,
+        occupiedRects: GRect[],
+        mainFeatureRects: GRect[]
+    ): void {
+        if (!(this.region instanceof GOutsideRegion)) {
+            return;
+        }
+
+        this.region.addNaturalParkScenery({
+            room: this,
+            rect,
+            occupiedRects,
+            mainFeatureRects,
+            fenced,
+            orientation,
+        });
+    }
+
+    private addLinearParkFeatures(
+        rect: GRect,
+        orientation: GParkOrientation,
+        featureKeys: string[],
+        occupiedRects: GRect[]
+    ): void {
+        const featureDefs: GSceneryDef[] = this.getFittingLinearParkFeatureDefs(rect, orientation, featureKeys);
+        if (featureDefs.length === 0) {
+            return;
+        }
+
+        const usedSpace: number = featureDefs.reduce((total, def) => {
+            return total + (orientation === 'vert' ? def.body.height : def.body.width);
+        }, 0);
+        const availableSpace: number = orientation === 'vert' ? rect.height : rect.width;
+        const leftoverSpace: number = availableSpace - usedSpace;
+        const gap: number = leftoverSpace > 0 ? leftoverSpace / (featureDefs.length + 1) : 0;
+        const start: number = orientation === 'vert' ? rect.y : rect.x;
+        let usedBefore: number = 0;
+
+        for (let i = 0; i < featureDefs.length; i++) {
+            const def: GSceneryDef = featureDefs[i];
+            const mainAxisPosition: number = start + (gap * (i + 1)) + usedBefore;
+            const bodyX: number = orientation === 'vert'
+                ? rect.x + ((rect.width - def.body.width) / 2)
+                : mainAxisPosition;
+            const bodyY: number = orientation === 'vert'
+                ? mainAxisPosition
+                : rect.y + ((rect.height - def.body.height) / 2);
+
+            occupiedRects.push(this.addSceneryPlanAtBody(def.key, bodyX, bodyY));
+            usedBefore += orientation === 'vert' ? def.body.height : def.body.width;
+        }
+    }
+
+    private getFittingLinearParkFeatureDefs(
+        rect: GRect,
+        orientation: GParkOrientation,
+        featureKeys: string[]
+    ): GSceneryDef[] {
+        const fitsCrossAxis = (def: GSceneryDef) => {
+            return orientation === 'vert'
+                ? def.body.width <= rect.width
+                : def.body.height <= rect.height;
+        };
+        const fitsMainAxis = (defs: GSceneryDef[]) => {
+            const usedSpace: number = defs.reduce((total, def) => {
+                return total + (orientation === 'vert' ? def.body.height : def.body.width);
+            }, 0);
+            const availableSpace: number = orientation === 'vert' ? rect.height : rect.width;
+            const gap: number = (availableSpace - usedSpace) / (defs.length + 1);
+            return gap >= MIN_SCENERY_GAP;
+        };
+
+        const featureDefs: GSceneryDef[] = [];
+        for (const key of featureKeys) {
+            const def: GSceneryDef = SCENERY.def(key);
+            const candidateDefs: GSceneryDef[] = [...featureDefs, def];
+            if (fitsCrossAxis(def) && fitsMainAxis(candidateDefs)) {
+                featureDefs.push(def);
+            }
+        }
+
+        return featureDefs;
+    }
+
+    private getTownBendParkClaimedEdge(corner: TownBendCorner, area: TownBendCornerArea): CardDir {
+        if (area === 'horz') {
+            return (corner === 'nw' || corner === 'ne') ? Dir9.N : Dir9.S;
+        }
+        return (corner === 'nw' || corner === 'sw') ? Dir9.W : Dir9.E;
+    }
+
+    private getTownBendParkOpenEdge(corner: TownBendCorner, area: TownBendCornerArea): CardDir {
+        const claimedDir: CardDir = this.getTownBendParkClaimedEdge(corner, area);
+        return this.getTownBendParkOutsideEdges(corner).find(dir => dir !== claimedDir) as CardDir;
+    }
+
+    private openTownBendParkEdgePassage(dir: CardDir) {
+        const passageSections: boolean[] = dir === Dir9.N || dir === Dir9.S
+            ? HORZ_ROAD_PASSAGE_SECTION
+            : VERT_ROAD_PASSAGE_SECTION;
+        const neighbor: GRoom|null = this.getNeighbor(dir);
+        const oppositeDir: CardDir = DIRECTION.getOpposite(dir) as CardDir;
+        const passageSectionIndexes: number[] = [];
+
+        for (let s = 0; s < passageSections.length; s++) {
+            if (passageSections[s]) {
+                continue;
+            }
+            passageSectionIndexes.push(s);
+
+            if (neighbor) {
+                this.walls[dir][s] = false;
+                this.townEdgeSections[dir][s] = false;
+                this.removePartialWallSceneryPlansFromEdgeSections(dir, s, s);
+
+                neighbor.walls[oppositeDir][s] = false;
+                neighbor.townEdgeSections[oppositeDir][s] = false;
+                neighbor.removePartialWallSceneryPlansFromEdgeSections(oppositeDir, s, s);
+            } else {
+                this.walls[dir][s] = true;
+                this.townEdgeSections[dir][s] = false;
+                this.removePartialWallSceneryPlansFromEdgeSections(dir, s, s);
+            }
+        }
+
+        if (!neighbor) {
+            this.planAdditionalWallSceneryForSections(dir, passageSectionIndexes);
+        }
+    }
+
+    private isTownBendParkFencePlan(plan: GSceneryPlan): boolean {
+        return plan.key.startsWith('fence_link_');
+    }
+
+    private getTownBendParkOutsideEdges(corner: TownBendCorner): CardDir[] {
+        switch (corner) {
+            case 'nw':
+                return [Dir9.N, Dir9.W];
+            case 'ne':
+                return [Dir9.N, Dir9.E];
+            case 'sw':
+                return [Dir9.S, Dir9.W];
+            case 'se':
+                return [Dir9.S, Dir9.E];
+        }
+    }
+
+    private planTownBendCornerPath(corner: TownBendCorner, area: TownBendCornerArea, rect: GRect): TownBendParkPath|null {
+        const pathSize: number = GFF.TILE_W;
+        if (rect.width < pathSize || rect.height < pathSize) {
+            return null;
+        }
+
+        let x: number = (corner === 'nw' || corner === 'sw')
+            ? rect.x + rect.width - pathSize
+            : rect.x;
+        let y: number = (corner === 'nw' || corner === 'ne')
+            ? rect.y + rect.height - pathSize
+            : rect.y;
+
+        if (area === 'horz') {
+            x += (corner === 'nw' || corner === 'sw') ? -TOWN_BEND_PATH_GATE_CLEARANCE : TOWN_BEND_PATH_GATE_CLEARANCE;
+            y += (corner === 'nw' || corner === 'ne') ? TOWN_LOT_ROAD_GAP : -TOWN_LOT_ROAD_GAP;
+        } else {
+            x += (corner === 'nw' || corner === 'sw') ? TOWN_LOT_ROAD_GAP : -TOWN_LOT_ROAD_GAP;
+            y += (corner === 'nw' || corner === 'ne') ? -TOWN_BEND_PATH_GATE_CLEARANCE : TOWN_BEND_PATH_GATE_CLEARANCE;
+        }
+
+        this.addSceneryPlan('stone_path', x, y);
+        return {
+            x,
+            y,
+            width: pathSize,
+            height: pathSize,
+            gateSide: this.getTownBendParkGateSide(corner, area),
+            gateCenter: area === 'horz' ? x + (pathSize / 2) : y + (pathSize / 2)
+        };
+    }
+
+    private getTownBendParkGateSide(corner: TownBendCorner, area: TownBendCornerArea): TownBendParkGateSide {
+        if (area === 'horz') {
+            return (corner === 'nw' || corner === 'ne') ? 'bottom' : 'top';
+        }
+        return (corner === 'nw' || corner === 'sw') ? 'right' : 'left';
+    }
+
+    private planTownBendParkFence(rect: GRect, path: TownBendParkPath): TownBendParkFencePlan {
+        const fenceRects: GRect[] = [];
+        const horzMain = SCENERY.def('fence_link_h');
+        const horzLeft = SCENERY.def('fence_link_h_left');
+        const horzRight = SCENERY.def('fence_link_h_right');
+        const vertMain = SCENERY.def('fence_link_v_left');
+        const vertRight = SCENERY.def('fence_link_v_right');
+
+        const horzSegments = Math.max(3, Math.floor(rect.width / horzMain.body.width));
+        const vertSegments = Math.max(3, Math.floor(rect.height / vertMain.body.height));
+        const fenceWidth = horzLeft.body.width + horzRight.body.width + ((horzSegments - 2) * horzMain.body.width);
+        const fenceHeight = vertSegments * vertMain.body.height;
+
+        let fenceX = rect.x + ((rect.width - fenceWidth) / 2);
+        let fenceY = rect.y + ((rect.height - fenceHeight) / 2);
+
+        if (path.gateSide === 'top' || path.gateSide === 'bottom') {
+            const actualCenter = this.getTownBendHorzGateActualCenter(horzSegments, fenceX, path.gateCenter);
+            fenceX += path.gateCenter - actualCenter;
+        } else {
+            const actualCenter = this.getTownBendVertGateActualCenter(vertSegments, fenceY, path.gateCenter);
+            fenceY += path.gateCenter - actualCenter;
+        }
+
+        fenceRects.push(...this.planTownBendHorzFence(
+            fenceY,
+            fenceX,
+            horzSegments,
+            path.gateSide === 'top' ? path.gateCenter : null
+        ));
+        const vertFenceStartY = fenceY + horzMain.body.height;
+        const bottomFenceY = vertFenceStartY + fenceHeight;
+        fenceRects.push(...this.planTownBendVertFence(
+            fenceX,
+            vertFenceStartY,
+            vertSegments,
+            false,
+            path.gateSide === 'left' ? path.gateCenter : null
+        ));
+        fenceRects.push(...this.planTownBendVertFence(
+            fenceX + fenceWidth - vertRight.body.width,
+            vertFenceStartY,
+            vertSegments,
+            true,
+            path.gateSide === 'right' ? path.gateCenter : null
+        ));
+        fenceRects.push(...this.planTownBendHorzFence(
+            bottomFenceY,
+            fenceX,
+            horzSegments,
+            path.gateSide === 'bottom' ? path.gateCenter : null
+        ));
+        return {
+            fenceRects,
+            enclosure: {
+                x: fenceX,
+                y: fenceY,
+                width: fenceWidth,
+                height: (bottomFenceY - fenceY) + horzMain.body.height
+            }
+        };
+    }
+
+    private planTownBendHorzFence(bodyY: number, startX: number, segments: number, gateCenter: number|null): GRect[] {
+        const fenceRects: GRect[] = [];
+        const mainDef = SCENERY.def('fence_link_h');
+        const leftDef = SCENERY.def('fence_link_h_left');
+        const rightDef = SCENERY.def('fence_link_h_right');
+        const gateStart = gateCenter === null ? null : gateCenter - (TOWN_BEND_PATH_GATE_WIDTH / 2);
+        const gateEnd = gateCenter === null ? null : gateCenter + (TOWN_BEND_PATH_GATE_WIDTH / 2);
+        const slots: { x: number; def: GSceneryDef }[] = [];
+
+        let x = startX;
+        for (let s = 0; s < segments; s++) {
+            const def = s === 0 ? leftDef : s === segments - 1 ? rightDef : mainDef;
+            slots.push({ x, def });
+            x += def.body.width;
+        }
+
+        const skipped = slots.map(slot => gateStart !== null && gateEnd !== null &&
+            slot.x < gateEnd && slot.x + slot.def.body.width > gateStart
+        );
+        const firstSkipped = skipped.findIndex(Boolean);
+        const lastSkipped = skipped.length - 1 - [...skipped].reverse().findIndex(Boolean);
+
+        for (let s = 0; s < slots.length; s++) {
+            if (skipped[s]) {
+                continue;
+            }
+
+            let def = slots[s].def;
+            if (s === firstSkipped - 1) {
+                def = rightDef;
+            } else if (s === lastSkipped + 1) {
+                def = leftDef;
+            }
+
+            fenceRects.push(this.addSceneryPlanAtBody(def.key, slots[s].x, bodyY));
+        }
+        return fenceRects;
+    }
+
+    private planTownBendVertFence(bodyX: number, startY: number, segments: number, rightSide: boolean, gateCenter: number|null): GRect[] {
+        const fenceRects: GRect[] = [];
+        const mainDef = SCENERY.def(rightSide ? 'fence_link_v_right' : 'fence_link_v_left');
+        const topEndDef = SCENERY.def(rightSide ? 'fence_link_vtop_right' : 'fence_link_vtop_left');
+        const bottomEndDef = SCENERY.def(rightSide ? 'fence_link_vbottom_right' : 'fence_link_vbottom_left');
+        const gateStart = gateCenter === null ? null : gateCenter - (TOWN_BEND_PATH_GATE_WIDTH / 2);
+        const gateEnd = gateCenter === null ? null : gateCenter + (TOWN_BEND_PATH_GATE_WIDTH / 2);
+        const slots: { y: number; def: GSceneryDef }[] = [];
+
+        let y = startY;
+        for (let s = 0; s < segments; s++) {
+            slots.push({ y, def: mainDef });
+            y += mainDef.body.height;
+        }
+
+        const skipped = slots.map(slot => gateStart !== null && gateEnd !== null &&
+            slot.y < gateEnd && slot.y + slot.def.body.height > gateStart
+        );
+        const firstSkipped = skipped.findIndex(Boolean);
+        const lastSkipped = skipped.length - 1 - [...skipped].reverse().findIndex(Boolean);
+
+        for (let s = 0; s < slots.length; s++) {
+            if (skipped[s]) {
+                continue;
+            }
+
+            let def = slots[s].def;
+            if (s === firstSkipped - 1) {
+                def = bottomEndDef;
+            } else if (s === lastSkipped + 1) {
+                def = topEndDef;
+            }
+
+            fenceRects.push(this.addSceneryPlanAtBody(def.key, bodyX, slots[s].y));
+        }
+        return fenceRects;
+    }
+
+    private getTownBendHorzGateActualCenter(segments: number, startX: number, gateCenter: number): number {
+        const mainDef = SCENERY.def('fence_link_h');
+        const leftDef = SCENERY.def('fence_link_h_left');
+        const rightDef = SCENERY.def('fence_link_h_right');
+        const gateStart = gateCenter - (TOWN_BEND_PATH_GATE_WIDTH / 2);
+        const gateEnd = gateCenter + (TOWN_BEND_PATH_GATE_WIDTH / 2);
+        const slots: { x: number; def: GSceneryDef }[] = [];
+
+        let x = startX;
+        for (let s = 0; s < segments; s++) {
+            const def = s === 0 ? leftDef : s === segments - 1 ? rightDef : mainDef;
+            slots.push({ x, def });
+            x += def.body.width;
+        }
+
+        const skipped = slots.filter(slot => slot.x < gateEnd && slot.x + slot.def.body.width > gateStart);
+        if (skipped.length === 0) {
+            return gateCenter;
+        }
+
+        const openingStart = Math.min(...skipped.map(slot => slot.x));
+        const openingEnd = Math.max(...skipped.map(slot => slot.x + slot.def.body.width));
+        return openingStart + ((openingEnd - openingStart) / 2);
+    }
+
+    private getTownBendVertGateActualCenter(segments: number, startY: number, gateCenter: number): number {
+        const mainDef = SCENERY.def('fence_link_v_left');
+        const gateStart = gateCenter - (TOWN_BEND_PATH_GATE_WIDTH / 2);
+        const gateEnd = gateCenter + (TOWN_BEND_PATH_GATE_WIDTH / 2);
+        const slots: { y: number; def: GSceneryDef }[] = [];
+
+        let y = startY;
+        for (let s = 0; s < segments; s++) {
+            slots.push({ y, def: mainDef });
+            y += mainDef.body.height;
+        }
+
+        const skipped = slots.filter(slot => slot.y < gateEnd && slot.y + slot.def.body.height > gateStart);
+        if (skipped.length === 0) {
+            return gateCenter;
+        }
+
+        const openingStart = Math.min(...skipped.map(slot => slot.y));
+        const openingEnd = Math.max(...skipped.map(slot => slot.y + slot.def.body.height));
+        return openingStart + ((openingEnd - openingStart) / 2);
+    }
+
+    private addSceneryPlanAtBody(key: string, bodyX: number, bodyY: number): GRect {
+        const def = SCENERY.def(key);
+        this.addSceneryPlan(key, bodyX - def.body.x, bodyY - def.body.y);
+        return {
+            x: bodyX,
+            y: bodyY,
+            width: def.body.width,
+            height: def.body.height
+        };
+    }
+
+    private getTownBendFillCorner(roadNorth: boolean, roadEast: boolean, roadSouth: boolean, roadWest: boolean): TownBendCorner|null {
+        const roadCount: number = [roadNorth, roadEast, roadSouth, roadWest].filter(Boolean).length;
+        if (roadCount !== 2) {
+            return null;
+        }
+
+        if (roadNorth && roadEast) {
+            return 'sw';
+        }
+        if (roadEast && roadSouth) {
+            return 'nw';
+        }
+        if (roadSouth && roadWest) {
+            return 'ne';
+        }
+        if (roadWest && roadNorth) {
+            return 'se';
+        }
+        return null;
+    }
+
+    private getTownBendCornerArea(corner: TownBendCorner, area: TownBendCornerArea): GRect {
+        const roadVertLeft: number = 7 * GFF.TILE_W;
+        const roadVertRight: number = 9 * GFF.TILE_W;
+        const roadHorzTop: number = 4.5 * GFF.TILE_H;
+        const roadHorzBottom: number = 6.5 * GFF.TILE_H;
+        let rect: GRect;
+
+        switch (corner) {
+            case 'nw':
+                rect = area === 'horz'
+                    ? { x: GFF.ROOM_X, y: GFF.ROOM_Y, width: roadVertRight - GFF.ROOM_X, height: roadHorzTop - GFF.ROOM_Y }
+                    : { x: GFF.ROOM_X, y: GFF.ROOM_Y, width: roadVertLeft - GFF.ROOM_X, height: roadHorzBottom - GFF.ROOM_Y };
+                break;
+            case 'ne':
+                rect = area === 'horz'
+                    ? { x: roadVertLeft, y: GFF.ROOM_Y, width: GFF.ROOM_W - roadVertLeft, height: roadHorzTop - GFF.ROOM_Y }
+                    : { x: roadVertRight, y: GFF.ROOM_Y, width: GFF.ROOM_W - roadVertRight, height: roadHorzBottom - GFF.ROOM_Y };
+                break;
+            case 'sw':
+                rect = area === 'horz'
+                    ? { x: GFF.ROOM_X, y: roadHorzBottom, width: roadVertRight - GFF.ROOM_X, height: GFF.ROOM_H - roadHorzBottom }
+                    : { x: GFF.ROOM_X, y: roadHorzTop, width: roadVertLeft - GFF.ROOM_X, height: GFF.ROOM_H - roadHorzTop };
+                break;
+            case 'se':
+                rect = area === 'horz'
+                    ? { x: roadVertLeft, y: roadHorzBottom, width: GFF.ROOM_W - roadVertLeft, height: GFF.ROOM_H - roadHorzBottom }
+                    : { x: roadVertRight, y: roadHorzTop, width: GFF.ROOM_W - roadVertRight, height: GFF.ROOM_H - roadHorzTop };
+                break;
+        }
+
+        return this.insetTownBendCornerAreaFromRoads(rect, corner, area);
+    }
+
+    private insetTownBendCornerAreaFromRoads(rect: GRect, corner: TownBendCorner, area: TownBendCornerArea): GRect {
+        const result: GRect = { ...rect };
+
+        if (area === 'horz') {
+            if (corner === 'nw' || corner === 'ne') {
+                result.height -= TOWN_LOT_ROAD_GAP;
+            } else {
+                result.y += TOWN_LOT_ROAD_GAP;
+                result.height -= TOWN_LOT_ROAD_GAP;
+            }
+        } else {
+            if (corner === 'ne' || corner === 'se') {
+                result.x += TOWN_LOT_ROAD_GAP;
+            }
+            result.width -= TOWN_LOT_ROAD_GAP;
+        }
+
+        return result;
     }
 
     private getWallSectionRange(startPx: number, endPx: number, sectionSize: number, sectionCount: number): { start: number, end: number } {
@@ -2858,7 +3765,6 @@ export class GRoom implements GSaveable {
             townEdgeSections: this.townEdgeSections,
             doorways: this.doorways,
             lockedDoors: this.lockedDoors,
-            yards: this.yards,
             plans: this.plans,
         };
     }
@@ -2892,7 +3798,6 @@ export class GRoom implements GSaveable {
         }
         this.doorways = context.doorways;
         this.lockedDoors = context.lockedDoors;
-        this.yards = context.yards;
         this.plans = context.plans;
         if (context.prisoner !== undefined) {
             this.prisoner = context.prisoner ? PEOPLE.getPersonBySpriteKeyPrefix(context.prisoner) : context.prisoner;

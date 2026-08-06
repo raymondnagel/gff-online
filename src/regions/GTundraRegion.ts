@@ -2,7 +2,7 @@ import { RANDOM } from "../random";
 import { GRoom } from "../GRoom";
 import { SCENERY } from "../scenery";
 import { Dir9, GRect, GSceneryDef } from "../types";
-import { GOutsideRegion } from "./GOutsideRegion";
+import { GOutsideRegion, GParkNaturalSceneryContext, GYardScenery } from "./GOutsideRegion";
 
 const STOCK_REGIONS = [
     { name: 'Hamath', adjective: 'Hamathite' },
@@ -64,6 +64,22 @@ export class GTundraRegion extends GOutsideRegion{
 
     public getTemperature(): number {
         return RANDOM.randInt(-20, 0); // Tundras are cold, often below freezing.
+    }
+
+    public getYardScenery(): GYardScenery {
+        return {
+            border: ['snowy_boulder', 'snowy_tree_stump'],
+            adjacent: [],
+            middle: ['snowman', 'igloo', 'snowy_pine_tree', 'snowy_dead_tree'],
+            edge: ['snowy_pine_tree', 'snowy_dead_tree', 'snowy_boulder', 'snowy_tree_stump'],
+        };
+    }
+
+    public addNaturalParkScenery(context: GParkNaturalSceneryContext): void {
+        this.addParkEdgeScenery(context, ['snowy_pine_tree'], 1, 3, 6, 128, ['north', 'west', 'east']);
+        this.addParkEdgeScenery(context, ['snowy_boulder', 'snowy_tree_stump'], 1, 4, 7);
+        this.addParkCornerScenery(context, ['snowy_dead_tree'], .45, 1, 2);
+        this.addParkSparseScenery(context, ['snowman'], .25, 1, 2);
     }
 
     protected _furnishRoom(room: GRoom, partialWalls: boolean = true, internalObjects: boolean = true) {

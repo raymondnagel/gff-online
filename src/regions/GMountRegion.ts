@@ -2,7 +2,7 @@ import { GRoom } from "../GRoom";
 import { RANDOM } from "../random";
 import { SCENERY } from "../scenery";
 import { Dir9, GRect, GSceneryDef } from "../types";
-import { GOutsideRegion } from "./GOutsideRegion";
+import { GOutsideRegion, GParkNaturalSceneryContext, GYardScenery } from "./GOutsideRegion";
 
 const STOCK_REGIONS = [
     { name: 'Golan', adjective: 'Golanite' },
@@ -65,6 +65,21 @@ export class GMountRegion extends GOutsideRegion{
 
     public getTemperature(): number {
         return RANDOM.randInt(-10, 10); // Mountains are cold, especially at higher elevations.
+    }
+
+    public getYardScenery(): GYardScenery {
+        return {
+            border: ['bush', 'shrub', 'boulder', 'small_pine'],
+            adjacent: [],
+            middle: ['swimming_pool', 'clothesline', 'small_pine', 'crag', 'camp_tent'],
+            edge: ['bush', 'shrub', 'boulder', 'small_pine'],
+        };
+    }
+
+    public addNaturalParkScenery(context: GParkNaturalSceneryContext): void {
+        this.addParkEdgeScenery(context, ['small_pine', 'boulder', 'bush', 'shrub'], 1, 6, 9);
+        this.addParkCornerScenery(context, ['crag', 'small_pine'], .65, 1, 3);
+        this.addParkSparseScenery(context, ['flower_patch_1', 'flower_patch_2'], .35, 1, 3);
     }
 
     protected _furnishRoom(room: GRoom, partialWalls: boolean = true, internalObjects: boolean = true) {
