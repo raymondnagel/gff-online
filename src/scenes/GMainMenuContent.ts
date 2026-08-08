@@ -52,6 +52,7 @@ export class GMainMenuContent extends GContentScene {
 
     constructor() {
         super("MainMenuContent");
+        GFF.MainMenuContent = this;
         this.setContainingMode(GFF.MAINMENU_MODE);
     }
 
@@ -117,24 +118,24 @@ export class GMainMenuContent extends GContentScene {
             this.continueGame();
         }));
 
-        optionY = OPTION_GAP + this.mainMenuSection.addOption(this.initTextOption(CENTER_X, optionY, "Duel Mode", 'md',
-            `Share a friendly head-to-head scripture battle with a friend`, () => {
-            console.log('Duel Mode - (not implemented yet)');
-        }));
+        // optionY = OPTION_GAP + this.mainMenuSection.addOption(this.initTextOption(CENTER_X, optionY, "Duel Mode", 'md',
+        //     `Share a friendly head-to-head scripture battle with a friend`, () => {
+        //     console.log('Duel Mode - (not implemented yet)');
+        // }));
 
-        optionY = OPTION_GAP + this.mainMenuSection.addOption(this.initTextOption(CENTER_X, optionY, "Top Scores", 'md',
-            `View the list of top 10 scores`, () => {
-            console.log('Top Scores - (not implemented yet)');
-        }));
+        // optionY = OPTION_GAP + this.mainMenuSection.addOption(this.initTextOption(CENTER_X, optionY, "Top Scores", 'md',
+        //     `View the list of top 10 scores`, () => {
+        //     console.log('Top Scores - (not implemented yet)');
+        // }));
 
         optionY = OPTION_GAP + this.mainMenuSection.addOption(this.initTextOption(CENTER_X, optionY, "View Glossary", 'md',
             `See how game elements were derived from the Bible`, () => {
-            console.log('View Glossary - (not implemented yet)');
+            GFF.GLOSSARY_MODE.switchTo(GFF.MAINMENU_MODE);
         }));
 
         optionY = OPTION_GAP + this.mainMenuSection.addOption(this.initTextOption(CENTER_X, optionY, "Options", 'md',
             `Configure options for Audio, Video, and Gameplay`, () => {
-            console.log('Options - (not implemented yet)');
+            GFF.OPTIONS_MODE.switchTo(GFF.MAINMENU_MODE);
         }));
 
         optionY = OPTION_GAP + this.mainMenuSection.addOption(this.initTextOption(CENTER_X, optionY, "Credits", 'md',
@@ -148,7 +149,7 @@ export class GMainMenuContent extends GContentScene {
 
         optionY = OPTION_GAP + this.mainMenuSection.addOption(this.initTextOption(CENTER_X, optionY, "Exit Game", 'md',
             `The grace of our Lord Jesus Christ be with your spirit. Amen.`, () => {
-            console.log('Exit Game - (not implemented yet)');
+            window.location.href = 'https://www.gffgame.com';
         }));
 
         this.mainMenuSection.getOptions().forEach(option => {

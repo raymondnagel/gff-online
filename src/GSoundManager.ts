@@ -269,11 +269,12 @@ export class GSoundManager {
             }
             soundKey = this.music.key;
         }
+        const targetVolume = this.getCalculatedMusicVolume();
         this.stopMusic();
-        this.playMusic(soundKey, undefined, loop);
+        this.playMusic(soundKey, 0, loop);
         this.scene.tweens.add({
             targets: this.music,
-            volume: this.getCalculatedMusicVolume(),
+            volume: targetVolume,
             duration: overTime,
             onComplete: () => {
                 onComplete?.call(this);
@@ -298,6 +299,7 @@ export class GSoundManager {
     }
 
     public fadeMusicToVolume(volume: number, overTime: number, onComplete?: Function) {
+        this.musicVolume = volume;
         if (this.music === null) {
             onComplete?.call(this);
             return;

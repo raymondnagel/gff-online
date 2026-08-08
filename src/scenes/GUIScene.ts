@@ -61,7 +61,7 @@ export abstract class GUIScene extends GBaseScene {
     }
 
     public update(_time: number, delta: number): void {
-        if (this.uiBar !== undefined) {
+        if (this.uiBar !== undefined && this.levelText !== undefined) {
             this.updateUIBarInfo();
         }
         this.updateFrameRate(delta);
@@ -107,8 +107,37 @@ export abstract class GUIScene extends GBaseScene {
     }
 
     protected setSubscreen() {
-        this.createUIBar(true);
+        if (this.shouldExitToMainMenu()) {
+            this.createMainMenuSubscreenBar();
+        } else {
+            this.createUIBar(true);
+        }
         GFF.setMouseVisible(true);
+    }
+
+    private createMainMenuSubscreenBar() {
+        this.uiBar = this.add.image(GFF.LEFT_BOUND, GFF.BOTTOM_BOUND, 'empty_icon_bar');
+        this.uiBar.setOrigin(0, 0);
+
+        const block: number = 64;
+        const padding: number = 8;
+        const spacing: number = 8;
+        this.buttonDefinitions = [{
+            option: 'Exit',
+            hotkey: 'q',
+            action: () => {
+                this.getSound().playSound('icon_click');
+                this.escapeFromSubscreen();
+            }
+        }];
+
+        this.buttonDefinitions.forEach((b, i) => {
+            const imageName: string = b.option.toLowerCase();
+            const x: number = GFF.RIGHT_BOUND - ((block + spacing) * (i + 1)) + padding;
+            const button: GIconBarButton = new GIconBarButton(this, x, GFF.BOTTOM_BOUND + 3, `${imageName}_off`, `${imageName}_on`, b.option, b.hotkey, b.action);
+            this.add.existing(button);
+            this.uiButtons.push(button);
+        });
     }
 
     protected createUIBar(excludeNonSubscreens: boolean = false) {
@@ -136,7 +165,7 @@ export abstract class GUIScene extends GBaseScene {
                             {option: 'No', hotkey: 'n', action: () => {}}
                         ]);
                     } else {
-                        this.escapeToAdventureMode();
+                        this.escapeFromSubscreen();
                     }
                 }
             }, {
@@ -335,8 +364,8 @@ export abstract class GUIScene extends GBaseScene {
         switch(keyEvent.key) {
             case 'Escape':
                 // If Esc is pressed on any UI that isn't part of AdventureMode,
-                // it's a subscreen: it should escape back to AdventureMode.
-                this.escapeToAdventureMode();
+                // it's a subscreen: it should escape back to its origin.
+                this.escapeFromSubscreen();
                 return;
             default:
                 for (let b of this.buttonDefinitions) {
@@ -349,10 +378,24 @@ export abstract class GUIScene extends GBaseScene {
         }
     }
 
-    private escapeToAdventureMode() {
+    private escapeFromSubscreen() {
         if (this.getContainingMode() !== GFF.ADVENTURE_MODE) {
-            GFF.ADVENTURE_MODE.switchTo(this.getContainingMode());
+            if (this.shouldExitToMainMenu()) {
+                GFF.MAINMENU_MODE.switchTo(this.getContainingMode());
+            } else {
+                GFF.ADVENTURE_MODE.switchTo(this.getContainingMode());
+            }
         }
+    }
+
+    private shouldExitToMainMenu(): boolean {
+        return (
+            this.getContainingMode() === GFF.GLOSSARY_MODE &&
+            GFF.GLOSSARY_MODE.getExitDestination() === 'mainMenu'
+        ) || (
+            this.getContainingMode() === GFF.OPTIONS_MODE &&
+            GFF.OPTIONS_MODE.getExitDestination() === 'mainMenu'
+        );
     }
 
     public exitAllButtons() {

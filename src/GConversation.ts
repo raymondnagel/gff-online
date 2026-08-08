@@ -505,7 +505,7 @@ export class GConversation {
 
         // Let's fade the music to the background:
         this.previousMusicVolume = GFF.AdventureContent.getSound().getMusicVolume();
-        GFF.AdventureContent.getSound().setMusicVolume(.2);
+        GFF.AdventureContent.getSound().fadeMusicToVolume(.2, 500);
 
         // Turn off nametags so they don't get in the way of bubbles:
         REGISTRY.set('isNametags', false);
@@ -873,7 +873,7 @@ export class GConversation {
 
     private end() {
         // Cleanup anything that might be left
-        GFF.AdventureContent.getSound().setMusicVolume(this.previousMusicVolume);
+        GFF.AdventureContent.getSound().fadeMusicToVolume(this.previousMusicVolume, 500);
         GFF.AdventureUI.hidePromptBacker();
         GFF.AdventureContent.clearConversation();
         this.unpauseParticipants();

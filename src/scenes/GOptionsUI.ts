@@ -329,9 +329,7 @@ export class GOptionsUI extends GUIScene {
         // Set up callback to update registry when slider changes:
         this.masterVolumeSlider.setOnChange((newT) => {
             REGISTRY.set('masterVolume', newT);
-            // Force currently playing music to update immediately with global (registry) volume:
-            const soundManager = GFF.AdventureContent.getSound();
-            soundManager.setMusicVolume(soundManager.getMusicVolume());
+            this.updateCurrentMusicVolume();
         });
     }
 
@@ -342,10 +340,17 @@ export class GOptionsUI extends GUIScene {
         // Set up callback to update registry when slider changes:
         this.musicVolumeSlider.setOnChange((newT) => {
             REGISTRY.set('musicVolume', newT);
-            // Force currently playing music to update immediately with global (registry) volume:
-            const soundManager = GFF.AdventureContent.getSound();
-            soundManager.setMusicVolume(soundManager.getMusicVolume());
+            this.updateCurrentMusicVolume();
         });
+    }
+
+    private updateCurrentMusicVolume(): void {
+        // Force currently playing music to update immediately with global (registry) volume.
+        const soundManager = GFF.OPTIONS_MODE.getExitDestination() === 'mainMenu'
+            ? GFF.MainMenuContent.getSound()
+            : GFF.AdventureContent.getSound();
+
+        soundManager.setMusicVolume(soundManager.getMusicVolume());
     }
 
     private initSfxVolume() {

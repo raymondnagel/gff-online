@@ -208,6 +208,7 @@ export namespace GFF {
      * For convenience, when we need to reference a particular Scene
      * that is used ALL the time, just assign it here and use GFF.TheScene
      */
+    export let MainMenuContent: GMainMenuContent;
     export let AdventureContent: GAdventureContent;
     export let AdventureUI: GAdventureUI;
     export let BattleContent: GBattleContent;
